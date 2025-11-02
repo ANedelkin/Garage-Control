@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using GarageControl.Infrastructure.Data.Enums;
+using GarageControl.Shared.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace GarageControl.Infrastructure.Data.Models

@@ -1,4 +1,4 @@
-namespace GarageControl.Infrastructure.Data.Enums
+namespace GarageControl.Shared.Enums
 {
     public enum UserType
     {

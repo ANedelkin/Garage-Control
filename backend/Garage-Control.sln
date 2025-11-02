@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageControl.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageControl.Core", "GarageControl.Core\GarageControl.Core.csproj", "{E9CAFDDF-B24D-D7E7-4ADC-D6A4D9F8689G}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageControl.Shared", "GarageControl.Shared\GarageControl.Shared.csproj", "{E9CAFDDF-B24D-D7E7-4ADC-D6A4D9F8689H}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
