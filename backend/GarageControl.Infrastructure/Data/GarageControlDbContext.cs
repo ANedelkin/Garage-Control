@@ -10,5 +10,7 @@ namespace GarageControl.Infrastructure.Data
             : base(options)
         {
         }
+
+        public DbSet<CarService> CarServices { get; set; } = null!;
     }
 }
