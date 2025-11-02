@@ -22,5 +22,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public string BossId { get; set; } = null!;
         [ForeignKey(nameof(BossId))]
         public User Boss { get; set; } = null!;
+        public virtual ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
     }
 }

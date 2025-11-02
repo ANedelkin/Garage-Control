@@ -4,6 +4,7 @@ using GarageControl.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    partial class GarageControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102185344_AddedWorkerRolesRelation")]
+    partial class AddedWorkerRolesRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,6 +143,9 @@ namespace GarageControl.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CarServiceId1")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("HiredOn")
                         .HasColumnType("datetime2");
 
@@ -150,6 +156,8 @@ namespace GarageControl.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarServiceId");
+
+                    b.HasIndex("CarServiceId1");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -319,10 +327,14 @@ namespace GarageControl.Infrastructure.Migrations
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Worker", b =>
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
-                        .WithMany("Workers")
+                        .WithMany()
                         .HasForeignKey("CarServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", null)
+                        .WithMany("Workers")
+                        .HasForeignKey("CarServiceId1");
 
                     b.HasOne("GarageControl.Infrastructure.Data.Models.User", "User")
                         .WithOne()

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.Identity.Client;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
@@ -11,6 +12,7 @@ namespace GarageControl.Infrastructure.Data.Models
         }
         [Key]
         public string Id { get; set; }
+        public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
         [Required]
         public string UserId { get; set; } = null!;
         [ForeignKey(nameof(UserId))]
