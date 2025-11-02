@@ -4,25 +4,24 @@ using GarageControl.Shared.Constants;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CarService
+    public class Activity
     {
-        public CarService()
+        public Activity()
         {
             Id = Guid.NewGuid().ToString();
         }
         [Key]
         public string Id { get; set; }
         [Required]
-        [MaxLength(CarServiceConstants.nameMaxLength)]
+        [MaxLength(ActivityConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
         [Required]
-        [MaxLength(CarServiceConstants.addressMaxLength)]
-        public string Address { get; set; } = null!;
+        [RegularExpression(ActivityConstants.colorRegex)]
+        public string Color { get; set; } = null!;
         [Required]
-        public string BossId { get; set; } = null!;
-        [ForeignKey(nameof(BossId))]
-        public User Boss { get; set; } = null!;
+        public string CarServiceId { get; set; } = null!;
+        [ForeignKey(nameof(CarServiceId))]
+        public CarService CarService { get; set; } = null!;
         public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
-        public ICollection<Activity> Activities { get; set; } = new HashSet<Activity>();
     }
 }
