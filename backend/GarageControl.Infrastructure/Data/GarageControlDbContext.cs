@@ -11,6 +11,30 @@ namespace GarageControl.Infrastructure.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<CarService>()
+                .HasOne(cs => cs.Boss)
+                .WithMany()
+                .HasForeignKey(cs => cs.BossId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Worker>()
+                .HasOne(w => w.CarService)
+                .WithMany()
+                .HasForeignKey(w => w.CarServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Worker>()
+                .HasOne(w => w.User)
+                .WithOne()
+                .HasForeignKey<Worker>(w => w.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
         public DbSet<CarService> CarServices { get; set; } = null!;
+        public DbSet<Worker> Workers { get; set; } = null!;
     }
 }
