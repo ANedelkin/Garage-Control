@@ -4,9 +4,9 @@ using GarageControl.Shared.Constants;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class Activity
+    public class JobType
     {
-        public Activity()
+        public JobType()
         {
             Id = Guid.NewGuid().ToString();
         }
