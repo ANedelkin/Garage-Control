@@ -6,12 +6,8 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class CarModel
     {
-        public CarModel()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(CarModelConstants.nameMaxLength)]
         public string Name { get; set; } = null!;

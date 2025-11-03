@@ -6,12 +6,8 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class Car
     {
-        public Car()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         public string ModelId { get; set; } = null!;
         [ForeignKey(nameof(ModelId))]

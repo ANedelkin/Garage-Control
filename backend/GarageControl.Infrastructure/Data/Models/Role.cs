@@ -5,12 +5,8 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class Role
     {
-        public Role()
-        {
-            this.Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(RoleConstants.nameMaxLength)]
         public string Name { get; set; } = null!;

@@ -6,12 +6,8 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class JobType
     {
-        public JobType()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(JobTypeConstants.nameMaxLength)]
         public string Name { get; set; } = null!;

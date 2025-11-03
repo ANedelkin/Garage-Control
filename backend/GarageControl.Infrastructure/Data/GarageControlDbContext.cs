@@ -79,5 +79,7 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<PartsFolder> PartsFolders { get; set; } = null!;
         public DbSet<Part> Parts { get; set; } = null!;
+        public DbSet<WorkerSchedule> WorkerSchedules { get; set; } = null!;
+        public DbSet<WorkerLeave> WorkerLeaves { get; set; } = null!;
     }
 }

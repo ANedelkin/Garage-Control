@@ -7,12 +7,8 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class Job
     {
-        public Job()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         public string JobTypeId { get; set; } = null!;
         [ForeignKey(nameof(JobTypeId))]

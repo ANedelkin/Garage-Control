@@ -6,15 +6,12 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class Worker
     {
-        public Worker()
-        {
-            this.Id = Guid.NewGuid().ToString();
-        }
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
         public ICollection<JobType> Activities { get; set; } = new HashSet<JobType>();
         public ICollection<Job> Jobs { get; set; } = new HashSet<Job>();
+        public ICollection<WorkerSchedule> Schedules { get; set; } = new HashSet<WorkerSchedule>();
         [Required]
         public string UserId { get; set; } = null!;
         [ForeignKey(nameof(UserId))]

@@ -4,6 +4,7 @@ using GarageControl.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    partial class GarageControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103155258_AddedWorkerSchedulesTable")]
+    partial class AddedWorkerSchedulesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -424,28 +427,6 @@ namespace GarageControl.Infrastructure.Migrations
                     b.ToTable("Workers");
                 });
 
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerLeave", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("WorkerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("WorkerLeaves");
-                });
-
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerSchedule", b =>
                 {
                     b.Property<string>("Id")
@@ -809,17 +790,6 @@ namespace GarageControl.Infrastructure.Migrations
                     b.Navigation("CarService");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerLeave", b =>
-                {
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.Worker", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerSchedule", b =>

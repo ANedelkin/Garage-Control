@@ -7,12 +7,9 @@ namespace GarageControl.Infrastructure.Data.Models
 {
     public class Client
     {
-        public Client()
-        {
-            this.Id = Guid.NewGuid().ToString();
-        }
+
         [Key]
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         [MaxLength(ClientConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
