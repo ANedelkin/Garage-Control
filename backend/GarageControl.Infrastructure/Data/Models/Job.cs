@@ -32,5 +32,9 @@ namespace GarageControl.Infrastructure.Data.Models
         public DateTime StartTime { get; set; }
         [Required]
         public DateTime EndTime { get; set; }
+        [Required]
+        public string OrderId { get; set; } = null!;
+        [ForeignKey(nameof(OrderId))]
+        public Order Order { get; set; } = null!;
     }
 }

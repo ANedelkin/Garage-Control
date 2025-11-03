@@ -4,6 +4,7 @@ using GarageControl.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    partial class GarageControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103151742_AddedOrdersTable")]
+    partial class AddedOrdersTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,10 +139,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<string>("CarServiceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Email")
                         .HasMaxLength(254)
                         .HasColumnType("nvarchar(254)");
@@ -159,8 +158,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CarServiceId");
 
                     b.ToTable("Clients");
                 });
@@ -248,71 +245,6 @@ namespace GarageControl.Infrastructure.Migrations
                     b.HasIndex("CarId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Part", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CarServiceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ParentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PartNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarServiceId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("Parts");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.PartsFolder", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CarServiceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ParentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarServiceId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("PartsFolders");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Role", b =>
@@ -647,17 +579,6 @@ namespace GarageControl.Infrastructure.Migrations
                     b.Navigation("Boss");
                 });
 
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Client", b =>
-                {
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
-                        .WithMany("Clients")
-                        .HasForeignKey("CarServiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CarService");
-                });
-
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Job", b =>
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.JobType", "JobType")
@@ -705,44 +626,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Car");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Part", b =>
-                {
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
-                        .WithMany()
-                        .HasForeignKey("CarServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.PartsFolder", "Parent")
-                        .WithMany("PartsChildren")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CarService");
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.PartsFolder", b =>
-                {
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
-                        .WithMany()
-                        .HasForeignKey("CarServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GarageControl.Infrastructure.Data.Models.PartsFolder", "Parent")
-                        .WithMany("FolderChildren")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CarService");
-
-                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Worker", b =>
@@ -852,8 +735,6 @@ namespace GarageControl.Infrastructure.Migrations
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarService", b =>
                 {
-                    b.Navigation("Clients");
-
                     b.Navigation("JobTypes");
 
                     b.Navigation("Workers");
@@ -872,13 +753,6 @@ namespace GarageControl.Infrastructure.Migrations
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Order", b =>
                 {
                     b.Navigation("Jobs");
-                });
-
-            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.PartsFolder", b =>
-                {
-                    b.Navigation("FolderChildren");
-
-                    b.Navigation("PartsChildren");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.User", b =>

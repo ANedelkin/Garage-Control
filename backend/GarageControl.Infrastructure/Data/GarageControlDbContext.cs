@@ -46,7 +46,25 @@ namespace GarageControl.Infrastructure.Data
                     "WorkerRoles",
                     j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
                     j => j.HasOne<Worker>().WithMany().HasForeignKey("WorkerId")
-    );
+                );
+
+            builder.Entity<PartsFolder>()
+                .HasOne(f => f.Parent)
+                .WithMany(c => c.FolderChildren)
+                .HasForeignKey(f => f.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Part>()
+                .HasOne(p => p.Parent)
+                .WithMany(f => f.PartsChildren)
+                .HasForeignKey(p => p.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Client>()
+                .HasOne(c => c.CarService)
+                .WithMany(s => s.Clients)
+                .HasForeignKey(c => c.CarServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<CarService> CarServices { get; set; } = null!;
@@ -58,5 +76,8 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<CarModel> CarModels { get; set; } = null!;
         public DbSet<Client> Clients { get; set; } = null!;
         public DbSet<Car> Cars { get; set; } = null!;
+        public DbSet<Order> Orders { get; set; } = null!;
+        public DbSet<PartsFolder> PartsFolders { get; set; } = null!;
+        public DbSet<Part> Parts { get; set; } = null!;
     }
 }
