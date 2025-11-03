@@ -14,6 +14,6 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(RoleConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
-        public ICollection<Worker> Users { get; set; } = new HashSet<Worker>();
+        public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
     }
 }

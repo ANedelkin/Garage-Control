@@ -23,6 +23,6 @@ namespace GarageControl.Infrastructure.Data.Models
         [ForeignKey(nameof(BossId))]
         public User Boss { get; set; } = null!;
         public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
-        public ICollection<JobType> Activities { get; set; } = new HashSet<JobType>();
+        public ICollection<JobType> JobTypes { get; set; } = new HashSet<JobType>();
     }
 }

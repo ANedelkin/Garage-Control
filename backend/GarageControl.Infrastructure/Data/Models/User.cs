@@ -8,5 +8,8 @@ namespace GarageControl.Infrastructure.Data.Models
     {
         [Required]
         public UserType UserType { get; set; }
+        public ICollection<CarMake> CarMakes { get; set; } = new HashSet<CarMake>();
+        public ICollection<CarModel> CarModels { get; set; } = new HashSet<CarModel>();
+        public ICollection<CarService> CarServices { get; set; } = new HashSet<CarService>();
     }
 }

@@ -15,12 +15,6 @@ namespace GarageControl.Infrastructure.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<CarService>()
-                .HasOne(cs => cs.Boss)
-                .WithMany()
-                .HasForeignKey(cs => cs.BossId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             builder.Entity<Worker>()
                 .HasOne(w => w.CarService)
                 .WithMany(cs => cs.Workers)
@@ -32,6 +26,27 @@ namespace GarageControl.Infrastructure.Data
                 .WithOne()
                 .HasForeignKey<Worker>(w => w.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CarMake>()
+                .HasOne(cm => cm.Creator)
+                .WithMany(u => u.CarMakes)
+                .HasForeignKey(cm => cm.CreatorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CarService>()
+                .HasOne(cs => cs.Boss)
+                .WithMany(u => u.CarServices)
+                .HasForeignKey(cs => cs.BossId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Worker>()
+                .HasMany(w => w.Roles)
+                .WithMany(r => r.Workers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "WorkerRoles",
+                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
+                    j => j.HasOne<Worker>().WithMany().HasForeignKey("WorkerId")
+    );
         }
 
         public DbSet<CarService> CarServices { get; set; } = null!;
@@ -40,6 +55,6 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<JobType> JobTypes { get; set; } = null!;
         public DbSet<Job> Jobs { get; set; } = null!;
         public DbSet<CarMake> CarMakes { get; set; } = null!;
-        
+        public DbSet<CarModel> CarModels { get; set; } = null!;
     }
 }

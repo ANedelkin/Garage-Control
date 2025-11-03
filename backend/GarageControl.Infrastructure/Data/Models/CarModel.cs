@@ -4,21 +4,24 @@ using GarageControl.Shared.Constants;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CarMake
+    public class CarModel
     {
-        public CarMake()
+        public CarModel()
         {
             Id = Guid.NewGuid().ToString();
         }
         [Key]
         public string Id { get; set; }
         [Required]
-        [MaxLength(CarMakeConstants.nameMaxLength)]
+        [MaxLength(CarModelConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
+        [Required]
+        public string CarMakeId { get; set; } = null!;
+        [ForeignKey(nameof(CarMakeId))]
+        public CarMake CarMake { get; set; } = null!;
         [Required]
         public string CreatorId { get; set; } = null!;
         [ForeignKey(nameof(CreatorId))]
         public User Creator { get; set; } = null!;
-        public ICollection<CarModel> CarModels { get; set; } = new HashSet<CarModel>();
     }
 }
