@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    [Migration("20251103150025_AddedClientsTable")]
-    partial class AddedClientsTable
+    [Migration("20251103151249_AddedCarsTable")]
+    partial class AddedCarsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,37 @@ namespace GarageControl.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Car", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ModelId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RegistrationNumber")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("VIN")
+                        .HasMaxLength(17)
+                        .HasColumnType("nvarchar(17)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModelId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Cars");
+                });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarMake", b =>
                 {
@@ -97,6 +128,38 @@ namespace GarageControl.Infrastructure.Migrations
                     b.HasIndex("BossId");
 
                     b.ToTable("CarServices");
+                });
+
+            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Client", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Job", b =>
@@ -434,6 +497,25 @@ namespace GarageControl.Infrastructure.Migrations
                     b.ToTable("WorkerRoles");
                 });
 
+            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Car", b =>
+                {
+                    b.HasOne("GarageControl.Infrastructure.Data.Models.CarModel", "Model")
+                        .WithMany()
+                        .HasForeignKey("ModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GarageControl.Infrastructure.Data.Models.Client", "Owner")
+                        .WithMany("Cars")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Model");
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarMake", b =>
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.User", "Creator")
@@ -615,6 +697,11 @@ namespace GarageControl.Infrastructure.Migrations
                     b.Navigation("JobTypes");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Client", b =>
+                {
+                    b.Navigation("Cars");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.JobType", b =>

@@ -56,5 +56,7 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<Job> Jobs { get; set; } = null!;
         public DbSet<CarMake> CarMakes { get; set; } = null!;
         public DbSet<CarModel> CarModels { get; set; } = null!;
+        public DbSet<Client> Clients { get; set; } = null!;
+        public DbSet<Car> Cars { get; set; } = null!;
     }
 }

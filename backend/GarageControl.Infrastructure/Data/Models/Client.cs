@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net.NetworkInformation;
 using GarageControl.Shared.Constants;
 
 namespace GarageControl.Infrastructure.Data.Models
@@ -23,5 +24,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public string? RegistrationNumber { get; set; }
         [MaxLength(GenericConstants.addressMaxLength)]
         public string? Address { get; set; }
+        public ICollection<Car> Cars { get; set; } = new HashSet<Car>();
     }
 }
