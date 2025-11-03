@@ -13,10 +13,10 @@ namespace GarageControl.Infrastructure.Data.Models
         [Key]
         public string Id { get; set; }
         [Required]
-        [MaxLength(ActivityConstants.nameMaxLength)]
+        [MaxLength(JobTypeConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
         [Required]
-        [RegularExpression(ActivityConstants.colorRegex)]
+        [RegularExpression(JobTypeConstants.colorRegex)]
         public string Color { get; set; } = null!;
         [Required]
         public string CarServiceId { get; set; } = null!;

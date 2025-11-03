@@ -14,6 +14,7 @@ namespace GarageControl.Infrastructure.Data.Models
         public string Id { get; set; }
         public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
         public ICollection<JobType> Activities { get; set; } = new HashSet<JobType>();
+        public ICollection<Job> Jobs { get; set; } = new HashSet<Job>();
         [Required]
         public string UserId { get; set; } = null!;
         [ForeignKey(nameof(UserId))]
