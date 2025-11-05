@@ -19,6 +19,7 @@ namespace GarageControl.Infrastructure.Data.Models
         public decimal Price { get; set; }
         [Required]
         public int Quantity { get; set; }
+        public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
         [Required]
         public string CarServiceId { get; set; } = null!;
         [ForeignKey(nameof(CarServiceId))]

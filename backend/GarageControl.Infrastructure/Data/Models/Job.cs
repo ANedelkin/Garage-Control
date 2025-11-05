@@ -20,6 +20,7 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal LaborCost { get; set; }
+        public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
         [Required]
         public string WorkerId { get; set; } = null!;
         [ForeignKey(nameof(WorkerId))]
