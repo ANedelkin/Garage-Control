@@ -31,9 +31,9 @@ builder.Services.AddAuthentication(o =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
-        IssuerSigningKey = new SymmetricSecurityKey("ab78f6c7-dda7-4898-92b9-1000b2a3894f"u8.ToArray()),
-        ValidIssuer = "https://localhost:5058",
-        ValidAudience = "https://localhost:5058",
+        IssuerSigningKey = new SymmetricSecurityKey("abc8d6f7-dda7-4898-92b9-1000b2a3894f"u8.ToArray()),
+        ValidIssuer = "https://localhost:5173",
+        ValidAudience = "https://localhost:5173",
         ValidateAudience = true,
         ValidateIssuer = true,
         ValidateIssuerSigningKey = true,
@@ -52,7 +52,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddHttpsRedirection(options =>
             {
                 options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-                options.HttpsPort = 5058;
+                options.HttpsPort = 5173;
             });
 
 builder.Services.AddAuthorization();
