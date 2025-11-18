@@ -5,23 +5,23 @@ import '../../assets/css/auth.css';
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import EmailFormContent from './EmailFormContent.jsx';
 
-const LogInPage = () => {
+const SignUpPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
-        //TODO: Login logic
+        //TODO: SignUp logic
     };
 
     return (
         <div className="background">
             <div className="container">
                 <div className="tile">
-                    <h3 className="tile-header">Welcome Back</h3>
+                    <h3 className="tile-header">Create a profile</h3>
                     <ThemeToggle />
                     <form onSubmit={handleSubmit}>
                         <EmailFormContent/>
                         <div className="form-footer">
-                            <p className="lnk">No account yet? <a href="/signup">Create one!</a></p>
-                            <button type="submit" className="btn">Log in</button>
+                            <p className="lnk">Already have an account? <a href="/">Log in!</a></p>
+                            <button type="submit" className="btn">Sign Up</button>
                         </div>
                     </form>
                 </div>
@@ -30,4 +30,4 @@ const LogInPage = () => {
     );
 };
 
-export default LogInPage;
+export default SignUpPage;

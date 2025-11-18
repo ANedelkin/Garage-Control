@@ -112,16 +112,6 @@ a {
     display: block;
 }
 
-.tile form{
-    width:500px;
-    margin-top: 10px;
-    margin-bottom: 0;
-}
-
-.tile form .form-section {
-    margin-bottom: 20px;
-}
-
 input,
 textarea,
 select {
