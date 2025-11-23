@@ -10,7 +10,7 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
 
     return (
         <main className="background">
-            <ThemeToggle />
+            <ThemeToggle className="theme-toggle"/>
             <div className="container">
                 <div className="tile">
                     <h3 className="tile-header">Welcome Back</h3>

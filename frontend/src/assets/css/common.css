@@ -115,7 +115,7 @@ a {
     text-decoration: none;
 }
 
-.container {
+.horizontal-layout {
     display: flex;
     height: calc(100vh - 64px);
     overflow: hidden;
@@ -129,9 +129,12 @@ a {
     flex: 1;
     padding: 22px 7%;
     overflow-y: auto;
+    align-items: center;
+    /* background: var(--gradient); */
 }
 
 .tile {
+    width:fit-content;
     background: var(--glass);
     padding: 22px 18px;
     border-radius: 12px;

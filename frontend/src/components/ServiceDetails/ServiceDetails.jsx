@@ -4,7 +4,7 @@ import '../../assets/css/common.css';
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import ServiceDetailsForm from './ServiceDetailsForm.jsx';
 
-const ServiceDetailsInitial = () => {
+const ServiceDetails = () => {
   const [serviceData, setServiceData] = useState({
     name: '',
     address: '',
@@ -19,13 +19,10 @@ const ServiceDetailsInitial = () => {
   };
 
   return (
-    <main className="background">
-      <ThemeToggle className="theme-toggle"/>
-      <div className="container">
+    <main className="main">
         <ServiceDetailsForm />
-      </div>
     </main>
   );
 };
 
-export default ServiceDetailsInitial;
+export default ServiceDetails;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ThemeToggle = () => {
+const ThemeToggle = ({className = ''}) => {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
     useEffect(() => {
@@ -14,7 +14,7 @@ const ThemeToggle = () => {
     };
 
     return (
-        <div className="btn theme-toggle" onClick={toggleTheme}>
+        <div className={`btn ${className}`} onClick={toggleTheme}>
             <i className={`fa-solid ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
             <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
         </div>
