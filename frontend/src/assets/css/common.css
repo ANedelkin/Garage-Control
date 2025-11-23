@@ -146,6 +146,13 @@ select,
     background: var(--solid4);
 }
 
+.icon-btn{
+     width: 100%; 
+     height:36px;
+     padding-top: 0;
+     padding-bottom: 0;
+}
+
 .select-wrapper {
     width: 220px;
     position: relative;

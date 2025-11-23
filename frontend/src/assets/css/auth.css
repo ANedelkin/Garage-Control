@@ -42,3 +42,25 @@ form {
 .background {
   background: var(--gradient);
 }
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border2);
+}
+
+.divider span {
+  margin: 0 10px;
+  font-size: 14px;
+  color: var(--text-clr2);
+  text-transform: uppercase;
+}

@@ -1,32 +1,27 @@
 import React, { useState, useEffect } from 'react';
-
 import '../../assets/css/common.css';
 import '../../assets/css/auth.css';
-import ThemeToggle from '../common/ThemeToggle.jsx';
-import EmailFormContent from './EmailFormContent.jsx';
+import AuthTemplate from './AuthTemplate.jsx';
 
 const LogInPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
-        //TODO: Login logic
+        // TODO: Login logic
+    };
+
+    const handleGoogle = () => {
+        // TODO: Add Google sign‑in logic
+    };
+
+    const handleMicrosoft = () => {
+        // TODO: Add Microsoft sign‑in logic
     };
 
     return (
-        <div className="background">
-            <div className="container">
-                <div className="tile">
-                    <h3 className="tile-header">Welcome Back</h3>
-                    <ThemeToggle />
-                    <form onSubmit={handleSubmit}>
-                        <EmailFormContent/>
-                        <div className="form-footer">
-                            <p className="lnk">No account yet? <a href="/signup">Create one!</a></p>
-                            <button type="submit" className="btn">Log in</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <AuthTemplate handlers={{ handleSubmit, handleGoogle, handleMicrosoft }}>
+            <p className="lnk">No account yet? <a href="/signup">Create one!</a></p>
+            <button type="submit" className="btn">Log In</button>
+        </AuthTemplate>
     );
 };
 
