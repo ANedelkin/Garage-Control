@@ -26,7 +26,7 @@ const Sidebar = ({ selection, open, onClose }) => {
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers' },
     { path: '/clients', icon: 'fa-user', label: 'Clients' },
-    { path: '/service-details', icon: 'fa-gear', label: 'Service settings' },
+    { path: '/service-details', icon: 'fa-gear', label: 'Service Details' },
     { path: '/finances', icon: 'fa-money-bill-trend-up', label: 'Finances' },
   ];
 
