@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import '../../assets/css/common.css';
 import '../../assets/css/auth.css';
+import '../../assets/css/common.css';
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
@@ -9,11 +9,11 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
     const [formData, setFormData] = useState({ email: '', password: '' });
 
     return (
-        <div className="background">
+        <main className="background">
+            <ThemeToggle />
             <div className="container">
                 <div className="tile">
                     <h3 className="tile-header">Welcome Back</h3>
-                    <ThemeToggle />
                     <form onSubmit={handleSubmit}>
                         <div className="form-section">
                             <label>Email</label>
@@ -43,7 +43,7 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
                             <span>OR</span>
                         </div>
 
-                        <div className="auth-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div className="auth-buttons">
                             <button className="btn icon-btn" onClick={handleGoogle}>
                                 <img src={GoogleIcon} alt="Google" />
                                 Continue with Google
@@ -56,7 +56,7 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
                     </form>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };
 

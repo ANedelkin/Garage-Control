@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LogInPage from './components/auth/LogIn'
 import SignUpPage from './components/auth/SignUp'
 
+import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial'
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -21,6 +23,12 @@ function App() {
             path="/signup"
             element={
               <SignUpPage/>
+            }
+          />
+          <Route
+            path="/service-details-initial"
+            element={
+              <ServiceDetailsInitial/>
             }
           />
         </Routes>
