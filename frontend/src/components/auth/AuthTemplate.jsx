@@ -5,23 +5,30 @@ import ThemeToggle from '../common/ThemeToggle.jsx';
 import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
 
-const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children }) => {
+const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
     const [formData, setFormData] = useState({ email: '', password: '' });
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        if (handlers?.handleSubmit) {
+            handlers.handleSubmit(e, formData);
+        }
+    };
 
     return (
         <main className="background">
-            <ThemeToggle className="theme-toggle"/>
+            <ThemeToggle className="theme-toggle" />
             <div className="container">
                 <div className="tile">
-                    <h3 className="tile-header">Welcome Back</h3>
-                    <form onSubmit={handleSubmit}>
+                    <h3 className="tile-header">{title}</h3>
+                    <form onSubmit={handleFormSubmit}>
                         <div className="form-section">
                             <label>Email</label>
                             <input
                                 type="email"
                                 placeholder="Enter email"
-                                // value={formData.email}
-                                // onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 required
                             />
                         </div>
@@ -30,8 +37,8 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
                             <input
                                 type="password"
                                 placeholder="Enter password"
-                                // value={formData.password}
-                                // onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 required
                             />
                         </div>
@@ -44,11 +51,11 @@ const AuthTemplate = ({ handleSubmit, handleGoogle, handleMicrosoft, children })
                         </div>
 
                         <div className="auth-buttons">
-                            <button className="btn icon-btn" onClick={handleGoogle}>
+                            <button type="button" className="btn icon-btn" onClick={handlers?.handleGoogle}>
                                 <img src={GoogleIcon} alt="Google" />
                                 Continue with Google
                             </button>
-                            <button className="btn icon-btn" onClick={handleMicrosoft}>
+                            <button type="button" className="btn icon-btn" onClick={handlers?.handleMicrosoft}>
                                 <img src={MicrosoftIcon} alt="Microsoft" />
                                 Continue with Microsoft
                             </button>
