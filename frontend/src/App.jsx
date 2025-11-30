@@ -32,7 +32,10 @@ function App() {
           <Route
             path="/service-details-initial"
             element={
-              <ServiceDetailsInitial/>
+              <>
+                <Header/>
+                <ServiceDetailsInitial/>
+              </>
             }
           />
           <Route

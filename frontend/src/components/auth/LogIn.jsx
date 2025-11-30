@@ -16,13 +16,8 @@ const LogInPage = () => {
         setError('');
 
         try {
-            const response = await authApi.login(formData.email, formData.password);
-
-            if (response.Success) {
-                navigate('/service-details-initial');
-            } else {
-                setError(response.Message || 'Login failed');
-            }
+            await authApi.login(formData.email, formData.password);
+            navigate('/service-details');
         } catch (err) {
             setError(err.message || 'An error occurred during login');
         } finally {

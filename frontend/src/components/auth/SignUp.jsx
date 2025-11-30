@@ -17,7 +17,7 @@ const SignUpPage = () => {
 
         try {
             await authApi.register(formData.email, formData.password);
-            navigate('/');
+            navigate('/service-details-initial');
         } catch (err) {
             setError(err.message);
         } finally {
