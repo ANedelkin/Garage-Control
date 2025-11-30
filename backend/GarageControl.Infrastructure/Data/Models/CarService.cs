@@ -12,9 +12,10 @@ namespace GarageControl.Infrastructure.Data.Models
         [MaxLength(CarServiceConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
         [Required]
-        [MaxLength(CarServiceConstants.addressMaxLength)]
+        [MaxLength(GenericConstants.addressMaxLength)]
         public string Address { get; set; } = null!;
-        [Required]
+        [MaxLength(CarServiceConstants.registrationNumberMaxLength)]
+        public string? RegistrationNumber { get; set; }
         public string BossId { get; set; } = null!;
         [ForeignKey(nameof(BossId))]
         public User Boss { get; set; } = null!;

@@ -18,7 +18,7 @@ namespace GarageControl.Infrastructure.Data.Models
         public string PhoneNumber { get; set; } = null!;
         [MaxLength(GenericConstants.emailMaxLength)]
         public string? Email { get; set; }
-        [MaxLength(GenericConstants.registrationNumberMaxLength)]
+        [MaxLength(ClientConstants.registrationNumberMaxLength)]
         public string? RegistrationNumber { get; set; }
         [MaxLength(GenericConstants.addressMaxLength)]
         public string? Address { get; set; }
