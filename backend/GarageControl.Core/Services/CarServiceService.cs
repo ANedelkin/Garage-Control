@@ -17,7 +17,7 @@ namespace GarageControl.Core.Services
         {
             await _repository.AddAsync<CarService>(new CarService
             {
-                Name = model.ServiceName,
+                Name = model.Name,
                 Address = model.Address,
                 RegistrationNumber = model.RegistrationNumber,
                 BossId = userId
@@ -31,7 +31,7 @@ namespace GarageControl.Core.Services
             CarService service =  await _repository.GetByIdAsync<CarService>(serviceId);
             return new ServiceVM
             {
-                ServiceName = service.Name,
+                Name = service.Name,
                 Address = service.Address,
                 RegistrationNumber = service.RegistrationNumber ?? string.Empty
             };
@@ -46,7 +46,7 @@ namespace GarageControl.Core.Services
                 return null;
             return new ServiceVM
             {
-                ServiceName = service.Name,
+                Name = service.Name,
                 Address = service.Address,
                 RegistrationNumber = service.RegistrationNumber ?? string.Empty
             };
@@ -55,7 +55,7 @@ namespace GarageControl.Core.Services
         public async Task UpdateServiceDetails(string serviceId, ServiceVM model)
         {
             CarService service = await _repository.GetByIdAsync<CarService>(serviceId);
-            service.Name = model.ServiceName;
+            service.Name = model.Name;
             service.Address = model.Address;
             service.RegistrationNumber = model.RegistrationNumber;
             await _repository.SaveChangesAsync();

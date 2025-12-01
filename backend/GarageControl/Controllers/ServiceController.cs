@@ -10,99 +10,61 @@ namespace GarageControl.Controllers
     [ApiController]
     public class ServiceController : ControllerBase
     {
-        private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
-
-        public ServiceController(IAuthService authService, ILogger<AuthController> logger)
+        private readonly ICarServiceService _carServiceService;
+        public ServiceController(ICarServiceService carServiceService)
         {
-            _authService = authService;
-            _logger = logger;
+            _carServiceService = carServiceService;
         }
-
-        [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] AuthVM model)
+        [HttpGet("has-service")]
+        public async Task<IActionResult> HasService()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var service = await _carServiceService.GetServiceDetailsByUser(userId);
+            if (service == null)
+            {
+                return Ok(new { hasService = false });
+            }
+            return Ok(new { hasService = true });
+        }
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] ServiceVM service)
         {
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors)
                                               .Select(e => e.ErrorMessage)
                                               .ToList();
-                _logger.LogWarning("Invalid signup model: {@Errors}", errors);
                 return BadRequest(new { message = "Invalid model", errors });
             }
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            await _carServiceService.CreateService(user?.Value, service);
 
-            var stat = await _authService.SignUp(model);
-
-            if (!stat.Success)
-            {
-                return BadRequest(stat);
-            }
-
-            return Ok(stat);
+            return Ok(new { message = "Service created successfully." });
         }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> LogIn([FromBody] AuthVM model)
+        [HttpGet("details")]
+        public async Task<IActionResult> Details()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var service = await _carServiceService.GetServiceDetailsByUser(userId);
+            if (service == null)
+            {
+                return NotFound(new { message = "Service not found." });
+            }
+            return Ok(service);
+        }
+        [HttpPut("edit")]
+        public async Task<IActionResult> Edit([FromBody] ServiceVM service)
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state: {ModelState}", ModelState);
-                return BadRequest(GetModelErrors());
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage)
+                                              .ToList();
+                return BadRequest(new { message = "Invalid model", errors });
             }
-
-            var response = await _authService.LogIn(model);
-
-            if (!response.Success)
-            {
-                _logger.LogWarning("Login failed: {Message}", response.Message);
-                return BadRequest(new { message = response.Message });
-            }
-
-            await _authService.SetAuthCookies(Response, response.Token, response.RefreshToken);
-
-            return Ok(new { response.Username, response.Token, response.RefreshToken, response.Message });
-        }
-
-        [HttpPost("logout")]
-        [Authorize]
-        public async Task<IActionResult> LogOut()
-        {
-            await _authService.LogOut(Request, Response);
-
-            return Ok();
-        }
-
-        [Authorize]
-        [HttpGet("checkAuth")]
-        public IActionResult CheckAuth()
-        {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (username == null)
-            {
-                return Unauthorized();
-            }
-
-            return Ok(new { username });
-        }
-
-        [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshToken()
-        {
-            var refreshRequest = await _authService.RefreshToken(Request, Response);
-
-            if (!refreshRequest.Success)
-            {
-                return Unauthorized(refreshRequest.Message);
-            }
-
-            await _authService.SetAuthCookies(Response, refreshRequest.Token, refreshRequest.RefreshToken);
-
-            return Ok(refreshRequest);
-        }
-        private List<string> GetModelErrors()
-        {
-            return ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            await _carServiceService.UpdateServiceDetails(userId, service);
+            return Ok(new { message = "Service edited successfully." });
         }
     }
 }

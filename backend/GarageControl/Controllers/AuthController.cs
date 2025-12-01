@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
+using GarageControl.Core.Services;
 
 namespace GarageControl.Controllers
 {
@@ -27,7 +28,6 @@ namespace GarageControl.Controllers
                 var errors = ModelState.Values.SelectMany(v => v.Errors)
                                               .Select(e => e.ErrorMessage)
                                               .ToList();
-                _logger.LogWarning("Invalid signup model: {@Errors}", errors);
                 return BadRequest(new { message = "Invalid model", errors });
             }
 

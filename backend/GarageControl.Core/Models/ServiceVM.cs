@@ -9,7 +9,7 @@ namespace GarageControl.Core.Models
         [Required]
         [MinLength(CarServiceConstants.nameMinLength)]
         [MaxLength(CarServiceConstants.nameMaxLength)]
-        public string ServiceName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         [Required]
         [MinLength(GenericConstants.addressMinLength)]
         [MaxLength(GenericConstants.addressMaxLength)]

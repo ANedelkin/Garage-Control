@@ -3,24 +3,18 @@ import '../../assets/css/common.css';
 
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import ServiceDetailsForm from './ServiceDetailsForm.jsx';
+import { carServiceApi } from '../../services/carServiceApi.js';
 
 const ServiceDetails = () => {
-  const [serviceData, setServiceData] = useState({
-    name: '',
-    address: '',
-    registrationNumber: '',
-    phoneNumber: ''
-  });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, formData) => {
     e.preventDefault();
-    // TODO: Implement service data submission logic
-    console.log('Service Info:', serviceData);
+    carServiceApi.edit(formData);
   };
 
   return (
     <main className="main">
-        <ServiceDetailsForm />
+        <ServiceDetailsForm handleSubmit={handleSubmit}/>
     </main>
   );
 };

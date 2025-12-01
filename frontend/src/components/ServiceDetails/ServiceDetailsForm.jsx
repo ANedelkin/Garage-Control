@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
 import '../../assets/css/common.css';
 
-const ServiceDetailsForm = () => {
+const ServiceDetailsForm = ({handleSubmit}) => {
     const [serviceData, setServiceData] = useState({
         name: '',
         address: '',
         registrationNumber: '',
-        phoneNumber: ''
     });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // TODO: Implement service data submission logic
-        // console.log(serviceData);
-    };
+    const handleFormSubmit = (e) => {
+        handleSubmit(e, serviceData);
+    }
 
     return (
         <div className="tile">
             <h3 className="tile-header">Service Information</h3>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleFormSubmit}>
                 <div className="form-section">
                     <label htmlFor="name">Service Name</label>
                     <input
@@ -52,19 +48,8 @@ const ServiceDetailsForm = () => {
                         required
                     />
                 </div>
-                <div className="form-section">
-                    <label htmlFor="phoneNumber">Phone Number</label>
-                    <input
-                        type="tel"
-                        id="phoneNumber"
-                        placeholder="Enter phone number"
-                        value={serviceData.phoneNumber}
-                        onChange={(e) => setServiceData({ ...serviceData, phoneNumber: e.target.value })}
-                        required
-                    />
-                </div>
                 <div className="form-footer">
-                    <button type="submit" className="btn">Submit</button>
+                    <button type="submit" className="btn">Done</button>
                 </div>
             </form>
         </div>

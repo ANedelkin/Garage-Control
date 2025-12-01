@@ -1,21 +1,10 @@
-const API_BASE_URL = 'https://localhost:5173/api/auth';
+import {request} from '../Utilities/request.js';
 
 export const authApi = {
     register: async (email, password) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/signup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ email, password }),
-            });
-            
+        try {      
+            const response = await request('POST', 'auth/signup', { email, password });      
             const data = await response.json();
-            
-            console.log(data.message);
-
             if (!response.ok) {
                 throw new Error(data.message || 'Registration failed');
             }
@@ -29,15 +18,7 @@ export const authApi = {
 
     login: async (email, password) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ email, password }),
-            });
-
+            const response = await request('POST', 'auth/login', { email, password });
             const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.message || 'Login failed');
@@ -51,11 +32,7 @@ export const authApi = {
 
     logout: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/logout`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-
+            const response = await request('POST', 'auth/logout');
             if (!response.ok) {
                 throw new Error('Logout failed');
             }
@@ -69,13 +46,8 @@ export const authApi = {
 
     refreshToken: async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/refresh`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-
+            const response = await request('POST', 'auth/refresh');
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error('Token refresh failed');
             }

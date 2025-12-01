@@ -32,6 +32,7 @@ builder.Services.AddDbContext<GarageControlDbContext>(options =>
 
 builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICarServiceService, CarServiceService>();
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)
                .AddEntityFrameworkStores<GarageControlDbContext>()
