@@ -1,9 +1,7 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
-using GarageControl.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GarageControl.Controllers
 {
@@ -12,12 +10,10 @@ namespace GarageControl.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _logger = logger;
         }
 
         [HttpPost("signup")]
@@ -25,84 +21,50 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors)
-                                              .Select(e => e.ErrorMessage)
-                                              .ToList();
-                return BadRequest(new { message = "Invalid model", errors });
+                return BadRequest(ModelState);
             }
 
-            var stat = await _authService.SignUp(model);
-
-            if (!stat.Success)
-            {
-                return BadRequest(stat);
-            }
-
-            return Ok(stat);
+            var result = await _authService.SignUp(model);
+            return Ok(result);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LogIn([FromBody] AuthVM model)
+        public async Task<IActionResult> Login([FromBody] AuthVM model)
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Invalid model state: {ModelState}", ModelState);
-                return BadRequest(GetModelErrors());
+                return BadRequest(ModelState);
             }
 
-            var response = await _authService.LogIn(model);
-
-            if (!response.Success)
+            var result = await _authService.LogIn(model);
+            
+            // Parse the result to set cookies
+            var jsonResult = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(result);
+            if (jsonResult.TryGetProperty("Success", out var successProp) && successProp.GetBoolean())
             {
-                _logger.LogWarning("Login failed: {Message}", response.Message);
-                return BadRequest(new { message = response.Message });
+                if (jsonResult.TryGetProperty("AccessToken", out var accessToken) &&
+                    jsonResult.TryGetProperty("RefreshToken", out var refreshToken))
+                {
+                    await _authService.SetAuthCookies(Response, accessToken.GetString()!, refreshToken.GetString()!);
+                }
             }
 
-            await _authService.SetAuthCookies(Response, response.Token, response.RefreshToken);
-
-            return Ok(new { response.Username, response.Token, response.RefreshToken, response.Message });
+            return Ok(result);
         }
 
-        [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> LogOut()
+        [Authorize]
+        public async Task<IActionResult> Logout()
         {
             await _authService.LogOut(Request, Response);
-
-            return Ok();
-        }
-
-        [Authorize]
-        [HttpGet("checkAuth")]
-        public IActionResult CheckAuth()
-        {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (username == null)
-            {
-                return Unauthorized();
-            }
-
-            return Ok(new { username });
+            return Ok(new { Success = true, Message = "Logged out successfully" });
         }
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken()
         {
-            var refreshRequest = await _authService.RefreshToken(Request, Response);
-
-            if (!refreshRequest.Success)
-            {
-                return Unauthorized(refreshRequest.Message);
-            }
-
-            await _authService.SetAuthCookies(Response, refreshRequest.Token, refreshRequest.RefreshToken);
-
-            return Ok(refreshRequest);
-        }
-        private List<string> GetModelErrors()
-        {
-            return ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            var result = await _authService.RefreshToken(Request, Response);
+            return Ok(result);
         }
     }
 }
