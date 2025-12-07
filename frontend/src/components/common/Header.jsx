@@ -1,5 +1,7 @@
 // src/components/common/Header.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../services/authApi.js';
 
 import '../../assets/css/common.css';
 import '../../assets/css/header.css';
@@ -7,6 +9,19 @@ import '../../assets/css/header.css';
 const Header = ({ onToggleSidebar }) => {
   const [services] = useState(["Main Street Garage", "Downtown Service", "AutoPro - East"]);
   const [selectedService, setSelectedService] = useState(services[0]);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    console.log('Logout clicked');
+    try {
+      await authApi.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still navigate even if API call fails, since we cleared localStorage
+      navigate('/login');
+    }
+  };
 
   return (
     <header className="header">
@@ -18,7 +33,7 @@ const Header = ({ onToggleSidebar }) => {
       </div>
       <div className="profile">
         <div className="profile-name">Genco Gencin</div>
-        <a className="fa-solid fa-right-from-bracket logout-icon" title="Log out" href="/"></a>
+        <a className="fa-solid fa-right-from-bracket logout-icon" title="Log out" onClick={handleLogout}></a>
       </div>
     </header>
   );

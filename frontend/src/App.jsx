@@ -1,14 +1,24 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import LogInPage from './components/auth/LogIn'
-import SignUpPage from './components/auth/SignUp'
+// Import your components
+import LogInPage from './components/auth/LogIn';
+import SignUpPage from './components/auth/SignUp';
+import Dashboard from './components/dashboard/Dashboard';
+import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
+import ServiceDetails from './components/ServiceDetails/ServiceDetails';
 
-import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial'
-import ServiceDetails from './components/ServiceDetails/ServiceDetails'
+import Header from './components/common/Header.jsx';
+import Sidebar from './components/common/Sidebar.jsx';
 
-import Header from './components/common/Header.jsx'
-import Sidebar from './components/common/Sidebar.jsx'
+// PrivateRoute component to check authentication
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -17,54 +27,38 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <LogInPage />
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <SignUpPage/>
-            }
-          />
-          <Route
-            path="/service-details-initial"
-            element={
-              <>
-                <Header/>
-                <ServiceDetailsInitial/>
-              </>
-            }
-          />
-          <Route
-            path="/service-details"
-            element={<LayoutWithHeader
-                        selection={5}
-                        sidebarOpen={sidebarOpen}
-                        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                        onCloseSidebar={() => setSidebarOpen(false)}
-                      >
-                        <ServiceDetails/>
-                      </LayoutWithHeader>}>
-          </Route>
+          <Route path="/login" element={<LogInPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+
+          <Route path="/service-details-initial" element={<PrivateRoute>
+            <Header />
+            <ServiceDetailsInitial />
+          </PrivateRoute>} />
+
+          <Route path="/" element={<PrivateRoute> <LayoutWithHeader selection={0}>
+            <Dashboard />
+          </LayoutWithHeader></PrivateRoute>} />
+
+          <Route path="/service-details" element={<PrivateRoute> <LayoutWithHeader selection={5}>
+            <ServiceDetails />
+          </LayoutWithHeader></PrivateRoute>} />
+
         </Routes>
       </BrowserRouter>
     </>
-  )
-}
-
-export default App
-
-function LayoutWithHeader({ selection, children, sidebarOpen, onToggleSidebar, onCloseSidebar }) {
-  return (
-    <>
-      <Header onToggleSidebar={onToggleSidebar} />
-      <div className="horizontal-layout">
-        <Sidebar selection={selection} open={sidebarOpen} onClose={onCloseSidebar} />
-        {children}
-      </div>
-    </>
   );
+
+  function LayoutWithHeader({ selection, children }) {
+    return (
+      <>
+        <Header onToggleSidebar={setSidebarOpen(!sidebarOpen)} />
+        <div className="horizontal-layout">
+          <Sidebar selection={selection} open={sidebarOpen} onClose={setSidebarOpen(false)} />
+          {children}
+        </div>
+      </>
+    );
+  }
 }
+
+export default App;

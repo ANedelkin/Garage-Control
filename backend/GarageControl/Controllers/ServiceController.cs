@@ -6,8 +6,9 @@ using GarageControl.Core.Models;
 
 namespace GarageControl.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     public class ServiceController : ControllerBase
     {
         private readonly ICarServiceService _carServiceService;
@@ -18,7 +19,7 @@ namespace GarageControl.Controllers
         [HttpGet("has-service")]
         public async Task<IActionResult> HasService()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var service = await _carServiceService.GetServiceDetailsByUser(userId);
             if (service == null)
             {
@@ -26,6 +27,7 @@ namespace GarageControl.Controllers
             }
             return Ok(new { hasService = true });
         }
+
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ServiceVM service)
         {
@@ -36,15 +38,21 @@ namespace GarageControl.Controllers
                                               .ToList();
                 return BadRequest(new { message = "Invalid model", errors });
             }
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            await _carServiceService.CreateService(user?.Value, service);
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "User not authenticated or token is invalid." });
+            }
+            
+            await _carServiceService.CreateService(userId, service);
 
             return Ok(new { message = "Service created successfully." });
         }
+
         [HttpGet("details")]
         public async Task<IActionResult> Details()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var service = await _carServiceService.GetServiceDetailsByUser(userId);
             if (service == null)
             {
@@ -62,7 +70,7 @@ namespace GarageControl.Controllers
                                               .ToList();
                 return BadRequest(new { message = "Invalid model", errors });
             }
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _carServiceService.UpdateServiceDetails(userId, service);
             return Ok(new { message = "Service edited successfully." });
         }

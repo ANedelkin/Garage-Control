@@ -63,8 +63,8 @@ namespace GarageControl.Controllers
             return Ok(new { response.Username, response.Token, response.RefreshToken, response.Message });
         }
 
-        [HttpPost("logout")]
         [Authorize]
+        [HttpPost("logout")]
         public async Task<IActionResult> LogOut()
         {
             await _authService.LogOut(Request, Response);

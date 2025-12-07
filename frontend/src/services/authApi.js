@@ -1,12 +1,17 @@
-import {request} from '../Utilities/request.js';
+import { request } from '../Utilities/request.js';
 
 export const authApi = {
     register: async (email, password) => {
-        try {      
-            const response = await request('POST', 'auth/signup', { email, password });      
+        try {
+            const response = await request('POST', 'auth/signup', { email, password });
             const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.message || 'Registration failed');
+            }
+
+            // Store token in localStorage
+            if (data.token) {
+                localStorage.setItem('accessToken', data.token);
             }
 
             return data;
@@ -23,6 +28,12 @@ export const authApi = {
             if (!response.ok) {
                 throw new Error(data.message || 'Login failed');
             }
+
+            // Store token in localStorage
+            if (data.token) {
+                localStorage.setItem('accessToken', data.token);
+            }
+
             return data;
         } catch (error) {
             console.error('Login error:', error);
@@ -31,17 +42,10 @@ export const authApi = {
     },
 
     logout: async () => {
-        try {
-            const response = await request('POST', 'auth/logout');
-            if (!response.ok) {
-                throw new Error('Logout failed');
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Logout error:', error);
-            throw error;
-        }
+        // Just clear the token from localStorage
+        // No need to call backend since we're using localStorage-based auth
+        localStorage.removeItem('accessToken');
+        return { success: true };
     },
 
     refreshToken: async () => {

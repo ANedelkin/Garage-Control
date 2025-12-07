@@ -15,7 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-// Add CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -58,7 +57,6 @@ builder.Services.AddAuthentication(o =>
         ClockSkew = TimeSpan.Zero
     };
     
-    // Also check cookies for JWT token
     o.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -86,7 +84,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

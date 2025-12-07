@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../assets/css/common.css';
+import { carServiceApi } from '../../services/carServiceApi.js';
 
-const ServiceDetailsForm = ({handleSubmit}) => {
-    const [serviceData, setServiceData] = useState({
-        name: '',
-        address: '',
-        registrationNumber: '',
-    });
+const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
+    const [serviceData, setServiceData] = useState(initialData);
+
+    // Update state when initialData changes (after API call completes)
+    useEffect(() => {
+        console.log('initialData changed:', initialData);
+        if (initialData) {
+            setServiceData(initialData);
+        }
+    }, [initialData]);
+
     const handleFormSubmit = (e) => {
         handleSubmit(e, serviceData);
     }
@@ -21,7 +27,7 @@ const ServiceDetailsForm = ({handleSubmit}) => {
                         type="text"
                         id="name"
                         placeholder="Enter service name"
-                        value={serviceData.name}
+                        value={serviceData ? serviceData.name : ''}
                         onChange={(e) => setServiceData({ ...serviceData, name: e.target.value })}
                         required
                     />
@@ -32,7 +38,7 @@ const ServiceDetailsForm = ({handleSubmit}) => {
                         type="text"
                         id="address"
                         placeholder="Enter address"
-                        value={serviceData.address}
+                        value={serviceData ? serviceData.address : ''}
                         onChange={(e) => setServiceData({ ...serviceData, address: e.target.value })}
                         required
                     />
@@ -43,7 +49,7 @@ const ServiceDetailsForm = ({handleSubmit}) => {
                         type="text"
                         id="registrationNumber"
                         placeholder="Enter registration number"
-                        value={serviceData.registrationNumber}
+                        value={serviceData ? serviceData.registrationNumber : ''}
                         onChange={(e) => setServiceData({ ...serviceData, registrationNumber: e.target.value })}
                         required
                     />

@@ -16,6 +16,7 @@ namespace GarageControl.Infrastructure.Data.Models
         public string Address { get; set; } = null!;
         [MaxLength(CarServiceConstants.registrationNumberMaxLength)]
         public string? RegistrationNumber { get; set; }
+        [Required]
         public string BossId { get; set; } = null!;
         [ForeignKey(nameof(BossId))]
         public User Boss { get; set; } = null!;

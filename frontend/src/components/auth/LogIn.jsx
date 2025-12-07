@@ -17,7 +17,7 @@ const LogInPage = () => {
 
         try {
             await authApi.login(formData.email, formData.password);
-            navigate('/service-details');
+            navigate('/');
         } catch (err) {
             setError(err.message || 'An error occurred during login');
         } finally {
