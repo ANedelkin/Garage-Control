@@ -1,4 +1,3 @@
-// src/components/common/Header.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/authApi.js';
@@ -18,7 +17,6 @@ const Header = ({ onToggleSidebar }) => {
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      // Still navigate even if API call fails, since we cleared localStorage
       navigate('/login');
     }
   };

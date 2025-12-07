@@ -38,6 +38,11 @@
         transform: translateX(0);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
     }
+
+    .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
 }
 
 .sidebar-overlay {
@@ -48,11 +53,6 @@
     visibility: hidden;
     transition: 0.3s ease;
     z-index: 100;
-}
-
-.sidebar-overlay.show {
-    opacity: 1;
-    visibility: visible;
 }
 
 .nav-item {

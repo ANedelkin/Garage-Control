@@ -41,7 +41,7 @@ const Sidebar = ({ selection, open, onClose }) => {
             </Link>
           ))}
         </nav>
-        <ThemeToggle/>
+        <ThemeToggle />
       </aside>
     </>
   );
