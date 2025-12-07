@@ -39,6 +39,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = "Invalid model", errors });
             }
             
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "User not authenticated or token is invalid." });

@@ -5,10 +5,10 @@ namespace GarageControl.Core.Contracts
 {
     public interface IAuthService
     {
-        Task<string> SignUp(AuthVM model);
-        Task<string> LogIn(AuthVM model);
+        Task<LoginResponse> SignUp(AuthVM model);
+        Task<LoginResponse> LogIn(AuthVM model);
         Task LogOut(HttpRequest request, HttpResponse response);
-        Task<string> RefreshToken(HttpRequest request, HttpResponse response);
+        Task<LoginResponse> RefreshToken(HttpRequest request, HttpResponse response);
         Task SetAuthCookies(HttpResponse response, string accessToken, string refreshToken);
     }
 }

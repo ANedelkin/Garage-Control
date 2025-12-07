@@ -38,15 +38,9 @@ namespace GarageControl.Controllers
 
             var result = await _authService.LogIn(model);
             
-            // Parse the result to set cookies
-            var jsonResult = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(result);
-            if (jsonResult.TryGetProperty("Success", out var successProp) && successProp.GetBoolean())
+            if (result.Success)
             {
-                if (jsonResult.TryGetProperty("AccessToken", out var accessToken) &&
-                    jsonResult.TryGetProperty("RefreshToken", out var refreshToken))
-                {
-                    await _authService.SetAuthCookies(Response, accessToken.GetString()!, refreshToken.GetString()!);
-                }
+                await _authService.SetAuthCookies(Response, result.Token, result.RefreshToken);
             }
 
             return Ok(result);
