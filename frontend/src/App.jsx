@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Import your components
 import LogInPage from './components/auth/LogIn';
 import SignUpPage from './components/auth/SignUp';
+
 import Dashboard from './components/dashboard/Dashboard';
-import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
+import Workers from './components/workers/Workers';
+import Activities from './components/orders/Activities';
 import ServiceDetails from './components/ServiceDetails/ServiceDetails';
+import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
+
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 
@@ -36,6 +40,16 @@ function App() {
     };
   }, []);
 
+  const routes = [
+    { path: '/', element: <Dashboard />},
+    { path: '/orders', element: <Dashboard /> },
+    { path: '/parts', element: <Dashboard />},
+    { path: '/workers', element: <Workers /> },
+    { path: '/activities', element: <Activities /> },
+    { path: '/clients', element: <Dashboard /> },
+    { path: '/service-details', element: <ServiceDetails /> },
+  ];
+
   return (
     <>
       <BrowserRouter>
@@ -53,19 +67,20 @@ function App() {
             <ServiceDetailsInitial />
           </LayoutWithHeader></PrivateRoute>} />
 
-          <Route path="/" element={<PrivateRoute><LayoutWithHeader
-            selection={0}
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}>
-            <Dashboard />
-          </LayoutWithHeader></PrivateRoute>} />
-
-          <Route path="/service-details" element={<PrivateRoute><LayoutWithHeader
-            selection={5}
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}>
-            <ServiceDetails />
-          </LayoutWithHeader></PrivateRoute>} />
+          {routes.map((route, i) => (
+            <Route
+              path={route.path}
+              element={
+                <PrivateRoute>
+                  <LayoutWithHeader
+                    selection={i}
+                    sidebarOpen={sidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                  >
+                    {route.element}
+                  </LayoutWithHeader>
+                </PrivateRoute>} />
+          ))}
 
         </Routes>
       </BrowserRouter>

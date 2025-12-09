@@ -1,0 +1,133 @@
+/* Activities Page Styling */
+
+.activities-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.activities-header .btn {
+  min-width: 125px;
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Activity Tile */
+.activity-tile {
+  background: var(--glass);
+  padding: 0px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  /* height: 110px; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.activity-tile:hover {
+  background: var(--solid4);  /* Hover effect for activity tile */
+}
+
+.activity-tile .activity-content {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+.activity-tile h3 {
+  font-size: 18px;
+  flex: 1; /* Allow name to take most space */
+}
+
+.activity-tile p {
+  font-size: 14px;
+  color: var(--text-clr2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .activity-tile .btn {
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--accent2);
+  color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+
+/* .activity-tile .btn:hover {
+  background: var(--accent3);
+} */
+
+/* .activity-tile .delete:hover {
+  background: red;
+} */
+
+/* Delete button: same style as in workers page */
+/* .activity-tile .btn.delete {
+  font-size: 14px;
+  padding: 6px;
+  background-color: transparent;
+  color: var(--text-clr2);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+
+.activity-tile .btn.delete i {
+  font-size: 16px;
+}
+
+.activity-tile .delete:hover {
+  color: red;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1000px) {
+  .activities-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .activities-header input,
+  .activities-header select,
+  .activities-header .btn {
+    width: 100%;
+  }
+
+  .activity-tile h3 {
+    font-size: 16px;
+  }
+
+  .activity-tile p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .activity-tile .btn {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .activity-tile {
+    padding: 16px;
+  }
+}

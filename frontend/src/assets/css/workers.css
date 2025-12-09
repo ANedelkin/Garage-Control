@@ -1,0 +1,124 @@
+/* Workers Page Styling */
+
+/* Header: search, filter, new worker */
+.workers-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.workers-header .btn {
+    min-width: 125px;
+}
+
+/* Table Styling */
+.tile table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tile table tbody tr {
+    cursor: pointer;
+    border-bottom: 0.5px solid var(--border2); /* Add white border between rows */
+}
+
+.tile table tbody tr:hover {
+    background-color: var(--solid4);
+}
+
+.tile table th,
+.tile table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border3);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Description takes remaining space */
+.tile table th.description,
+.tile table td.description {
+    width: 100%; /* fill remaining space */
+}
+
+/* Status badges */
+.status {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.status.all {
+    background: var(--all-orders);
+    color: var(--text-clr1);
+}
+
+.status.pending {
+    background: var(--pending-orders);
+    color: var(--text-clr1);
+}
+
+.status.inProgress {
+    background: var(--inprogress-orders);
+    color: var(--text-clr1);
+}
+
+/* Action button */
+.tile .delete:hover {
+    color: red;
+}
+
+/* Footer */
+footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-clr2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1000px) {
+    .workers-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .workers-header input,
+    .workers-header select,
+    .workers-header .btn {
+        width: 100%;
+    }
+
+    .tile table th,
+    .tile table td {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 600px) {
+    .workers-header input,
+    .workers-header select {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .tile table th,
+    .tile table td {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    .tile .btn-delete {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+}
