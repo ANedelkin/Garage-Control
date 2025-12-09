@@ -26,7 +26,7 @@ const Workers = () => {
     return (
         <main className="main">
             {/* Header: search + filter + new worker */}
-            <div className="orders-header">
+            <div className="workers-header">
                 <input
                     type="text"
                     placeholder="Search workers..."
