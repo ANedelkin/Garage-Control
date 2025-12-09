@@ -7,7 +7,9 @@ import SignUpPage from './components/auth/SignUp';
 
 import Dashboard from './components/dashboard/Dashboard';
 import Workers from './components/workers/Workers';
+import EditWorker from './components/workers/EditWorker';
 import Activities from './components/orders/Activities';
+import EditActivity from './components/orders/EditActivity.jsx';
 import ServiceDetails from './components/ServiceDetails/ServiceDetails';
 import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
 
@@ -25,6 +27,7 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [curSelection, setCurSelection] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,13 +44,18 @@ function App() {
   }, []);
 
   const routes = [
-    { path: '/', element: <Dashboard />},
-    { path: '/orders', element: <Dashboard /> },
-    { path: '/parts', element: <Dashboard />},
-    { path: '/workers', element: <Workers /> },
-    { path: '/activities', element: <Activities /> },
-    { path: '/clients', element: <Dashboard /> },
-    { path: '/service-details', element: <ServiceDetails /> },
+    { path: '/', element: <Dashboard />, children: [] },
+    { path: '/orders', element: <Dashboard />, children: [] },
+    { path: '/parts', element: <Dashboard />, children: [] },
+    {
+      path: '/workers', element: <Workers />, children: [
+        { path: '/new', element: <EditWorker /> }
+    ] },
+    { path: '/activities', element: <Activities />, children: [
+      { path: '/new', element: <EditActivity id="" /> }
+    ] },
+    { path: '/clients', element: <Dashboard />, children: [] },
+    { path: '/service-details', element: <ServiceDetails />, children: [] },
   ];
 
   return (
@@ -60,7 +68,6 @@ function App() {
 
           {/* Private Routes */}
           <Route path="/service-details-initial" element={<PrivateRoute><LayoutWithHeader
-            selection={0}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}>
             <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
@@ -68,6 +75,7 @@ function App() {
           </LayoutWithHeader></PrivateRoute>} />
 
           {routes.map((route, i) => (
+            <>
             <Route
               path={route.path}
               element={
@@ -79,7 +87,28 @@ function App() {
                   >
                     {route.element}
                   </LayoutWithHeader>
-                </PrivateRoute>} />
+                </PrivateRoute>
+              }
+            />
+            {route.children.map(childRoute => (
+                <Route
+                  path={route.path + childRoute.path}
+                  element={
+                    <PrivateRoute>
+                      <LayoutWithHeader
+                        selection={i}
+                        sidebarOpen={sidebarOpen}
+                        setSidebarOpen={setSidebarOpen}
+                      >
+                        {childRoute.element}
+                      </LayoutWithHeader>
+                    </PrivateRoute>
+                  }
+                />
+              ))
+            }
+          </>
+
           ))}
 
         </Routes>

@@ -25,7 +25,6 @@
   padding: 0px 18px;
   border-radius: 12px;
   border: 1px solid var(--border2);
-  /* height: 110px; */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -35,7 +34,7 @@
 }
 
 .activity-tile:hover {
-  background: var(--solid4);  /* Hover effect for activity tile */
+  background: var(--solid4); /* Hover effect for activity tile */
 }
 
 .activity-tile .activity-content {
@@ -58,45 +57,172 @@
   white-space: nowrap;
 }
 
-/* .activity-tile .btn {
-  font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background-color: var(--accent2);
-  color: white;
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-
-/* .activity-tile .btn:hover {
-  background: var(--accent3);
-} */
-
-/* .activity-tile .delete:hover {
-  background: red;
-} */
-
-/* Delete button: same style as in workers page */
-/* .activity-tile .btn.delete {
-  font-size: 14px;
-  padding: 6px;
-  background-color: transparent;
-  color: var(--text-clr2);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-
 .activity-tile .btn.delete i {
   font-size: 16px;
 }
 
 .activity-tile .delete:hover {
   color: red;
+}
+
+/* Form */
+form {
+  width: fit-content;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  width: 100%;
+}
+
+.form-row .form-section.ratioed:nth-of-type(1) {
+  flex: 1;
+}
+
+/* Larger, fixed description box */
+.description-large {
+  height: 160px; /* Taller */
+  width: 480px;  /* Wider */
+  resize: none;  /* Cannot resize */
+}
+
+/* Color button */
+.color-button {
+  width: 100px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .5px;
+}
+
+.color-button:hover {
+  opacity: 0.85;
+}
+
+/* Table styling */
+.tile table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tile table th,
+.tile table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border3);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile table tbody tr {
+  cursor: pointer;
+  border-bottom: 0.5px solid var(--border2);
+}
+
+.tile table tbody tr:hover {
+  background-color: var(--solid4);
+}
+
+.tile .delete:hover {
+  color: red;
+}
+
+/* Activity Edit Tile: left and right halves */
+.activity-edit-tile {
+  display: flex;
+  gap: 24px;
+  flex-wrap: nowrap;
+  align-items: flex-start; /* align top */
+}
+
+.activity-edit-tile .form-left,
+.activity-edit-tile .form-right {
+  flex: 1; /* equal width */
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* optional minimum height */
+}
+
+/* Mechanics section styling */
+.form-right label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+/* Input + Add button row inside mechanics */
+.form-right .mechanics-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/* Mechanics list container */
+.mechanics-list-container {
+  flex: 1; /* take all remaining vertical space */
+  background: var(--solid3); /* like text input background */
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Placeholder text if empty */
+.mechanics-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  color: var(--text-clr2);
+}
+
+/* Mechanics table styling */
+.mechanics-table {
+  width: 100%;
+  border-collapse: collapse;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mechanics-table tbody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.mechanics-table tbody tr {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mechanics-table tbody tr:hover {
+  background-color: var(--solid4);
+}
+
+.mechanics-table tbody tr .btn-delete {
+  margin-left: auto;
+}
+
+/* Mobile responsive: Stack fields */
+@media (max-width: 700px) {
+  .form-row {
+    flex-direction: column;
+  }
 }
 
 /* Responsive adjustments */
@@ -121,6 +247,7 @@
   }
 }
 
+/* Mobile adjustments for small screens */
 @media (max-width: 600px) {
   .activity-tile .btn {
     font-size: 12px;
@@ -129,5 +256,12 @@
 
   .activity-tile {
     padding: 16px;
+  }
+}
+
+/* Stack left/right halves for narrow screens */
+@media (max-width: 900px) {
+  .activity-edit-tile {
+    flex-direction: column;
   }
 }
