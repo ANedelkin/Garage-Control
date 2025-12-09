@@ -27,7 +27,7 @@ const Header = ({ onToggleSidebar }) => {
         <button className="hamburger" onClick={onToggleSidebar}>
           <i className="fa-solid fa-bars"></i>
         </button>
-        <h1>GarageFlow</h1>
+        <h1>GarageControl</h1>
       </div>
       <div className="profile">
         <div className="profile-name">Genco Gencin</div>
