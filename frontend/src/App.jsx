@@ -10,8 +10,8 @@ import Workers from './components/workers/Workers';
 import EditWorker from './components/workers/EditWorker';
 import ServiceDetails from './components/ServiceDetails/ServiceDetails';
 import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
-import Activities from './components/orders/Activities';
-import EditActivity from './components/orders/EditActivity.jsx';
+import JobTypes from './components/orders/JobTypes';
+import EditJobType from './components/orders/EditJobType.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -53,8 +53,8 @@ function App() {
       ]
     },
     {
-      path: '/activities', element: <Activities />, children: [
-        { path: '/new', element: <EditActivity id="" /> }
+      path: '/job-types', element: <JobTypes />, children: [
+        { path: '/new', element: <EditJobType id="" /> }
       ]
     },
     { path: '/clients', element: <Dashboard />, children: [] },

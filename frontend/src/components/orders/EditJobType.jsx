@@ -1,26 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../../assets/css/activities.css';
-import { activityApi } from '../../services/activityApi.js';
+import '../../assets/css/job-types.css';
+import { jobTypeApi } from '../../services/jobTypeApi.js';
 
-const EditActivity = ({ id = undefined }) => {
-  const [activityData, setActivityData] = useState(null);
+const EditJobType = ({ id = undefined }) => {
+  const [jobTypeData, setJobTypeData] = useState(null);
   const [isNew, setIsNew] = useState(id === '');
   const [newMechanic, setNewMechanic] = useState('');
   const colorInputRef = useRef(null);
 
   useEffect(() => {
     if (!isNew) {
-      activityApi
-        .getActivity(id)
+      jobTypeApi
+        .getJobType(id)
         .then((res) => {
           res.id = id;
-          setActivityData(res);
+          setJobTypeData(res);
         })
         .catch((err) => {
-          console.error('Error fetching activity details:', err);
+          console.error('Error fetching job type details:', err);
         });
     } else {
-      setActivityData({
+      setJobTypeData({
         name: '',
         description: '',
         color: '#000000',
@@ -31,7 +31,7 @@ const EditActivity = ({ id = undefined }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    activityApi.editActivity(activityData);
+    jobTypeApi.editJobType(jobTypeData);
   };
 
   const openColorPicker = () => {
@@ -40,39 +40,39 @@ const EditActivity = ({ id = undefined }) => {
 
   const handleAddMechanic = () => {
     if (newMechanic.trim() === '') return;
-    setActivityData({
-      ...activityData,
-      mechanics: [...activityData.mechanics, newMechanic.trim()],
+    setJobTypeData({
+      ...jobTypeData,
+      mechanics: [...jobTypeData.mechanics, newMechanic.trim()],
     });
     setNewMechanic('');
   };
 
   const handleDeleteMechanic = (index) => {
-    const updated = [...activityData.mechanics];
+    const updated = [...jobTypeData.mechanics];
     updated.splice(index, 1);
-    setActivityData({ ...activityData, mechanics: updated });
+    setJobTypeData({ ...jobTypeData, mechanics: updated });
   };
 
-  if (!activityData) return <div>Loading...</div>;
+  if (!jobTypeData) return <div>Loading...</div>;
 
   return (
     <main className="main container">
       <div className="tile">
-        <h3 className="tile-header">Activity Information</h3>
-        <form onSubmit={handleFormSubmit}>
+        <h3 className="tile-header">Job Type Information</h3>
+        <form onSubmit={handleFormSubmit} className="job-type-form">
           <div className="form-row form-main">
 
             <div className="form-left">
               <div className="form-row">
                 <div className="form-section form-section-name">
-                  <label htmlFor="name">Activity Name</label>
+                  <label htmlFor="name">Job Type Name</label>
                   <input
                     type="text"
                     id="name"
-                    placeholder="Enter activity name"
-                    value={activityData.name}
+                    placeholder="Enter job type name"
+                    value={jobTypeData.name}
                     onChange={(e) =>
-                      setActivityData({ ...activityData, name: e.target.value })
+                      setJobTypeData({ ...jobTypeData, name: e.target.value })
                     }
                   />
                 </div>
@@ -82,9 +82,9 @@ const EditActivity = ({ id = undefined }) => {
                   <input
                     ref={colorInputRef}
                     type="color"
-                    value={activityData.color}
+                    value={jobTypeData.color}
                     onChange={(e) =>
-                      setActivityData({ ...activityData, color: e.target.value })
+                      setJobTypeData({ ...jobTypeData, color: e.target.value })
                     }
                     style={{ display: 'none' }}
                   />
@@ -93,13 +93,13 @@ const EditActivity = ({ id = undefined }) => {
                     className="color-button"
                     onClick={() => colorInputRef.current.click()}
                     style={{
-                      backgroundColor: activityData.color,
+                      backgroundColor: jobTypeData.color,
                       color: '#fff',
                       border: '1px solid var(--border2)',
                       textTransform: 'uppercase',
                     }}
                   >
-                    {activityData.color}
+                    {jobTypeData.color}
                   </button>
                 </div>
               </div>
@@ -109,10 +109,10 @@ const EditActivity = ({ id = undefined }) => {
                 <textarea
                   id="description"
                   className="description"
-                  placeholder="Enter activity description"
-                  value={activityData.description}
+                  placeholder="Enter job type description"
+                  value={jobTypeData.description}
                   onChange={(e) =>
-                    setActivityData({ ...activityData, description: e.target.value })
+                    setJobTypeData({ ...jobTypeData, description: e.target.value })
                   }
                 />
               </div>
@@ -134,9 +134,9 @@ const EditActivity = ({ id = undefined }) => {
                     className="btn"
                     onClick={() => {
                       if (!newMechanic.trim()) return;
-                      setActivityData({
-                        ...activityData,
-                        mechanics: [...activityData.mechanics, newMechanic.trim()],
+                      setJobTypeData({
+                        ...jobTypeData,
+                        mechanics: [...jobTypeData.mechanics, newMechanic.trim()],
                       });
                       setNewMechanic('');
                     }}
@@ -146,14 +146,14 @@ const EditActivity = ({ id = undefined }) => {
                 </div>
 
                 <div className="mechanics-list-container max-height">
-                  {activityData.mechanics.length === 0 ? (
+                  {jobTypeData.mechanics.length === 0 ? (
                     <div className="mechanics-empty">
-                      no mechanics assigned to this activity
+                      no mechanics assigned to this job type
                     </div>
                   ) : (
                     <table className="mechanics-table">
                       <tbody>
-                        {activityData.mechanics.map((m, i) => (
+                        {jobTypeData.mechanics.map((m, i) => (
                           <tr key={i}>
                             <td>{m}</td>
                             <td>
@@ -161,10 +161,10 @@ const EditActivity = ({ id = undefined }) => {
                                 type="button"
                                 className="btn delete"
                                 onClick={() => {
-                                  const updated = activityData.mechanics.filter(
+                                  const updated = jobTypeData.mechanics.filter(
                                     (_, idx) => idx !== i
                                   );
-                                  setActivityData({ ...activityData, mechanics: updated });
+                                  setJobTypeData({ ...jobTypeData, mechanics: updated });
                                 }}
                               >
                                 <i className="fa-solid fa-trash"></i>
@@ -193,4 +193,4 @@ const EditActivity = ({ id = undefined }) => {
   );
 };
 
-export default EditActivity;
+export default EditJobType;

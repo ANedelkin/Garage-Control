@@ -1,14 +1,14 @@
-.activity-list {
+.job-type-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.activity-content {
+.job-type-content {
   flex: 1;
 }
 
-.form {
+.job-type-form {
   width: 800px;
 }
 
@@ -129,14 +129,14 @@
 }
 
 @media (max-width: 1000px) {
-  .activities-header {
+  .job-types-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .activities-header input,
-  .activities-header select,
-  .activities-header .btn {
+  .job-types-header input,
+  .job-types-header select,
+  .job-types-header .btn {
     width: 100%;
   }
 }

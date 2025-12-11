@@ -19,7 +19,7 @@ const Sidebar = ({ selection, open, onClose }) => {
     { path: '/orders', icon: 'fa-list-check', label: 'Orders' },
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers' },
-    { path: '/activities', icon: 'fa-gear', label: 'Activities' },
+    { path: '/job-types', icon: 'fa-gear', label: 'Job Types' },
     { path: '/clients', icon: 'fa-user', label: 'Clients' },
     { path: '/service-details', icon: 'fa-gear', label: 'Service Details' },
   ];

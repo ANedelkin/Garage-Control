@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Dropdown from '../common/Dropdown';  // Assuming you're using a common Dropdown component
+import Dropdown from '../common/Dropdown';
 import '../../assets/css/common.css';
-import '../../assets/css/activities.css';
+import '../../assets/css/job-types.css';
 
-const Activities = () => {
+const JobTypes = () => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Sample activities data
-  const activities = [
+  // Sample job types data
+  const jobTypes = [
     { name: 'Inspection', description: 'Routine checkup of vehicle parts', color: '#ffb74d' },
     { name: 'Repair', description: 'Fixing vehicle components', color: '#81c784' },
     { name: 'Maintenance', description: 'Oil change and other fluid replacements', color: '#64b5f6' },
     { name: 'Detailing', description: 'Cleaning and polishing vehicles', color: '#f06292' },
   ];
 
-  const filteredActivities = activities.filter(activity =>
-    (filter === 'all' || activity.name.toLowerCase().includes(filter.toLowerCase())) &&
-    (activity.name.toLowerCase().includes(search.toLowerCase()) ||
-      activity.description.toLowerCase().includes(search.toLowerCase()))
+  const filteredJobTypes = jobTypes.filter(jobType =>
+    (filter === 'all' || jobType.name.toLowerCase().includes(filter.toLowerCase())) &&
+    (jobType.name.toLowerCase().includes(search.toLowerCase()) ||
+      jobType.description.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -28,7 +28,7 @@ const Activities = () => {
       <div className="header">
         <input
           type="text"
-          placeholder="Search activities..."
+          placeholder="Search job types..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -39,21 +39,21 @@ const Activities = () => {
           <option value="maintenance">Maintenance</option>
           <option value="detailing">Detailing</option>
         </Dropdown>
-        <Link to="/activities/new" className="btn">+ New Activity</Link>
+        <Link to="/job-types/new" className="btn">+ New Job Type</Link>
       </div>
 
-      {/* Activities List */}
-      <div className="activity-list">
-        {filteredActivities.map((activity, index) => (
+      {/* Job Types List */}
+      <div className="job-type-list">
+        {filteredJobTypes.map((jobType, index) => (
           <Link
-            to={`/activities/${activity.name.toLowerCase()}`} // Example routing to activity details page
+            to={`/job-types/${jobType.name.toLowerCase()}`}
             key={index}
             className="tile horizontal"
-            style={{ borderLeft: `5px solid ${activity.color}` }}
+            style={{ borderLeft: `5px solid ${jobType.color}` }}
           >
-            <div className="activity-content">
-              <h3>{activity.name}</h3>
-              <p>{activity.description}</p>
+            <div className="job-type-content">
+              <h3>{jobType.name}</h3>
+              <p>{jobType.description}</p>
             </div>
             <button className="icon-btn delete">
               <i className="fa-solid fa-trash"></i>
@@ -62,9 +62,9 @@ const Activities = () => {
         ))}
       </div>
 
-      <footer>GarageFlow — Activities Management</footer>
+      <footer>GarageFlow — Job Types Management</footer>
     </main>
   );
 };
 
-export default Activities;
+export default JobTypes;
