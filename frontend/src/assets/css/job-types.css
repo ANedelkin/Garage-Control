@@ -9,7 +9,7 @@
 }
 
 .job-type-form {
-  width: 800px;
+  width: fit-content;
 }
 
 .form-main {
@@ -72,6 +72,7 @@
   flex-direction: column;
   overflow-y: auto;
   min-height: 0;
+  width: 300px;
 }
 
 .form-right .form-section {

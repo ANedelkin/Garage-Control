@@ -119,7 +119,7 @@ const EditJobType = ({ id = undefined }) => {
             </div>
 
             <div className="form-right">
-              <div className="form-section max-height">
+              <div className="form-section max-height max-width">
                 <label>Mechanics</label>
 
                 <div className="mechanics-input-row">
@@ -148,7 +148,7 @@ const EditJobType = ({ id = undefined }) => {
                 <div className="mechanics-list-container max-height">
                   {jobTypeData.mechanics.length === 0 ? (
                     <div className="mechanics-empty">
-                      no mechanics assigned to this job type
+                      no mechanics assigned
                     </div>
                   ) : (
                     <table className="mechanics-table">
