@@ -72,12 +72,6 @@ body {
     left: 16px;
 }
 
-form {
-    width: 375px;
-    margin-top: 10px;
-    margin-bottom: 0;
-}
-
 .form-section {
     margin-bottom: 20px;
 }
@@ -114,10 +108,22 @@ a {
     text-decoration: none;
 }
 
-.horizontal-layout {
-    display: flex;
+.work-area{
     height: calc(100vh - 64px);
+}
+
+.vertical {
+    display: flex;
     overflow: hidden;
+    flex-direction: column;
+}
+.horizontal {
+    display: flex;
+    overflow: hidden;
+    flex-direction: row;
+}
+.max-height {
+    flex-grow: 1;
 }
 
 .main {
@@ -144,9 +150,6 @@ a {
     border-radius: 12px;
     border: 1px solid var(--border2);
     min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 .tile-header {
@@ -154,11 +157,7 @@ a {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 10px;
-}
-
-.tile-header h3 {
-    margin: 0;
+    margin-bottom: 20px;
 }
 
 .tile label {
@@ -245,6 +244,23 @@ select option {
     padding: 8px;
     border: none;
 }
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.header .btn {
+  width: 175px;
+}
+
+.delete:hover {
+    color: red;
+}
+
 
 @media (max-width: 1500px) {
     .main {

@@ -65,7 +65,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="tile chart-card">
-                    <h3>Orders completed — last 30 days</h3>
+                    <h3 classname="tile-header">Orders completed — last 30 days</h3>
                     <canvas ref={chartRef} />
                 </div>
 

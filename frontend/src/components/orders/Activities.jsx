@@ -25,7 +25,7 @@ const Activities = () => {
   return (
     <main className="main">
       {/* Header: Search, Filter */}
-      <div className="activities-header">
+      <div className="header">
         <input
           type="text"
           placeholder="Search activities..."
@@ -48,7 +48,7 @@ const Activities = () => {
           <Link 
             to={`/activities/${activity.name.toLowerCase()}`} // Example routing to activity details page
             key={index}
-            className="tile" 
+            className="tile horizontal" 
             style={{ borderLeft: `5px solid ${activity.color}` }}
           >
             <div className="activity-content">

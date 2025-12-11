@@ -60,14 +60,11 @@ const EditActivity = ({ id = undefined }) => {
       <div className="tile">
         <h3 className="tile-header">Activity Information</h3>
         <form onSubmit={handleFormSubmit}>
-          {/* Left + Right halves */}
-          <div className="activity-edit-tile">
+          <div className="form-row form-main">
 
-            {/* Left side */}
             <div className="form-left">
-              {/* Example: Name + Color + Description */}
               <div className="form-row">
-                <div className="form-section ratioed">
+                <div className="form-section form-section-name">
                   <label htmlFor="name">Activity Name</label>
                   <input
                     type="text"
@@ -80,7 +77,7 @@ const EditActivity = ({ id = undefined }) => {
                   />
                 </div>
 
-                <div className="form-section ratioed">
+                <div className="form-section">
                   <label>Color</label>
                   <input
                     ref={colorInputRef}
@@ -107,11 +104,11 @@ const EditActivity = ({ id = undefined }) => {
                 </div>
               </div>
 
-              <div className="form-section">
+              <div className="form-section max-height">
                 <label htmlFor="description">Description</label>
                 <textarea
                   id="description"
-                  className="description-large"
+                  className="description"
                   placeholder="Enter activity description"
                   value={activityData.description}
                   onChange={(e) =>
@@ -121,64 +118,64 @@ const EditActivity = ({ id = undefined }) => {
               </div>
             </div>
 
-            {/* Right side */}
             <div className="form-right">
-              <label>Mechanics</label>
+              <div className="form-section max-height">
+                <label>Mechanics</label>
 
-              {/* Input + Add button */}
-              <div className="mechanics-input-row">
-                <input
-                  type="text"
-                  placeholder="Enter mechanic name"
-                  value={newMechanic}
-                  onChange={(e) => setNewMechanic(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!newMechanic.trim()) return;
-                    setActivityData({
-                      ...activityData,
-                      mechanics: [...activityData.mechanics, newMechanic.trim()],
-                    });
-                    setNewMechanic('');
-                  }}
-                >
-                  Add
-                </button>
-              </div>
+                <div className="mechanics-input-row">
+                  <input
+                    type="text"
+                    placeholder="Enter mechanic name"
+                    value={newMechanic}
+                    onChange={(e) => setNewMechanic(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      if (!newMechanic.trim()) return;
+                      setActivityData({
+                        ...activityData,
+                        mechanics: [...activityData.mechanics, newMechanic.trim()],
+                      });
+                      setNewMechanic('');
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
 
-              {/* Mechanics list */}
-              <div className="mechanics-list-container">
-                {activityData.mechanics.length === 0 ? (
-                  <div className="mechanics-empty">
-                    no mechanics assigned to this activity
-                  </div>
-                ) : (
-                  <table className="mechanics-table">
-                    <tbody>
-                      {activityData.mechanics.map((m, i) => (
-                        <tr key={i}>
-                          <td>{m}</td>
-                          <td>
-                            <button
-                              type="button"
-                              className="btn-delete"
-                              onClick={() => {
-                                const updated = activityData.mechanics.filter(
-                                  (_, idx) => idx !== i
-                                );
-                                setActivityData({ ...activityData, mechanics: updated });
-                              }}
-                            >
-                              <i className="fa-solid fa-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                <div className="mechanics-list-container max-height">
+                  {activityData.mechanics.length === 0 ? (
+                    <div className="mechanics-empty">
+                      no mechanics assigned to this activity
+                    </div>
+                  ) : (
+                    <table className="mechanics-table">
+                      <tbody>
+                        {activityData.mechanics.map((m, i) => (
+                          <tr key={i}>
+                            <td>{m}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="btn delete"
+                                onClick={() => {
+                                  const updated = activityData.mechanics.filter(
+                                    (_, idx) => idx !== i
+                                  );
+                                  setActivityData({ ...activityData, mechanics: updated });
+                                }}
+                              >
+                                <i className="fa-solid fa-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -22,7 +22,7 @@ const Header = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="header">
+    <header>
       <div className="brand">
         <button className="hamburger" onClick={onToggleSidebar}>
           <i className="fa-solid fa-bars"></i>

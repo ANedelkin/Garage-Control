@@ -123,7 +123,7 @@ function LayoutWithHeader({ selection, children, sidebarOpen, setSidebarOpen }) 
   return (
     <>
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="horizontal-layout">
+      <div className="horizontal work-area">
         <Sidebar selection={selection} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {children}
       </div>

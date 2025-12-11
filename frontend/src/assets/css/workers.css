@@ -1,20 +1,3 @@
-/* Workers Page Styling */
-
-/* Header: search, filter, new worker */
-.workers-header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-.workers-header .btn {
-    min-width: 125px;
-}
-
-/* Table Styling */
 .tile table {
     table-layout: fixed;
     width: 100%;
@@ -23,7 +6,7 @@
 
 .tile table tbody tr {
     cursor: pointer;
-    border-bottom: 0.5px solid var(--border2); /* Add white border between rows */
+    border-bottom: 0.5px solid var(--border2);
 }
 
 .tile table tbody tr:hover {
@@ -41,63 +24,17 @@
     white-space: nowrap;
 }
 
-/* Description takes remaining space */
 .tile table th.description,
 .tile table td.description {
-    width: 100%; /* fill remaining space */
+    width: 100%; 
 }
-
-/* Status badges */
-.status {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: capitalize;
-    display: inline-block;
-}
-
-.status.all {
-    background: var(--all-orders);
-    color: var(--text-clr1);
-}
-
-.status.pending {
-    background: var(--pending-orders);
-    color: var(--text-clr1);
-}
-
-.status.inProgress {
-    background: var(--inprogress-orders);
-    color: var(--text-clr1);
-}
-
-/* Action button */
-.tile .delete:hover {
-    color: red;
-}
-
-/* Footer */
 footer {
     margin-top: 20px;
     text-align: center;
     font-size: 12px;
     color: var(--text-clr2);
 }
-
-/* Responsive adjustments */
 @media (max-width: 1000px) {
-    .workers-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .workers-header input,
-    .workers-header select,
-    .workers-header .btn {
-        width: 100%;
-    }
-
     .tile table th,
     .tile table td {
         font-size: 13px;
@@ -105,11 +42,6 @@ footer {
 }
 
 @media (max-width: 600px) {
-    .workers-header input,
-    .workers-header select {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
 
     .tile table th,
     .tile table td {
@@ -124,7 +56,7 @@ footer {
 }
 
 /* Edit Worker Page */
-.edit-worker-page {
+/* .edit-worker-page {
   padding: 20px;
 }
 
@@ -143,8 +75,8 @@ footer {
   padding: 8px;
   margin-top: 5px;
   width: 200px;
-}
-
+} */
+/* 
 button {
   padding: 10px 15px;
   border-radius: 8px;
@@ -152,13 +84,13 @@ button {
   color: inherit;
   border: 1px solid var(--border2);
   cursor: pointer;
-}
+} */
 
-button:hover {
+/* button:hover {
   background-color: var(--solid4);
-}
+} */
 
-.leave-popup {
+/* .leave-popup {
   background: var(--glass);
   padding: 20px;
   border-radius: 10px;
@@ -168,4 +100,4 @@ button:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
-}
+} */
