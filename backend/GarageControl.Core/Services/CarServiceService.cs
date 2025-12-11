@@ -28,7 +28,7 @@ namespace GarageControl.Core.Services
 
         public async Task<ServiceVM> GetServiceDetails(int serviceId)
         {
-            CarService service = await _repository.GetByIdAsync<CarService>(serviceId);
+            CarService service =  await _repository.GetByIdAsync<CarService>(serviceId);
             return new ServiceVM
             {
                 Name = service.Name,
@@ -39,7 +39,7 @@ namespace GarageControl.Core.Services
 
         public async Task<ServiceVM?> GetServiceDetailsByUser(string userId)
         {
-            CarService? service = await _repository.GetAllAsNoTrackingAsync<CarService>()
+            CarService? service =  await _repository.GetAllAsNoTrackingAsync<CarService>()
                                                    .Where(s => s.BossId == userId)
                                                    .FirstOrDefaultAsync();
             if (service == null)
@@ -52,11 +52,9 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task UpdateServiceDetails(string ownerId, ServiceVM model)
+        public async Task UpdateServiceDetails(string serviceId, ServiceVM model)
         {
-            CarService service = (await _repository.GetAllAsync<User>()
-                                                   .Include(u => u.CarService)
-                                                   .FirstOrDefaultAsync(u => u.Id == ownerId))!.CarService!;
+            CarService service = await _repository.GetByIdAsync<CarService>(serviceId);
             service.Name = model.Name;
             service.Address = model.Address;
             service.RegistrationNumber = model.RegistrationNumber;

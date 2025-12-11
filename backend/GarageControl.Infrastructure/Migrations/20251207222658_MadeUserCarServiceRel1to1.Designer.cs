@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    [Migration("20251207224316_MadeUserCarServiceRel1to1")]
+    [Migration("20251207222658_MadeUserCarServiceRel1to1")]
     partial class MadeUserCarServiceRel1to1
     {
         /// <inheritdoc />
@@ -129,8 +129,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BossId")
-                        .IsUnique();
+                    b.HasIndex("BossId");
 
                     b.ToTable("CarServices");
                 });
@@ -366,9 +365,6 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
-
-                    b.Property<string>("CarServiceId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -724,8 +720,8 @@ namespace GarageControl.Infrastructure.Migrations
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarService", b =>
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.User", "Boss")
-                        .WithOne("CarService")
-                        .HasForeignKey("GarageControl.Infrastructure.Data.Models.CarService", "BossId")
+                        .WithMany("CarServices")
+                        .HasForeignKey("BossId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1023,7 +1019,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.Navigation("CarModels");
 
-                    b.Navigation("CarService");
+                    b.Navigation("CarServices");
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Worker", b =>

@@ -4,6 +4,7 @@ using GarageControl.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GarageControl.Infrastructure.Migrations
 {
     [DbContext(typeof(GarageControlDbContext))]
-    partial class GarageControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251207154756_FixCarServiceBossIdForeignKey")]
+    partial class FixCarServiceBossIdForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
