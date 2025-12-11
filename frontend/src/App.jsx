@@ -8,10 +8,10 @@ import SignUpPage from './components/auth/SignUp';
 import Dashboard from './components/dashboard/Dashboard';
 import Workers from './components/workers/Workers';
 import EditWorker from './components/workers/EditWorker';
-import Activities from './components/orders/Activities';
-import EditActivity from './components/orders/EditActivity.jsx';
 import ServiceDetails from './components/ServiceDetails/ServiceDetails';
 import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
+import Activities from './components/orders/Activities';
+import EditActivity from './components/orders/EditActivity.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -50,10 +50,13 @@ function App() {
     {
       path: '/workers', element: <Workers />, children: [
         { path: '/new', element: <EditWorker /> }
-    ] },
-    { path: '/activities', element: <Activities />, children: [
-      { path: '/new', element: <EditActivity id="" /> }
-    ] },
+      ]
+    },
+    {
+      path: '/activities', element: <Activities />, children: [
+        { path: '/new', element: <EditActivity id="" /> }
+      ]
+    },
     { path: '/clients', element: <Dashboard />, children: [] },
     { path: '/service-details', element: <ServiceDetails />, children: [] },
   ];
@@ -76,21 +79,21 @@ function App() {
 
           {routes.map((route, i) => (
             <>
-            <Route
-              path={route.path}
-              element={
-                <PrivateRoute>
-                  <LayoutWithHeader
-                    selection={i}
-                    sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen}
-                  >
-                    {route.element}
-                  </LayoutWithHeader>
-                </PrivateRoute>
-              }
-            />
-            {route.children.map(childRoute => (
+              <Route
+                path={route.path}
+                element={
+                  <PrivateRoute>
+                    <LayoutWithHeader
+                      selection={i}
+                      sidebarOpen={sidebarOpen}
+                      setSidebarOpen={setSidebarOpen}
+                    >
+                      {route.element}
+                    </LayoutWithHeader>
+                  </PrivateRoute>
+                }
+              />
+              {route.children.map(childRoute => (
                 <Route
                   path={route.path + childRoute.path}
                   element={
@@ -106,8 +109,8 @@ function App() {
                   }
                 />
               ))
-            }
-          </>
+              }
+            </>
 
           ))}
 

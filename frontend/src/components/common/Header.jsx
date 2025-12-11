@@ -31,7 +31,7 @@ const Header = ({ onToggleSidebar }) => {
       </div>
       <div className="profile">
         <div className="profile-name">Genco Gencin</div>
-        <a className="fa-solid fa-right-from-bracket logout-icon" title="Log out" onClick={handleLogout}></a>
+        <a className="fa-solid fa-right-from-bracket icon-btn" title="Log out" onClick={handleLogout}></a>
       </div>
     </header>
   );

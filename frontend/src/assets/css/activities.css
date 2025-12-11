@@ -4,9 +4,12 @@
   gap: 10px;
 }
 
-form {
+.activity-content {
+  flex: 1;
+}
+
+.form {
   width: 800px;
-  /* height: 400px; */
 }
 
 .form-main {
@@ -115,9 +118,9 @@ form {
   background-color: var(--solid4);
 }
 
-.mechanics-table tbody tr .btn-delete {
+/* .mechanics-table tbody tr .btn-delete {
   margin-left: auto;
-}
+} */
 
 @media (max-width: 700px) {
   .form-row {

@@ -7,7 +7,7 @@ import '../../assets/css/activities.css';
 const Activities = () => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-  
+
   // Sample activities data
   const activities = [
     { name: 'Inspection', description: 'Routine checkup of vehicle parts', color: '#ffb74d' },
@@ -16,10 +16,10 @@ const Activities = () => {
     { name: 'Detailing', description: 'Cleaning and polishing vehicles', color: '#f06292' },
   ];
 
-  const filteredActivities = activities.filter(activity => 
-    (filter === 'all' || activity.name.toLowerCase().includes(filter.toLowerCase())) && 
-    (activity.name.toLowerCase().includes(search.toLowerCase()) || 
-    activity.description.toLowerCase().includes(search.toLowerCase()))
+  const filteredActivities = activities.filter(activity =>
+    (filter === 'all' || activity.name.toLowerCase().includes(filter.toLowerCase())) &&
+    (activity.name.toLowerCase().includes(search.toLowerCase()) ||
+      activity.description.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -45,17 +45,17 @@ const Activities = () => {
       {/* Activities List */}
       <div className="activity-list">
         {filteredActivities.map((activity, index) => (
-          <Link 
+          <Link
             to={`/activities/${activity.name.toLowerCase()}`} // Example routing to activity details page
             key={index}
-            className="tile horizontal" 
+            className="tile horizontal"
             style={{ borderLeft: `5px solid ${activity.color}` }}
           >
             <div className="activity-content">
               <h3>{activity.name}</h3>
               <p>{activity.description}</p>
             </div>
-            <button className="btn delete">
+            <button className="icon-btn delete">
               <i className="fa-solid fa-trash"></i>
             </button>
           </Link>
