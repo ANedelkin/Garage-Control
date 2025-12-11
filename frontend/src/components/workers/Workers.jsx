@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common.css';
 import '../../assets/css/workers.css';
@@ -26,7 +27,7 @@ const Workers = () => {
     return (
         <main className="main">
             {/* Header: search + filter + new worker */}
-            <div className="orders-header">
+            <div className="workers-header">
                 <input
                     type="text"
                     placeholder="Search workers..."
@@ -41,7 +42,7 @@ const Workers = () => {
                     ))}
                 </Dropdown>
 
-                <button className="btn">+ New Worker</button>
+                <Link className="btn" to="/workers/new">+ New Worker</Link>
             </div>
 
             {/* Workers table */}
@@ -50,10 +51,10 @@ const Workers = () => {
                 <div style={{ overflowX: 'auto' }}>
                     <table>
                         <colgroup>
-                            <col style={{ width: '200px' }} /> {/* Name */}
-                            <col />                          {/* Roles */}
-                            <col style={{ width: '140px' }} /> {/* Hired */}
-                            <col style={{ width: '70px' }} />  {/* Action */}
+                            <col style={{ width: '200px' }} />
+                            <col />                          
+                            <col style={{ width: '140px' }} /> 
+                            <col style={{ width: '70px' }} />  
                         </colgroup>
 
                         <thead>

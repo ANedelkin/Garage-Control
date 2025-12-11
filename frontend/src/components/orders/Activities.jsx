@@ -39,7 +39,7 @@ const Activities = () => {
           <option value="maintenance">Maintenance</option>
           <option value="detailing">Detailing</option>
         </Dropdown>
-        <button className="btn">+ New Activity</button>
+        <Link to="/activities/new" className="btn">+ New Activity</Link>
       </div>
 
       {/* Activities List */}
@@ -48,7 +48,7 @@ const Activities = () => {
           <Link 
             to={`/activities/${activity.name.toLowerCase()}`} // Example routing to activity details page
             key={index}
-            className="activity-tile" 
+            className="tile" 
             style={{ borderLeft: `5px solid ${activity.color}` }}
           >
             <div className="activity-content">

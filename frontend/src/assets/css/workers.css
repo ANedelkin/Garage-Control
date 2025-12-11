@@ -122,3 +122,50 @@ footer {
         padding: 3px 6px;
     }
 }
+
+/* Edit Worker Page */
+.edit-worker-page {
+  padding: 20px;
+}
+
+.worker-info,
+.roles-section,
+.abilities-section,
+.work-hours-section,
+.leave-management {
+  margin-bottom: 30px;
+}
+
+.worker-info input,
+.roles-section input,
+.abilities-section input,
+.work-hours-section input {
+  padding: 8px;
+  margin-top: 5px;
+  width: 200px;
+}
+
+button {
+  padding: 10px 15px;
+  border-radius: 8px;
+  background-color: var(--solid3);
+  color: inherit;
+  border: 1px solid var(--border2);
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--solid4);
+}
+
+.leave-popup {
+  background: var(--glass);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
