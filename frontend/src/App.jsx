@@ -55,7 +55,8 @@ function App() {
     { path: '/parts', element: <Dashboard />, children: [] },
     {
       path: '/workers', element: <Workers />, children: [
-        { path: '/new', element: <EditWorker /> }
+        { path: '/new', element: <EditWorker /> },
+        { path: '/:id', element: <EditWorker /> }
       ]
     },
     {

@@ -1,103 +1,257 @@
+.edit-worker .tile {
+  max-width: 600px;
+  /* adjust to your preferred width */
+  margin: 0 auto;
+  /* centers horizontally */
+  width: 100%;
+}
+
 .tile table {
-    table-layout: fixed;
-    width: 100%;
-    border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .tile table tbody tr {
-    cursor: pointer;
-    border-bottom: 0.5px solid var(--border2);
+  cursor: pointer;
+  border-bottom: 0.5px solid var(--border2);
 }
 
 .tile table tbody tr:hover {
-    background-color: var(--solid4);
+  background-color: var(--solid4);
 }
 
 .tile table th,
 .tile table td {
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border3);
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border3);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tile table th.description,
 .tile table td.description {
-    width: 100%; 
-}
-footer {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-clr2);
-}
-@media (max-width: 1000px) {
-    .tile table th,
-    .tile table td {
-        font-size: 13px;
-    }
+  width: 100%;
 }
 
-@media (max-width: 600px) {
-
-    .tile table th,
-    .tile table td {
-        font-size: 12px;
-        padding: 6px 8px;
-    }
-
-    .tile .btn-delete {
-        font-size: 11px;
-        padding: 3px 6px;
-    }
+.worker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  /* Ensure it's constrained to the full width of its container */
 }
 
-/* Edit Worker Page */
-/* .edit-worker-page {
-  padding: 20px;
-}
-
-.worker-info,
-.roles-section,
-.abilities-section,
-.work-hours-section,
-.leave-management {
-  margin-bottom: 30px;
-}
-
-.worker-info input,
-.roles-section input,
-.abilities-section input,
-.work-hours-section input {
-  padding: 8px;
-  margin-top: 5px;
-  width: 200px;
-} */
-/* 
-button {
-  padding: 10px 15px;
-  border-radius: 8px;
-  background-color: var(--solid3);
-  color: inherit;
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
   border: 1px solid var(--border2);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.checkbox-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
   cursor: pointer;
-} */
+}
 
-/* button:hover {
-  background-color: var(--solid4);
-} */
+.form-upper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 20px;
+  width: 100%;
+  /* Make sure the form section fits within the parent container */
+}
 
-/* .leave-popup {
-  background: var(--glass);
-  padding: 20px;
-  border-radius: 10px;
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  /* Constrain width to ensure it doesn't overflow */
+}
+
+.form-lower {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  /* Ensure lower section respects the width constraint */
+}
+
+.form-section {
+  width: 100%;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
   border: 1px solid var(--border2);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.schedule-header-cell {
+  background: var(--solid3);
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border2);
+  border-right: 1px solid var(--border2);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.schedule-time-cell {
+  background: var(--solid2);
+  padding: 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--border2);
+  border-right: 1px solid var(--border2);
+  font-size: 0.8em;
+}
+
+.schedule-cell {
+  border-bottom: 1px solid var(--border2);
+  border-right: 1px solid var(--border2);
+  cursor: pointer;
+  background: var(--bg2);
+  height: 30px;
+}
+
+.schedule-cell:hover {
+  background: var(--solid4);
+}
+
+.schedule-cell.working {
+  background: var(--primary);
+}
+
+.leaves-container-row {
+  display: flex;
+  gap: 20px;
+}
+
+.leaves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.leave-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--solid2);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.leaves-calendar {
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--bg2);
+  height: fit-content;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar-header-day {
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: var(--text-clr2);
+  padding: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--solid1);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.calendar-day.empty {
+  background: transparent;
+}
+
+.calendar-day.leave-day {
+  background: var(--primary);
+  color: white;
+}
+
+.popup-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-} */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.popup {
+  background: var(--bg1);
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 800px) {
+  .form-upper {
+    grid-template-columns: 1fr;
+  }
+
+  .form-lower {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-grid {
+    grid-template-columns: 60px repeat(7, 1fr);
+    max-height: 300px;
+  }
+}

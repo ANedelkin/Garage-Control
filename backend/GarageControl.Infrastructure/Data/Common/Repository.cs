@@ -21,6 +21,10 @@ namespace GarageControl.Infrastructure.Data.Common
         {
             return DbSet<T>();
         }
+        public IQueryable<T> GetAllAttachedAsync<T>() where T : class
+        {
+            return DbSet<T>();
+        }
         public IQueryable<T> GetAllAsNoTrackingAsync<T>() where T : class
         {
             return DbSet<T>().AsNoTracking();
@@ -44,6 +48,12 @@ namespace GarageControl.Infrastructure.Data.Common
 
             DbSet<T>().Remove(entity);
         }
+
+        public void Delete<T>(T entity) where T : class
+        {
+            DbSet<T>().Remove(entity);
+        }
+
         public async Task<T> GetByIdAsync<T>(object id) where T : class
         {
             T? entity = await DbSet<T>().FindAsync(id);

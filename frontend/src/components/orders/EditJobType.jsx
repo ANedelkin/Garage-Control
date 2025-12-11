@@ -56,7 +56,7 @@ const EditJobType = ({ id = undefined }) => {
   if (!jobTypeData) return <div>Loading...</div>;
 
   return (
-    <main className="main container">
+    <main className="main container job-type-edit">
       <div className="tile">
         <h3 className="tile-header">Job Type Information</h3>
         <form onSubmit={handleFormSubmit} className="job-type-form">

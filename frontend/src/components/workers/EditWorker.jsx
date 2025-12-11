@@ -1,222 +1,291 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "../../assets/css/workers.css";
-import { DatePicker } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Make sure to install react-datepicker
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { workerApi } from "../../services/workerApi";
+import { jobTypeApi } from "../../services/jobTypeApi";
 
 const EditWorker = () => {
-  // States for worker data
-  const [workerName, setWorkerName] = useState("");
-  const [password, setPassword] = useState("");
-  const [roles, setRoles] = useState({
-    partsStockManager: false,
-    mechanic: false,
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isNew = !id || id === 'new';
+
+  const [worker, setWorker] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    hiredOn: new Date(),
+    roles: [],
+    jobTypeIds: [],
+    schedules: [],
+    leaves: []
   });
-  const [abilities, setAbilities] = useState({
-    tyreChange: false,
-    repair: false,
-  });
-  const [workHours, setWorkHours] = useState({
-    monday: { start: "", end: "" },
-    tuesday: { start: "", end: "" },
-    wednesday: { start: "", end: "" },
-    thursday: { start: "", end: "" },
-    friday: { start: "", end: "" },
-    saturday: { start: "", end: "" },
-    sunday: { start: "", end: "" },
-  });
-  const [leaves, setLeaves] = useState([]);
-  const [newLeave, setNewLeave] = useState({ startDate: null, endDate: null, isPaid: false });
+
+  const [allRoles, setAllRoles] = useState([]);
+  const [allJobTypes, setAllJobTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Leave Popup State
   const [showLeavePopup, setShowLeavePopup] = useState(false);
+  const [currentLeave, setCurrentLeave] = useState({ startDate: new Date(), endDate: new Date() });
+  const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
 
-  const handleRoleChange = (e) => {
-    setRoles({ ...roles, [e.target.name]: e.target.checked });
+  // Calendar View State
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [rolesRes, jobTypesRes] = await Promise.all([
+          workerApi.getRoles(),
+          jobTypeApi.getJobTypes()
+        ]);
+        setAllRoles(rolesRes);
+        setAllJobTypes(jobTypesRes);
+
+        if (!isNew) {
+          const workerRes = await workerApi.getWorker(id);
+          // Parse dates
+          workerRes.hiredOn = new Date(workerRes.hiredOn);
+          workerRes.leaves = workerRes.leaves.map(l => ({
+            ...l,
+            startDate: new Date(l.startDate),
+            endDate: new Date(l.endDate)
+          }));
+          setWorker(workerRes);
+        } else {
+          // Initialize empty state with all roles unselected
+          setWorker(prev => ({
+            ...prev,
+            roles: rolesRes.map(r => ({ ...r, isSelected: false }))
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, isNew]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    try {
+      console.log(worker);
+      await workerApi.editWorker(worker);
+      navigate('/workers');
+    } catch (error) {
+      console.error("Error saving worker", error);
+      alert("Failed to save worker");
+    }
   };
 
-  const handleAbilityChange = (e) => {
-    setAbilities({ ...abilities, [e.target.name]: e.target.checked });
+  // --- Schedule Logic ---
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  const isWorkingHour = (dayIndex, hour) => {
+    return worker.schedules.some(s =>
+      s.dayOfWeek === dayIndex &&
+      parseInt(s.startTime.split(':')[0]) <= hour &&
+      parseInt(s.endTime.split(':')[0]) > hour
+    );
   };
 
-  const handleWorkHourChange = (e, day) => {
-    const { name, value } = e.target;
-    setWorkHours({
-      ...workHours,
-      [day]: { ...workHours[day], [name]: value },
-    });
+  const toggleWorkHour = (dayIndex, hour) => {
+    const startTime = `${hour.toString().padStart(2, '0')}:00`;
+    const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+
+    const existingIndex = worker.schedules.findIndex(s =>
+      s.dayOfWeek === dayIndex && s.startTime === startTime
+    );
+
+    let newSchedules = [...worker.schedules];
+    if (existingIndex >= 0) {
+      newSchedules.splice(existingIndex, 1);
+    } else {
+      newSchedules.push({ dayOfWeek: dayIndex, startTime, endTime });
+    }
+    setWorker({ ...worker, schedules: newSchedules });
   };
 
-  const handleLeaveChange = (e) => {
-    const { name, checked } = e.target;
-    setNewLeave({ ...newLeave, [name]: checked });
-  };
-
-  const handleAddLeave = () => {
-    setLeaves([...leaves, newLeave]);
-    setNewLeave({ startDate: null, endDate: null, isPaid: false });
+  // --- Leave Logic ---
+  const handleAddOrUpdateLeave = () => {
+    let updatedLeaves = [...worker.leaves];
+    if (editingLeaveIndex >= 0) {
+      updatedLeaves[editingLeaveIndex] = currentLeave;
+    } else {
+      updatedLeaves.push(currentLeave);
+    }
+    setWorker({ ...worker, leaves: updatedLeaves });
     setShowLeavePopup(false);
+    setEditingLeaveIndex(-1);
   };
+
+  const deleteLeave = (index) => {
+    const updated = [...worker.leaves];
+    updated.splice(index, 1);
+    setWorker({ ...worker, leaves: updated });
+  };
+
+  const openLeavePopup = (leave = null, index = -1) => {
+    if (leave) {
+      setCurrentLeave(leave);
+      setEditingLeaveIndex(index);
+    } else {
+      setCurrentLeave({ startDate: new Date(), endDate: new Date() });
+      setEditingLeaveIndex(-1);
+    }
+    setShowLeavePopup(true);
+  };
+
+  // Calendar Generation
+  const getCalendarDays = () => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const daysInMonth = [];
+    // Fill padding for start
+    for (let i = 0; i < firstDay.getDay(); i++) daysInMonth.push(null);
+    // Fill days
+    for (let i = 1; i <= lastDay.getDate(); i++) daysInMonth.push(new Date(year, month, i));
+
+    return daysInMonth;
+  };
+
+  const isLeaveDay = (date) => {
+    if (!date) return false;
+    return worker.leaves.some(l =>
+      date >= l.startDate && date <= l.endDate
+    );
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="edit-worker-page">
-      <h2>Edit Worker</h2>
+    <main className="main container edit-worker">
+      <div className="tile">
+        <h3 className="tile-header">{isNew ? "New Worker" : "Edit Worker"}</h3>
+        <form onSubmit={handleSave} className="worker-form">
 
-      {/* Worker Info Section */}
-      <div className="worker-info">
-        <div className="form-group">
-          <label>Name</label>
-          <input
-            type="text"
-            value={workerName}
-            onChange={(e) => setWorkerName(e.target.value)}
-            placeholder="Enter worker's name"
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter worker's password"
-          />
-        </div>
-      </div>
+          {/* Upper Part: 3x1 Grid (3 Columns for Basic Info, Roles, Job Types) */}
+          <div className="form-upper">
+            {/* Basic Info */}
+            <div className="form-column">
+              <div className="form-section">
+                <label>First Name</label>
+                <input type="text" value={worker.firstName} onChange={e => setWorker({ ...worker, firstName: e.target.value })} required />
+              </div>
+              <div className="form-section">
+                <label>Last Name</label>
+                <input type="text" value={worker.lastName} onChange={e => setWorker({ ...worker, lastName: e.target.value })} required />
+              </div>
+              <div className="form-section">
+                <label>Email</label>
+                <input type="email" value={worker.email} onChange={e => setWorker({ ...worker, email: e.target.value })} required />
+              </div>
+              <div className="form-section">
+                <label>Password</label>
+                <input type="password" value={worker.password} onChange={e => setWorker({ ...worker, password: e.target.value })} required={isNew} />
+              </div>
+            </div>
 
-      {/* Roles Section */}
-      <div className="roles-section">
-        <h3>Roles</h3>
-        <label>
-          <input
-            type="checkbox"
-            name="partsStockManager"
-            checked={roles.partsStockManager}
-            onChange={handleRoleChange}
-          />
-          Parts Stock Manager
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            name="mechanic"
-            checked={roles.mechanic}
-            onChange={handleRoleChange}
-          />
-          Mechanic
-        </label>
-      </div>
+            {/* Roles */}
+            <div className="form-column">
+              <h4>Roles</h4>
+              <div className="checkbox-list">
+                {worker.roles.map((role, idx) => (
+                  <label key={role.id} className="checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={role.isSelected}
+                      onChange={e => {
+                        const updatedRoles = [...worker.roles];
+                        updatedRoles[idx].isSelected = e.target.checked;
+                        setWorker({ ...worker, roles: updatedRoles });
+                      }}
+                    />
+                    {role.name}
+                  </label>
+                ))}
+              </div>
+            </div>
 
-      {/* Abilities Section (only if mechanic role is selected) */}
-      {roles.mechanic && (
-        <div className="abilities-section">
-          <h3>Abilities</h3>
-          <label>
-            <input
-              type="checkbox"
-              name="tyreChange"
-              checked={abilities.tyreChange}
-              onChange={handleAbilityChange}
-            />
-            Tyre Change
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="repair"
-              checked={abilities.repair}
-              onChange={handleAbilityChange}
-            />
-            Repair
-          </label>
-        </div>
-      )}
-
-      {/* Work Hours Section */}
-      <div className="work-hours-section">
-        <h3>Work Hours</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(workHours).map((day) => (
-              <tr key={day}>
-                <td>{day.charAt(0).toUpperCase() + day.slice(1)}</td>
-                <td>
-                  <input
-                    type="time"
-                    name="start"
-                    value={workHours[day].start}
-                    onChange={(e) => handleWorkHourChange(e, day)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="time"
-                    name="end"
-                    value={workHours[day].end}
-                    onChange={(e) => handleWorkHourChange(e, day)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Leave Management Section */}
-      <div className="leave-management">
-        <h3>Leave Management</h3>
-        <ul>
-          {leaves.map((leave, index) => (
-            <li key={index}>
-              {`Leave from ${new Date(leave.startDate).toLocaleDateString()} to ${new Date(
-                leave.endDate
-              ).toLocaleDateString()} (${leave.isPaid ? "Paid" : "Unpaid"})`}
-            </li>
-          ))}
-        </ul>
-        <button onClick={() => setShowLeavePopup(true)}>New Leave</button>
-      </div>
-
-      {/* Leave Popup */}
-      {showLeavePopup && (
-        <div className="leave-popup">
-          <h4>New Leave</h4>
-          <div>
-            <label>Start Date</label>
-            <DatePicker
-              selected={newLeave.startDate}
-              onChange={(date) => setNewLeave({ ...newLeave, startDate: date })}
-              dateFormat="yyyy/MM/dd"
-            />
+            {/* Job Types */}
+            <div className="form-column">
+              <h4>Job Types</h4>
+              <div className="checkbox-list">
+                {allJobTypes.map(jt => (
+                  <label key={jt.id} className="checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={worker.jobTypeIds.includes(jt.id)}
+                      onChange={e => {
+                        let updated = [...worker.jobTypeIds];
+                        if (e.target.checked) updated.push(jt.id);
+                        else updated = updated.filter(id => id !== jt.id);
+                        setWorker({ ...worker, jobTypeIds: updated });
+                      }}
+                    />
+                    {jt.name}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
-          <div>
-            <label>End Date</label>
-            <DatePicker
-              selected={newLeave.endDate}
-              onChange={(date) => setNewLeave({ ...newLeave, endDate: date })}
-              dateFormat="yyyy/MM/dd"
-            />
+
+          {/* Lower Part: 2x1 Grid (Schedule + Leaves) */}
+          <div className="form-lower">
+            {/* Schedule */}
+            <div className="schedule-grid">
+              <div className="schedule-header-cell">Time</div>
+              {days.map(d => <div key={d} className="schedule-header-cell">{d}</div>)}
+
+              {hours.map(hour => (
+                <React.Fragment key={hour}>
+                  <div className="schedule-time-cell">{hour}:00</div>
+                  {days.map((_, dayIndex) => {
+                    const working = isWorkingHour(dayIndex, hour);
+                    return (
+                      <div
+                        key={`${dayIndex}-${hour}`}
+                        className={`schedule-cell ${working ? 'working' : ''}`}
+                        onClick={() => toggleWorkHour(dayIndex, hour)}
+                        onMouseEnter={(e) => { if (e.buttons === 1) toggleWorkHour(dayIndex, hour); }}
+                      />
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* Leaves */}
+            <div className="leaves-list">
+              <h4>Leaves</h4>
+              <button type="button" className="btn" onClick={() => openLeavePopup()}>+ Add Leave</button>
+              {worker.leaves.map((leave, i) => (
+                <div key={i} className="leave-item" onClick={() => openLeavePopup(leave, i)} style={{ cursor: 'pointer' }}>
+                  <span>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
+                  <button type="button" className="icon-btn delete" onClick={(e) => { e.stopPropagation(); deleteLeave(i); }}>
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div>
-            <label>
-              <input
-                type="checkbox"
-                name="isPaid"
-                checked={newLeave.isPaid}
-                onChange={handleLeaveChange}
-              />
-              Paid Leave
-            </label>
+
+          <div className="form-footer">
+            <button type="submit" className="btn">Save Worker</button>
           </div>
-          <button onClick={handleAddLeave}>Add Leave</button>
-          <button onClick={() => setShowLeavePopup(false)}>Close</button>
-        </div>
-      )}
-    </div>
+        </form>
+      </div>
+    </main>
+
   );
 };
 

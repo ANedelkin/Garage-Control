@@ -54,7 +54,7 @@ namespace GarageControl.Core.Services
 
         public async Task UpdateServiceDetails(string ownerId, ServiceVM model)
         {
-            CarService service = await _repository.GetByIdAsync<User>(ownerId).CarService;
+            CarService service = (await _repository.GetByIdAsync<User>(ownerId)).CarService;
             service.Name = model.Name;
             service.Address = model.Address;
             service.RegistrationNumber = model.RegistrationNumber;

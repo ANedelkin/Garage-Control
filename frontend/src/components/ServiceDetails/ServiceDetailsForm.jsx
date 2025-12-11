@@ -19,7 +19,7 @@ const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
     }
 
     return (
-        <div className="tile">
+        <div className="tile service-details">
             <h3 className="tile-header">Service Information</h3>
             <form onSubmit={handleFormSubmit}>
                 <div className="form-section">
