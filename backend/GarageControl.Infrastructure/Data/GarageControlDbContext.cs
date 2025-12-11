@@ -35,8 +35,8 @@ namespace GarageControl.Infrastructure.Data
 
             builder.Entity<CarService>()
                 .HasOne(cs => cs.Boss)
-                .WithMany(u => u.CarServices)
-                .HasForeignKey(cs => cs.BossId)
+                .WithOne(u => u.CarService)
+                .HasForeignKey<CarService>(cs => cs.BossId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Worker>()

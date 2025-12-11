@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
-using GarageControl.Infrastructure.Common;
+using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using System.Text;
@@ -32,6 +32,7 @@ builder.Services.AddDbContext<GarageControlDbContext>(options =>
 builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICarServiceService, CarServiceService>();
+builder.Services.AddScoped<IJobTypeService, JobTypeService>();
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)
                .AddEntityFrameworkStores<GarageControlDbContext>()

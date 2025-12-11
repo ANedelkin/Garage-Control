@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Infrastructure.Data;
 
-namespace GarageControl.Infrastructure.Common
+namespace GarageControl.Infrastructure.Data.Common
 {
     public class Repository : IRepository
     {

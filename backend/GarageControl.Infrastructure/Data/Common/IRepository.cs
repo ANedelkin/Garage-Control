@@ -1,4 +1,4 @@
-namespace GarageControl.Infrastructure.Common
+namespace GarageControl.Infrastructure.Data.Common
 {
     public interface IRepository
     {

@@ -1,6 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
-using GarageControl.Infrastructure.Common;
+using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,9 +52,9 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task UpdateServiceDetails(string serviceId, ServiceVM model)
+        public async Task UpdateServiceDetails(string ownerId, ServiceVM model)
         {
-            CarService service = await _repository.GetByIdAsync<CarService>(serviceId);
+            CarService service = await _repository.GetByIdAsync<User>(ownerId).CarService;
             service.Name = model.Name;
             service.Address = model.Address;
             service.RegistrationNumber = model.RegistrationNumber;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 
 // Import your components
 import LogInPage from './components/auth/LogIn';
@@ -23,6 +23,12 @@ const PrivateRoute = ({ children }) => {
     return <Navigate to="/login" />;
   }
   return children;
+};
+
+// Wrapper to pass params to EditJobType
+const EditJobTypeWrapper = () => {
+  const { id } = useParams();
+  return <EditJobType id={id} />;
 };
 
 function App() {
@@ -54,7 +60,8 @@ function App() {
     },
     {
       path: '/job-types', element: <JobTypes />, children: [
-        { path: '/new', element: <EditJobType id="" /> }
+        { path: '/new', element: <EditJobType id="" /> },
+        { path: '/:id', element: <EditJobTypeWrapper /> }
       ]
     },
     { path: '/clients', element: <Dashboard />, children: [] },

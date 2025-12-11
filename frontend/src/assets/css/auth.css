@@ -21,11 +21,11 @@
 }
 
 .auth-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.form-section{
-  width: 300px;
+.form-section {
+  width: 400px;
 }

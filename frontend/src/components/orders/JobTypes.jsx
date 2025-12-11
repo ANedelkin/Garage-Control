@@ -1,25 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common.css';
 import '../../assets/css/job-types.css';
+import { jobTypeApi } from '../../services/jobTypeApi.js';
 
 const JobTypes = () => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [jobTypes, setJobTypes] = useState([]);
 
-  // Sample job types data
-  const jobTypes = [
-    { name: 'Inspection', description: 'Routine checkup of vehicle parts', color: '#ffb74d' },
-    { name: 'Repair', description: 'Fixing vehicle components', color: '#81c784' },
-    { name: 'Maintenance', description: 'Oil change and other fluid replacements', color: '#64b5f6' },
-    { name: 'Detailing', description: 'Cleaning and polishing vehicles', color: '#f06292' },
-  ];
+  useEffect(() => {
+    jobTypeApi.getJobTypes().then(res => {
+      setJobTypes(res);
+    }).catch(err => {
+      console.error("Failed to fetch job types", err);
+    });
+  }, []);
 
   const filteredJobTypes = jobTypes.filter(jobType =>
     (filter === 'all' || jobType.name.toLowerCase().includes(filter.toLowerCase())) &&
     (jobType.name.toLowerCase().includes(search.toLowerCase()) ||
-      jobType.description.toLowerCase().includes(search.toLowerCase()))
+      jobType.description && jobType.description.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -32,13 +34,6 @@ const JobTypes = () => {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <Dropdown value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="all">All</option>
-          <option value="inspection">Inspection</option>
-          <option value="repair">Repair</option>
-          <option value="maintenance">Maintenance</option>
-          <option value="detailing">Detailing</option>
-        </Dropdown>
         <Link to="/job-types/new" className="btn">+ New Job Type</Link>
       </div>
 
@@ -46,8 +41,8 @@ const JobTypes = () => {
       <div className="job-type-list">
         {filteredJobTypes.map((jobType, index) => (
           <Link
-            to={`/job-types/${jobType.name.toLowerCase()}`}
-            key={index}
+            to={`/job-types/${jobType.id}`}
+            key={jobType.id || index}
             className="tile horizontal"
             style={{ borderLeft: `5px solid ${jobType.color}` }}
           >
