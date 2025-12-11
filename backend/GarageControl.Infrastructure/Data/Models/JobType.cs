@@ -11,6 +11,7 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(JobTypeConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
+        public string? Description { get; set; }
         [Required]
         public string Color { get; set; } = null!;
         [Required]
