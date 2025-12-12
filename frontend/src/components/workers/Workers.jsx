@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common.css';
 import '../../assets/css/workers.css';
+import { workerApi } from '../../services/workerApi';
 
 const Workers = () => {
     const [roleFilter, setRoleFilter] = useState('all');
     const [search, setSearch] = useState('');
 
-    // Example data
-    const workers = [
-        { name: 'Genco Gencin', roles: ['Mechanic', 'Diagnostics'], hiredOn: '2023-04-12' },
-        { name: 'Mike Smith', roles: ['Mechanic'], hiredOn: '2024-01-08' },
-        { name: 'Anna L.', roles: ['Inspection'], hiredOn: '2022-11-20' },
-        { name: 'Toni B.', roles: ['Bodywork', 'Painting'], hiredOn: '2023-09-01' },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [workers, setWorkers] = useState([]);
 
-    // Unique roles for filter dropdown
-    const allRoles = Array.from(new Set(workers.flatMap(w => w.roles)));
+    useEffect(() => {
+        const fetchWorkers = async () => {
+            try {
+                const data = await workerApi.getWorkers();
+                setWorkers(data);
+            } catch (error) {
+                console.error("Failed to fetch workers", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWorkers();
+    }, []);
+
+    // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
+    const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
 
     const filteredWorkers = workers.filter(w =>
-        (roleFilter === 'all' || w.roles.includes(roleFilter)) &&
+        (roleFilter === 'all' || w.roles.some(r => r.name === roleFilter)) &&
         w.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -52,9 +62,9 @@ const Workers = () => {
                     <table>
                         <colgroup>
                             <col style={{ width: '200px' }} />
-                            <col />                          
-                            <col style={{ width: '140px' }} /> 
-                            <col style={{ width: '70px' }} />  
+                            <col />
+                            <col style={{ width: '140px' }} />
+                            <col style={{ width: '70px' }} />
                         </colgroup>
 
                         <thead>
@@ -67,18 +77,23 @@ const Workers = () => {
                         </thead>
 
                         <tbody>
-                            {filteredWorkers.map((w, i) => (
-                                <tr key={i}>
+                            {loading ? <tr><td colSpan="4">Loading...</td></tr> : filteredWorkers.map((w, i) => (
+                                <tr key={w.id} onClick={() => window.location.href = `/workers/${w.id}`} style={{ cursor: 'pointer' }}>
                                     <td>{w.name}</td>
 
-                                    <td className="description" title={w.roles.join(', ')}>
-                                        {w.roles.join(', ')}
+                                    <td className="description" title={w.roles.map(r => r.name).join(', ')}>
+                                        {w.roles.map(r => r.name).join(', ')}
                                     </td>
 
-                                    <td>{w.hiredOn}</td>
+                                    <td>{new Date(w.hiredOn).toLocaleDateString()}</td>
 
-                                    <td>
-                                        <button className="btn delete">
+                                    <td onClick={e => e.stopPropagation()}>
+                                        <button className="btn delete" onClick={async (e) => {
+                                            if (window.confirm('Delete worker?')) {
+                                                await workerApi.deleteWorker(w.id);
+                                                setWorkers(workers.filter(worker => worker.id !== w.id));
+                                            }
+                                        }}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

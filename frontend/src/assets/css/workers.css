@@ -4,6 +4,7 @@
   margin: 0 auto;
   /* centers horizontally */
   width: 100%;
+  height: fit-content;
 }
 
 .tile table {
@@ -67,27 +68,23 @@
 .form-upper {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto auto auto;
+  /* grid-template-rows: auto auto auto; */
   gap: 20px;
   width: 100%;
-  /* Make sure the form section fits within the parent container */
 }
 
 .form-column {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   width: 100%;
-  /* Constrain width to ensure it doesn't overflow */
 }
 
 .form-lower {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  /* grid-template-rows: 1fr 1fr; */
   gap: 20px;
   width: 100%;
-  /* Ensure lower section respects the width constraint */
 }
 
 .form-section {
@@ -98,8 +95,6 @@
   display: grid;
   grid-template-columns: 60px repeat(7, 1fr);
   border: 1px solid var(--border2);
-  max-height: 400px;
-  overflow-y: auto;
 }
 
 .schedule-header-cell {
@@ -133,6 +128,11 @@
 
 .schedule-cell:hover {
   background: var(--solid4);
+}
+
+.schedule-cell.selecting {
+  background: var(--accent1);
+  border: 2px solid var(--accent3);
 }
 
 .schedule-cell.working {

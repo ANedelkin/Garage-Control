@@ -6,13 +6,11 @@ namespace GarageControl.Core.Models
     {
         public string? Id { get; set; }
         [Required]
-        public string FirstName { get; set; } = null!;
-        [Required]
-        public string LastName { get; set; } = null!;
+        public string Name { get; set; } = null!;
         [Required]
         [EmailAddress]
         public string Email { get; set; } = null!;
-        public string? Password { get; set; } // Only required for creation, optional for edit
+        public string? Password { get; set; }
         public DateTime HiredOn { get; set; } = DateTime.Today;
 
         public List<RoleVM> Roles { get; set; } = new List<RoleVM>();
@@ -30,7 +28,7 @@ namespace GarageControl.Core.Models
 
     public class WorkerScheduleVM
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
         public int DayOfWeek { get; set; } // 0 = Sunday, 1 = Monday, etc.
         public string StartTime { get; set; } = "09:00"; // HH:mm format
         public string EndTime { get; set; } = "17:00"; // HH:mm format

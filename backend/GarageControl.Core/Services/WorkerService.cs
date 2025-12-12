@@ -45,11 +45,9 @@ namespace GarageControl.Core.Services
             return workers.Select(w => new WorkerVM
             {
                 Id = w.Id,
-                FirstName = "FixMeSplitNames", // Simplification as User model doesn't have split names in snippet
-                LastName = w.User.UserName!,
+                Name = w.Name,
                 Email = w.User.Email!,
                 HiredOn = w.HiredOn,
-                // Simplified list view, detail view will have full data
             });
         }
 
@@ -61,12 +59,12 @@ namespace GarageControl.Core.Services
             // 1. Create Identity User
             var user = new User
             {
-                UserName = $"{model.FirstName} {model.LastName}",
+                UserName = model.Email,
                 Email = model.Email,
                 EmailConfirmed = true 
             };
             
-            var result = await _userManager.CreateAsync(user, model.Password ?? "Default123!");
+            var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
                  throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
@@ -76,6 +74,7 @@ namespace GarageControl.Core.Services
             var worker = new Worker
             {
                 UserId = user.Id,
+                Name = model.Name,
                 CarServiceId = serviceId,
                 HiredOn = model.HiredOn
             };
@@ -89,10 +88,54 @@ namespace GarageControl.Core.Services
 
         public async Task Delete(string id)
         {
-            // Complex delete: remove worker, schedules, leaves, and potentially the user account
-            // For now, simple implementation
-             await _repo.DeleteAsync<Worker>(id);
-             await _repo.SaveChangesAsync();
+            var worker = await _repo.GetAllAttachedAsync<Worker>()
+                .Where(w => w.Id == id)
+                .Include(w => w.Schedules)
+                .Include(w => w.Leaves) // Assuming navigation property exists or we manually delete
+                .FirstOrDefaultAsync();
+
+            if (worker == null) return;
+
+            // 1. Delete Schedules
+            if (worker.Schedules != null && worker.Schedules.Any())
+            {
+                // We can remove them from the collection or delete directly
+                // Helper loop to clear list if tracking is tricky, or just delete from repo
+                var schedules = worker.Schedules.ToList();
+                foreach (var s in schedules)
+                {
+                    _repo.Delete(s);
+                }
+            }
+
+            // 2. Delete Leaves
+            // Fetch if not included (if navigation prop missing in previous context, assumed manual fetch in original code)
+            var leaves = await _repo.GetAllAttachedAsync<WorkerLeave>()
+                .Where(l => l.WorkerId == id)
+                .ToListAsync();
+            
+            foreach(var l in leaves)
+            {
+                _repo.Delete(l);
+            }
+
+            // 3. Delete Worker (Roles/Activities handle themselves usually via join tables or explicit cleanup if needed)
+            // But usually ManyToMany join entities are handled by EF if configured correctly. 
+            // If they are separate entities, we might need to clear them too.
+            // Assuming standard scaffold:
+            _repo.Delete(worker);
+            
+            await _repo.SaveChangesAsync();
+
+            // 4. Delete Identity User
+            if (!string.IsNullOrEmpty(worker.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(worker.UserId);
+                if (user != null)
+                {
+                    await _userManager.DeleteAsync(user);
+                }
+            }
         }
 
         public async Task<WorkerVM?> Details(string id)
@@ -127,8 +170,7 @@ namespace GarageControl.Core.Services
             return new WorkerVM
             {
                 Id = worker.Id,
-                FirstName = nameParts[0],
-                LastName = nameParts.Length > 1 ? nameParts[1] : "",
+                Name = worker.Name,
                 Email = worker.User.Email!,
                 HiredOn = worker.HiredOn,
                 Roles = rolesVm,
@@ -136,7 +178,8 @@ namespace GarageControl.Core.Services
                 Schedules = worker.Schedules.Select(s => new WorkerScheduleVM
                 {
                     Id = s.Id,
-                    DayOfWeek = (int)s.DayOfWeek,
+                    // Map Backend DayOfWeek (0=Sun, 1=Mon) to Frontend Day (0=Mon, 6=Sun)
+                    DayOfWeek = (int)s.DayOfWeek == 0 ? 6 : (int)s.DayOfWeek - 1,
                     StartTime = s.StartTime.ToString("HH:mm"),
                     EndTime = s.EndTime.ToString("HH:mm")
                 }).ToList(),
@@ -157,7 +200,7 @@ namespace GarageControl.Core.Services
             var user = await _userManager.FindByIdAsync(worker.UserId);
             if (user != null)
             {
-                user.UserName = $"{model.FirstName} {model.LastName}";
+                worker.Name = model.Name;
                 user.Email = model.Email;
                 await _userManager.UpdateAsync(user);
                 
@@ -188,26 +231,27 @@ namespace GarageControl.Core.Services
             // Roles
             worker.Roles.Clear();
             var selectedRoleIds = model.Roles.Where(r => r.IsSelected).Select(r => r.Id).ToList();
-            var rolesToAdd = await _repo.GetAllAsNoTrackingAsync<Role>().Where(r => selectedRoleIds.Contains(r.Id)).ToListAsync();
+            var rolesToAdd = await _repo.GetAllAttachedAsync<Role>().Where(r => selectedRoleIds.Contains(r.Id)).ToListAsync();
             foreach (var r in rolesToAdd) worker.Roles.Add(r);
 
             // JobTypes (Activities)
             worker.Activities.Clear();
-            var jobTypesToAdd = await _repo.GetAllAsNoTrackingAsync<JobType>().Where(j => model.JobTypeIds.Contains(j.Id)).ToListAsync();
+            var jobTypesToAdd = await _repo.GetAllAttachedAsync<JobType>().Where(j => model.JobTypeIds.Contains(j.Id)).ToListAsync();
             foreach (var j in jobTypesToAdd) worker.Activities.Add(j);
 
             // Schedules
-            // Ideally should update existing ones, but replace strategy prevents stale data
-            // We need to fetch attached schedules to remove them
-            var schedulesToRemove = await _repo.GetAllAttachedAsync<WorkerSchedule>().Where(s => s.WorkerId == workerId).ToListAsync();
-            foreach(var s in schedulesToRemove) _repo.Delete(s);
+            // Update via collection to ensure change tracking works correctly with the attached worker entity
+            worker.Schedules.Clear();
             
             foreach(var s in model.Schedules)
             {
-               await _repo.AddAsync(new WorkerSchedule
+               // Map Frontend Day (0=Mon) to Backend DayOfWeek (0=Sun, 1=Mon)
+               var backendDayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7);
+
+               worker.Schedules.Add(new WorkerSchedule
                {
                    WorkerId = workerId,
-                   DayOfWeek = (DayOfWeek)s.DayOfWeek,
+                   DayOfWeek = backendDayOfWeek,
                    StartTime = TimeOnly.Parse(s.StartTime),
                    EndTime = TimeOnly.Parse(s.EndTime)
                });
