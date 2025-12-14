@@ -12,6 +12,8 @@ import ServiceDetails from './components/ServiceDetails/ServiceDetails';
 import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
 import JobTypes from './components/orders/JobTypes';
 import EditJobType from './components/orders/EditJobType.jsx';
+import MakesAndModels from './components/cars/MakesAndModels.jsx';
+
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -67,6 +69,7 @@ function App() {
     },
     { path: '/clients', element: <Dashboard />, children: [], access: 'Clients' },
     { path: '/service-details', element: <ServiceDetails />, children: [], access: 'Service Details' },
+    { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
   ];
 
   const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');

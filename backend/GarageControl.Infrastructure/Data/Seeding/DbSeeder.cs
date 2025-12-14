@@ -11,22 +11,25 @@ namespace GarageControl.Infrastructure.Data.Seeding
         {
             var context = serviceProvider.GetRequiredService<GarageControlDbContext>();
 
-            if (await context.Accesses.AnyAsync())
+            var accesses = new List<string>
             {
-                return;
-            }
-
-            var accesses = new List<Access>
-            {
-                new Access { Name = "Orders" },
-                new Access { Name = "Parts Stock" },
-                new Access { Name = "Workers" },
-                new Access { Name = "Job Types" },
-                new Access { Name = "Clients" },
-                new Access { Name = "Service Details" }
+                "Orders",
+                "Parts Stock",
+                "Workers",
+                "Job Types",
+                "Clients",
+                "Service Details",
+                "Makes and Models"
             };
 
-            await context.Accesses.AddRangeAsync(accesses);
+            foreach (var accessName in accesses)
+            {
+                 if (!await context.Accesses.AnyAsync(a => a.Name == accessName))
+                 {
+                     await context.Accesses.AddAsync(new Access { Name = accessName });
+                 }
+            }
+
             await context.SaveChangesAsync();
         }
     }

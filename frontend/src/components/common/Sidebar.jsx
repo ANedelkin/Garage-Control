@@ -16,19 +16,20 @@ const Sidebar = ({ open, onClose }) => {
   }, [theme]);
 
   const navItems = [
-    { path: '/', icon: 'fa-house', label: 'Home' },
-    { path: '/orders', icon: 'fa-list-check', label: 'Orders' },
-    { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock' },
-    { path: '/workers', icon: 'fa-users-gear', label: 'Workers' },
-    { path: '/job-types', icon: 'fa-gear', label: 'Job Types' },
-    { path: '/clients', icon: 'fa-user', label: 'Clients' },
-    { path: '/service-details', icon: 'fa-gear', label: 'Service Details' },
+    { path: '/', icon: 'fa-house', label: 'Home', access: null },
+    { path: '/orders', icon: 'fa-list-check', label: 'Orders', access: 'Orders' },
+    { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', access: 'Parts Stock' },
+    { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
+    { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
+    { path: '/clients', icon: 'fa-user', label: 'Clients', access: 'Clients' },
+    { path: '/service-details', icon: 'fa-gear', label: 'Service Details', access: 'Service Details' },
+    { path: '/makes-and-models', icon: 'fa-car', label: 'Makes & models', access: 'Makes and Models' },
   ];
 
   const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');
   const filteredNavItems = navItems.filter(item => {
-    if (item.label === 'Home') return true;
-    return accesses.includes(item.label);
+    if (!item.access) return true;
+    return accesses.includes(item.access);
   });
 
   return (
