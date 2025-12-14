@@ -27,7 +27,7 @@ const Workers = () => {
     }, []);
 
     // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
-    const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
+    // const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
 
     const filteredWorkers = workers.filter(w =>
         (roleFilter === 'all' || w.roles.some(r => r.name === roleFilter)) &&
@@ -45,12 +45,12 @@ const Workers = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
 
-                <Dropdown value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
+                {/* <Dropdown value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
                     <option value="all">All Roles</option>
                     {allRoles.map((r, i) => (
                         <option value={r} key={i}>{r}</option>
                     ))}
-                </Dropdown>
+                </Dropdown> */}
 
                 <Link className="btn" to="/workers/new">+ New Worker</Link>
             </div>
@@ -81,9 +81,9 @@ const Workers = () => {
                                 <tr key={w.id} onClick={() => window.location.href = `/workers/${w.id}`} style={{ cursor: 'pointer' }}>
                                     <td>{w.name}</td>
 
-                                    <td className="description" title={w.roles.map(r => r.name).join(', ')}>
+                                    {/* <td className="description" title={w.roles.map(r => r.name).join(', ')}>
                                         {w.roles.map(r => r.name).join(', ')}
-                                    </td>
+                                    </td> */}
 
                                     <td>{new Date(w.hiredOn).toLocaleDateString()}</td>
 

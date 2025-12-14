@@ -10,8 +10,8 @@ export const workerApi = {
     editWorker: async (workerData) => {
         return await (await request('PUT', 'worker/edit', workerData)).json();
     },
-    getRoles: async () => {
-        return await (await request('GET', 'worker/roles')).json();
+    getAccesses: async () => {
+        return await (await request('GET', 'worker/accesses')).json();
     },
     deleteWorker: async (id) => {
         return await (await request('DELETE', `worker/${id}`)).json();

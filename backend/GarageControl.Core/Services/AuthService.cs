@@ -1,6 +1,7 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Infrastructure.Data.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ namespace GarageControl.Core.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
+        private readonly IRepository _repo;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
@@ -26,10 +28,12 @@ namespace GarageControl.Core.Services
 
         public AuthService(
             UserManager<User> userManager,
+            IRepository repo,
             IConfiguration configuration,
             ILogger<AuthService> logger)
         {
             _userManager = userManager;
+            _repo = repo;
             _configuration = configuration;
             _logger = logger;
 
@@ -81,8 +85,9 @@ namespace GarageControl.Core.Services
             await _userManager.UpdateAsync(user);
 
             string token = GenerateAccessToken(user);
+            var accesses = await GetUserAccess(user.Id);
 
-            return new LoginResponse(user.Email, token, user.RefreshToken, "Successful login", true);
+            return new LoginResponse(user.Email, token, user.RefreshToken, "Successful login", true, accesses);
         }
 
         public async Task LogOut(HttpRequest request, HttpResponse response)
@@ -118,8 +123,9 @@ namespace GarageControl.Core.Services
                 return new LoginResponse("Refresh token expired", false);
 
             string newAccess = GenerateAccessToken(user);
+            var accesses = await GetUserAccess(user.Id);
 
-            return new LoginResponse("Token refreshed", newAccess, refreshToken, "", true);
+            return new LoginResponse("Token refreshed", newAccess, refreshToken, "", true, accesses);
         }
 
         public Task SetAuthCookies(HttpResponse response, string accessToken, string refreshToken)
@@ -174,5 +180,27 @@ namespace GarageControl.Core.Services
 
         private Task<User?> FindByToken(string token) =>
             _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
+
+        private async Task<List<string>> GetUserAccess(string userId)
+        {
+            // Check if Owner
+            var isOwner = await _repo.GetAllAsNoTrackingAsync<CarService>().AnyAsync(s => s.BossId == userId);
+            if (isOwner)
+            {
+                return await _repo.GetAllAsNoTrackingAsync<Access>().Select(a => a.Name).ToListAsync();
+            }
+
+            // Check if Worker
+            var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
+                .Include(w => w.Accesses)
+                .FirstOrDefaultAsync(w => w.UserId == userId);
+                
+            if (worker != null)
+            {
+                return worker.Accesses.Select(a => a.Name).ToList();
+            }
+            
+            return new List<string>();
+        }
     }
 }

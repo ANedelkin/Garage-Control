@@ -13,13 +13,13 @@ namespace GarageControl.Core.Models
         public string? Password { get; set; }
         public DateTime HiredOn { get; set; } = DateTime.Today;
 
-        public List<RoleVM> Roles { get; set; } = new List<RoleVM>();
+        public List<AccessVM> Accesses { get; set; } = new List<AccessVM>();
         public List<string> JobTypeIds { get; set; } = new List<string>(); // IDs of JobTypes this worker can perform
         public List<WorkerScheduleVM> Schedules { get; set; } = new List<WorkerScheduleVM>();
         public List<WorkerLeaveVM> Leaves { get; set; } = new List<WorkerLeaveVM>();
     }
 
-    public class RoleVM
+    public class AccessVM
     {
         public string Id { get; set; } = null!;
         public string Name { get; set; } = null!;

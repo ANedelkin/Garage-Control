@@ -9,6 +9,6 @@ namespace GarageControl.Core.Contracts
         Task Create(WorkerVM model, string userId);
         Task Edit(WorkerVM model);
         Task Delete(string id);
-        Task<IEnumerable<RoleVM>> AllRoles();
+        Task<IEnumerable<AccessVM>> AllAccesses();
     }
 }

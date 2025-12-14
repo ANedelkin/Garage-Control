@@ -17,13 +17,13 @@ const EditWorker = () => {
     email: "",
     password: "",
     hiredOn: new Date(),
-    roles: [],
+    accesses: [],
     jobTypeIds: [],
     schedules: [],
     leaves: []
   });
 
-  const [allRoles, setAllRoles] = useState([]);
+  const [allAccesses, setAllAccesses] = useState([]);
   const [allJobTypes, setAllJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,11 +34,11 @@ const EditWorker = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [rolesRes, jobTypesRes] = await Promise.all([
-          workerApi.getRoles(),
+        const [accessesRes, jobTypesRes] = await Promise.all([
+          workerApi.getAccesses(),
           jobTypeApi.getJobTypes()
         ]);
-        setAllRoles(rolesRes);
+        setAllAccesses(accessesRes);
         setAllJobTypes(jobTypesRes);
 
         if (!isNew) {
@@ -54,7 +54,7 @@ const EditWorker = () => {
         } else {
           setWorker(prev => ({
             ...prev,
-            roles: rolesRes.map(r => ({ ...r, isSelected: false }))
+            accesses: accessesRes.map(r => ({ ...r, isSelected: false }))
           }));
         }
       } catch (error) {
@@ -218,20 +218,20 @@ const EditWorker = () => {
             </div>
 
             <div className="form-column">
-              <label>Roles</label>
+              <label>Access</label>
               <div className="checkbox-list">
-                {worker.roles.map((role, idx) => (
-                  <label key={role.id} className="checkbox-item">
+                {worker.accesses.map((access, idx) => (
+                  <label key={access.id} className="checkbox-item">
                     <input
                       type="checkbox"
-                      checked={role.isSelected}
+                      checked={access.isSelected}
                       onChange={e => {
-                        const updatedRoles = [...worker.roles];
-                        updatedRoles[idx].isSelected = e.target.checked;
-                        setWorker({ ...worker, roles: updatedRoles });
+                        const updatedAccesses = [...worker.accesses];
+                        updatedAccesses[idx].isSelected = e.target.checked;
+                        setWorker({ ...worker, accesses: updatedAccesses });
                       }}
                     />
-                    {role.name}
+                    {access.name}
                   </label>
                 ))}
               </div>

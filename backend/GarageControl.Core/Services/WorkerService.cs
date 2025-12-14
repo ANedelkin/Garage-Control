@@ -12,17 +12,19 @@ namespace GarageControl.Core.Services
     {
         private readonly IRepository _repo;
         private readonly UserManager<User> _userManager;
+        private readonly ICarServiceService _carServiceService;
         
-        public WorkerService(IRepository repo, UserManager<User> userManager)
+        public WorkerService(IRepository repo, UserManager<User> userManager, ICarServiceService carServiceService)
         {
             _repo = repo;
             _userManager = userManager;
+            _carServiceService = carServiceService;
         }
 
-        public async Task<IEnumerable<RoleVM>> AllRoles()
+        public async Task<IEnumerable<AccessVM>> AllAccesses()
         {
-             return await _repo.GetAllAsNoTrackingAsync<Role>()
-                .Select(r => new RoleVM
+             return await _repo.GetAllAsNoTrackingAsync<Access>()
+                .Select(r => new AccessVM
                 {
                     Id = r.Id,
                     Name = r.Name,
@@ -33,13 +35,13 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<WorkerVM>> All(string userId)
         {
-            var serviceId = (await _repo.GetAllAsNoTrackingAsync<CarService>().Where(s => s.BossId == userId).FirstOrDefaultAsync())?.Id;
+            var serviceId = await _carServiceService.GetServiceId(userId);
             if (serviceId == null) return new List<WorkerVM>();
 
             var workers = await _repo.GetAllAsNoTrackingAsync<Worker>()
                 .Where(w => w.CarServiceId == serviceId)
                 .Include(w => w.User)
-                .Include(w => w.Roles)
+                .Include(w => w.Accesses)
                 .ToListAsync();
 
             return workers.Select(w => new WorkerVM
@@ -53,7 +55,7 @@ namespace GarageControl.Core.Services
 
         public async Task Create(WorkerVM model, string userId)
         {
-            var serviceId = (await _repo.GetAllAsNoTrackingAsync<CarService>().Where(s => s.BossId == userId).FirstOrDefaultAsync())?.Id;
+            var serviceId = await _carServiceService.GetServiceId(userId);
             if (serviceId == null) throw new ArgumentException("User does not have a service");
 
             // 1. Create Identity User
@@ -143,7 +145,7 @@ namespace GarageControl.Core.Services
             var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
                 .Where(w => w.Id == id)
                 .Include(w => w.User)
-                .Include(w => w.Roles)
+                .Include(w => w.Accesses)
                 .Include(w => w.Schedules)
                 .Include(w => w.Activities) // JobTypes
                 .FirstOrDefaultAsync();
@@ -155,14 +157,14 @@ namespace GarageControl.Core.Services
                 .Where(l => l.WorkerId == id)
                 .ToListAsync();
 
-            var allRoles = await AllRoles();
-            var workerRoleIds = worker.Roles.Select(r => r.Id).ToList();
+            var allAccesses = await AllAccesses();
+            var workerAccessIds = worker.Accesses.Select(r => r.Id).ToList();
             
-            var rolesVm = allRoles.Select(r => new RoleVM 
+            var accessesVm = allAccesses.Select(r => new AccessVM 
             {
                 Id = r.Id, 
                 Name = r.Name, 
-                IsSelected = workerRoleIds.Contains(r.Id) 
+                IsSelected = workerAccessIds.Contains(r.Id) 
             }).ToList();
 
             var nameParts = worker.User.UserName?.Split(' ') ?? new string[] {"Unknown", "Unknown"};
@@ -173,7 +175,7 @@ namespace GarageControl.Core.Services
                 Name = worker.Name,
                 Email = worker.User.Email!,
                 HiredOn = worker.HiredOn,
-                Roles = rolesVm,
+                Accesses = accessesVm,
                 JobTypeIds = worker.Activities.Select(a => a.Id).ToList(),
                 Schedules = worker.Schedules.Select(s => new WorkerScheduleVM
                 {
@@ -201,8 +203,24 @@ namespace GarageControl.Core.Services
             if (user != null)
             {
                 worker.Name = model.Name;
-                user.Email = model.Email;
-                await _userManager.UpdateAsync(user);
+                
+                if (user.Email != model.Email)
+                {
+                    var existingUser = await _userManager.FindByEmailAsync(model.Email);
+                    if (existingUser != null)
+                    {
+                        throw new Exception("Email is already taken");
+                    }
+
+                    user.Email = model.Email;
+                    user.UserName = model.Email;
+                    
+                    var result = await _userManager.UpdateAsync(user);
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+                    }
+                }
                 
                 if (!string.IsNullOrEmpty(model.Password))
                 {
@@ -221,18 +239,18 @@ namespace GarageControl.Core.Services
         {
             var worker = await _repo.GetAllAttachedAsync<Worker>()
                 .Where(w => w.Id == workerId)
-                .Include(w => w.Roles)
+                .Include(w => w.Accesses)
                 .Include(w => w.Activities) // JobTypes
                 .Include(w => w.Schedules)
                 .FirstOrDefaultAsync();
 
             if (worker == null) return;
 
-            // Roles
-            worker.Roles.Clear();
-            var selectedRoleIds = model.Roles.Where(r => r.IsSelected).Select(r => r.Id).ToList();
-            var rolesToAdd = await _repo.GetAllAttachedAsync<Role>().Where(r => selectedRoleIds.Contains(r.Id)).ToListAsync();
-            foreach (var r in rolesToAdd) worker.Roles.Add(r);
+            // Accesses
+            worker.Accesses.Clear();
+            var selectedAccessIds = model.Accesses.Where(r => r.IsSelected).Select(r => r.Id).ToList();
+            var accessesToAdd = await _repo.GetAllAttachedAsync<Access>().Where(r => selectedAccessIds.Contains(r.Id)).ToListAsync();
+            foreach (var r in accessesToAdd) worker.Accesses.Add(r);
 
             // JobTypes (Activities)
             worker.Activities.Clear();
@@ -273,5 +291,6 @@ namespace GarageControl.Core.Services
 
             await _repo.SaveChangesAsync();
         }
+
     }
 }

@@ -39,11 +39,13 @@ namespace GarageControl.Core.Services
 
         public async Task<ServiceVM?> GetServiceDetailsByUser(string userId)
         {
-            CarService? service =  await _repository.GetAllAsNoTrackingAsync<CarService>()
-                                                   .Where(s => s.BossId == userId)
-                                                   .FirstOrDefaultAsync();
-            if (service == null)
-                return null;
+            var serviceId = await GetServiceId(userId);
+            if (serviceId == null) return null;
+
+            CarService service =  await _repository.GetByIdAsync<CarService>(serviceId);
+            
+            if (service == null) return null;
+
             return new ServiceVM
             {
                 Name = service.Name,
@@ -54,11 +56,34 @@ namespace GarageControl.Core.Services
 
         public async Task UpdateServiceDetails(string ownerId, ServiceVM model)
         {
-            CarService service = (await _repository.GetByIdAsync<User>(ownerId)).CarService;
+            var serviceId = await GetServiceId(ownerId);
+            if (serviceId == null) throw new Exception("Service not found");
+
+            var service = await _repository.GetByIdAsync<CarService>(serviceId);
+            if (service == null) throw new Exception("Service not found");
+
             service.Name = model.Name;
             service.Address = model.Address;
             service.RegistrationNumber = model.RegistrationNumber;
             await _repository.SaveChangesAsync();
+        }
+        public async Task<string?> GetServiceId(string userId)
+        {
+            // 1. Check if user is an Owner (Boss)
+            var serviceId = (await _repository.GetAllAsNoTrackingAsync<CarService>()
+                .Where(s => s.BossId == userId)
+                .Select(s => s.Id)
+                .FirstOrDefaultAsync());
+
+            if (serviceId != null) return serviceId;
+
+            // 2. Check if user is a Worker
+            serviceId = (await _repository.GetAllAsNoTrackingAsync<Worker>()
+                .Where(w => w.UserId == userId)
+                .Select(w => w.CarServiceId)
+                .FirstOrDefaultAsync());
+
+            return serviceId;
         }
     }
 }

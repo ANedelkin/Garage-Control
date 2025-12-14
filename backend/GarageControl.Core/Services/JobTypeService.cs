@@ -19,7 +19,7 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<JobTypeVM>> All(string userId)
         {
-            var serviceId = (await _repo.GetAllAsNoTrackingAsync<CarService>().Where(s => s.BossId == userId).FirstOrDefaultAsync())!.Id;
+            var serviceId = await _carServiceService.GetServiceId(userId);
             if (serviceId == null) return new List<JobTypeVM>();
 
             return await _repo.GetAllAsNoTrackingAsync<JobType>()
@@ -39,7 +39,7 @@ namespace GarageControl.Core.Services
 
         public async Task Create(JobTypeVM model, string userId)
         {
-            var serviceId = (await _repo.GetAllAsNoTrackingAsync<CarService>().Where(s => s.BossId == userId).FirstOrDefaultAsync())!.Id;
+            var serviceId = await _carServiceService.GetServiceId(userId);
             if (serviceId == null) throw new ArgumentException("User does not have a service");
 
             var jobType = new JobType

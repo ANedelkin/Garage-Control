@@ -51,23 +51,25 @@ function App() {
 
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
-    { path: '/orders', element: <Dashboard />, children: [] },
-    { path: '/parts', element: <Dashboard />, children: [] },
+    { path: '/orders', element: <Dashboard />, children: [], access: 'Orders' },
+    { path: '/parts', element: <Dashboard />, children: [], access: 'Parts Stock' },
     {
-      path: '/workers', element: <Workers />, children: [
+      path: '/workers', element: <Workers />, access: 'Workers', children: [
         { path: '/new', element: <EditWorker /> },
         { path: '/:id', element: <EditWorker /> }
       ]
     },
     {
-      path: '/job-types', element: <JobTypes />, children: [
+      path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [
         { path: '/new', element: <EditJobType id="" /> },
         { path: '/:id', element: <EditJobTypeWrapper /> }
       ]
     },
-    { path: '/clients', element: <Dashboard />, children: [] },
-    { path: '/service-details', element: <ServiceDetails />, children: [] },
+    { path: '/clients', element: <Dashboard />, children: [], access: 'Clients' },
+    { path: '/service-details', element: <ServiceDetails />, children: [], access: 'Service Details' },
   ];
+
+  const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');
 
   return (
     <>
@@ -85,7 +87,7 @@ function App() {
             <ServiceDetailsInitial />
           </LayoutWithHeader></PrivateRoute>} />
 
-          {routes.map((route, i) => (
+          {routes.filter(r => !r.access || accesses.includes(r.access)).map((route, i) => (
             <>
               <Route
                 path={route.path}

@@ -3,12 +3,12 @@ using GarageControl.Infrastructure.Data.Enums;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class Role
+    public class Access
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
-        [MaxLength(RoleConstants.nameMaxLength)]
+        [MaxLength(AccessConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
         public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
     }

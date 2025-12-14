@@ -80,11 +80,11 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpGet("roles")]
-        public async Task<IActionResult> AllRoles()
+        [HttpGet("accesses")]
+        public async Task<IActionResult> AllAccesses()
         {
-            var roles = await _workerService.AllRoles();
-            return Ok(roles);
+            var accesses = await _workerService.AllAccesses();
+            return Ok(accesses);
         }
         
         [HttpDelete("{id}")]

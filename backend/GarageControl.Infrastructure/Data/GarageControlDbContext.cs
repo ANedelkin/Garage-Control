@@ -40,11 +40,11 @@ namespace GarageControl.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Worker>()
-                .HasMany(w => w.Roles)
+                .HasMany(w => w.Accesses)
                 .WithMany(r => r.Workers)
                 .UsingEntity<Dictionary<string, object>>(
-                    "WorkerRoles",
-                    j => j.HasOne<Role>().WithMany().HasForeignKey("RoleId"),
+                    "WorkerAccesses",
+                    j => j.HasOne<Access>().WithMany().HasForeignKey("AccessId"),
                     j => j.HasOne<Worker>().WithMany().HasForeignKey("WorkerId")
                 );
 
@@ -84,7 +84,7 @@ namespace GarageControl.Infrastructure.Data
 
         public DbSet<CarService> CarServices { get; set; } = null!;
         public DbSet<Worker> Workers { get; set; } = null!;
-        public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<Access> Accesses { get; set; } = null!;
         public DbSet<JobType> JobTypes { get; set; } = null!;
         public DbSet<Job> Jobs { get; set; } = null!;
         public DbSet<CarMake> CarMakes { get; set; } = null!;

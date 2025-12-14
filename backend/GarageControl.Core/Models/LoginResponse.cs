@@ -12,6 +12,7 @@ namespace GarageControl.Core.Models
         {
             Message = message;
             Success = success;
+            Accesses = new List<string>();
         }
 
         public LoginResponse(string username, string token, string refreshToken, string? message)
@@ -20,6 +21,7 @@ namespace GarageControl.Core.Models
             Token = token;
             RefreshToken = refreshToken;
             Message = message ?? string.Empty;
+            Accesses = new List<string>();
         }
 
         public LoginResponse(string username, string token, string refreshToken, string? message, bool success)
@@ -29,6 +31,17 @@ namespace GarageControl.Core.Models
             RefreshToken = refreshToken;
             Message = message ?? string.Empty;
             Success = success;
+            Accesses = new List<string>();
+        }
+
+        public LoginResponse(string username, string token, string refreshToken, string? message, bool success, List<string> accesses)
+        {
+            Username = username;
+            Token = token;
+            RefreshToken = refreshToken;
+            Message = message ?? string.Empty;
+            Success = success;
+            Accesses = accesses;
         }
 
         public bool Success { get; set; }
@@ -36,5 +49,6 @@ namespace GarageControl.Core.Models
         public string RefreshToken { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
+        public List<string> Accesses { get; set; } = new List<string>();
     }
 }

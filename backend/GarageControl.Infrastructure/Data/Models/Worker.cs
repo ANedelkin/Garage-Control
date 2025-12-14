@@ -11,7 +11,7 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(WorkerConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
-        public ICollection<Role> Roles { get; set; } = new HashSet<Role>();
+        public ICollection<Access> Accesses { get; set; } = new HashSet<Access>();
         public ICollection<JobType> Activities { get; set; } = new HashSet<JobType>();
         public ICollection<Job> Jobs { get; set; } = new HashSet<Job>();
         public ICollection<WorkerSchedule> Schedules { get; set; } = new HashSet<WorkerSchedule>();
