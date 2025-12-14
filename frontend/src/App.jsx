@@ -13,7 +13,8 @@ import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsIni
 import JobTypes from './components/orders/JobTypes';
 import EditJobType from './components/orders/EditJobType.jsx';
 import MakesAndModels from './components/cars/MakesAndModels.jsx';
-
+import Clients from './components/clients/Clients.jsx';
+import EditClient from './components/clients/EditClient.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -67,7 +68,12 @@ function App() {
         { path: '/:id', element: <EditJobTypeWrapper /> }
       ]
     },
-    { path: '/clients', element: <Dashboard />, children: [], access: 'Clients' },
+    {
+      path: '/clients', element: <Clients />, access: 'Clients', children: [
+        { path: '/new', element: <EditClient /> },
+        { path: '/:id', element: <EditClient /> }
+      ]
+    },
     { path: '/service-details', element: <ServiceDetails />, children: [], access: 'Service Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
   ];
@@ -97,7 +103,6 @@ function App() {
                 element={
                   <PrivateRoute>
                     <LayoutWithHeader
-                      selection={i}
                       sidebarOpen={sidebarOpen}
                       setSidebarOpen={setSidebarOpen}
                     >
@@ -112,7 +117,6 @@ function App() {
                   element={
                     <PrivateRoute>
                       <LayoutWithHeader
-                        selection={i}
                         sidebarOpen={sidebarOpen}
                         setSidebarOpen={setSidebarOpen}
                       >
@@ -135,12 +139,12 @@ function App() {
 
 export default App;
 
-function LayoutWithHeader({ selection, children, sidebarOpen, setSidebarOpen }) {
+function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen }) {
   return (
     <>
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div className="horizontal work-area">
-        <Sidebar selection={selection} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {children}
       </div>
     </>
