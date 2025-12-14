@@ -19,7 +19,8 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 "Job Types",
                 "Clients",
                 "Service Details",
-                "Makes and Models"
+                "Makes and Models",
+                "Cars"
             };
 
             foreach (var accessName in accesses)

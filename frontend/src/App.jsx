@@ -13,6 +13,7 @@ import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsIni
 import JobTypes from './components/orders/JobTypes';
 import EditJobType from './components/orders/EditJobType.jsx';
 import MakesAndModels from './components/cars/MakesAndModels.jsx';
+import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
 
@@ -76,6 +77,7 @@ function App() {
     },
     { path: '/service-details', element: <ServiceDetails />, children: [], access: 'Service Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
+    { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
   ];
 
   const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');

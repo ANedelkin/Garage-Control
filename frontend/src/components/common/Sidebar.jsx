@@ -24,6 +24,7 @@ const Sidebar = ({ open, onClose }) => {
     { path: '/clients', icon: 'fa-user', label: 'Clients', access: 'Clients' },
     { path: '/service-details', icon: 'fa-gear', label: 'Service Details', access: 'Service Details' },
     { path: '/makes-and-models', icon: 'fa-car', label: 'Makes & models', access: 'Makes and Models' },
+    { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
   ];
 
   const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');

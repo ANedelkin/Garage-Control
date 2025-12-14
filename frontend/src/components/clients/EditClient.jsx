@@ -4,6 +4,10 @@ import "../../assets/css/common.css";
 import "../../assets/css/clients.css";
 import "../../assets/css/edit-client.css";
 import { clientApi } from "../../services/clientApi";
+import { vehicleApi } from "../../services/vehicleApi";
+import { makeApi } from "../../services/makeApi";
+import { modelApi } from "../../services/modelApi";
+import CarPopup from "../cars/CarPopup";
 
 const EditClient = () => {
     const { id } = useParams();
@@ -20,24 +24,46 @@ const EditClient = () => {
 
     const [loading, setLoading] = useState(true);
 
-    // Sample cars data for display only
-    const [cars] = useState([
-        { id: 1, make: "Toyota", model: "Corolla", year: 2020, plate: "ABC-123" },
-        { id: 2, make: "Honda", model: "Civic", year: 2018, plate: "XYZ-789" }
-    ]);
+    // Cars Logic
+    const [cars, setCars] = useState([]);
+    const [makes, setMakes] = useState([]);
+    const [modelsMap, setModelsMap] = useState({}); // map[modelId] -> modelName
 
+    const [showCarPopup, setShowCarPopup] = useState(false);
+    const [currentCar, setCurrentCar] = useState(null);
+
+    // Initial Load
     useEffect(() => {
         const fetchData = async () => {
-            if (!isNew) {
-                try {
-                    const data = await clientApi.getDetails(id);
-                    if (data) setClient(data);
-                } catch (error) {
-                    console.error("Error loading client", error);
-                    alert("Failed to load client details.");
+            try {
+                const makesRes = await makeApi.getAll();
+                setMakes(makesRes);
+
+                if (!isNew) {
+                    const clientRes = await clientApi.getDetails(id);
+                    if (clientRes) setClient(clientRes);
+
+                    const carsRes = await vehicleApi.getByClient(id);
+                    setCars(carsRes);
+
+                    // Fetch models for display names
+                    const uniqueMakeIds = [...new Set(carsRes.map(c => c.makeId))];
+                    const newModelsMap = {};
+
+                    await Promise.all(uniqueMakeIds.map(async (mkId) => {
+                        if (mkId) {
+                            const mRes = await modelApi.getModels(mkId);
+                            mRes.forEach(m => newModelsMap[m.id] = m.name);
+                        }
+                    }));
+                    setModelsMap(newModelsMap);
                 }
+            } catch (error) {
+                console.error("Error loading data", error);
+                alert("Failed to load data.");
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchData();
     }, [id, isNew]);
@@ -57,10 +83,58 @@ const EditClient = () => {
         }
     };
 
+    const handleSaveCar = async (carData) => {
+        try {
+            const carDto = {
+                ...carData,
+                ownerId: id // Ensure owner is set
+            };
+
+            if (carData.id) {
+                await vehicleApi.edit(carDto);
+            } else {
+                await vehicleApi.create(carDto);
+            }
+
+            // Refresh cars list
+            const carsRes = await vehicleApi.getByClient(id);
+            setCars(carsRes);
+
+            // Re-fetch models map if needed
+            if (!modelsMap[carData.modelId]) {
+                const mRes = await modelApi.getModels(carData.makeId);
+                const updMap = { ...modelsMap };
+                mRes.forEach(m => updMap[m.id] = m.name);
+                setModelsMap(updMap);
+            }
+
+            setShowCarPopup(false);
+        } catch (error) {
+            console.error("Error saving car", error);
+            alert("Failed to save car.");
+        }
+    };
+
+    const handleDeleteCar = async (carId) => {
+        if (!window.confirm("Delete this car?")) return;
+        try {
+            await vehicleApi.delete(carId);
+            setCars(cars.filter(c => c.id !== carId));
+        } catch (error) {
+            console.error("Error deleting car", error);
+            alert("Failed to delete car.");
+        }
+    };
+
+    const openCarPopup = (car = null) => {
+        setCurrentCar(car);
+        setShowCarPopup(true);
+    };
+
     if (loading) return <div>Loading...</div>;
 
     return (
-        <main className="main">
+        <main className="main edit-client-page">
             <div className="tile">
                 <h3 className="tile-header">{isNew ? "New Client" : "Edit Client"}</h3>
                 <form onSubmit={handleSave}>
@@ -101,7 +175,7 @@ const EditClient = () => {
                                 />
                             </div>
                             <div className="form-section">
-                                <label>Registration Number</label>
+                                <label>Registration Number (Personal)</label>
                                 <input
                                     type="text"
                                     value={client.registrationNumber}
@@ -115,26 +189,30 @@ const EditClient = () => {
                                 <div className="car-list-section">
                                     <div className="car-list-header">
                                         <h4>Cars</h4>
-                                        <button type="button" className="btn" onClick={() => { }}>+ Add Car</button>
+                                        <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
                                     </div>
-                                    {cars.map(car => (
-                                        <div key={car.id} className="car-item">
-                                            <div>
-                                                <strong>{car.make} {car.model}</strong> ({car.year}) - {car.plate}
+                                    {cars.length === 0 && <p style={{ color: '#888' }}>No cars added.</p>}
+                                    {cars.map(car => {
+                                        const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
+                                        const modelName = modelsMap[car.modelId] || "Unknown";
+
+                                        return (
+                                            <div key={car.id} className="car-item">
+                                                <div>
+                                                    <strong>{makeName} {modelName}</strong> <br />
+                                                    <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
+                                                </div>
+                                                <div>
+                                                    <button type="button" className="icon-btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
+                                                        <i className="fa-solid fa-pen"></i>
+                                                    </button>
+                                                    <button type="button" className="icon-btn delete" onClick={() => handleDeleteCar(car.id)}>
+                                                        <i className="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <button type="button" className="icon-btn" style={{ marginRight: '10px' }} onClick={() => { }}>
-                                                    <i className="fa-solid fa-pen"></i>
-                                                </button>
-                                                <button type="button" className="icon-btn delete" onClick={() => { }}>
-                                                    <i className="fa-solid fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <p style={{ marginTop: '10px', fontSize: '0.9em', color: '#888' }}>
-                                        * Car functionality is currently disabled (UI demo only).
-                                    </p>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -146,6 +224,14 @@ const EditClient = () => {
                     </div>
                 </form>
             </div>
+
+            <CarPopup
+                isOpen={showCarPopup}
+                onClose={() => setShowCarPopup(false)}
+                onSave={handleSaveCar}
+                car={currentCar}
+                makes={makes}
+            />
         </main>
     );
 };

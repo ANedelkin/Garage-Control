@@ -1,7 +1,7 @@
 import { request } from "../Utilities/request";
 
 export const makeApi = {
-    getMakes: async () => {
+    getAll: async () => {
         return await (await request('GET', 'make/all')).json();
     },
     createMake: async (makeData) => {

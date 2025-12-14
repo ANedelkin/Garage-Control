@@ -303,3 +303,38 @@ select option {
         padding: 16px;
     }
 }
+
+/* Generic Popup Styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup {
+    background: var(--solid1);
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid var(--border2);
+    min-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.popup h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
