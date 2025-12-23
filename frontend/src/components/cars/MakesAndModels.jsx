@@ -31,7 +31,7 @@ const MakesAndModels = () => {
     const fetchMakes = async () => {
         setLoadingMakes(true);
         try {
-            const data = await makeApi.getMakes();
+            const data = await makeApi.getAll();
             setMakes(data);
         } catch (error) {
             console.error("Error fetching makes", error);
@@ -43,7 +43,7 @@ const MakesAndModels = () => {
     const fetchModels = async (makeId) => {
         setLoadingModels(true);
         try {
-            const data = await modelApi.getModels(makeId);
+            const data = await modelApi.getAll(makeId);
             setModels(data);
         } catch (error) {
             console.error("Error fetching models", error);
