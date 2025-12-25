@@ -20,13 +20,11 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         public int Quantity { get; set; }
         public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
-        [Required]
-        public string CarServiceId { get; set; } = null!;
+        public string? CarServiceId { get; set; } = null!;
         [ForeignKey(nameof(CarServiceId))]
-        public CarService CarService { get; set; } = null!;
-        [Required]
-        public string ParentId { get; set; } = null!;
+        public CarService? CarService { get; set; }
+        public string? ParentId { get; set; } = null!;
         [ForeignKey(nameof(ParentId))]
-        public PartsFolder Parent { get; set; } = null!;
+        public PartsFolder? Parent { get; set; }
     }
 }

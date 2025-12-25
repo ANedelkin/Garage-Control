@@ -11,14 +11,12 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(FolderConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
-        [Required]
-        public string CarServiceId { get; set; } = null!;
+        public string? CarServiceId { get; set; } = null!;
         [ForeignKey(nameof(CarServiceId))]
-        public CarService CarService { get; set; } = null!;
-        [Required]
-        public string ParentId { get; set; } = null!;
+        public CarService? CarService { get; set; }
+        public string? ParentId { get; set; } = null!;
         [ForeignKey(nameof(ParentId))]
-        public PartsFolder Parent { get; set; } = null!;
+        public PartsFolder? Parent { get; set; }
         public ICollection<PartsFolder> FolderChildren { get; set; } = new HashSet<PartsFolder>();
         public ICollection<Part> PartsChildren { get; set; } = new HashSet<Part>();
     }

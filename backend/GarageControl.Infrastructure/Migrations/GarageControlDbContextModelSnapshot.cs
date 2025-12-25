@@ -300,7 +300,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CarServiceId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
@@ -309,7 +308,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ParentId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PartNumber")
@@ -338,7 +336,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CarServiceId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
@@ -347,7 +344,6 @@ namespace GarageControl.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ParentId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -817,15 +813,12 @@ namespace GarageControl.Infrastructure.Migrations
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
                         .WithMany()
-                        .HasForeignKey("CarServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarServiceId");
 
                     b.HasOne("GarageControl.Infrastructure.Data.Models.PartsFolder", "Parent")
                         .WithMany("PartsChildren")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CarService");
 
@@ -836,15 +829,12 @@ namespace GarageControl.Infrastructure.Migrations
                 {
                     b.HasOne("GarageControl.Infrastructure.Data.Models.CarService", "CarService")
                         .WithMany()
-                        .HasForeignKey("CarServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarServiceId");
 
                     b.HasOne("GarageControl.Infrastructure.Data.Models.PartsFolder", "Parent")
                         .WithMany("FolderChildren")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CarService");
 
