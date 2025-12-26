@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../../assets/css/common.css';
+import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
 
@@ -55,7 +55,7 @@ const Clients = () => {
             <div className="tile">
                 <h3>Clients</h3>
                 <div style={{ overflowX: 'auto' }}>
-                    <table className="clients-table">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Name</th>

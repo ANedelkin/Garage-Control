@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../../assets/css/common.css';
 import '../../assets/css/service-details.css';
 import { carServiceApi } from '../../services/carServiceApi.js';
 

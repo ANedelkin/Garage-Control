@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../assets/css/common.css';
-import '../../assets/css/auth.css';
 import AuthTemplate from './AuthTemplate.jsx';
 import { authApi } from '../../services/authApi.js';
 

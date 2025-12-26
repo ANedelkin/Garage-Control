@@ -1,45 +1,8 @@
-.clients-table {
-    width: 100%;
-    border-collapse: collapse;
+.edit-client .cars-section{
+    width: 400px;
+    max-width: 95%;
 }
 
-.clients-table th,
-.clients-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.clients-table th {
-    background-color: var(--bg-secondary);
-    font-weight: 600;
-}
-
-.clients-table tr:hover {
-    background-color: var(--bg-hover);
-}
-
-.car-list-section {
-    margin-top: 30px;
-    background-color: var(--bg-secondary);
-    padding: 20px;
-    border-radius: var(--border-radius);
-}
-
-.car-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.car-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: var(--card-bg);
-    margin-bottom: 8px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
+.edit-client .popup {
+    max-width: 400px;
 }

@@ -1,0 +1,26 @@
+.tile {
+    background: var(--glass);
+    padding: 22px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border2);
+}
+
+.tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.tile label {
+    margin-bottom: 10px;
+    margin-right: 10px;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .tile {
+        padding: 16px;
+    }
+}

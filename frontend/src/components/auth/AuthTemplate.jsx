@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import '../../assets/css/common/base.css';
+import '../../assets/css/common/layout.css';
+import '../../assets/css/common/controls.css';
+import '../../assets/css/common/form.css';
+import '../../assets/css/common/tile.css';
 import '../../assets/css/auth.css';
-import '../../assets/css/common.css';
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
@@ -51,11 +55,11 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
                         </div>
 
                         <div className="auth-buttons">
-                            <button type="button" className="btn icon-btn" onClick={handlers?.handleGoogle}>
+                            <button type="button" className="btn" onClick={handlers?.handleGoogle}>
                                 <img src={GoogleIcon} alt="Google" />
                                 Continue with Google
                             </button>
-                            <button type="button" className="btn icon-btn" onClick={handlers?.handleMicrosoft}>
+                            <button type="button" className="btn" onClick={handlers?.handleMicrosoft}>
                                 <img src={MicrosoftIcon} alt="Microsoft" />
                                 Continue with Microsoft
                             </button>

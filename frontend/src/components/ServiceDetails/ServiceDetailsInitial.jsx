@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import '../../assets/css/common.css';
-
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import ServiceDetailsForm from './ServiceDetailsForm.jsx';
 import { carServiceApi } from '../../services/carServiceApi.js';

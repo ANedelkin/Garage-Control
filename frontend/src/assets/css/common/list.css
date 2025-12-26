@@ -1,0 +1,32 @@
+.list-container {
+    background: var(--solid3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.list-empty {
+    margin-top: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
+    color: var(--text-clr2);
+    text-align: center;
+    width: 100%;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.list-item:hover {
+    background: var(--solid4);
+}

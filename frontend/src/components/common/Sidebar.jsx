@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import '../../assets/css/common.css';
 import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';

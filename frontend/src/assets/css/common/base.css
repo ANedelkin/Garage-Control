@@ -1,0 +1,11 @@
+* {
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, Segoe UI, Roboto, system-ui, Arial;
+    background: var(--gradient);
+    color: var(--text-clr1);
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../assets/css/common.css';
+import '../../assets/css/common/dropdown.css';
 
 const Dropdown = ({ children, value, onChange, title }) => {
     const [selection, setSelection] = useState(children[0]);

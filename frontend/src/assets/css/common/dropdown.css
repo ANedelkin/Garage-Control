@@ -1,0 +1,36 @@
+.select-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.select-wrapper i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-clr2);
+    pointer-events: none;
+}
+
+select {
+    width: 100%;
+    background: var(--solid3);
+    border: 1px solid var(--border2);
+    color: inherit;
+    padding: 10px 28px 10px 14px;
+    border-radius: 8px;
+    appearance: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+select:hover {
+    background-color: var(--solid4);
+}
+
+select option {
+    background-color: var(--solid3);
+    color: inherit;
+    padding: 8px;
+    border: none;
+}

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../../assets/css/common.css";
 import "../../assets/css/clients.css";
-import "../../assets/css/edit-client.css";
 import { clientApi } from "../../services/clientApi";
 import { vehicleApi } from "../../services/vehicleApi";
 import { makeApi } from "../../services/makeApi";
@@ -134,11 +132,11 @@ const EditClient = () => {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <main className="main edit-client-page">
+        <main className="main container edit-client">
             <div className="tile">
                 <h3 className="tile-header">{isNew ? "New Client" : "Edit Client"}</h3>
                 <form onSubmit={handleSave}>
-                    <div className="edit-client-container">
+                    <div className="horizontal">
                         <div className="form-column">
                             <div className="form-section">
                                 <label>Name</label>
@@ -184,20 +182,20 @@ const EditClient = () => {
                             </div>
                         </div>
 
-                        {!isNew && (
-                            <div className="form-column">
-                                <div className="car-list-section">
-                                    <div className="car-list-header">
-                                        <h4>Cars</h4>
-                                        <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
-                                    </div>
-                                    {cars.length === 0 && <p style={{ color: '#888' }}>No cars added.</p>}
+                        <div className="form-column cars-section">
+                            <div className="form-section max-height">
+                                <div className="section-header">
+                                    <label>Cars</label>
+                                    <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
+                                </div>
+                                <div className="list-container max-width max-height">
+                                    {cars.length === 0 && <p className="list-empty">No cars added.</p>}
                                     {cars.map(car => {
                                         const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
                                         const modelName = modelsMap[car.modelId] || "Unknown";
 
                                         return (
-                                            <div key={car.id} className="car-item">
+                                            <div key={car.id} className="list-item">
                                                 <div>
                                                     <strong>{makeName} {modelName}</strong> <br />
                                                     <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
@@ -215,12 +213,11 @@ const EditClient = () => {
                                     })}
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     <div className="form-footer" style={{ marginTop: '20px' }}>
                         <button type="submit" className="btn">Save Client</button>
-                        <button type="button" className="btn secondary" onClick={() => navigate('/clients')}>Cancel</button>
                     </div>
                 </form>
             </div>

@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 
-import '../../assets/css/common.css'
 import '../../assets/css/dashboard.css';
 
 const Dashboard = () => {

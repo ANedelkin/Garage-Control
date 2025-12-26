@@ -1,41 +1,8 @@
 .edit-worker .tile {
   max-width: 900px;
-  /* adjust to your preferred width */
   margin: 0 auto;
-  /* centers horizontally */
   width: 100%;
   height: fit-content;
-}
-
-.tile table {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tile table tbody tr {
-  cursor: pointer;
-  border-bottom: 0.5px solid var(--border2);
-}
-
-.tile table tbody tr:hover {
-  background-color: var(--solid4);
-}
-
-.tile table th,
-.tile table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border3);
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tile table th.description,
-.tile table td.description {
-  width: 100%;
 }
 
 .worker-form {
@@ -43,58 +10,35 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  max-width: 100%;
-  /* Ensure it's constrained to the full width of its container */
-}
-
-.checkbox-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--border2);
-  padding: 10px;
-  border-radius: 4px;
 }
 
 .checkbox-item {
   display: flex;
+  flex-direction: row;
   gap: 10px;
-  align-items: center;
   cursor: pointer;
+}
+.checkbox-item input[type="checkbox"] {
+  width:auto;
 }
 
 .form-upper {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  /* grid-template-rows: auto auto auto; */
-  gap: 20px;
-  width: 100%;
-}
-
-.form-column {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  gap: 10px;
 }
 
 .form-lower {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  /* grid-template-rows: 1fr 1fr; */
-  gap: 20px;
-  width: 100%;
-}
-
-.form-section {
-  width: 100%;
+  gap: 10px;
 }
 
 .schedule-grid {
   display: grid;
   grid-template-columns: 60px repeat(7, 1fr);
-  border: 1px solid var(--border2);
+  border-top: 1px solid var(--border2);
+  border-left: 1px solid var(--border2);
 }
 
 .schedule-header-cell {
@@ -104,15 +48,15 @@
   font-weight: bold;
   border-bottom: 1px solid var(--border2);
   border-right: 1px solid var(--border2);
-  position: sticky;
-  top: 0;
-  z-index: 1;
 }
 
 .schedule-time-cell {
   background: var(--solid2);
   padding: 4px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   border-bottom: 1px solid var(--border2);
   border-right: 1px solid var(--border2);
   font-size: 0.8em;
@@ -162,83 +106,8 @@
   border-radius: 4px;
 }
 
-.leaves-calendar {
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  padding: 10px;
-  background: var(--bg2);
-  height: fit-content;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.calendar-header-day {
-  text-align: center;
-  font-size: 0.8em;
-  font-weight: bold;
-  color: var(--text-clr2);
-  padding: 4px;
-}
-
-.calendar-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--solid1);
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.calendar-day.empty {
-  background: transparent;
-}
-
-.calendar-day.leave-day {
-  background: var(--primary);
-  color: white;
-}
-
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.popup {
-  background: var(--bg1);
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.popup-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+.edit-worker .popup{
+  width:300px !important;
 }
 
 @media (max-width: 800px) {

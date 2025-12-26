@@ -3,7 +3,6 @@ import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
 import CarPopup from './CarPopup';
-import '../../assets/css/common.css';
 import '../../assets/css/clients.css';
 
 const Cars = () => {

@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width:100%;
 }
 
 .job-type-content {
@@ -10,23 +11,9 @@
 
 .job-type-form {
   width: fit-content;
-}
-
-.form-main {
-  height: 400px;
-}
-
-.job-type-edit .form-section {
-  width: fit-content;
-}
-
-.form-section-name {
-  width: 100%;
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
+  height:450px;
+  display:flex;
+  flex-direction: column;
 }
 
 .description {
@@ -56,72 +43,9 @@
   flex-direction: column;
 }
 
-.form-right .mechanics-input-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 6px;
+.form-right{
+  width:350px;
 }
-
-.mechanics-list-container {
-  flex: 1;
-  background: var(--solid3);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  padding: 6px 8px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  min-height: 0;
-  width: 300px;
-}
-
-.form-right .form-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.mechanics-empty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-style: italic;
-  color: var(--text-clr2);
-  text-align: center;
-  width: 100%;
-}
-
-.mechanics-table {
-  width: 100%;
-  border-collapse: collapse;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.mechanics-table tbody {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.mechanics-table tbody tr {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.mechanics-table tbody tr:hover {
-  background-color: var(--solid4);
-}
-
-/* .mechanics-table tbody tr .btn-delete {
-  margin-left: auto;
-} */
 
 @media (max-width: 700px) {
   .form-row {

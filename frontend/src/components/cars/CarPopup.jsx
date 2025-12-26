@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { modelApi } from '../../services/modelApi';
-import '../../assets/css/common.css';
+import Dropdown from '../common/Dropdown.jsx';
 
 const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
     const [currentCar, setCurrentCar] = useState({
@@ -44,38 +44,30 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
 
     return (
         <div className="popup-overlay" onClick={onClose}>
-            <div className="popup" onClick={e => e.stopPropagation()} style={{ width: '400px' }}>
+            <div className="popup tile" onClick={e => e.stopPropagation()} style={{ width: '400px' }}>
                 <h3>{currentCar.id ? "Edit Car" : "Add Car"}</h3>
 
                 <div className="form-section">
                     <label>Make</label>
-                    <div className="select-wrapper">
-                        <select
-                            value={currentCar.makeId}
-                            onChange={e => setCurrentCar({ ...currentCar, makeId: e.target.value, modelId: "" })}
-                            style={{ width: '100%' }}
-                        >
-                            <option value="">Select Make</option>
-                            {makes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                        </select>
-                        <i className="fa-solid fa-chevron-down"></i>
-                    </div>
+                    <Dropdown
+                        value={currentCar.makeId}
+                        onChange={e => setCurrentCar({ ...currentCar, makeId: e.target.value, modelId: "" })}
+                    >
+                        <option value="">Select Make</option>
+                        {makes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </Dropdown>
                 </div>
 
                 <div className="form-section">
                     <label>Model</label>
-                    <div className="select-wrapper">
-                        <select
-                            value={currentCar.modelId}
-                            onChange={e => setCurrentCar({ ...currentCar, modelId: e.target.value })}
-                            disabled={!currentCar.makeId}
-                            style={{ width: '100%' }}
-                        >
-                            <option value="">Select Model</option>
-                            {popupModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                        </select>
-                        <i className="fa-solid fa-chevron-down"></i>
-                    </div>
+                    <Dropdown
+                        value={currentCar.modelId}
+                        onChange={e => setCurrentCar({ ...currentCar, modelId: e.target.value })}
+                        disabled={!currentCar.makeId}
+                    >
+                        <option value="">Select Model</option>
+                        {popupModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </Dropdown>
                 </div>
 
                 <div className="form-section">
@@ -96,9 +88,9 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
                     />
                 </div>
 
-                <div className="popup-actions">
-                    <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+                <div className="form-footer">
                     <button type="button" className="btn" onClick={handleSave}>Save</button>
+                    <button type="button" className="btn" onClick={onClose}>Cancel</button>
                 </div>
             </div>
         </div>

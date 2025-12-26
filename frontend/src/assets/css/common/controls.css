@@ -1,0 +1,84 @@
+input,
+textarea,
+select {
+    border: 1px solid var(--border2);
+    font-size: 14px;
+    width: 100%;
+    height: auto;
+    margin: 0;
+}
+
+input,
+textarea,
+select,
+.btn {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--solid3);
+    color: inherit;
+}
+
+.select-wrapper {
+    width: 100%;
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+}
+
+.lnk {
+    font-size: 14px;
+    color: var(--text-clr2);
+    text-decoration: none;
+}
+
+.lnk a:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    border: 1px solid var(--accent2);
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: var(--solid4);
+}
+
+.icon-btn {
+    padding: 8px;
+    color: var(--text-clr2);
+    background-color: inherit;
+    border-radius: 8px;
+    border: none;
+}
+
+.icon-btn:hover {
+    background-color: var(--solid4);
+    color: var(--text-clr1);
+}
+
+.delete:hover {
+    color: red;
+}
+
+@media (max-width: 600px) {
+    .btn {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}

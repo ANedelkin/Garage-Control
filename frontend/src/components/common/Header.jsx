@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/authApi.js';
 
-import '../../assets/css/common.css';
+import '../../assets/css/common/controls.css';
 import '../../assets/css/header.css';
 
 const Header = ({ onToggleSidebar }) => {
@@ -31,7 +31,7 @@ const Header = ({ onToggleSidebar }) => {
       </div>
       <div className="profile">
         <div className="profile-name">Genco Gencin</div>
-        <a className="fa-solid fa-right-from-bracket icon-btn" title="Log out" onClick={handleLogout}></a>
+        <a className="fa-solid fa-right-from-bracket icon-btn btn" title="Log out" onClick={handleLogout}></a>
       </div>
     </header>
   );

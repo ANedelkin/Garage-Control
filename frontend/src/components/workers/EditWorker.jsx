@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "../../assets/css/common/popup.css";
+import "../../assets/css/common/layout.css";
+import "../../assets/css/common/colors.css";
 import "../../assets/css/workers.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -217,9 +220,9 @@ const EditWorker = () => {
               </div>
             </div>
 
-            <div className="form-column">
+            <div className="form-section">
               <label>Access</label>
-              <div className="checkbox-list">
+              <div className="list-container grow">
                 {worker.accesses.map((access, idx) => (
                   <label key={access.id} className="checkbox-item">
                     <input
@@ -237,9 +240,9 @@ const EditWorker = () => {
               </div>
             </div>
 
-            <div className="form-column">
+            <div className="form-section">
               <label>Job Types</label>
-              <div className="checkbox-list">
+              <div className="list-container grow">
                 {allJobTypes.map(jt => (
                   <label key={jt.id} className="checkbox-item">
                     <input
@@ -268,17 +271,21 @@ const EditWorker = () => {
               />
             </div>
 
-            <div className="leaves-list">
-              <label>Leaves</label>
-              <button type="button" className="btn" onClick={() => openLeavePopup()}>+ Add Leave</button>
-              {worker.leaves.map((leave, i) => (
-                <div key={i} className="leave-item" onClick={() => openLeavePopup(leave, i)} style={{ cursor: 'pointer' }}>
-                  <span>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
-                  <button type="button" className="icon-btn delete" onClick={(e) => { e.stopPropagation(); deleteLeave(i); }}>
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              ))}
+            <div className="form-section">
+              <div className="section-header">
+                <label>Leaves</label>
+                <button type="button" className="btn" onClick={() => openLeavePopup()}>+ Add Leave</button>
+              </div>
+              <div className="list-container max-height">
+                {worker.leaves.size ? worker.leaves.map((leave, i) => (
+                  <div key={i} className="leave-item" onClick={() => openLeavePopup(leave, i)} style={{ cursor: 'pointer' }}>
+                    <span>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
+                    <button type="button" className="icon-btn delete" onClick={(e) => { e.stopPropagation(); deleteLeave(i); }}>
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                )) : <div className="list-empty">No leaves added</div>}
+              </div>
             </div>
           </div>
 
@@ -289,7 +296,7 @@ const EditWorker = () => {
       </div>
       {showLeavePopup && (
         <div className="popup-overlay" onClick={() => setShowLeavePopup(false)}>
-          <div className="popup" onClick={e => e.stopPropagation()}>
+          <div className="tile popup" onClick={e => e.stopPropagation()}>
             <h3>{editingLeaveIndex >= 0 ? "Edit Leave" : "Add Leave"}</h3>
             <div className="form-section">
               <label>Start Date</label>
@@ -305,9 +312,9 @@ const EditWorker = () => {
                 onChange={date => setCurrentLeave({ ...currentLeave, endDate: date })}
               />
             </div>
-            <div className="popup-actions">
-              <button type="button" className="btn" onClick={() => setShowLeavePopup(false)}>Cancel</button>
+            <div className="form-footer">
               <button type="button" className="btn" onClick={handleAddOrUpdateLeave}>Save</button>
+              <button type="button" className="btn" onClick={() => setShowLeavePopup(false)}>Cancel</button>
             </div>
           </div>
         </div>

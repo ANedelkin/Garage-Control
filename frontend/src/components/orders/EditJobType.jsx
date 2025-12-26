@@ -60,11 +60,11 @@ const EditJobType = ({ id = undefined }) => {
       <div className="tile">
         <h3 className="tile-header">Job Type Information</h3>
         <form onSubmit={handleFormSubmit} className="job-type-form">
-          <div className="form-row form-main">
+          <div className="horizontal grow">
 
             <div className="form-left">
-              <div className="form-row">
-                <div className="form-section form-section-name">
+              <div className="horizontal">
+                <div className="form-section form-section-name grow">
                   <label htmlFor="name">Job Type Name</label>
                   <input
                     type="text"
@@ -77,7 +77,7 @@ const EditJobType = ({ id = undefined }) => {
                   />
                 </div>
 
-                <div className="form-section">
+                <div className="form-section fit-width">
                   <label>Color</label>
                   <input
                     ref={colorInputRef}
@@ -122,7 +122,7 @@ const EditJobType = ({ id = undefined }) => {
               <div className="form-section max-height max-width">
                 <label>Mechanics</label>
 
-                <div className="mechanics-input-row">
+                <div className="header">
                   <input
                     type="text"
                     placeholder="Enter mechanic name"
@@ -145,35 +145,31 @@ const EditJobType = ({ id = undefined }) => {
                   </button>
                 </div>
 
-                <div className="mechanics-list-container max-height">
+                <div className="list-container max-height">
                   {jobTypeData.mechanics.length === 0 ? (
-                    <div className="mechanics-empty">
-                      no mechanics assigned
+                    <div className="list-empty">
+                      No mechanics assigned
                     </div>
                   ) : (
-                    <table className="mechanics-table">
-                      <tbody>
-                        {jobTypeData.mechanics.map((m, i) => (
-                          <tr key={i}>
-                            <td>{m}</td>
-                            <td>
-                              <button
-                                type="button"
-                                className="btn delete"
-                                onClick={() => {
-                                  const updated = jobTypeData.mechanics.filter(
-                                    (_, idx) => idx !== i
-                                  );
-                                  setJobTypeData({ ...jobTypeData, mechanics: updated });
-                                }}
-                              >
-                                <i className="fa-solid fa-trash"></i>
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    jobTypeData.mechanics.map((m, i) => {
+                      return (
+                        <div key={i} className="list-item">
+                          {m}
+                          <button
+                            type="button"
+                            className="btn delete"
+                            onClick={() => {
+                              const updated = jobTypeData.mechanics.filter(
+                                (_, idx) => idx !== i
+                              );
+                              setJobTypeData({ ...jobTypeData, mechanics: updated });
+                            }}
+                          >
+                            <i className="fa-solid fa-trash"></i>
+                          </button>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>

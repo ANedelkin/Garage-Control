@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../../assets/css/common.css';
 
 import ServiceDetailsForm from './ServiceDetailsForm.jsx';
 import { carServiceApi } from '../../services/carServiceApi.js';
