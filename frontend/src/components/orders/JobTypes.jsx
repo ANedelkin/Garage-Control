@@ -49,7 +49,7 @@ const JobTypes = () => {
               <h3>{jobType.name}</h3>
               <p>{jobType.description}</p>
             </div>
-            <button className="icon-btn delete">
+            <button className="icon-btn delete btn">
               <i className="fa-solid fa-trash"></i>
             </button>
           </Link>

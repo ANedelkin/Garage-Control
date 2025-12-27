@@ -41,11 +41,13 @@ const Sidebar = ({ open, onClose }) => {
             <Link
               key={index}
               to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              className={`nav-item list-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={onClose}
             >
-              <i className={`fa-solid ${item.icon}`}></i>
-              <span>{item.label}</span>
+              <div className="horizontal">
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.label}</span>
+              </div>
             </Link>
           ))}
         </nav>

@@ -76,6 +76,16 @@ a {
     color: red;
 }
 
+.active {
+    transition: 0.075s;
+    background: var(--accent1);
+    border-left: 3px solid var(--accent3);
+    color: var(--text-clr1);
+}
+.active:hover{
+    background: var(--accent1) !important;
+}
+
 @media (max-width: 600px) {
     .btn {
         font-size: 12px;

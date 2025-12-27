@@ -36,14 +36,14 @@
   opacity: 0.85;
 }
 
-.form-left,
-.form-right {
+.job-type-edit .form-left,
+.job-type-edit .form-right {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.form-right{
+.job-type-edit .form-right{
   width:350px;
 }
 

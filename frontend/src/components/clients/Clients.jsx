@@ -78,7 +78,7 @@ const Clients = () => {
                                     <td>{c.email}</td>
                                     <td>{c.address}</td>
                                     <td onClick={e => e.stopPropagation()}>
-                                        <button className="btn delete" onClick={() => handleDelete(c.id)}>
+                                        <button className="btn delete icon-btn" onClick={() => handleDelete(c.id)}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </td>

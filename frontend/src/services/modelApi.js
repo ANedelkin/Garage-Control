@@ -1,7 +1,7 @@
 import { request } from "../Utilities/request";
 
 export const modelApi = {
-    getModels: async (makeId) => {
+    getAll: async (makeId) => {
         return (await request('GET', `model/all/${makeId}`)).json();
     },
     createModel: async (modelData) => {

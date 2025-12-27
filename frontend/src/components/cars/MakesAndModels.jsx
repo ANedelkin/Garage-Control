@@ -102,65 +102,65 @@ const MakesAndModels = () => {
     };
 
     return (
-        <main className="main">
-            <div className="makes-models-container">
-                {/* Makes Pane */}
-                <div className="pane">
-                    <div className="pane-header">
-                        <h3>Makes</h3>
-                        <button className="btn" onClick={() => handleOpenModal('make')}>+ Add Make</button>
-                    </div>
-                    <div className="list-container">
-                        {loadingMakes ? <p>Loading...</p> : (
-                            makes.map(make => (
+        <main className="main makes-models container">
+            <div className="tile">
+                <div className="horizontal grow">
+                    {/* Makes Pane */}
+                    <div className="form-left">
+                        <div className="section-header">
+                            <h3>Makes</h3>
+                            <button className="btn" onClick={() => handleOpenModal('make')}>+ Add Make</button>
+                        </div>
+                        <div className="list-container grow">
+                            {makes.map(make => (
                                 <div
                                     key={make.id}
-                                    className={`list-item ${selectedMake?.id === make.id ? 'selected' : ''}`}
+                                    className={`list-item ${selectedMake?.id === make.id ? 'active' : ''}`}
                                     onClick={() => setSelectedMake(make)}
                                 >
                                     <span>{make.name}</span>
-                                    <div className="actions">
-                                        <button onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
+                                    <div>
+                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
+                                        <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-                            ))
-                        )}
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Models Pane */}
-                <div className="pane">
-                    <div className="pane-header">
-                        <h3>Models {selectedMake ? `for ${selectedMake.name}` : ''}</h3>
-                        {selectedMake && (
-                            <button className="btn" onClick={() => handleOpenModal('model')}>+ Add Model</button>
-                        )}
-                    </div>
-                    <div className="list-container">
-                        {!selectedMake ? (
-                            <p className="text-muted">Select a make to view models</p>
-                        ) : loadingModels ? (
-                            <p>Loading...</p>
-                        ) : (
-                            models.map(model => (
-                                <div key={model.id} className="list-item">
-                                    <span>{model.name}</span>
-                                    <div className="actions">
-                                        <button onClick={() => handleOpenModal('model', model)}>
-                                            <i className="fa-solid fa-pen"></i>
-                                        </button>
-                                        <button onClick={() => handleDelete('model', model.id)}>
-                                            <i className="fa-solid fa-trash"></i>
-                                        </button>
+                    {/* Models Pane */}
+                    <div className="form-right">
+                        <div className="section-header">
+                            <h3>Models {selectedMake ? `for ${selectedMake.name}` : ''}</h3>
+                            {selectedMake && (
+                                <button className="btn" onClick={() => handleOpenModal('model')}>+ Add Model</button>
+                            )}
+                        </div>
+                        <div className="list-container grow">
+                            {!selectedMake ? (
+                                <p className="text-muted">Select a make to view models</p>
+                            ) : loadingModels ? (
+                                <p>Loading...</p>
+                            ) : (
+                                models.map(model => (
+                                    <div key={model.id} className="list-item">
+                                        <span>{model.name}</span>
+                                        <div>
+                                            <button className="btn icon-btn" onClick={() => handleOpenModal('model', model)}>
+                                                <i className="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button className="btn icon-btn delete" onClick={() => handleDelete('model', model.id)}>
+                                                <i className="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,7 +168,7 @@ const MakesAndModels = () => {
             {/* Modal */}
             {showModal && (
                 <div className="popup-overlay" onClick={() => setShowModal(false)}>
-                    <div className="popup" onClick={e => e.stopPropagation()}>
+                    <div className="popup tile" onClick={e => e.stopPropagation()}>
                         <h3>{editingItem ? 'Edit' : 'Add'} {modalType === 'make' ? 'Make' : 'Model'}</h3>
                         <form onSubmit={handleSave}>
                             <div className="form-section">
@@ -181,9 +181,9 @@ const MakesAndModels = () => {
                                     autoFocus
                                 />
                             </div>
-                            <div className="popup-actions">
-                                <button type="button" className="btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                            <div className="form-footer">
                                 <button type="submit" className="btn">Save</button>
+                                <button type="button" className="btn" onClick={() => setShowModal(false)}>Cancel</button>
                             </div>
                         </form>
                     </div>

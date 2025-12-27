@@ -61,19 +61,6 @@
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 6px;
-    cursor: pointer;
-}
-
-.nav-item:hover {
-    background: var(--solid4);
-    color: var(--text-clr1);
-}
-
-.nav-item.active {
-    transition: 0.075s;
-    background: var(--accent1);
-    border-left: 3px solid var(--accent3);
-    color: var(--text-clr1);
 }
 
 .nav-item i {

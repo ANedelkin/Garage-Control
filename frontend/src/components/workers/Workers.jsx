@@ -70,7 +70,7 @@ const Workers = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Roles</th>
+                                <th>Access</th>
                                 <th>Hired On</th>
                                 <th></th>
                             </tr>
@@ -78,17 +78,17 @@ const Workers = () => {
 
                         <tbody>
                             {loading ? <tr><td colSpan="4">Loading...</td></tr> : filteredWorkers.map((w, i) => (
-                                <tr key={w.id} onClick={() => window.location.href = `/workers/${w.id}`} style={{ cursor: 'pointer' }}>
+                                <tr key={w.id} onClick={() => window.location.href = `/workers/${w.id}`}>
                                     <td>{w.name}</td>
 
-                                    {/* <td className="description" title={w.roles.map(r => r.name).join(', ')}>
-                                        {w.roles.map(r => r.name).join(', ')}
-                                    </td> */}
+                                    <td className="description" title={w.accesses.map(r => r.name).join(', ')}>
+                                        {w.accesses.length ? w.accesses.map(r => r.name).join(', ') : "-"}
+                                    </td>
 
                                     <td>{new Date(w.hiredOn).toLocaleDateString()}</td>
 
                                     <td onClick={e => e.stopPropagation()}>
-                                        <button className="btn delete" onClick={async (e) => {
+                                        <button className="btn delete icon-btn" onClick={async (e) => {
                                             if (window.confirm('Delete worker?')) {
                                                 await workerApi.deleteWorker(w.id);
                                                 setWorkers(workers.filter(worker => worker.id !== w.id));

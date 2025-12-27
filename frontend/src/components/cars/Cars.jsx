@@ -143,7 +143,7 @@ const Cars = () => {
                                     <td>{c.vin || '-'}</td>
                                     <td>{c.ownerName}</td>
                                     <td>
-                                        <button className="btn delete" onClick={(e) => handleDelete(e, c.id)}>
+                                        <button className="btn delete icon-btn" onClick={(e) => handleDelete(e, c.id)}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
