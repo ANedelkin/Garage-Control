@@ -38,7 +38,7 @@ const Cars = () => {
                 await Promise.all(uniqueMakeIds.map(async (makeId) => {
                     if (makeId) {
                         try {
-                            const modelsForMake = await modelApi.getModels(makeId);
+                            const modelsForMake = await modelApi.getAll(makeId);
                             modelsForMake.forEach(m => modelsMap[m.id] = m.name);
                         } catch (e) {
                             console.error(`Failed to load models for make ${makeId}`, e);

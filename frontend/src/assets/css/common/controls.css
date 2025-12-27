@@ -12,10 +12,11 @@ input,
 textarea,
 select,
 .btn {
-    padding: 10px 14px;
+    padding: 0px 14px;
     border-radius: 8px;
     background: var(--solid3);
     color: inherit;
+    min-height: 40px;
 }
 
 .select-wrapper {

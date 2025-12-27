@@ -22,7 +22,7 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
     return (
         <main className="background">
             <ThemeToggle className="theme-toggle" />
-            <div className="container">
+            <div className="container auth">
                 <div className="tile">
                     <h3 className="tile-header">{title}</h3>
                     <form onSubmit={handleFormSubmit}>

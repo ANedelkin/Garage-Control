@@ -32,6 +32,10 @@
   gap: 10px;
 }
 
-/* .form-section {
-  width: 400px;
-} */
+.auth .form-section {
+  width: 350px;
+}
+
+.auth .lnk{
+  margin-right:auto;
+}
