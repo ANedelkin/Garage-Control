@@ -24,7 +24,7 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
         if (isOpen && currentCar.makeId) {
             const fetchPopupModels = async () => {
                 try {
-                    const mRes = await modelApi.getModels(currentCar.makeId);
+                    const mRes = await modelApi.getAll(currentCar.makeId);
                     setPopupModels(mRes);
                 } catch (error) {
                     console.error("Failed to fetch models", error);

@@ -50,7 +50,7 @@ const EditClient = () => {
 
                     await Promise.all(uniqueMakeIds.map(async (mkId) => {
                         if (mkId) {
-                            const mRes = await modelApi.getModels(mkId);
+                            const mRes = await modelApi.getAll(mkId);
                             mRes.forEach(m => newModelsMap[m.id] = m.name);
                         }
                     }));
@@ -201,10 +201,10 @@ const EditClient = () => {
                                                     <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
                                                 </div>
                                                 <div>
-                                                    <button type="button" className="icon-btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
+                                                    <button type="button" className="icon-btn btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
                                                         <i className="fa-solid fa-pen"></i>
                                                     </button>
-                                                    <button type="button" className="icon-btn delete" onClick={() => handleDeleteCar(car.id)}>
+                                                    <button type="button" className="icon-btn delete btn" onClick={() => handleDeleteCar(car.id)}>
                                                         <i className="fa-solid fa-trash"></i>
                                                     </button>
                                                 </div>
