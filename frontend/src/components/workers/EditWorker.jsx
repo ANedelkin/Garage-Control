@@ -277,14 +277,34 @@ const EditWorker = () => {
                 <button type="button" className="btn" onClick={() => openLeavePopup()}>+ Add Leave</button>
               </div>
               <div className="list-container max-height">
-                {worker.leaves.size ? worker.leaves.map((leave, i) => (
-                  <div key={i} className="leave-item" onClick={() => openLeavePopup(leave, i)} style={{ cursor: 'pointer' }}>
-                    <span>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
-                    <button type="button" className="icon-btn delete" onClick={(e) => { e.stopPropagation(); deleteLeave(i); }}>
-                      <i className="fa-solid fa-trash"></i>
-                    </button>
-                  </div>
-                )) : <div className="list-empty">No leaves added</div>}
+                {worker.leaves.length ? (
+                  worker.leaves.map((leave, i) => (
+                    <div
+                      key={i}
+                      className="list-item"
+                      onClick={() => openLeavePopup(leave, i)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <span>
+                        {new Date(leave.startDate).toLocaleDateString()} -{" "}
+                        {new Date(leave.endDate).toLocaleDateString()}
+                      </span>
+                      <button
+                        type="button"
+                        className="icon-btn delete btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteLeave(i);
+                        }}
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="list-empty">No leaves added</div>
+                )}
+
               </div>
             </div>
           </div>
