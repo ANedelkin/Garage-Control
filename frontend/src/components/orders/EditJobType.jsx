@@ -157,7 +157,7 @@ const EditJobType = ({ id = undefined }) => {
                           {m}
                           <button
                             type="button"
-                            className="btn delete"
+                            className="btn delete icon-btn"
                             onClick={() => {
                               const updated = jobTypeData.mechanics.filter(
                                 (_, idx) => idx !== i
