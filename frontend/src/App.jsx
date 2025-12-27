@@ -29,12 +29,6 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
-// Wrapper to pass params to EditJobType
-const EditJobTypeWrapper = () => {
-  const { id } = useParams();
-  return <EditJobType id={id} />;
-};
-
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [curSelection, setCurSelection] = useState(0);
@@ -65,8 +59,8 @@ function App() {
     },
     {
       path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [
-        { path: '/new', element: <EditJobType id="" /> },
-        { path: '/:id', element: <EditJobTypeWrapper /> }
+        { path: '/new', element: <EditJobType /> },
+        { path: '/:id', element: <EditJobType /> }
       ]
     },
     {

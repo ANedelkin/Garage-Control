@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from "react-router-dom";
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
 
-const EditJobType = ({ id = undefined }) => {
+const EditJobType = () => {
+  const {id} = useParams();
   const [jobTypeData, setJobTypeData] = useState(null);
   const [isNew, setIsNew] = useState(id === '');
   const [newMechanic, setNewMechanic] = useState('');
