@@ -132,6 +132,8 @@ const MakesAndModels = () => {
                         </div>
                     </div>
 
+                    <div className="vertical-divider"></div>
+
                     {/* Models Pane */}
                     <div className="form-right">
                         <div className="section-header">
@@ -142,9 +144,9 @@ const MakesAndModels = () => {
                         </div>
                         <div className="list-container grow">
                             {!selectedMake ? (
-                                <p className="text-muted">Select a make to view models</p>
+                                <p className="list-empty">Select a make to view models</p>
                             ) : loadingModels ? (
-                                <p>Loading...</p>
+                                <p className="list-empty">Loading...</p>
                             ) : (
                                 models.map(model => (
                                     <div key={model.id} className="list-item">
