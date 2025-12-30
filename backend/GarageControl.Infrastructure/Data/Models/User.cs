@@ -10,7 +10,8 @@ namespace GarageControl.Infrastructure.Data.Models
         public UserType UserType { get; set; }
         public ICollection<CarMake> CarMakes { get; set; } = new HashSet<CarMake>();
         public ICollection<CarModel> CarModels { get; set; } = new HashSet<CarModel>();
-        public CarService CarService { get; set; }
+        public CarService? CarService { get; set; }
+        public Worker? Worker { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpiry { get; set; }
     }

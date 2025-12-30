@@ -40,13 +40,13 @@ namespace GarageControl.Core.Services
             _jwtSecret = _configuration["Jwt:Key"];
             _jwtIssuer = _configuration["Jwt:Issuer"];
             _jwtAudience = _configuration["Jwt:Audience"];
-            _accessTokenExpiryMinutes = 700;
+            _accessTokenExpiryMinutes = 15;
         }
 
         public async Task<LoginResponse> SignUp(AuthVM model)
         {
             if (await UserExists(model.Email))
-                return new LoginResponse("User already exists", false);
+                return new LoginResponse(false, "User already exists");
 
             var user = new User
             {
@@ -55,48 +55,34 @@ namespace GarageControl.Core.Services
             };
 
             IdentityResult result;
-            if(model.Password == null)
+            if (model.Password == null)
                 result = await _userManager.CreateAsync(user);
             else
                 result = await _userManager.CreateAsync(user, model.Password);
-            
+
             if (!result.Succeeded)
             {
                 string errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return new LoginResponse(errors, false);
+                return new LoginResponse(false, errors);
             }
 
-            user.RefreshToken = GenerateRefreshToken();
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddHours(12);
-            await _userManager.UpdateAsync(user);
-
-            string token = GenerateAccessToken(user);
-
-            return new LoginResponse(user.Email, token, user.RefreshToken, "Successful registration", true);
+            return await DoLogin(user);
         }
 
         public async Task<LoginResponse> LogIn(AuthVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return new LoginResponse("Invalid credentials", false);
-
-            bool passwordMatch; 
-            if(model.Password == null)
+                return new LoginResponse(false, "Invalid credentials");
+            bool passwordMatch;
+            if (model.Password == null)
                 passwordMatch = true;
             else
                 passwordMatch = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!passwordMatch)
-                return new LoginResponse("Invalid credentials", false);
+                return new LoginResponse(false, "Invalid credentials");
 
-            user.RefreshToken = GenerateRefreshToken();
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddHours(12);
-            await _userManager.UpdateAsync(user);
-
-            string token = GenerateAccessToken(user);
-            var accesses = await GetUserAccess(user.Id);
-
-            return new LoginResponse(user.Email, token, user.RefreshToken, "Successful login", true, accesses);
+            return await DoLogin(user);
         }
 
         public async Task LogOut(HttpRequest request, HttpResponse response)
@@ -122,24 +108,23 @@ namespace GarageControl.Core.Services
         {
             string refreshToken = request.Cookies["RefreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
-                return new LoginResponse("No refresh token", false);
+                return new LoginResponse(false, "No refresh token");
 
             var user = await FindByToken(refreshToken);
             if (user == null)
-                return new LoginResponse("Invalid refresh token", false);
-
+                return new LoginResponse(false, "Invalid refresh token");
             if (user.RefreshTokenExpiry < DateTime.UtcNow)
-                return new LoginResponse("Refresh token expired", false);
+                return new LoginResponse(false, "Refresh token expired");
 
             string newAccess = GenerateAccessToken(user);
             var accesses = await GetUserAccess(user.Id);
 
-            return new LoginResponse("Token refreshed", newAccess, refreshToken, "", true, accesses);
+            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses);
         }
 
-        public Task SetAuthCookies(HttpResponse response, string accessToken, string refreshToken)
+        public Task SetAuthCookies(HttpResponse response, LoginResponse body)
         {
-            response.Cookies.Append("AccessToken", accessToken, new CookieOptions
+            response.Cookies.Append("AccessToken", body.Token, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -147,17 +132,28 @@ namespace GarageControl.Core.Services
                 Expires = DateTime.UtcNow.AddMinutes(_accessTokenExpiryMinutes)
             });
 
-            response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
+            response.Cookies.Append("RefreshToken", body.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddHours(12)
+                Expires = DateTime.UtcNow.AddDays(7)
             });
 
             return Task.CompletedTask;
         }
 
+        private async Task<LoginResponse> DoLogin(User user)
+        {
+            user.RefreshToken = GenerateRefreshToken();
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+
+            string token = GenerateAccessToken(user);
+            var accesses = await GetUserAccess(user.Id);
+
+            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses);
+        }
         private string GenerateAccessToken(User user)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -184,6 +180,7 @@ namespace GarageControl.Core.Services
         public async Task<bool> UserExists(string email) =>
             await _userManager.FindByEmailAsync(email) != null;
 
+
         private string GenerateRefreshToken() =>
             Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 
@@ -203,12 +200,12 @@ namespace GarageControl.Core.Services
             var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
                 .Include(w => w.Accesses)
                 .FirstOrDefaultAsync(w => w.UserId == userId);
-                
+
             if (worker != null)
             {
                 return worker.Accesses.Select(a => a.Name).ToList();
             }
-            
+
             return new List<string>();
         }
     }

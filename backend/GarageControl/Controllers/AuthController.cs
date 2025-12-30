@@ -44,7 +44,7 @@ namespace GarageControl.Controllers
 
             if (result.Success)
             {
-                await _authService.SetAuthCookies(Response, result.Token, result.RefreshToken);
+                await _authService.SetAuthCookies(Response, result);
             }
 
             return Ok(result);
@@ -108,17 +108,10 @@ namespace GarageControl.Controllers
 
             if (response.Success)
             {
-                // Set authentication cookies (optional)
-                await _authService.SetAuthCookies(Response, response.Token, response.RefreshToken);
+                await _authService.SetAuthCookies(Response, response);
 
-                // Serialize accesses to pass in query param
-                var accessesJson = System.Text.Json.JsonSerializer.Serialize(response.Accesses);
-                var encodedAccesses = Uri.EscapeDataString(accessesJson);
+                var frontendRedirectUri = $"http://localhost:5174";
 
-                // Redirect the user to the frontend with tokens and accesses
-                var frontendRedirectUri = $"http://localhost:5174?access_token={response.Token}&refresh_token={response.RefreshToken}&accesses={encodedAccesses}";
-
-                // Redirect to the frontend with the tokens as query parameters
                 return Redirect(frontendRedirectUri);
             }
 

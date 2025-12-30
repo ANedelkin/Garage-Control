@@ -23,7 +23,7 @@ namespace GarageControl.Infrastructure.Data
 
             builder.Entity<Worker>()
                 .HasOne(w => w.User)
-                .WithOne()
+                .WithOne(u => u.Worker)
                 .HasForeignKey<Worker>(w => w.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 

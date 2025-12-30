@@ -34,7 +34,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Accesses");
+                    b.ToTable("Accesses", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Car", b =>
@@ -65,7 +65,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Cars");
+                    b.ToTable("Cars", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarMake", b =>
@@ -86,7 +86,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("CreatorId");
 
-                    b.ToTable("CarMakes");
+                    b.ToTable("CarMakes", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarModel", b =>
@@ -113,7 +113,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("CreatorId");
 
-                    b.ToTable("CarModels");
+                    b.ToTable("CarModels", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.CarService", b =>
@@ -144,7 +144,7 @@ namespace GarageControl.Infrastructure.Migrations
                     b.HasIndex("BossId")
                         .IsUnique();
 
-                    b.ToTable("CarServices");
+                    b.ToTable("CarServices", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Client", b =>
@@ -182,7 +182,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("CarServiceId");
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Job", b =>
@@ -226,7 +226,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Jobs");
+                    b.ToTable("Jobs", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.JobPart", b =>
@@ -247,7 +247,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("JobParts");
+                    b.ToTable("JobParts", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.JobType", b =>
@@ -275,7 +275,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("CarServiceId");
 
-                    b.ToTable("JobTypes");
+                    b.ToTable("JobTypes", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Order", b =>
@@ -291,7 +291,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Part", b =>
@@ -327,7 +327,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.PartsFolder", b =>
@@ -352,7 +352,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("PartsFolders");
+                    b.ToTable("PartsFolders", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.User", b =>
@@ -457,7 +457,7 @@ namespace GarageControl.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Workers");
+                    b.ToTable("Workers", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerLeave", b =>
@@ -479,7 +479,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerLeaves");
+                    b.ToTable("WorkerLeaves", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.WorkerSchedule", b =>
@@ -504,7 +504,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerSchedules");
+                    b.ToTable("WorkerSchedules", (string)null);
                 });
 
             modelBuilder.Entity("JobTypeWorker", b =>
@@ -519,7 +519,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("WorkersId");
 
-                    b.ToTable("JobTypeWorker");
+                    b.ToTable("JobTypeWorker", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -667,7 +667,7 @@ namespace GarageControl.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerAccesses");
+                    b.ToTable("WorkerAccesses", (string)null);
                 });
 
             modelBuilder.Entity("GarageControl.Infrastructure.Data.Models.Car", b =>

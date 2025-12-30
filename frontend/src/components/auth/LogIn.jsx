@@ -15,7 +15,9 @@ const LogInPage = () => {
 
         try {
             await authApi.login(formData.email, formData.password);
-            navigate('/');
+            // Force a full reload to ensure App.jsx re-runs its initialization logic
+            // and picks up the new permissions from localStorage.
+            window.location.href = '/';
         } catch (err) {
             setError(err.message || 'An error occurred during login');
         } finally {

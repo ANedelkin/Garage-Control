@@ -9,9 +9,8 @@ export const authApi = {
                 throw new Error(data.message || 'Registration failed');
             }
 
-            // Store token in localStorage
-            if (data.token) {
-                localStorage.setItem('accessToken', data.token);
+            if (data.success) {
+                localStorage.setItem('LoggedIn', 'true');
                 localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
             }
 
@@ -30,9 +29,8 @@ export const authApi = {
                 throw new Error(data.message || 'Login failed');
             }
 
-            // Store token in localStorage
-            if (data.token) {
-                localStorage.setItem('accessToken', data.token);
+            if (data.success) {
+                localStorage.setItem('LoggedIn', 'true');
                 localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
             }
 
@@ -44,10 +42,15 @@ export const authApi = {
     },
 
     logout: async () => {
-        // Just clear the token from localStorage
-        // No need to call backend since we're using localStorage-based auth
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('accesses');
+        try {
+            await request('POST', 'auth/logout');
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            // Always clear localStorage
+            localStorage.removeItem('LoggedIn');
+            localStorage.removeItem('accesses');
+        }
         return { success: true };
     },
 
@@ -55,15 +58,17 @@ export const authApi = {
         try {
             const response = await request('POST', 'auth/refresh');
             const data = await response.json();
-            if (!response.ok) {
+
+            if (!response.ok || !data.success) {
+                localStorage.removeItem('LoggedIn');
+                localStorage.removeItem('accesses');
                 throw new Error('Token refresh failed');
             }
-
-            const dataJson = JSON.parse(data);
-            if (dataJson.accesses) {
-                localStorage.setItem('accesses', JSON.stringify(dataJson.accesses));
+            localStorage.setItem('LoggedIn', 'true');
+            if (data.accesses) {
+                localStorage.setItem('accesses', JSON.stringify(data.accesses));
             }
-            return dataJson;
+            return data;
         } catch (error) {
             console.error('Token refresh error:', error);
             throw error;

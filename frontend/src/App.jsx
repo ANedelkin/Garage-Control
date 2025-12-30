@@ -20,10 +20,11 @@ import EditClient from './components/clients/EditClient.jsx';
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 
-// PrivateRoute component to check authentication
+import { authApi } from './services/authApi';
+
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
+  const loggedIn = localStorage.getItem('LoggedIn');
+  if (!loggedIn) {
     return <Navigate to="/login" />;
   }
   return children;
@@ -31,46 +32,42 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [curSelection, setCurSelection] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [accesses, setAccesses] = useState([]);
 
   useEffect(() => {
-    // Check for tokens in the URL (Google OAuth redirect)
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-    const accessesParam = urlParams.get('accesses');
-
-    if (accessToken) {
-      localStorage.setItem('accessToken', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken);
-      }
-      if (accessesParam) {
-        try {
-          const decodedAccesses = decodeURIComponent(accessesParam);
-          localStorage.setItem('accesses', decodedAccesses);
-          setAccesses(JSON.parse(decodedAccesses));
-        } catch (e) {
-          console.error("Failed to decode accesses", e);
-        }
-      }
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      // Load initial accesses if not coming from a redirect
+    const initAuth = async () => {
+      const loggedIn = localStorage.getItem('LoggedIn');
       const storedAccesses = localStorage.getItem('accesses');
-      if (storedAccesses) {
+
+      if (loggedIn) {
+        if (storedAccesses) {
+          try {
+            setAccesses(JSON.parse(storedAccesses));
+          } catch (e) {
+            console.error("Failed to parse stored accesses", e);
+          }
+        }
+        setHydrated(true);
+      } else {
         try {
-          setAccesses(JSON.parse(storedAccesses));
+          const data = await authApi.refreshToken();
+          console.log(data);
+          if (data && data.success) {
+            localStorage.setItem('LoggedIn', 'true');
+            if (data.accesses) {
+              setAccesses(data.accesses);
+            }
+          }
         } catch (e) {
-          console.error("Failed to parse stored accesses", e);
+          console.log(e);
+        } finally {
+          setHydrated(true);
         }
       }
-    }
+    };
 
-    setHydrated(true);
+    initAuth();
 
     const handleResize = () => {
       const isDesktop = window.innerWidth > 1000;
@@ -86,7 +83,7 @@ function App() {
   }, []);
 
   if (!hydrated) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   const routes = [
@@ -120,17 +117,13 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
           <Route path="/login" element={<LogInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
 
-          {/* Private Routes */}
-          <Route path="/service-details-initial" element={<PrivateRoute><LayoutWithHeader
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}>
+          <Route path="/service-details-initial" element={<PrivateRoute>
             <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
             <ServiceDetailsInitial />
-          </LayoutWithHeader></PrivateRoute>} />
+          </PrivateRoute>} />
 
           {routes.filter(r => !r.access || accesses.includes(r.access)).map((route, i) => (
             <>

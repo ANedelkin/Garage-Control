@@ -5,11 +5,6 @@ export async function request(method, url, body = null) {
         'Content-Type': 'application/json',
     };
 
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
     let request = {
         method: method,
         headers: headers,
