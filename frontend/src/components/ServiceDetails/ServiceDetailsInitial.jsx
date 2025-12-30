@@ -14,8 +14,8 @@ const ServiceDetailsInitial = () => {
   };
 
   return (
-    <div className="horizontal-layout">
-      <main className="main container">
+    <div className="work-area">
+      <main className="main service-details">
         <ThemeToggle className="theme-toggle" />
         <ServiceDetailsForm handleSubmit={handleSubmit} />
       </main>

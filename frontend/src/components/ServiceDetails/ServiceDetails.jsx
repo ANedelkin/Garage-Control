@@ -21,7 +21,7 @@ const ServiceDetails = () => {
   }, []);
 
   return (
-    <main className="main container">
+    <main className="main service-details">
       <ServiceDetailsForm handleSubmit={handleSubmit} initialData={serviceDetails} />
     </main>
   );

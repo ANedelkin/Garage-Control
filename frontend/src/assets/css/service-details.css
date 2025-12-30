@@ -1,3 +1,6 @@
-.service-details .form-section {
-    width: 300px;
+.service-details .tile {
+    width: 350px !important;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 100px;
 }

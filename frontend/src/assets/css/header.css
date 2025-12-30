@@ -37,7 +37,7 @@ header {
   color: var(--text-clr1);
 }
 
-.logout-icon {
+/* .logout-icon {
   cursor: pointer;
   padding: 8px;
   color: var(--text-clr2);
@@ -48,7 +48,7 @@ header {
 .logout-icon:hover {
   background-color: var(--solid4);
   color: var(--text-clr1);
-}
+} */
 
 .hamburger {
   display: none;

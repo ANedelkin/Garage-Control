@@ -9,3 +9,9 @@ body {
     background: var(--gradient);
     color: var(--text-clr1);
 }
+
+#root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}

@@ -6,7 +6,7 @@
 }
 
 .work-area {
-    height: calc(100vh - 64px);
+    flex: 1;
 }
 
 .vertical {
