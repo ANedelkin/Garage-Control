@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useNavigate, BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 
 // Import your components
 import LogInPage from './components/auth/LogIn';
@@ -8,8 +8,8 @@ import SignUpPage from './components/auth/SignUp';
 import Dashboard from './components/dashboard/Dashboard';
 import Workers from './components/workers/Workers';
 import EditWorker from './components/workers/EditWorker';
-import ServiceDetails from './components/ServiceDetails/ServiceDetails';
-import ServiceDetailsInitial from './components/ServiceDetails/ServiceDetailsInitial';
+import ServiceDetails from './components/serviceDetails/ServiceDetails';
+import ServiceDetailsInitial from './components/serviceDetails/ServiceDetailsInitial';
 import JobTypes from './components/orders/JobTypes';
 import EditJobType from './components/orders/EditJobType.jsx';
 import MakesAndModels from './components/cars/MakesAndModels.jsx';
@@ -26,6 +26,10 @@ const PrivateRoute = ({ children }) => {
   const loggedIn = localStorage.getItem('LoggedIn');
   if (!loggedIn) {
     return <Navigate to="/login" />;
+  }
+  const hasService = localStorage.getItem('HasService');
+  if (hasService === 'false' && window.location.pathname !== '/service-details-initial') {
+    return <Navigate to="/service-details-initial" />;
   }
   return children;
 };
@@ -48,6 +52,11 @@ function App() {
             console.error("Failed to parse stored accesses", e);
           }
         }
+
+        // if (hasService === 'false' && window.location.pathname !== '/service-details-initial') {
+        //   navigate('/service-details-initial');
+        // }
+
         setHydrated(true);
       } else {
         try {
@@ -58,6 +67,10 @@ function App() {
             if (data.accesses) {
               setAccesses(data.accesses);
             }
+            // if (data.hasService === false && window.location.pathname !== '/service-details-initial') {
+            //   window.location.href = '/service-details-initial';
+            //   return;
+            // }
           }
         } catch (e) {
           console.log(e);
