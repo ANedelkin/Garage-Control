@@ -32,8 +32,46 @@ const PrivateRoute = ({ children }) => {
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [curSelection, setCurSelection] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  const [accesses, setAccesses] = useState([]);
 
   useEffect(() => {
+    // Check for tokens in the URL (Google OAuth redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+    const accessesParam = urlParams.get('accesses');
+
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+      if (accessesParam) {
+        try {
+          const decodedAccesses = decodeURIComponent(accessesParam);
+          localStorage.setItem('accesses', decodedAccesses);
+          setAccesses(JSON.parse(decodedAccesses));
+        } catch (e) {
+          console.error("Failed to decode accesses", e);
+        }
+      }
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      // Load initial accesses if not coming from a redirect
+      const storedAccesses = localStorage.getItem('accesses');
+      if (storedAccesses) {
+        try {
+          setAccesses(JSON.parse(storedAccesses));
+        } catch (e) {
+          console.error("Failed to parse stored accesses", e);
+        }
+      }
+    }
+
+    setHydrated(true);
+
     const handleResize = () => {
       const isDesktop = window.innerWidth > 1000;
       if (isDesktop) {
@@ -46,6 +84,10 @@ function App() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  if (!hydrated) {
+    return null; // Or a loading spinner
+  }
 
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
@@ -74,8 +116,6 @@ function App() {
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
   ];
 
-  const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');
-
   return (
     <>
       <BrowserRouter>
@@ -95,6 +135,7 @@ function App() {
           {routes.filter(r => !r.access || accesses.includes(r.access)).map((route, i) => (
             <>
               <Route
+                key={route.path}
                 path={route.path}
                 element={
                   <PrivateRoute>
@@ -109,6 +150,7 @@ function App() {
               />
               {route.children.map(childRoute => (
                 <Route
+                  key={route.path + childRoute.path}
                   path={route.path + childRoute.path}
                   element={
                     <PrivateRoute>

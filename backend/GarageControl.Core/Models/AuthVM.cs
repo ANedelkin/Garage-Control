@@ -13,6 +13,6 @@ namespace GarageControl.Core.Models
         [Required]
         [MinLength(AuthConstants.passwordMinLength, ErrorMessage = $"Password too short.")]
         [MaxLength(AuthConstants.passwordMaxLength, ErrorMessage = $"Password too long.")]
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; } = null!;
     }
 }

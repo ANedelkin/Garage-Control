@@ -10,5 +10,6 @@ namespace GarageControl.Core.Contracts
         Task LogOut(HttpRequest request, HttpResponse response);
         Task<LoginResponse> RefreshToken(HttpRequest request, HttpResponse response);
         Task SetAuthCookies(HttpResponse response, string accessToken, string refreshToken);
+        Task<bool> UserExists(string email);
     }
 }

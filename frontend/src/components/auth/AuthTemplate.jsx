@@ -18,6 +18,10 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
             handlers.handleSubmit(e, formData);
         }
     };
+    const handleGoogle = async (e) => {
+        e.preventDefault();
+        window.location.href = 'https://localhost:5173/api/auth/google';
+    };
 
     return (
         <main className="background">
@@ -55,7 +59,7 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
                         </div>
 
                         <div className="auth-buttons">
-                            <button type="button" className="btn" onClick={handlers?.handleGoogle}>
+                            <button type="button" className="btn" onClick={handleGoogle}>
                                 <img src={GoogleIcon} alt="Google" />
                                 Continue with Google
                             </button>

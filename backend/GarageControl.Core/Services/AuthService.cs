@@ -54,7 +54,12 @@ namespace GarageControl.Core.Services
                 Email = model.Email
             };
 
-            var result = await _userManager.CreateAsync(user, model.Password);
+            IdentityResult result;
+            if(model.Password == null)
+                result = await _userManager.CreateAsync(user);
+            else
+                result = await _userManager.CreateAsync(user, model.Password);
+            
             if (!result.Succeeded)
             {
                 string errors = string.Join(", ", result.Errors.Select(e => e.Description));
@@ -76,7 +81,11 @@ namespace GarageControl.Core.Services
             if (user == null)
                 return new LoginResponse("Invalid credentials", false);
 
-            bool passwordMatch = await _userManager.CheckPasswordAsync(user, model.Password);
+            bool passwordMatch; 
+            if(model.Password == null)
+                passwordMatch = true;
+            else
+                passwordMatch = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!passwordMatch)
                 return new LoginResponse("Invalid credentials", false);
 
@@ -172,14 +181,14 @@ namespace GarageControl.Core.Services
             return handler.WriteToken(token);
         }
 
-        private Task<bool> UserExists(string email) =>
-            _userManager.FindByEmailAsync(email).ContinueWith(t => t.Result != null);
+        public async Task<bool> UserExists(string email) =>
+            await _userManager.FindByEmailAsync(email) != null;
 
         private string GenerateRefreshToken() =>
             Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 
-        private Task<User?> FindByToken(string token) =>
-            _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
+        private async Task<User?> FindByToken(string token) =>
+            await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
 
         private async Task<List<string>> GetUserAccess(string userId)
         {
