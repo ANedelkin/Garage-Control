@@ -38,6 +38,7 @@ builder.Services.AddScoped<IMakeService, MakeService>();
 builder.Services.AddScoped<IModelService, ModelService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IPartService, PartService>();
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)
                .AddEntityFrameworkStores<GarageControlDbContext>()

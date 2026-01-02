@@ -16,6 +16,7 @@ import MakesAndModels from './components/cars/MakesAndModels.jsx';
 import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
+import PartsStock from './components/parts/PartsStock.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -102,7 +103,7 @@ function App() {
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
     { path: '/orders', element: <Dashboard />, children: [], access: 'Orders' },
-    { path: '/parts', element: <Dashboard />, children: [], access: 'Parts Stock' },
+    { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
     {
       path: '/workers', element: <Workers />, access: 'Workers', children: [
         { path: '/new', element: <EditWorker /> },

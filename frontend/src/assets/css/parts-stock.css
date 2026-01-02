@@ -1,0 +1,93 @@
+.parts-stock .horizontal {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.parts-stock .form-left {
+    width: 30%;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.parts-stock .form-right {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding-left: 1rem;
+}
+
+.parts-stock .vertical-divider {
+    width: 1px;
+    background-color: var(--border-color);
+    margin: 0 1rem;
+}
+
+.parts-tree-item {
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.parts-tree-item.active {
+    background-color: var(--primary-color-dim);
+}
+
+.parts-tree-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.parts-tree-item .item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.parts-tree-children {
+    padding-left: 1.5rem;
+}
+
+.context-menu-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.context-menu-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Context Menu Position */
+.context-menu {
+    position: absolute;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 0.5rem 0;
+    min-width: 150px;
+}
+
+.context-menu-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.context-menu-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.part-details-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+}
