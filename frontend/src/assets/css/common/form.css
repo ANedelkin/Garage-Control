@@ -14,5 +14,9 @@
     justify-content: right;
     align-items: center;
     margin-top: 15px;
-    gap:10px;
+    gap: 10px;
+}
+
+label {
+    margin-right: 0 !important;
 }
