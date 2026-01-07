@@ -8,6 +8,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
         price: '',
         quantity: ''
     });
+    const [stockAdj, setStockAdj] = useState('');
     const [isDirty, setIsDirty] = useState(false);
 
     useEffect(() => {
@@ -18,6 +19,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 price: part.price,
                 quantity: part.quantity
             });
+            setStockAdj('');
             setIsDirty(false);
         }
     }, [part]);
@@ -25,6 +27,17 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setIsDirty(true);
+    };
+
+    const handleStockAdj = (amount) => {
+        const adj = parseInt(amount);
+        if (isNaN(adj)) return;
+
+        setFormData(prev => {
+            const currentQty = parseInt(prev.quantity) || 0;
+            return { ...prev, quantity: Math.max(0, currentQty + adj) };
+        });
         setIsDirty(true);
     };
 
@@ -39,7 +52,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             });
             onUpdate();
             setIsDirty(false);
-            alert("Saved successfully");
+            setStockAdj('');
+            // alert("Saved successfully");
         } catch (error) {
             console.error("Error saving part", error);
             alert("Failed to save part");
@@ -57,7 +71,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
     return (
         <div className="part-details">
             <div className="section-header">
-                <h3>{formData.name || 'Part Details'}</h3>
+                <h3>Part Details</h3>
                 <div>
                     <button className="btn delete" onClick={() => { if (window.confirm('Delete this part?')) partApi.deletePart(part.id).then(onDelete); }}>
                         <i className="fa-solid fa-trash"></i> Delete
@@ -66,47 +80,85 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             </div>
 
             <form className="part-details-form" onSubmit={handleSave}>
-                <div className="form-section">
-                    <label>Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-section">
-                    <label>Part Number</label>
-                    <input
-                        type="text"
-                        name="partNumber"
-                        value={formData.partNumber}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group-row">
-                    <div className="form-section grow">
-                        <label>Price</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="price"
-                            value={formData.price}
-                            onChange={handleChange}
-                            required
-                        />
+                <div className="details-grid">
+                    {/* Left Column */}
+                    <div className="form-column">
+                        <div className="form-section">
+                            <label>Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Part Number</label>
+                            <input
+                                type="text"
+                                name="partNumber"
+                                value={formData.partNumber}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Price</label>
+                            <div className="input-group">
+                                {/* <span className="input-prefix">$</span> */}
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div className="form-section grow">
-                        <label>Quantity</label>
-                        <input
-                            type="number"
-                            name="quantity"
-                            value={formData.quantity}
-                            onChange={handleChange}
-                            required
-                        />
+
+                    {/* Right Column */}
+                    <div className="form-column">
+                        <div className="form-section">
+                            <label>Current Quantity</label>
+                            <input
+                                type="number"
+                                name="quantity"
+                                value={formData.quantity}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-section">
+                            <label>Add/Remove Quantity</label>
+                            <input
+                                type="number"
+                                placeholder="Amount"
+                                value={stockAdj}
+                                onChange={(e) => setStockAdj(e.target.value)}
+                            />
+                            <div className="stock-controls">
+                                <button
+                                    type="button"
+                                    className="btn"
+                                    onClick={() => handleStockAdj(stockAdj)}
+                                    disabled={!stockAdj}
+                                >
+                                    Add
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn"
+                                    onClick={() => handleStockAdj(-stockAdj)}
+                                    disabled={!stockAdj}
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
