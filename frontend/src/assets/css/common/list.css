@@ -22,7 +22,7 @@
 .list-item {
     display: flex;
     justify-content: space-between;
-    padding: 0 8px;
+    padding-left: 8px;
     border-radius: 8px;
     cursor: pointer;
 }

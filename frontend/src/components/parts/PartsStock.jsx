@@ -63,7 +63,7 @@ const PartsStock = () => {
                                         const newPart = await handleAddPart(null, handleRefresh);
                                         if (newPart) setSelectedPart(newPart);
                                     }}>
-                                        <i className="fa-solid fa-plus"></i> Part
+                                        <i className="fa-solid fa-plus"></i>
                                     </button>
                                 </div>
 

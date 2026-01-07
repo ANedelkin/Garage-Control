@@ -62,8 +62,10 @@ a {
 
 .icon-btn {
     padding: 8px;
+    width: 40px !important;
+    height: 24px !important;
     color: var(--text-clr2);
-    background-color: inherit;
+    background-color: transparent;
     border-radius: 8px;
     border: none;
 }
@@ -83,7 +85,8 @@ a {
     border-left: 3px solid var(--accent3);
     color: var(--text-clr1);
 }
-.active:hover{
+
+.active:hover {
     background: var(--accent1) !important;
 }
 
