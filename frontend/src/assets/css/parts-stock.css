@@ -50,6 +50,15 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+    /* Critical for flex child truncation */
+}
+
+.list-item .item-label span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .parts-tree-children {
