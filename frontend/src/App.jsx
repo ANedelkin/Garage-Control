@@ -17,6 +17,8 @@ import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
+import OrdersPage from './components/orders/OrdersPage.jsx';
+import NewOrderPage from './components/orders/NewOrderPage.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -102,7 +104,12 @@ function App() {
 
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
-    { path: '/orders', element: <Dashboard />, children: [], access: 'Orders' },
+    {
+      path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
+        { path: '/new', element: <NewOrderPage /> },
+        // { path: '/:id', element: <EditOrder /> }
+      ]
+    },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
     {
       path: '/workers', element: <Workers />, access: 'Workers', children: [

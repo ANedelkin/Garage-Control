@@ -25,6 +25,7 @@ namespace GarageControl.Core.Services
             return await _repo.GetAllAsNoTrackingAsync<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
+                    .ThenInclude(m => m.CarMake)
                 .Where(c => c.Owner.CarServiceId == serviceId)
                 .Select(c => new VehicleVM
                 {
@@ -34,7 +35,18 @@ namespace GarageControl.Core.Services
                     RegistrationNumber = c.RegistrationNumber,
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
-                    OwnerName = c.Owner.Name
+                    OwnerName = c.Owner.Name,
+                    Model = new ModelVM
+                    {
+                        Id = c.Model.Id,
+                        Name = c.Model.Name,
+                        MakeId = c.Model.CarMakeId,
+                        Make = new MakeVM
+                        {
+                            Id = c.Model.CarMake.Id,
+                            Name = c.Model.CarMake.Name
+                        }
+                    }
                 })
                 .ToListAsync();
         }
@@ -44,6 +56,7 @@ namespace GarageControl.Core.Services
             return await _repo.GetAllAsNoTrackingAsync<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
+                .ThenInclude(m => m.CarMake)
                 .Where(c => c.OwnerId == clientId)
                 .Select(c => new VehicleVM
                 {
@@ -53,7 +66,18 @@ namespace GarageControl.Core.Services
                     RegistrationNumber = c.RegistrationNumber,
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
-                    OwnerName = c.Owner.Name
+                    OwnerName = c.Owner.Name,
+                    Model = new ModelVM
+                    {
+                        Id = c.Model.Id,
+                        Name = c.Model.Name,
+                        MakeId = c.Model.CarMakeId,
+                        Make = new MakeVM
+                        {
+                            Id = c.Model.CarMake.Id,
+                            Name = c.Model.CarMake.Name
+                        }
+                    }
                 })
                 .ToListAsync();
         }
@@ -108,6 +132,7 @@ namespace GarageControl.Core.Services
             return await _repo.GetAllAsNoTrackingAsync<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
+                    .ThenInclude(m => m.CarMake)
                 .Where(c => c.Id == id)
                 .Select(c => new VehicleVM
                 {
@@ -117,7 +142,18 @@ namespace GarageControl.Core.Services
                     RegistrationNumber = c.RegistrationNumber,
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
-                    OwnerName = c.Owner.Name
+                    OwnerName = c.Owner.Name,
+                    Model = new ModelVM
+                    {
+                        Id = c.Model.Id,
+                        Name = c.Model.Name,
+                        MakeId = c.Model.CarMakeId,
+                        Make = new MakeVM
+                        {
+                            Id = c.Model.CarMake.Id,
+                            Name = c.Model.CarMake.Name
+                        }
+                    }
                 })
                 .FirstOrDefaultAsync();
         }

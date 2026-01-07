@@ -24,5 +24,7 @@ namespace GarageControl.Core.Models
         public string OwnerId { get; set; } = null!;
 
         public string? OwnerName { get; set; }
+        
+        public ModelVM? Model { get; set; }
     }
 }

@@ -1,0 +1,53 @@
+using GarageControl.Core.Services;
+using GarageControl.Core.ViewModels.Orders;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace GarageControl.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class OrderController : ControllerBase
+    {
+        private readonly IOrderService _orderService;
+
+        public OrderController(IOrderService orderService)
+        {
+            _orderService = orderService;
+        }
+
+        private string GetGarageId()
+        {
+            return User.FindFirst("GarageId")?.Value!;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrders()
+        {
+            try
+            {
+                var orders = await _orderService.GetOrdersAsync(GetGarageId());
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderViewModel model)
+        {
+            try
+            {
+                var order = await _orderService.CreateOrderAsync(GetGarageId(), model);
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+    }
+}

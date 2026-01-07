@@ -13,5 +13,7 @@ namespace GarageControl.Core.Models
 
         [Required]
         public string MakeId { get; set; } = null!;
+
+        public MakeVM? Make { get; set; }
     }
 }
