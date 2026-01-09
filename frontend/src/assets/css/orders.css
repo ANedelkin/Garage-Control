@@ -25,10 +25,13 @@
     background: var(--solid3);
     border: 1px solid var(--border2);
     border-radius: 4px;
-    z-index: 10;
+    z-index: 1000;
     list-style: none;
     padding: 0;
     margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .car-suggestions li {
@@ -49,10 +52,39 @@
 }
 
 .service-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     margin-bottom: 1rem;
+}
+
+.form-row-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    width: 100%;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text2);
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
 }
 
 .parts-table-wrapper {
@@ -85,4 +117,257 @@
 
 .status.finished {
     color: green;
+}
+
+/* Orders Grid */
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-tile {
+    background: var(--solid2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.order-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--solid3);
+    border-bottom: 1px solid var(--border2);
+}
+
+.order-car-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.order-car-details {
+    font-size: 0.9rem;
+    color: var(--text3);
+}
+
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: orange;
+}
+
+.status-badge.inProgress {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.status-badge.finished {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.order-jobs-table {
+    padding: 0;
+}
+
+.order-jobs-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-jobs-table thead {
+    background: var(--solid1);
+}
+
+.order-jobs-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border2);
+}
+
+.order-jobs-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border1);
+}
+
+.order-jobs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.order-jobs-table tbody tr:hover {
+    background: var(--solid1);
+}
+
+.job-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.job-status.pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: orange;
+}
+
+.job-status.inProgress,
+.job-status.inprogress {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.job-status.finished,
+.job-status.done {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+/* Time Picker Styles */
+.time-picker-container {
+    position: relative;
+    width: 100%;
+}
+
+.time-display-btn {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.time-picker-popup {
+    /* Removed absolute/local positioning */
+    display: none;
+}
+
+.time-picker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+}
+
+.time-picker-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--solid3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    z-index: 2001;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+    /* Wider for 5 days */
+    max-height: 80vh;
+}
+
+.tp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border2);
+    background: var(--solid4);
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+}
+
+.tp-body.multi-day {
+    display: flex;
+    /* Columns */
+    flex-direction: row;
+    overflow-y: auto;
+    padding: 1rem;
+    gap: 0.5rem;
+}
+
+.day-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+}
+
+.day-header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border2);
+}
+
+.day-weekday {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--text2);
+}
+
+.day-date {
+    font-size: 1.1rem;
+}
+
+.time-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.time-slot {
+    padding: 0.25rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-align: center;
+    border-radius: 4px;
+    background: var(--solid2);
+    border: 1px solid transparent;
+}
+
+.time-slot:hover {
+    background: var(--solid4);
+}
+
+.time-slot.unavailable {
+    background: rgba(255, 0, 0, 0.05);
+    color: var(--text4);
+    cursor: not-allowed;
+    text-decoration: none;
+    /* Removed strikethrough for cleaner look in dense grid */
+    opacity: 0.5;
+}
+
+.time-slot.past {
+    background: var(--solid1);
+    color: var(--text4);
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+.time-slot.selected-start {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.time-slot.selected-range {
+    background: var(--primary);
+    color: white;
+    opacity: 0.9;
 }

@@ -24,21 +24,25 @@ const OrdersPage = () => {
         }
     };
 
+    const handleDeleteJob = async (orderId, jobId) => {
+        if (!confirm('Are you sure you want to delete this job?')) return;
+
+        try {
+            // TODO: Implement delete job API call
+            console.log('Delete job', jobId, 'from order', orderId);
+            // await orderApi.deleteJob(orderId, jobId);
+            // fetchOrders(); // Refresh
+        } catch (error) {
+            console.error('Failed to delete job:', error);
+        }
+    };
+
     const filteredOrders = orders.filter(o =>
         (filter === 'all' || o.status === filter) &&
         (o.carName.toLowerCase().includes(search.toLowerCase()) ||
             o.clientName.toLowerCase().includes(search.toLowerCase()) ||
             o.carRegistrationNumber.toLowerCase().includes(search.toLowerCase()))
     );
-
-    // Group by Date for display? Or just flat list as per prototype grouped by day
-    // Prototype: ordersByDay.
-    const ordersByDay = filteredOrders.reduce((acc, order) => {
-        const dateStr = new Date(order.date).toLocaleDateString();
-        if (!acc[dateStr]) acc[dateStr] = [];
-        acc[dateStr].push(order);
-        return acc;
-    }, {});
 
     return (
         <main className="main">
@@ -65,61 +69,73 @@ const OrdersPage = () => {
                 </div>
             </div>
 
-            {loading ? <p>Loading...</p> : Object.keys(ordersByDay).length === 0 ? <p className="list-empty">No orders found.</p> : null}
+            {loading ? (
+                <p>Loading...</p>
+            ) : filteredOrders.length === 0 ? (
+                <p className="list-empty">No orders found.</p>
+            ) : (
+                <div className="orders-grid">
+                    {filteredOrders.map(order => (
+                        <div key={order.id} className="order-tile">
+                            <div className="order-tile-header">
+                                <div className="order-car-info">
+                                    <h4>{order.clientName}</h4>
+                                    <div className="order-car-details">
+                                        {order.carName} • {order.carRegistrationNumber}
+                                    </div>
+                                </div>
+                                <span className={`status-badge ${order.status}`}>
+                                    {order.status}
+                                </span>
+                            </div>
 
-            {Object.keys(ordersByDay).map(date => (
-                <div key={date} className="tile" style={{ marginBottom: '1rem' }}>
-                    <h3>{date}</h3>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <colgroup>
-                                <col style={{ width: '80px' }} /> {/* Status */}
-                                <col style={{ width: '150px' }} />  {/* Car */}
-                                <col style={{ width: '150px' }} /> {/* Client */}
-                                <col />                             {/* Jobs Description */}
-                                <col style={{ width: '100px' }} /> {/* Action */}
-                            </colgroup>
-                            <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-color)' }}>
-                                    <th>Status</th>
-                                    <th>Car</th>
-                                    <th>Client</th>
-                                    <th>Jobs</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {ordersByDay[date].map(order => (
-                                    <tr key={order.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                        <td>
-                                            <span className={`status ${order.status}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div>{order.carName}</div>
-                                            <small>{order.carRegistrationNumber}</small>
-                                        </td>
-                                        <td>{order.clientName}</td>
-                                        <td>
-                                            {order.jobs.map(j => (
-                                                <div key={j.id}>
-                                                    <small><b>{j.type}</b> ({j.mechanicName}) - {j.status}</small>
-                                                </div>
-                                            ))}
-                                        </td>
-                                        <td>
-                                            <button className="btn icon-btn delete">
-                                                <i className="fa-solid fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            <div className="order-jobs-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Type</th>
+                                            <th>Mechanic</th>
+                                            <th>Cost</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {order.jobs.map(job => (
+                                            <tr key={job.id}>
+                                                <td>
+                                                    <span className={`job-status ${job.status}`}>
+                                                        {job.status}
+                                                    </span>
+                                                </td>
+                                                <td>{job.type}</td>
+                                                <td>{job.mechanicName}</td>
+                                                <td>BGN {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
+                                                <td style={{ display: 'flex', gap: '5px' }}>
+                                                    <Link
+                                                        className="btn icon-btn"
+                                                        to={`/orders/${order.id}`}
+                                                        title="Edit order/job"
+                                                    >
+                                                        <i className="fa-solid fa-pen-to-square"></i>
+                                                    </Link>
+                                                    <button
+                                                        className="btn icon-btn delete"
+                                                        onClick={() => handleDeleteJob(order.id, job.id)}
+                                                        title="Delete job"
+                                                    >
+                                                        <i className="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            ))}
+            )}
         </main>
     );
 };

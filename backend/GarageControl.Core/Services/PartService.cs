@@ -76,6 +76,22 @@ namespace GarageControl.Core.Services
             return result;
         }
 
+        public async Task<List<PartViewModel>> GetAllPartsAsync(string garageId)
+        {
+            return await _context.Parts
+                .Where(p => p.CarServiceId == garageId)
+                .Select(p => new PartViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PartNumber = p.PartNumber,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    ParentId = p.ParentId
+                })
+                .ToListAsync();
+        }
+
         public async Task<PartViewModel> CreatePartAsync(string garageId, CreatePartViewModel model)
         {
             var part = new Part

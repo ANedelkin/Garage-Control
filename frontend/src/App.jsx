@@ -107,7 +107,7 @@ function App() {
     {
       path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderPage /> },
-        // { path: '/:id', element: <EditOrder /> }
+        { path: '/:id', element: <NewOrderPage /> }
       ]
     },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },

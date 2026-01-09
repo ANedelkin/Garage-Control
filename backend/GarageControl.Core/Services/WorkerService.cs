@@ -42,6 +42,14 @@ namespace GarageControl.Core.Services
                 .Where(w => w.CarServiceId == serviceId)
                 .Include(w => w.User)
                 .Include(w => w.Accesses)
+                .Include(w => w.Activities)
+                .Include(w => w.Schedules)
+                //.Include(w => w.Leaves) // Assuming leaves need separate fetch or include if configured
+                .ToListAsync();
+
+            // Fetch leaves efficiently if not auto-included (or just ensure navigation property works)
+            var allLeaves = await _repo.GetAllAsNoTrackingAsync<WorkerLeave>()
+                .Where(l => workers.Select(w => w.Id).Contains(l.WorkerId))
                 .ToListAsync();
 
             return workers.Select(w => new WorkerVM
@@ -50,6 +58,20 @@ namespace GarageControl.Core.Services
                 Name = w.Name,
                 Email = w.User.Email!,
                 HiredOn = w.HiredOn,
+                JobTypeIds = w.Activities.Select(a => a.Id).ToList(),
+                Schedules = w.Schedules.Select(s => new WorkerScheduleVM
+                {
+                    Id = s.Id,
+                    DayOfWeek = (int)s.DayOfWeek == 0 ? 6 : (int)s.DayOfWeek - 1,
+                    StartTime = s.StartTime.ToString("HH:mm"),
+                    EndTime = s.EndTime.ToString("HH:mm")
+                }).ToList(),
+                Leaves = allLeaves.Where(l => l.WorkerId == w.Id).Select(l => new WorkerLeaveVM
+                {
+                    Id = l.Id,
+                    StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue),
+                    EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue)
+                }).ToList()
             });
         }
 

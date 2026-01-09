@@ -4,6 +4,9 @@ const partApi = {
     getFolderContent: async (folderId) => {
         return (await request('GET', `part/folder-content?folderId=${folderId || ''}`)).json();
     },
+    getAllParts: async () => {
+        return (await request('GET', 'part/all')).json();
+    },
     createPart: async (data) => {
         return (await request('POST', 'part/create', data)).json();
     },

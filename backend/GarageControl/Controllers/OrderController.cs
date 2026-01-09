@@ -49,5 +49,33 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderById(string id)
+        {
+            try
+            {
+                var order = await _orderService.GetOrderByIdAsync(id, GetGarageId());
+                if (order == null) return NotFound();
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateOrder(string id, [FromBody] UpdateOrderViewModel model)
+        {
+            try
+            {
+                var result = await _orderService.UpdateOrderAsync(id, GetGarageId(), model);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

@@ -6,6 +6,12 @@ const orderApi = {
     },
     createOrder: async (data) => {
         return (await request('POST', 'order/create', data)).json();
+    },
+    getOrder: async (id) => {
+        return (await request('GET', `order/${id}`)).json();
+    },
+    updateOrder: async (id, data) => {
+        return (await request('PUT', `order/${id}`, data)).json();
     }
 };
 

@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
-import { vehicleApi } from '../../services/vehicleApi'; // Assuming we have this, or need to create
-// Actually standard api for cars might be missing "getAllCars" or similar search.
-// Let's assume we can fetch cars. If not, I'll need to check carApi.
-
+import { partApi } from '../../services/partApi';
+import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
 import '../../assets/css/orders.css';
 
-// We need to fetch JobTypes and Workers to populate selects
-// Using generic request or specific apis if available.
-import { request } from '../../Utilities/request';
-
 const NewOrderPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
+    const isEdit = !!id;
+
     const [cars, setCars] = useState([]);
     const [carSearch, setCarSearch] = useState('');
     const [selectedCar, setSelectedCar] = useState(null);
@@ -24,28 +21,69 @@ const NewOrderPage = () => {
     // Config Data
     const [jobTypes, setJobTypes] = useState([]);
     const [workers, setWorkers] = useState([]);
+    const [allParts, setAllParts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch Cars, JobTypes, Workers
-        // TODO: Move to specific APIs
-        const loadData = async () => {
+        const loadInitialData = async () => {
             try {
-                // Mocking fetching all cars for search (not ideal for large db)
-                // Real app should use search endpoint.
-                const carsData = await (await request('GET', 'vehicle/all')).json();
-                setCars(carsData);
+                // Fetch essential config and order data concurrently
+                const [jtData, workerData, orderData] = await Promise.all([
+                    (await request('GET', 'jobtype/all')).json(),
+                    (await request('GET', 'worker/all')).json(),
+                    isEdit ? orderApi.getOrder(id) : Promise.resolve(null)
+                ]);
 
-                const jtData = await (await request('GET', 'jobtype/all')).json();
                 setJobTypes(jtData);
-
-                const workerData = await (await request('GET', 'worker/all')).json();
                 setWorkers(workerData);
+
+                if (isEdit && orderData) {
+                    setSelectedCar({
+                        id: orderData.carId,
+                        registrationNumber: orderData.carRegistrationNumber,
+                        model: { name: orderData.carName.split(' ').slice(1).join(' '), make: { name: orderData.carName.split(' ')[0] } }
+                    });
+                    setCarSearch(`${orderData.carRegistrationNumber} - ${orderData.carName}`);
+
+                    setServices(orderData.jobs.map(j => ({
+                        id: j.id,
+                        jobTypeId: j.jobTypeId,
+                        workerId: j.workerId,
+                        laborCost: j.laborCost,
+                        startTime: j.startTime,
+                        endTime: j.endTime,
+                        description: j.description,
+                        status: j.status,
+                        parts: j.parts.map(p => ({
+                            partId: p.partId,
+                            name: p.partName,
+                            quantity: p.quantity,
+                            price: p.price
+                        }))
+                    })));
+                } else if (!isEdit) {
+                    addService();
+                }
             } catch (e) {
-                console.error("Failed to load config data", e);
+                console.error("Failed to load initial data", e);
+            } finally {
+                setLoading(false);
+            }
+
+            // Background load the heavy datasets for suggestions
+            try {
+                const [carsData, partsData] = await Promise.all([
+                    (await request('GET', 'vehicle/all')).json(),
+                    partApi.getAllParts()
+                ]);
+                setCars(carsData);
+                setAllParts(partsData);
+            } catch (e) {
+                console.error("Failed to load search data", e);
             }
         };
-        loadData();
-    }, []);
+        loadInitialData();
+    }, [id, isEdit]);
 
     const handleCarSearch = (val) => {
         setCarSearch(val);
@@ -67,24 +105,25 @@ const NewOrderPage = () => {
     };
 
     const addService = () => {
-        setServices([...services, {
-            id: Date.now(),
+        setServices(prev => [...prev, {
+            id: 'temp-' + Date.now(),
             jobTypeId: '',
             workerId: '',
             laborCost: 0,
             startTime: '',
             endTime: '',
             description: '',
-            parts: []
+            parts: [],
+            status: 0
         }]);
     };
 
-    const updateService = (id, field, value) => {
-        setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
+    const updateService = (sid, field, value) => {
+        setServices(prev => prev.map(s => s.id === sid ? { ...s, [field]: value } : s));
     };
 
-    const removeService = (id) => {
-        setServices(services.filter(s => s.id !== id));
+    const removeService = (sid) => {
+        setServices(prev => prev.filter(s => s.id !== sid));
     };
 
     const handleSave = async () => {
@@ -96,35 +135,46 @@ const NewOrderPage = () => {
         const model = {
             carId: selectedCar.id,
             jobs: services.map(s => ({
+                id: s.id.toString().startsWith('temp-') ? null : s.id,
                 jobTypeId: s.jobTypeId,
                 workerId: s.workerId,
-                laborCost: s.laborCost, // Should calculate from parts + labor? Or manual? Model has LaborCost.
+                laborCost: s.laborCost,
                 startTime: s.startTime || new Date().toISOString(),
                 endTime: s.endTime || new Date().toISOString(),
                 description: s.description,
-                status: 0, // Pending
+                status: s.status,
                 parts: s.parts.map(p => ({
                     partId: p.partId,
-                    quantity: p.quantity
+                    quantity: p.quantity,
+                    price: p.price
                 }))
             }))
         };
 
         try {
-            await orderApi.createOrder(model);
-            alert("Order created!");
+            if (isEdit) {
+                await orderApi.updateOrder(id, model);
+                alert("Order updated!");
+            } else {
+                await orderApi.createOrder(model);
+                alert("Order created!");
+            }
             navigate('/orders');
         } catch (e) {
             console.error(e);
-            alert("Failed to create order");
+            alert(`Failed to ${isEdit ? 'update' : 'create'} order`);
         }
     };
+
+    if (loading) return <main className="main"><p>Loading...</p></main>;
 
     return (
         <main className="main new-order">
             <div className="orders-header">
-                <h3>New Order</h3>
-                <button className="btn primary" onClick={handleSave}>Create & Save</button>
+                <h3>{isEdit ? "Edit Order" : "New Order"}</h3>
+                <button className="btn primary" onClick={handleSave}>
+                    {isEdit ? "Update & Save" : "Create & Save"}
+                </button>
             </div>
 
             <div className="tile" style={{ overflow: 'visible' }}>
@@ -135,6 +185,7 @@ const NewOrderPage = () => {
                         placeholder="Search by Reg Number or Model..."
                         value={carSearch}
                         onChange={e => handleCarSearch(e.target.value)}
+                        disabled={isEdit} // Optional: usually don't change car on existing order
                     />
                     {suggestions.length > 0 && (
                         <ul className="car-suggestions">
@@ -146,25 +197,42 @@ const NewOrderPage = () => {
                         </ul>
                     )}
                 </div>
+
+                {services.map((s, i) => (
+                    <div key={s.id}>
+                        {isEdit && (
+                            <div className="form-group" style={{ maxWidth: '200px', marginBottom: '0.5rem' }}>
+                                <label>Job Status</label>
+                                <select
+                                    className="status-selector"
+                                    value={s.status}
+                                    onChange={e => updateService(s.id, 'status', parseInt(e.target.value))}
+                                >
+                                    <option value={0}>Pending</option>
+                                    <option value={1}>In Progress</option>
+                                    <option value={2}>Finished</option>
+                                </select>
+                            </div>
+                        )}
+                        <ServiceForm
+                            index={i}
+                            service={s}
+                            updateService={updateService}
+                            removeService={removeService}
+                            jobTypes={jobTypes}
+                            workers={workers}
+                            allParts={allParts}
+                        />
+                    </div>
+                ))}
+
+                <button className="btn" onClick={addService} style={{ width: 'fit-content', marginTop: '20px' }}>
+                    + Add Service (Job)
+                </button>
             </div>
-
-            {services.map((s, i) => (
-                <ServiceForm
-                    key={s.id}
-                    index={i}
-                    service={s}
-                    updateService={updateService}
-                    removeService={removeService}
-                    jobTypes={jobTypes}
-                    workers={workers}
-                />
-            ))}
-
-            <button className="btn" onClick={addService} style={{ width: 'fit-content' }}>
-                + Add Service (Job)
-            </button>
         </main>
     );
 };
 
 export default NewOrderPage;
+

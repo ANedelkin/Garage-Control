@@ -26,6 +26,7 @@ namespace GarageControl.Core.ViewModels.Orders
         public string MechanicName { get; set; } = null!;
         public string StartTime { get; set; } = null!;
         public string EndTime { get; set; } = null!;
+        public decimal LaborCost { get; set; }
     }
 
     public class CreateOrderViewModel
@@ -54,5 +55,58 @@ namespace GarageControl.Core.ViewModels.Orders
         [Required]
         public string PartId { get; set; } = null!;
         public int Quantity { get; set; }
+    }
+
+    public class UpdateOrderViewModel
+    {
+        [Required]
+        public string CarId { get; set; } = null!;
+        public List<UpdateJobViewModel> Jobs { get; set; } = new List<UpdateJobViewModel>();
+    }
+
+    public class UpdateJobViewModel
+    {
+        public string? Id { get; set; } // If null, it's a new job
+        [Required]
+        public string JobTypeId { get; set; } = null!;
+        public string? Description { get; set; }
+        [Required]
+        public string WorkerId { get; set; } = null!;
+        public JobStatus Status { get; set; }
+        public decimal LaborCost { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public List<CreateJobPartViewModel> Parts { get; set; } = new List<CreateJobPartViewModel>();
+    }
+
+    public class OrderDetailsViewModel
+    {
+        public string Id { get; set; } = null!;
+        public string CarId { get; set; } = null!;
+        public string CarName { get; set; } = null!;
+        public string CarRegistrationNumber { get; set; } = null!;
+        public string ClientName { get; set; } = null!;
+        public List<JobDetailsViewModel> Jobs { get; set; } = new List<JobDetailsViewModel>();
+    }
+
+    public class JobDetailsViewModel
+    {
+        public string Id { get; set; } = null!;
+        public string JobTypeId { get; set; } = null!;
+        public string WorkerId { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public JobStatus Status { get; set; }
+        public decimal LaborCost { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public List<JobPartDetailsViewModel> Parts { get; set; } = new List<JobPartDetailsViewModel>();
+    }
+
+    public class JobPartDetailsViewModel
+    {
+        public string PartId { get; set; } = null!;
+        public string PartName { get; set; } = null!;
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
     }
 }
