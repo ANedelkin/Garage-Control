@@ -65,8 +65,8 @@ namespace GarageControl.Core.Services
                     Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
                              j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
                     MechanicName = j.MechanicName,
-                    StartTime = j.StartTime.ToString("dd/MM HH:mm"),
-                    EndTime = j.EndTime.ToString("HH:mm"),
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
                     LaborCost = j.LaborCost
                 }).ToList()
             }).ToList();

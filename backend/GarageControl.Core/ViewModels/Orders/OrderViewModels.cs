@@ -21,8 +21,8 @@ namespace GarageControl.Core.ViewModels.Orders
         public string Description { get; set; } = null!;
         public string Status { get; set; } = null!;
         public string MechanicName { get; set; } = null!;
-        public string StartTime { get; set; } = null!;
-        public string EndTime { get; set; } = null!;
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public decimal LaborCost { get; set; }
     }
 

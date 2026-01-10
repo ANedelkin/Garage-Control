@@ -23,9 +23,9 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
 
     // Debug: Log worker data to see what we're receiving
     useEffect(() => {
-        if (worker) {
-            console.log('TimeSlotPicker - Worker data:', worker);
-        }
+        // if (worker) {
+        //     console.log('TimeSlotPicker - Worker data:', worker);
+        // }
     }, [worker]);
 
     // Helper to get day of week 0 (Mon) - 6 (Sun)

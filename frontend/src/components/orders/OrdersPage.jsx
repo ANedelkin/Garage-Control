@@ -27,6 +27,16 @@ const OrdersPage = () => {
         }
     };
 
+    const formatDate = (input) => {
+        if (!input) return '';
+        const date = new Date(input);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${day}/${month} ${hours}:${minutes}`;
+    };
+
     const handleDeleteJob = async (orderId, jobId) => {
         if (!confirm('Are you sure you want to delete this job?')) return;
 
@@ -114,7 +124,7 @@ const OrdersPage = () => {
                                                         {job.status}
                                                     </span>
                                                 </td>
-                                                <td>{job.startTime}</td>
+                                                <td>{formatDate(job.startTime)}</td>
                                                 <td>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
                                                 <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
