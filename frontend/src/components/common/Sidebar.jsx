@@ -16,13 +16,13 @@ const Sidebar = ({ open, onClose }) => {
 
   const navItems = [
     { path: '/', icon: 'fa-house', label: 'Home', access: null },
-    { path: '/orders', icon: 'fa-list-check', label: 'Orders', access: 'Orders' },
+    { path: '/orders', icon: 'fa-screwdriver-wrench', label: 'Orders', access: 'Orders' },
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', access: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
     { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
     { path: '/clients', icon: 'fa-user', label: 'Clients', access: 'Clients' },
-    { path: '/service-details', icon: 'fa-gear', label: 'Service Details', access: 'Service Details' },
-    { path: '/makes-and-models', icon: 'fa-car', label: 'Makes & models', access: 'Makes and Models' },
+    { path: '/service-details', icon: 'fa-circle-info', label: 'Service Details', access: 'Service Details' },
+    { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
     { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
   ];
 

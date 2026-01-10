@@ -107,7 +107,7 @@ const OrdersPage = () => {
                                             <tr key={job.id} onClick={() => navigate(`/orders/${order.id}`)}>
                                                 <td>
                                                     <span className={`job-status ${job.status}`}>
-                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-half' :
+                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
                                                             job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                             } status-icon`}></i>
                                                         {job.status}
