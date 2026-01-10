@@ -25,38 +25,55 @@ namespace GarageControl.Core.Services
 
         public async Task<List<OrderListViewModel>> GetOrdersAsync(string garageId)
         {
-            return await _context.Orders
+            var rawData = await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Car.Owner.CarServiceId == garageId)
-                .OrderByDescending(o => o.Jobs.Any() ? o.Jobs.Max(j => j.StartTime) : DateTime.MinValue)
-                .Select(o => new OrderListViewModel
+                .Select(o => new
                 {
-                    Id = o.Id,
-                    CarId = o.CarId,
-                    CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
-                    CarRegistrationNumber = o.Car.RegistrationNumber,
-                    ClientName = o.Car.Owner.Name,
-
-                    Date = o.Jobs.Any() ? o.Jobs.Min(j => j.StartTime) : DateTime.Now,
-                    Jobs = o.Jobs.Select(j => new JobListViewModel
+                    o.Id,
+                    o.CarId,
+                    CarMakeName = o.Car.Model.CarMake.Name,
+                    CarModelName = o.Car.Model.Name,
+                    o.Car.RegistrationNumber,
+                    o.Car.Owner.Name,
+                    Jobs = o.Jobs.Select(j => new
                     {
-                        Id = j.Id,
-                        Type = j.JobType.Name,
+                        j.Id,
+                        TypeName = j.JobType.Name,
                         Description = j.Description ?? "",
-                        Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
-                                 j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
+                        j.Status,
                         MechanicName = j.Worker.Name,
-                        StartTime = j.StartTime.ToString("HH:mm"),
-                        EndTime = j.EndTime.ToString("HH:mm"),
-                        LaborCost = j.LaborCost
+                        j.StartTime,
+                        j.EndTime,
+                        j.LaborCost
                     }).ToList()
                 })
                 .ToListAsync();
+
+            return rawData.Select(o => new OrderListViewModel
+            {
+                Id = o.Id,
+                CarId = o.CarId,
+                CarName = $"{o.CarMakeName} {o.CarModelName}",
+                CarRegistrationNumber = o.RegistrationNumber,
+                ClientName = o.Name,
+                Jobs = o.Jobs.Select(j => new JobListViewModel
+                {
+                    Id = j.Id,
+                    Type = j.TypeName,
+                    Description = j.Description,
+                    Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
+                             j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
+                    MechanicName = j.MechanicName,
+                    StartTime = j.StartTime.ToString("dd/MM HH:mm"),
+                    EndTime = j.EndTime.ToString("HH:mm"),
+                    LaborCost = j.LaborCost
+                }).ToList()
+            }).ToList();
         }
 
         public async Task<object> CreateOrderAsync(string garageId, CreateOrderViewModel model)
         {
-            // Verify Car belongs to service
             var car = await _context.Cars
                 .Include(c => c.Owner)
                 .FirstOrDefaultAsync(c => c.Id == model.CarId && c.Owner.CarServiceId == garageId);
@@ -69,7 +86,6 @@ namespace GarageControl.Core.Services
             var order = new Order
             {
                 CarId = model.CarId,
-                // Additional fields? Order date? usually derived or added to model.
             };
 
             _context.Orders.Add(order);
@@ -99,11 +115,10 @@ namespace GarageControl.Core.Services
                             JobId = job.Id,
                             PartId = part.Id,
                             Quantity = partModel.Quantity,
-                            Price = part.Price // Use the price from the part in the database
+                            Price = part.Price
                         };
                         _context.JobParts.Add(jobPart);
 
-                        // Deduct stock
                         if (part.Quantity >= partModel.Quantity)
                         {
                             part.Quantity -= partModel.Quantity;
@@ -114,7 +129,6 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
             
-            // Return a simple object instead of the full Order entity to avoid circular references
             return new { orderId = order.Id, message = "Order created successfully" };
         }
 
@@ -167,11 +181,8 @@ namespace GarageControl.Core.Services
                 throw new Exception("Order not found or access denied.");
             }
 
-            // Update order-level details if any (e.g. CarId)
             order.CarId = model.CarId;
 
-            // Handle Jobs
-            // 1. Remove jobs that are no longer in the model (and return stock for parts)
             var jobIdsInModel = model.Jobs.Where(j => j.Id != null).Select(j => j.Id).ToList();
             var jobsToRemove = order.Jobs.Where(j => !jobIdsInModel.Contains(j.Id)).ToList();
 
@@ -187,14 +198,13 @@ namespace GarageControl.Core.Services
                 _context.Jobs.Remove(job);
             }
 
-            // 2. Update existing jobs or add new ones
             foreach (var jobModel in model.Jobs)
             {
                 Job? job;
                 if (jobModel.Id != null)
                 {
                     job = order.Jobs.FirstOrDefault(j => j.Id == jobModel.Id);
-                    if (job == null) continue; // Should not happen based on logic above
+                    if (job == null) continue;
                 }
                 else
                 {
@@ -210,8 +220,6 @@ namespace GarageControl.Core.Services
                 job.StartTime = jobModel.StartTime;
                 job.EndTime = jobModel.EndTime;
 
-                // Handle Parts for this job
-                // a. Remove parts
                 var partIdsInModel = jobModel.Parts.Select(p => p.PartId).ToList();
                 var partsToRemove = job.JobParts.Where(jp => !partIdsInModel.Contains(jp.PartId)).ToList();
                 foreach (var jp in partsToRemove)
@@ -223,7 +231,6 @@ namespace GarageControl.Core.Services
                     _context.JobParts.Remove(jp);
                 }
 
-                // b. Update/Add parts
                 foreach (var partModel in jobModel.Parts)
                 {
                     var existingJobPart = job.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);

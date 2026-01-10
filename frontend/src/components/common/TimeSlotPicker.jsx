@@ -12,6 +12,12 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
 
     const [isSelectingRange, setIsSelectingRange] = useState(false);
 
+    // Sync state with props when they change (crucial for async data loading in Edit mode)
+    useEffect(() => {
+        if (initialStart) setSelectionStart(new Date(initialStart));
+        if (initialEnd) setSelectionEnd(new Date(initialEnd));
+    }, [initialStart, initialEnd]);
+
     // Columns configuration
     const DAYS_TO_SHOW = 5;
 
@@ -19,8 +25,6 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
     useEffect(() => {
         if (worker) {
             console.log('TimeSlotPicker - Worker data:', worker);
-            console.log('TimeSlotPicker - Has schedules?', worker.schedules);
-            console.log('TimeSlotPicker - Has leaves?', worker.leaves);
         }
     }, [worker]);
 
@@ -59,52 +63,28 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
     };
 
     const isHourAvailable = (date, hour) => {
-        if (!worker || !worker.schedules || worker.schedules.length === 0) {
-            return false; // No worker selected or no schedule
-        }
-
+        if (!worker || !worker.schedules || worker.schedules.length === 0) return false;
         if (!isWorkerWorking(date)) return false;
 
         const dow = getDayOfWeek(date);
         const schedule = worker.schedules.find(s => s.dayOfWeek === dow);
+        if (!schedule) return false;
 
-        if (!schedule) {
-            console.log(`No schedule found for day ${dow} (${date.toDateString()})`);
-            return false;
-        }
+        const [startH] = schedule.startTime.split(':').map(Number);
+        const [endH] = schedule.endTime.split(':').map(Number);
 
-        const [startH, startM] = schedule.startTime.split(':').map(Number);
-        const [endH, endM] = schedule.endTime.split(':').map(Number);
-
-        const isAvailable = !(hour < startH || hour >= endH);
-
-        if (hour >= 8 && hour <= 18) { // Only log working hours to reduce noise
-            console.log(`Hour ${hour} on ${date.toDateString()} (dow:${dow}): schedule ${startH}-${endH}, available: ${isAvailable}`);
-        }
-
-        if (hour < startH || hour >= endH) return false;
-
-        return true;
+        return !(hour < startH || hour >= endH);
     };
 
     const handleDayChange = (offset) => {
         const newDate = new Date(viewDate);
         newDate.setDate(newDate.getDate() + offset);
-
-        // Prevent going to past (before Today)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (newDate < today) return;
-
         setViewDate(newDate);
     };
 
     const handleHourClick = (date, hour) => {
         const clickDate = new Date(date);
         clickDate.setHours(hour, 0, 0, 0);
-
-        // Validation for past hours if Today
-        if (clickDate < new Date()) return; // Can't select past time
 
         if (!isHourAvailable(clickDate, hour)) return;
 
@@ -113,12 +93,11 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
             setSelectionEnd(null);
             setIsSelectingRange(true);
         } else {
+            // Use the current selectionStart state carefully
             if (clickDate <= selectionStart) {
-                // Restart logic if clicked before or same
                 setSelectionStart(clickDate);
                 setSelectionEnd(null);
             } else {
-                // Must be same day for this simplified logic
                 if (clickDate.getDate() !== selectionStart.getDate() ||
                     clickDate.getMonth() !== selectionStart.getMonth()) {
                     setSelectionStart(clickDate);
@@ -128,9 +107,7 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
 
                 let valid = true;
                 const startH = selectionStart.getHours();
-                const endH = hour;
-
-                for (let h = startH; h <= endH; h++) {
+                for (let h = startH; h <= hour; h++) {
                     const checkDate = new Date(selectionStart);
                     checkDate.setHours(h, 0, 0, 0);
                     if (!isHourAvailable(checkDate, h)) {
@@ -140,15 +117,23 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
                 }
 
                 if (valid) {
+                    const finalStart = new Date(selectionStart);
                     const finalEnd = new Date(clickDate);
                     finalEnd.setHours(hour + 1, 0, 0, 0);
 
+                    setSelectionStart(finalStart);
                     setSelectionEnd(finalEnd);
                     setIsSelectingRange(false);
                     setIsOpen(false);
 
                     if (onTimeSelect) {
-                        onTimeSelect(selectionStart.toISOString(), finalEnd.toISOString());
+                        // Create a local ISO-like string to avoid UTC conversion issues
+                        // Format: YYYY-MM-DDTHH:mm:ss (no Z)
+                        const formatDate = (d) => {
+                            const pad = (n) => n.toString().padStart(2, '0');
+                            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`;
+                        };
+                        onTimeSelect(formatDate(finalStart), formatDate(finalEnd));
                     }
                 } else {
                     setSelectionStart(clickDate);

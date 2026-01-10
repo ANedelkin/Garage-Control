@@ -56,7 +56,6 @@ const OrdersPage = () => {
 
     return (
         <main className="main">
-            <h1 style={{ color: 'red' }}>Add starting time column to table!!1!!1!!!!1!!111</h1>
             <div className="header">
                 <input
                     type="text"
@@ -97,6 +96,7 @@ const OrdersPage = () => {
                                     <thead>
                                         <tr>
                                             <th>Status</th>
+                                            <th>Time</th>
                                             <th>Type</th>
                                             <th>Mechanic</th>
                                             <th>Cost</th>
@@ -114,6 +114,7 @@ const OrdersPage = () => {
                                                         {job.status}
                                                     </span>
                                                 </td>
+                                                <td>{job.startTime}</td>
                                                 <td>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
                                                 <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>

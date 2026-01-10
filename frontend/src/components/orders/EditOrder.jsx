@@ -134,6 +134,11 @@ const NewOrderPage = () => {
             return;
         }
 
+        const getLocalISO = (d) => {
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`;
+        };
+
         const model = {
             carId: selectedCar.id,
             jobs: services.map(s => ({
@@ -141,8 +146,8 @@ const NewOrderPage = () => {
                 jobTypeId: s.jobTypeId,
                 workerId: s.workerId,
                 laborCost: s.laborCost,
-                startTime: s.startTime || new Date().toISOString(),
-                endTime: s.endTime || new Date().toISOString(),
+                startTime: s.startTime || getLocalISO(new Date()),
+                endTime: s.endTime || getLocalISO(new Date()),
                 description: s.description,
                 status: s.status,
                 parts: s.parts.map(p => ({
