@@ -22,6 +22,8 @@ select {
     height: fit-content;
     cursor: pointer;
     background: transparent;
+    border: none;
+    border-radius: 8px;
     color: inherit;
     padding: 10px 28px 10px 14px;
     appearance: none;
