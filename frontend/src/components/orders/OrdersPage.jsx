@@ -63,7 +63,7 @@ const OrdersPage = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <Dropdown className="btn" value={filter} onChange={e => setFilter(e.target.value)}>
+                <Dropdown value={filter} onChange={e => setFilter(e.target.value)}>
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="inprogress">In Progress</option>
