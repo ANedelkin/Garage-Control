@@ -11,12 +11,19 @@ select {
 input,
 textarea,
 select,
+.select-wrapper,
 .btn {
-    padding: 0px 14px;
     border-radius: 8px;
     background: var(--solid3);
     color: inherit;
     min-height: 40px;
+}
+
+input,
+textarea,
+select,
+.btn {
+    padding: 0px 14px;
 }
 
 .theme-toggle {
@@ -41,6 +48,7 @@ a {
     text-decoration: none;
 }
 
+.select-wrapper,
 .btn {
     display: inline-flex;
     align-items: center;
