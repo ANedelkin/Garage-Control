@@ -13,22 +13,21 @@
     pointer-events: none;
 }
 
-select {
-    width: fit-content;
-    background: var(--solid3);
-    border: 1px solid var(--border2);
-    color: inherit;
-    padding: 10px 28px 10px 14px;
-    border-radius: 8px;
-    appearance: none;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.2s ease;
-}
-
-select:hover {
+.select-wrapper:hover {
     background-color: var(--solid4);
 }
+
+select {
+    width: fit-content;
+    height: fit-content;
+    cursor: pointer;
+    background: transparent;
+    color: inherit;
+    padding: 10px 28px 10px 14px;
+    appearance: none;
+    font-size: 14px;
+}
+
 
 select option {
     background-color: var(--solid3);

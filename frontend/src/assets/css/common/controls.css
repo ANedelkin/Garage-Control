@@ -1,18 +1,13 @@
 input,
 textarea,
-select {
+/* select, */
+.select-wrapper,
+.btn {
     border: 1px solid var(--border2);
     font-size: 14px;
     width: 100%;
     height: auto;
     margin: 0;
-}
-
-input,
-textarea,
-select,
-.select-wrapper,
-.btn {
     border-radius: 8px;
     background: var(--solid3);
     color: inherit;
@@ -21,7 +16,6 @@ select,
 
 input,
 textarea,
-select,
 .btn {
     padding: 0px 14px;
 }
@@ -54,7 +48,7 @@ a {
     align-items: center;
     gap: 10px;
     justify-content: center;
-    border: 1px solid var(--accent2);
+    width: fit-content;
     cursor: pointer;
     font-size: 14px;
     white-space: nowrap;

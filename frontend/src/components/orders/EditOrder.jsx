@@ -5,6 +5,7 @@ import { partApi } from '../../services/partApi';
 import Dropdown from '../common/Dropdown';
 import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
+import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 
 const NewOrderPage = () => {
