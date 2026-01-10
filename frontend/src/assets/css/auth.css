@@ -36,6 +36,10 @@
   width: 350px;
 }
 
-.auth .lnk{
-  margin-right:auto;
+.auth .lnk {
+  margin-right: auto;
+}
+
+.auth-buttons .btn {
+  width: 100%;
 }
