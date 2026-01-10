@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { orderApi } from '../../services/orderApi';
+import Dropdown from '../common/Dropdown';
 import '../../assets/css/orders.css';
 import { Link } from 'react-router-dom';
 
 const OrdersPage = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
@@ -37,36 +40,36 @@ const OrdersPage = () => {
         }
     };
 
-    const filteredOrders = orders.filter(o =>
-        (filter === 'all' || o.status === filter) &&
-        (o.carName.toLowerCase().includes(search.toLowerCase()) ||
-            o.clientName.toLowerCase().includes(search.toLowerCase()) ||
-            o.carRegistrationNumber.toLowerCase().includes(search.toLowerCase()))
-    );
+    const filteredOrders = orders.map(order => {
+        const filteredJobs = order.jobs.filter(job =>
+            filter === 'all' || job.status === filter
+        );
+
+        return { ...order, jobs: filteredJobs };
+    }).filter(order => {
+        if (filter !== 'all' && order.jobs.length === 0) return false;
+
+        return (order.carName.toLowerCase().includes(search.toLowerCase()) ||
+            order.clientName.toLowerCase().includes(search.toLowerCase()) ||
+            order.carRegistrationNumber.toLowerCase().includes(search.toLowerCase()));
+    });
 
     return (
         <main className="main">
-            <div className="orders-header">
-                <div>
-                    <h3>Orders</h3>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <input
-                        type="text"
-                        placeholder="Search orders..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                    />
-                    <select className="btn" value={filter} onChange={e => setFilter(e.target.value)}>
-                        <option value="all">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="inProgress">In Progress</option>
-                        <option value="finished">Finished</option>
-                    </select>
-                    <Link to="/orders/new" className="btn primary">
-                        <i className="fa-solid fa-plus"></i> New Order
-                    </Link>
-                </div>
+            <div className="header">
+                <input
+                    type="text"
+                    placeholder="Search orders..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                />
+                <Dropdown className="btn" value={filter} onChange={e => setFilter(e.target.value)}>
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="finished">Finished</option>
+                </Dropdown>
+                <Link to="/orders/new" className="btn primary">+ New Order</Link>
             </div>
 
             {loading ? (
@@ -74,22 +77,21 @@ const OrdersPage = () => {
             ) : filteredOrders.length === 0 ? (
                 <p className="list-empty">No orders found.</p>
             ) : (
-                <div className="orders-grid">
+                <>
                     {filteredOrders.map(order => (
-                        <div key={order.id} className="order-tile">
-                            <div className="order-tile-header">
+                        <div key={order.id} className="tile">
+                            <div className="tile-header">
                                 <div className="order-car-info">
                                     <h4>{order.clientName}</h4>
                                     <div className="order-car-details">
                                         {order.carName} • {order.carRegistrationNumber}
                                     </div>
                                 </div>
-                                <span className={`status-badge ${order.status}`}>
-                                    {order.status}
-                                </span>
                             </div>
 
-                            <div className="order-jobs-table">
+                            {/* <div className="divider"/> */}
+
+                            <div className="table">
                                 <table>
                                     <thead>
                                         <tr>
@@ -102,28 +104,20 @@ const OrdersPage = () => {
                                     </thead>
                                     <tbody>
                                         {order.jobs.map(job => (
-                                            <tr key={job.id}>
+                                            <tr key={job.id} onClick={() => navigate(`/orders/${order.id}`)}>
                                                 <td>
                                                     <span className={`job-status ${job.status}`}>
+                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-half' :
+                                                            job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
+                                                            } status-icon`}></i>
                                                         {job.status}
                                                     </span>
                                                 </td>
                                                 <td>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
-                                                <td>BGN {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
-                                                <td style={{ display: 'flex', gap: '5px' }}>
-                                                    <Link
-                                                        className="btn icon-btn"
-                                                        to={`/orders/${order.id}`}
-                                                        title="Edit order/job"
-                                                    >
-                                                        <i className="fa-solid fa-pen-to-square"></i>
-                                                    </Link>
-                                                    <button
-                                                        className="btn icon-btn delete"
-                                                        onClick={() => handleDeleteJob(order.id, job.id)}
-                                                        title="Delete job"
-                                                    >
+                                                <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
+                                                <td onClick={e => e.stopPropagation()}>
+                                                    <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
                                                         <i className="fa-solid fa-trash"></i>
                                                     </button>
                                                 </td>
@@ -134,7 +128,7 @@ const OrdersPage = () => {
                             </div>
                         </div>
                     ))}
-                </div>
+                </>
             )}
         </main>
     );

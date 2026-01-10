@@ -9,6 +9,19 @@
     flex-direction: column;
 }
 
+.form-section .select-wrapper{
+    width: 100%;
+}
+.form-section select{
+    width: 100%;
+}
+
+.form-section label {
+    margin-bottom: 10px;
+    margin-right: 10px;
+    display: block;
+}
+
 .form-footer {
     display: flex;
     justify-content: right;

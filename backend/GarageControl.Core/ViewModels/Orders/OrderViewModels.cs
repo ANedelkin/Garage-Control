@@ -10,9 +10,6 @@ namespace GarageControl.Core.ViewModels.Orders
         public string CarName { get; set; } = null!;
         public string CarRegistrationNumber { get; set; } = null!;
         public string ClientName { get; set; } = null!;
-        public string Status { get; set; } = null!; // Aggregated status? or just create a status for order?
-                                                    // Order models usually derive status from jobs or have their own.
-                                                    // Let's assume we derive it or pick the "most critical" one.
         public DateTime Date { get; set; }
         public List<JobListViewModel> Jobs { get; set; } = new List<JobListViewModel>();
     }

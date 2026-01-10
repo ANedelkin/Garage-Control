@@ -1,20 +1,6 @@
-.orders-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.orders-header input {
-    max-width: 300px;
-}
-
-.new-order {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.edit-order .description {
+    height: 80px;
+    width: 100%;
 }
 
 .car-suggestions {
@@ -43,103 +29,11 @@
     background: var(--solid4);
 }
 
-.service-tile {
-    background: var(--solid2);
-    border-radius: 8px;
-    padding: 1rem;
-    border: 1px solid var(--border2);
-    margin-bottom: 1rem;
-}
-
-.service-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
 .form-row-4 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 1rem;
     align-items: start;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-group.full-width {
-    width: 100%;
-}
-
-.form-group label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text2);
-}
-
-.form-group select,
-.form-group input,
-.form-group textarea {
-    width: 100%;
-}
-
-.parts-table-wrapper {
-    margin-top: 1rem;
-}
-
-.parts-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.parts-table th,
-.parts-table td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border2);
-}
-
-.add-part-btn {
-    margin-top: 0.5rem;
-}
-
-.status.pending {
-    color: orange;
-}
-
-.status.inProgress {
-    color: blue;
-}
-
-.status.finished {
-    color: green;
-}
-
-/* Orders Grid */
-.orders-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
-    gap: 1.5rem;
-}
-
-.order-tile {
-    background: var(--solid2);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.order-tile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: var(--solid3);
-    border-bottom: 1px solid var(--border2);
 }
 
 .order-car-info h4 {
@@ -152,90 +46,138 @@
     color: var(--text3);
 }
 
-.status-badge {
-    padding: 0.375rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.status-badge.pending {
-    background: rgba(255, 165, 0, 0.1);
-    color: orange;
-}
-
-.status-badge.inProgress {
-    background: rgba(0, 123, 255, 0.1);
-    color: #007bff;
-}
-
-.status-badge.finished {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-}
-
-.order-jobs-table {
-    padding: 0;
-}
-
-.order-jobs-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.order-jobs-table thead {
-    background: var(--solid1);
-}
-
-.order-jobs-table th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--text2);
-    border-bottom: 1px solid var(--border2);
-}
-
-.order-jobs-table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border1);
-}
-
-.order-jobs-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.order-jobs-table tbody tr:hover {
-    background: var(--solid1);
-}
-
 .job-status {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.job-status.pending {
-    background: rgba(255, 165, 0, 0.1);
-    color: orange;
+.status-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
-.job-status.inProgress,
-.job-status.inprogress {
-    background: rgba(0, 123, 255, 0.1);
-    color: #007bff;
+.job-status.pending .status-icon,
+.status-badge.pending .status-icon {
+    background: var(--pending-orders);
 }
 
-.job-status.finished,
-.job-status.done {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
+.job-status.inProgress .status-icon,
+.job-status.inprogress .status-icon,
+.status-badge.inProgress .status-icon {
+    background: var(--inprogress-orders);
 }
 
-/* Time Picker Styles */
+.job-status.finished .status-icon,
+.job-status.done .status-icon,
+.status-badge.finished .status-icon {
+    background: var(--finished-orders);
+}
+
+.select-wrapper.pending,
+.select-wrapper.inprogress,
+.select-wrapper.finished {
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.select-wrapper.pending::before,
+.select-wrapper.inprogress::before,
+.select-wrapper.finished::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+}
+
+.select-wrapper.pending:hover::before,
+.select-wrapper.inprogress:hover::before,
+.select-wrapper.finished:hover::before {
+    opacity: 1;
+}
+
+.select-wrapper.pending select,
+.select-wrapper.inprogress select,
+.select-wrapper.finished select {
+    background: transparent !important;
+    position: relative;
+    z-index: 2;
+    border: none;
+}
+
+.select-wrapper.pending {
+    background: var(--pending-orders);
+}
+
+.select-wrapper.pending::before {
+    background: var(--pending-orders-hover);
+}
+
+.select-wrapper.inprogress {
+    background: var(--inprogress-orders);
+}
+
+.select-wrapper.inprogress::before {
+    background: var(--inprogress-orders-hover);
+}
+
+.select-wrapper.finished {
+    background: var(--finished-orders);
+}
+
+.select-wrapper.finished::before {
+    background: var(--finished-orders-hover);
+}
+
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+/****************************************************************/
+
 .time-picker-container {
     position: relative;
     width: 100%;
@@ -248,7 +190,6 @@
 }
 
 .time-picker-popup {
-    /* Removed absolute/local positioning */
     display: none;
 }
 
@@ -275,7 +216,6 @@
     display: flex;
     flex-direction: column;
     width: 600px;
-    /* Wider for 5 days */
     max-height: 80vh;
 }
 
@@ -292,7 +232,6 @@
 
 .tp-body.multi-day {
     display: flex;
-    /* Columns */
     flex-direction: row;
     overflow-y: auto;
     padding: 1rem;
@@ -349,7 +288,6 @@
     color: var(--text4);
     cursor: not-allowed;
     text-decoration: none;
-    /* Removed strikethrough for cleaner look in dense grid */
     opacity: 0.5;
 }
 

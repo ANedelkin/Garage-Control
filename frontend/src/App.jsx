@@ -18,7 +18,7 @@ import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
-import NewOrderPage from './components/orders/NewOrderPage.jsx';
+import NewOrderPage from './components/orders/EditOrder.jsx';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';

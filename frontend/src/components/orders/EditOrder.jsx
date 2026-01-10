@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { partApi } from '../../services/partApi';
+import Dropdown from '../common/Dropdown';
 import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
 import '../../assets/css/orders.css';
@@ -169,67 +170,45 @@ const NewOrderPage = () => {
     if (loading) return <main className="main"><p>Loading...</p></main>;
 
     return (
-        <main className="main new-order">
-            <div className="orders-header">
-                <h3>{isEdit ? "Edit Order" : "New Order"}</h3>
+        <main className="main edit-order">
+            <div className="header">
+                <label>Select Car:</label>
+                <input
+                    type="text"
+                    placeholder="Search by Reg Number or Model..."
+                    value={carSearch}
+                    onChange={e => handleCarSearch(e.target.value)}
+                    disabled={isEdit} // Optional: usually don't change car on existing order
+                />
+                {suggestions.length > 0 && (
+                    <ul className="car-suggestions">
+                        {suggestions.map(c => (
+                            <li key={c.id} onClick={() => selectCar(c)}>
+                                <b>{c.registrationNumber}</b> - {c.model.make.name} {c.model.name}
+                            </li>
+                        ))}
+                    </ul>
+                )}
                 <button className="btn primary" onClick={handleSave}>
-                    {isEdit ? "Update & Save" : "Create & Save"}
+                    Save
                 </button>
             </div>
 
-            <div className="tile" style={{ overflow: 'visible' }}>
-                <div style={{ position: 'relative' }}>
-                    <label>Select Car</label>
-                    <input
-                        type="text"
-                        placeholder="Search by Reg Number or Model..."
-                        value={carSearch}
-                        onChange={e => handleCarSearch(e.target.value)}
-                        disabled={isEdit} // Optional: usually don't change car on existing order
-                    />
-                    {suggestions.length > 0 && (
-                        <ul className="car-suggestions">
-                            {suggestions.map(c => (
-                                <li key={c.id} onClick={() => selectCar(c)}>
-                                    <b>{c.registrationNumber}</b> - {c.model.make.name} {c.model.name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+            {services.map((s, i) => (
+                <ServiceForm
+                    index={i}
+                    service={s}
+                    updateService={updateService}
+                    removeService={removeService}
+                    jobTypes={jobTypes}
+                    workers={workers}
+                    allParts={allParts}
+                />
+            ))}
 
-                {services.map((s, i) => (
-                    <div key={s.id}>
-                        {isEdit && (
-                            <div className="form-group" style={{ maxWidth: '200px', marginBottom: '0.5rem' }}>
-                                <label>Job Status</label>
-                                <select
-                                    className="status-selector"
-                                    value={s.status}
-                                    onChange={e => updateService(s.id, 'status', parseInt(e.target.value))}
-                                >
-                                    <option value={0}>Pending</option>
-                                    <option value={1}>In Progress</option>
-                                    <option value={2}>Finished</option>
-                                </select>
-                            </div>
-                        )}
-                        <ServiceForm
-                            index={i}
-                            service={s}
-                            updateService={updateService}
-                            removeService={removeService}
-                            jobTypes={jobTypes}
-                            workers={workers}
-                            allParts={allParts}
-                        />
-                    </div>
-                ))}
-
-                <button className="btn" onClick={addService} style={{ width: 'fit-content', marginTop: '20px' }}>
-                    + Add Service (Job)
-                </button>
-            </div>
+            <button className="btn" onClick={addService} style={{ width: 'fit-content', marginTop: '20px' }}>
+                + Add Service (Job)
+            </button>
         </main>
     );
 };

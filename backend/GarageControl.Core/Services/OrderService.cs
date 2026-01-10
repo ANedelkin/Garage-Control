@@ -36,8 +36,7 @@ namespace GarageControl.Core.Services
                     CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,
-                    Status = o.Jobs.Any(j => j.Status == Shared.Enums.JobStatus.InProgress) ? "inprogress" :
-                             o.Jobs.All(j => j.Status == Shared.Enums.JobStatus.Done) ? "finished" : "pending",
+
                     Date = o.Jobs.Any() ? o.Jobs.Min(j => j.StartTime) : DateTime.Now,
                     Jobs = o.Jobs.Select(j => new JobListViewModel
                     {

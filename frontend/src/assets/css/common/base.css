@@ -15,3 +15,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+label{
+    white-space: nowrap;
+}

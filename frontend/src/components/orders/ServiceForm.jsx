@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { partApi } from '../../services/partApi';
+import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 
 const ServiceForm = ({ service, index, updateService, removeService, jobTypes, workers, allParts = [] }) => {
@@ -71,9 +72,15 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
     };
 
     return (
-        <div className="service-tile">
-            <div className="orders-header">
-                <h4>Service #{index + 1}</h4>
+        <div className="tile">
+            <div className="tile-header">
+                <div className="header">
+                    <label>Job Type</label>
+                    <DropDown value={service.jobTypeId} onChange={e => handleChange('jobTypeId', e.target.value)}>
+                        <option value="">Select Type</option>
+                        {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.name}</option>)}
+                    </DropDown>
+                </div>
                 <button type="button" className="btn delete" onClick={() => removeService(service.id)}>
                     <i className="fa-solid fa-trash"></i>
                 </button>
@@ -81,31 +88,36 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
 
             <div className="service-form">
                 <div className="form-row-4">
-                    <div className="form-group">
-                        <label>Job Type</label>
-                        <select value={service.jobTypeId} onChange={e => handleChange('jobTypeId', e.target.value)}>
-                            <option value="">Select Type</option>
-                            {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.name}</option>)}
-                        </select>
+                    <div className="form-section">
+                        <label>Job Status</label>
+                        <DropDown
+                            className={service.status === 0 ? 'pending' : service.status === 1 ? 'inprogress' : 'finished'}
+                            value={service.status}
+                            onChange={e => handleChange('status', parseInt(e.target.value))}
+                        >
+                            <option value={0}>Pending</option>
+                            <option value={1}>In Progress</option>
+                            <option value={2}>Finished</option>
+                        </DropDown>
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-section">
                         <label>Mechanic</label>
-                        <select value={service.workerId} onChange={e => handleChange('workerId', e.target.value)}>
+                        <DropDown value={service.workerId} onChange={e => handleChange('workerId', e.target.value)}>
                             <option value="">Select Mechanic</option>
                             {workers
                                 .filter(w => !service.jobTypeId || (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId)))
                                 .map(w => <option key={w.id} value={w.id}>{w.name}</option>)
                             }
-                        </select>
+                        </DropDown>
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-section">
                         <label>Labor Cost</label>
                         <input type="number" step="0.01" value={service.laborCost} onChange={e => handleChange('laborCost', parseFloat(e.target.value))} />
                     </div>
 
-                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className="form-section" style={{ display: 'flex', flexDirection: 'column' }}>
                         <label>Time Slot</label>
                         <TimeSlotPicker
                             worker={workers.find(w => w.id === service.workerId)}
@@ -119,22 +131,22 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                     </div>
                 </div>
 
-                <div className="form-group full-width">
+                <div className="form-section">
                     <label>Description</label>
-                    <textarea value={service.description} onChange={e => handleChange('description', e.target.value)} placeholder="Describe..." />
+                    <textarea className="description" value={service.description} onChange={e => handleChange('description', e.target.value)} placeholder="Describe..." />
                 </div>
             </div>
 
             <div className="parts-table-wrapper">
-                <h5>Parts</h5>
-                <table className="parts-table" style={{ overflow: 'visible' }}>
+                <label>Parts</label>
+                <table className="table" style={{ overflow: 'visible' }}>
                     <thead>
                         <tr>
                             <th>Part Name / Number</th>
-                            <th style={{ width: '80px' }}>Qty</th>
-                            <th style={{ width: '100px' }}>Unit Price</th>
-                            <th style={{ width: '100px' }}>Total</th>
-                            <th style={{ width: '50px' }}>Action</th>
+                            <th style={{ width: '150px' }}>Qty</th>
+                            <th style={{ width: '150px' }}>Unit Price</th>
+                            <th style={{ width: '150px' }}>Total</th>
+                            <th style={{ width: '100px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,7 +197,9 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                         ))}
                     </tbody>
                 </table>
-                <button type="button" className="btn add-part-btn" onClick={addNewRow}>+ Add Part Row</button>
+                <div className="form-footer">
+                    <button type="button" className="btn" onClick={addNewRow}>+ Add Part</button>
+                </div>
             </div>
         </div>
     );

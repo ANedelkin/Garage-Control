@@ -19,10 +19,6 @@ select,
     min-height: 40px;
 }
 
-.select-wrapper {
-    width: 100%;
-}
-
 .theme-toggle {
     position: fixed;
     bottom: 16px;
@@ -88,6 +84,11 @@ a {
 
 .active:hover {
     background: var(--accent1) !important;
+}
+
+.description {
+    resize: none;
+    padding-top: 14px;
 }
 
 @media (max-width: 600px) {
