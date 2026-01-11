@@ -9,12 +9,14 @@ import PartDetails from './PartDetails';
 
 const PartsStock = () => {
     const [selectedPart, setSelectedPart] = useState(null);
+    const [selectedPath, setSelectedPath] = useState([]);
     const [refreshTree, setRefreshTree] = useState(0);
     const [rootFolders, setRootFolders] = useState([]);
     const [rootParts, setRootParts] = useState([]);
 
-    const handlePartSelect = (part) => {
+    const handlePartSelect = (part, path) => {
         setSelectedPart(part);
+        setSelectedPath(path);
     };
 
     const handleRefresh = () => {
@@ -61,7 +63,7 @@ const PartsStock = () => {
                                     </button>
                                     <button className="btn icon-btn" title="Add Part" onClick={async () => {
                                         const newPart = await handleAddPart(null, handleRefresh);
-                                        if (newPart) setSelectedPart(newPart);
+                                        if (newPart) handlePartSelect(newPart, [newPart.id]);
                                     }}>
                                         <i className="fa-solid fa-plus"></i>
                                     </button>
@@ -75,6 +77,7 @@ const PartsStock = () => {
                                     onRefresh={handleRefresh}
                                     refreshTrigger={refreshTree}
                                     selectedPartId={selectedPart?.id}
+                                    selectedPath={selectedPath}
                                 />
                             </div>
                         </div>

@@ -61,6 +61,15 @@
     text-overflow: ellipsis;
 }
 
+/* .list-item.low-stock .item-label {
+    color: #e74c3c;
+    font-weight: 600;
+} */
+
+.low-stock {
+    color: #e74c3c;
+}
+
 .parts-tree-children {
     padding-left: 1.5rem;
 }

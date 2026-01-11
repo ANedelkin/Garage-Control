@@ -9,6 +9,7 @@ namespace GarageControl.Core.ViewModels.Parts
         public string PartNumber { get; set; } = null!;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public int MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }
 
@@ -22,6 +23,8 @@ namespace GarageControl.Core.ViewModels.Parts
         public decimal Price { get; set; }
         [Required]
         public int Quantity { get; set; }
+        [Required]
+        public int MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }
 
@@ -37,5 +40,7 @@ namespace GarageControl.Core.ViewModels.Parts
         public decimal Price { get; set; }
         [Required]
         public int Quantity { get; set; }
+        [Required]
+        public int MinimumQuantity { get; set; }
     }
 }

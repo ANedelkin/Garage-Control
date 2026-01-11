@@ -69,6 +69,7 @@ namespace GarageControl.Core.Services
                     PartNumber = p.PartNumber,
                     Price = p.Price,
                     Quantity = p.Quantity,
+                    MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
                 })
                 .ToListAsync();
@@ -87,6 +88,7 @@ namespace GarageControl.Core.Services
                     PartNumber = p.PartNumber,
                     Price = p.Price,
                     Quantity = p.Quantity,
+                    MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
                 })
                 .ToListAsync();
@@ -100,6 +102,7 @@ namespace GarageControl.Core.Services
                 PartNumber = model.PartNumber,
                 Price = model.Price,
                 Quantity = model.Quantity,
+                MinimumQuantity = model.MinimumQuantity,
                 ParentId = model.ParentId,
                 CarServiceId = garageId
             };
@@ -114,6 +117,7 @@ namespace GarageControl.Core.Services
                 PartNumber = part.PartNumber,
                 Price = part.Price,
                 Quantity = part.Quantity,
+                MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId
             };
         }
@@ -129,6 +133,7 @@ namespace GarageControl.Core.Services
             part.PartNumber = model.PartNumber;
             part.Price = model.Price;
             part.Quantity = model.Quantity;
+            part.MinimumQuantity = model.MinimumQuantity;
 
             await _context.SaveChangesAsync();
         }

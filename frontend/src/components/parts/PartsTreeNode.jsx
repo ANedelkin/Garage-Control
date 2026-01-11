@@ -4,7 +4,7 @@ import ContextMenu from './ContextMenu';
 import PartsTree from './PartsTree';
 import { handleAddFolder, handleAddPart } from './helpers';
 
-const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId }) => {
+const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
     const [expanded, setExpanded] = useState(false);
     const [children, setChildren] = useState({ subFolders: [], parts: [] });
     const [loaded, setLoaded] = useState(false);
@@ -33,7 +33,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     const handleExpand = async (e) => {
         e.stopPropagation();
         if (type === 'part') {
-            onSelectPart(node);
+            onSelectPart(node, currentPath);
             return;
         }
 
@@ -108,7 +108,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
             });
         });
         if (newPart) {
-            onSelectPart(newPart);
+            onSelectPart(newPart, [...currentPath, newPart.id]);
         }
         setShowMenu(false);
     };
@@ -116,7 +116,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     return (
         <>
             <div
-                className={`list-item ${type === 'part' && node.id === selectedPartId ? 'active' : ''}`}
+                className={`list-item ${((type === 'part' && node.id === selectedPartId) || (type === 'folder' && selectedPath.includes(node.id) && !expanded)) ? 'active' : ''} ${type === 'part' && node.quantity < node.minimumQuantity ? 'low-stock' : ''}`}
                 onClick={handleExpand}
                 onContextMenu={handleContextMenu} // Right click on item itself? Request says "On the right of each folder list-item there will be a 3-dot button"
             >
@@ -148,6 +148,8 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                         onRefresh={onRefresh}
                         refreshTrigger={refreshTrigger}
                         selectedPartId={selectedPartId}
+                        selectedPath={selectedPath}
+                        currentPath={currentPath}
                     />
                 </div>
             )}

@@ -6,7 +6,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
         name: '',
         partNumber: '',
         price: '',
-        quantity: ''
+        quantity: '',
+        minimumQuantity: ''
     });
     const [stockAdj, setStockAdj] = useState('');
     const [isDirty, setIsDirty] = useState(false);
@@ -17,7 +18,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 name: part.name,
                 partNumber: part.partNumber,
                 price: part.price,
-                quantity: part.quantity
+                quantity: part.quantity,
+                minimumQuantity: part.minimumQuantity
             });
             setStockAdj('');
             setIsDirty(false);
@@ -48,7 +50,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 id: part.id,
                 ...formData,
                 price: parseFloat(formData.price),
-                quantity: parseInt(formData.quantity)
+                quantity: parseInt(formData.quantity),
+                minimumQuantity: parseInt(formData.minimumQuantity)
             });
             onUpdate();
             setIsDirty(false);
@@ -121,12 +124,24 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
 
                     {/* Right Column */}
                     <div className="form-column">
-                        <div className="form-section">
+                        <div className={`form-section`}>
                             <label>Current Quantity</label>
                             <input
+                                className={formData.quantity < formData.minimumQuantity ? 'low-stock' : ''}
                                 type="number"
                                 name="quantity"
                                 value={formData.quantity}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-section">
+                            <label>Minimum Quantity</label>
+                            <input
+                                type="number"
+                                name="minimumQuantity"
+                                value={formData.minimumQuantity}
                                 onChange={handleChange}
                                 required
                             />

@@ -1,6 +1,6 @@
 import PartsTreeNode from './PartsTreeNode';
 
-const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId }) => {
+const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
     return (
         <>
             {folders.map(folder => (
@@ -13,6 +13,8 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                     onRefresh={onRefresh}
                     refreshTrigger={refreshTrigger}
                     selectedPartId={selectedPartId}
+                    selectedPath={selectedPath}
+                    currentPath={[...currentPath, folder.id]}
                 />
             ))}
             {parts.map(part => (
@@ -25,6 +27,8 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                     onRefresh={onRefresh}
                     refreshTrigger={refreshTrigger}
                     selectedPartId={selectedPartId}
+                    selectedPath={selectedPath}
+                    currentPath={[...currentPath, part.id]}
                 />
             ))}
         </>
