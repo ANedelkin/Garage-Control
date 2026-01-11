@@ -43,4 +43,8 @@ namespace GarageControl.Core.ViewModels.Parts
         [Required]
         public int MinimumQuantity { get; set; }
     }
+    public class PartWithPathViewModel : PartViewModel
+    {
+        public List<string> Path { get; set; } = new();
+    }
 }

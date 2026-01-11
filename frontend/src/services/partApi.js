@@ -7,6 +7,9 @@ const partApi = {
     getAllParts: async () => {
         return (await request('GET', 'part/all')).json();
     },
+    getPart: async (id) => {
+        return (await request('GET', `part/${id}`)).json();
+    },
     createPart: async (data) => {
         return (await request('POST', 'part/create', data)).json();
     },

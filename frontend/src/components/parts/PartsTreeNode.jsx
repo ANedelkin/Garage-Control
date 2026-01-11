@@ -14,6 +14,12 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     const menuRef = useRef(null);
 
     useEffect(() => {
+        if (type === 'folder' && selectedPath.includes(node.id) && !expanded) {
+            handleExpand({ stopPropagation: () => { } });
+        }
+    }, [selectedPath]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setShowMenu(false);
@@ -116,7 +122,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     return (
         <>
             <div
-                className={`list-item ${((type === 'part' && node.id === selectedPartId) || (type === 'folder' && selectedPath.includes(node.id) && !expanded)) ? 'active' : ''} ${type === 'part' && node.quantity < node.minimumQuantity ? 'low-stock' : ''}`}
+                className={`list-item ${((type === 'part' && node.id === selectedPartId) || (type === 'folder' && selectedPath.includes(node.id) && !expanded)) ? 'active' : ''} ${type === 'part' && node.quantity === 0 ? 'out-of-stock' : (type === 'part' && node.quantity < node.minimumQuantity ? 'low-stock' : '')}`}
                 onClick={handleExpand}
                 onContextMenu={handleContextMenu} // Right click on item itself? Request says "On the right of each folder list-item there will be a 3-dot button"
             >

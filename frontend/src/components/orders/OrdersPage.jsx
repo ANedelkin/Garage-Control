@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { orderApi } from '../../services/orderApi';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/orders.css';
@@ -7,8 +7,9 @@ import { Link } from 'react-router-dom';
 
 const OrdersPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [orders, setOrders] = useState([]);
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState(searchParams.get('status') || 'all');
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -125,7 +126,7 @@ const OrdersPage = () => {
                                                     </span>
                                                 </td>
                                                 <td>{formatDate(job.startTime)}</td>
-                                                <td>{job.type}</td>
+                                                <td style={{ color: job.jobTypeColor, fontWeight: 600 }}>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
                                                 <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
                                                 <td onClick={e => e.stopPropagation()}>

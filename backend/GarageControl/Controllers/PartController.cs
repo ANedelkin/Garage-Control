@@ -52,6 +52,21 @@ namespace GarageControl.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPartById(string id)
+        {
+            try
+            {
+                var part = await _partService.GetPartAsync(GetGarageId(), id);
+                if (part == null) return NotFound();
+                return Ok(part);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreatePart([FromBody] CreatePartViewModel model)
         {

@@ -1,0 +1,169 @@
+using GarageControl.Core.ViewModels.Dashboard;
+using GarageControl.Infrastructure.Data;
+using GarageControl.Shared.Enums;
+using Microsoft.EntityFrameworkCore;
+
+namespace GarageControl.Core.Services
+{
+    public interface IDashboardService
+    {
+        Task<DashboardViewModel> GetDashboardDataAsync(string garageId);
+    }
+
+    public class DashboardService : IDashboardService
+    {
+        private readonly GarageControlDbContext _context;
+
+        public DashboardService(GarageControlDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<DashboardViewModel> GetDashboardDataAsync(string garageId)
+        {
+            var jobTypeColors = await _context.JobTypes
+                .Where(jt => jt.CarServiceId == garageId)
+                .ToDictionaryAsync(jt => jt.Name, jt => jt.Color);
+
+            var dashboard = new DashboardViewModel
+            {
+                OrderStats = await GetOrderStatsAsync(garageId),
+                JobsCompletedByDay = await GetJobsCompletedByDayAsync(garageId),
+                LowStockParts = await GetLowStockPartsAsync(garageId),
+                JobTypeDistribution = await GetJobTypeDistributionAsync(garageId, jobTypeColors),
+                WorkerPerformance = await GetWorkerPerformanceAsync(garageId),
+                JobTypeColors = jobTypeColors
+            };
+
+            return dashboard;
+        }
+
+        private async Task<OrderStatsViewModel> GetOrderStatsAsync(string garageId)
+        {
+            var allOrders = await _context.Orders
+                .Where(o => o.Car.Owner.CarServiceId == garageId)
+                .CountAsync();
+
+            var pendingJobs = await _context.Jobs
+                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Pending)
+                .CountAsync();
+
+            var inProgressJobs = await _context.Jobs
+                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.InProgress)
+                .CountAsync();
+
+            return new OrderStatsViewModel
+            {
+                AllOrders = allOrders,
+                PendingJobs = pendingJobs,
+                InProgressJobs = inProgressJobs
+            };
+        }
+
+        private async Task<List<JobsCompletedByDayViewModel>> GetJobsCompletedByDayAsync(string garageId)
+        {
+            var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).Date;
+
+            var completedJobs = await _context.Jobs
+                .Where(j => j.Order.Car.Owner.CarServiceId == garageId 
+                    && j.Status == JobStatus.Done 
+                    && j.EndTime >= thirtyDaysAgo)
+                .Select(j => new
+                {
+                    // If job is done but scheduled end time is in future, count it as done today
+                    Date = (j.EndTime > DateTime.UtcNow ? DateTime.UtcNow : j.EndTime).Date,
+                    JobTypeName = j.JobType.Name
+                })
+                .ToListAsync();
+
+            var groupedByDay = completedJobs
+                .GroupBy(j => j.Date)
+                .Select(g => new JobsCompletedByDayViewModel
+                {
+                    Date = g.Key,
+                    JobTypesCounts = g.GroupBy(x => x.JobTypeName)
+                                      .ToDictionary(jt => jt.Key, jt => jt.Count())
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            // Fill in missing days with empty data
+            var allDays = new List<JobsCompletedByDayViewModel>();
+            var today = DateTime.UtcNow.Date;
+            for (int i = 0; i < 30; i++)
+            {
+                var date = today.AddDays(-29 + i);
+                var existing = groupedByDay.FirstOrDefault(x => x.Date == date);
+                allDays.Add(existing ?? new JobsCompletedByDayViewModel { Date = date });
+            }
+
+            return allDays;
+        }
+
+        private async Task<List<LowStockPartViewModel>> GetLowStockPartsAsync(string garageId)
+        {
+            return await _context.Parts
+                .Where(p => p.CarServiceId == garageId && p.Quantity < p.MinimumQuantity)
+                .Select(p => new LowStockPartViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    CurrentQuantity = p.Quantity,
+                    MinimumQuantity = p.MinimumQuantity
+                })
+                .OrderBy(p => p.CurrentQuantity)
+                .ToListAsync();
+        }
+
+        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string garageId, Dictionary<string, string> jobTypeColors)
+        {
+            var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+
+            var distribution = await _context.Jobs
+                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.StartTime >= oneMonthAgo)
+                .GroupBy(j => j.JobType.Name)
+                .Select(g => new
+                {
+                    JobTypeName = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToListAsync();
+
+            return distribution.Select(x => new JobTypeDistributionViewModel
+            {
+                JobTypeName = x.JobTypeName,
+                Count = x.Count,
+                Color = jobTypeColors.GetValueOrDefault(x.JobTypeName, "#000000")
+            }).ToList();
+        }
+
+        private async Task<List<WorkerPerformanceViewModel>> GetWorkerPerformanceAsync(string garageId)
+        {
+            var workers = await _context.Workers
+                .Where(w => w.CarServiceId == garageId)
+                .Select(w => new
+                {
+                    w.Id,
+                    w.Name,
+                    Jobs = w.Jobs.Where(j => j.Order.Car.Owner.CarServiceId == garageId)
+                                 .Select(j => new
+                                 {
+                                     JobTypeName = j.JobType.Name,
+                                     HoursWorked = (j.EndTime - j.StartTime).TotalHours
+                                 })
+                                 .ToList()
+                })
+                .ToListAsync();
+
+            return workers.Select(w => new WorkerPerformanceViewModel
+            {
+                WorkerId = w.Id,
+                WorkerName = w.Name,
+                JobTypesCounts = w.Jobs.GroupBy(j => j.JobTypeName)
+                                       .ToDictionary(g => g.Key, g => g.Count()),
+                TotalHoursWorked = Math.Round(w.Jobs.Sum(j => j.HoursWorked), 2)
+            }).ToList();
+        }
+    }
+}

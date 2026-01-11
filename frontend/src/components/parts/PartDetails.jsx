@@ -127,7 +127,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                         <div className={`form-section`}>
                             <label>Current Quantity</label>
                             <input
-                                className={formData.quantity < formData.minimumQuantity ? 'low-stock' : ''}
+                                className={formData.quantity === 0 ? 'out-of-stock' : (formData.quantity < formData.minimumQuantity ? 'low-stock' : '')}
                                 type="number"
                                 name="quantity"
                                 value={formData.quantity}

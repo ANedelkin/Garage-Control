@@ -122,6 +122,38 @@ namespace GarageControl.Core.Services
             };
         }
 
+        public async Task<PartWithPathViewModel?> GetPartAsync(string garageId, string partId)
+        {
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.CarServiceId == garageId);
+            
+            if (part == null) return null;
+
+            var result = new PartWithPathViewModel
+            {
+                Id = part.Id,
+                Name = part.Name,
+                PartNumber = part.PartNumber,
+                Price = part.Price,
+                Quantity = part.Quantity,
+                MinimumQuantity = part.MinimumQuantity,
+                ParentId = part.ParentId,
+                Path = new List<string>()
+            };
+
+            // Calculate path
+            var currentParentId = part.ParentId;
+            while (!string.IsNullOrEmpty(currentParentId))
+            {
+                result.Path.Insert(0, currentParentId);
+                var parent = await _context.PartsFolders
+                    .FirstOrDefaultAsync(f => f.Id == currentParentId);
+                currentParentId = parent?.ParentId;
+            }
+
+            return result;
+        }
+
         public async Task EditPartAsync(string garageId, UpdatePartViewModel model)
         {
             var part = await _context.Parts

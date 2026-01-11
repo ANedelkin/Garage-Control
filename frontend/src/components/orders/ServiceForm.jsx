@@ -11,6 +11,13 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
 
     const handleChange = (field, value) => {
         updateService(service.id, field, value);
+
+        if (field === 'status' && value === 2) { // 2 = Finished
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
+            updateService(service.id, 'endTime', localISO);
+        }
     };
 
     const addPart = (part) => {

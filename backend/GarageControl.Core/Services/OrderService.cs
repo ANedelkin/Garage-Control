@@ -45,7 +45,8 @@ namespace GarageControl.Core.Services
                         MechanicName = j.Worker.Name,
                         j.StartTime,
                         j.EndTime,
-                        j.LaborCost
+                        j.LaborCost,
+                        JobTypeColor = j.JobType.Color
                     }).ToList()
                 })
                 .ToListAsync();
@@ -67,7 +68,8 @@ namespace GarageControl.Core.Services
                     MechanicName = j.MechanicName,
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
-                    LaborCost = j.LaborCost
+                    LaborCost = j.LaborCost,
+                    JobTypeColor = j.JobTypeColor
                 }).ToList()
             }).ToList();
         }

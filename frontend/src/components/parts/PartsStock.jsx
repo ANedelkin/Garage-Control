@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../../assets/css/parts-stock.css';
 
 import { partApi } from '../../services/partApi';
@@ -8,6 +9,7 @@ import PartsTree from './PartsTree';
 import PartDetails from './PartDetails';
 
 const PartsStock = () => {
+    const [searchParams] = useSearchParams();
     const [selectedPart, setSelectedPart] = useState(null);
     const [selectedPath, setSelectedPath] = useState([]);
     const [refreshTree, setRefreshTree] = useState(0);
@@ -25,6 +27,24 @@ const PartsStock = () => {
             // TODO: Implement
         }
     };
+
+    useEffect(() => {
+        const loadLinkedPart = async () => {
+            const partId = searchParams.get('id');
+            if (partId) {
+                try {
+                    const part = await partApi.getPart(partId);
+                    if (part) {
+                        setSelectedPart(part);
+                        setSelectedPath(part.path || []);
+                    }
+                } catch (error) {
+                    console.error("Error loading linked part", error);
+                }
+            }
+        };
+        loadLinkedPart();
+    }, [searchParams]);
 
     useEffect(() => {
         fetchFolderContent(null);

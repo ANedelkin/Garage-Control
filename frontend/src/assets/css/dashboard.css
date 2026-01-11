@@ -25,6 +25,16 @@
     background: var(--inprogress-orders);
 }
 
+.tile.clickable {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tile.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .chart-card {
     grid-column: span 2;
     padding: 16px;
@@ -65,6 +75,65 @@
 
 .part-row:hover {
     background: var(--solid4);
+}
+
+.worker-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--solid3);
+}
+
+.worker-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.worker-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.job-type-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--solid4);
+    color: var(--text-secondary);
+}
+
+.worker-hours {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.dashboard .low-stock {
+    color: inherit !important;
+    /* Orange for low stock */
+}
+
+.out-of-stock {
+    color: #e74c3c;
+    /* Red for out of stock */
+    font-weight: 600;
+}
+
+.worker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.pie-chart {
+    height: 400px;
+}
+
+.pie-chart canvas {
+    max-height: 350px;
 }
 
 

@@ -7,6 +7,7 @@ namespace GarageControl.Core.Services
         Task<FolderContentViewModel> GetFolderContentAsync(string garageId, string? folderId);
         Task<List<PartViewModel>> GetAllPartsAsync(string garageId);
         Task<PartViewModel> CreatePartAsync(string garageId, CreatePartViewModel model);
+        Task<PartWithPathViewModel?> GetPartAsync(string garageId, string partId);
         Task EditPartAsync(string garageId, UpdatePartViewModel model);
         Task DeletePartAsync(string garageId, string partId);
         Task<PartsFolderViewModel> CreateFolderAsync(string garageId, CreateFolderViewModel model);
