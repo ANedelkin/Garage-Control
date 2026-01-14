@@ -122,7 +122,9 @@ const OrdersPage = () => {
                                                         <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
                                                             job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                             } status-icon`}></i>
-                                                        {job.status}
+                                                        {job.status === 'pending' ? 'Pending' :
+                                                            job.status === 'inprogress' ? 'In Progress' : 'Done'
+                                                        }
                                                     </span>
                                                 </td>
                                                 <td>{formatDate(job.startTime)}</td>
