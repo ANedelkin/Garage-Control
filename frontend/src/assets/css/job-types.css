@@ -1,18 +1,9 @@
-.job-type-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width:100%;
-}
-
-.job-type-content {
-  flex: 1;
-}
+/* Layout handled by common/table.css and common/layout.css */
 
 .job-type-form {
   width: fit-content;
-  height:450px;
-  display:flex;
+  height: 450px;
+  display: flex;
   flex-direction: column;
 }
 
@@ -43,8 +34,8 @@
   flex-direction: column;
 }
 
-.job-type-edit .form-right{
-  width:350px;
+.job-type-edit .form-right {
+  width: 350px;
 }
 
 @media (max-width: 700px) {
