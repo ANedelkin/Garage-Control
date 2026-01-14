@@ -116,7 +116,7 @@ namespace GarageControl.Core.Services
             var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
 
             var distribution = await _context.Jobs
-                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.StartTime >= oneMonthAgo)
+                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Done && j.EndTime >= oneMonthAgo)
                 .GroupBy(j => j.JobType.Name)
                 .Select(g => new
                 {
@@ -141,7 +141,7 @@ namespace GarageControl.Core.Services
                 {
                     w.Id,
                     w.Name,
-                    Jobs = w.Jobs.Where(j => j.Order.Car.Owner.CarServiceId == garageId)
+                    Jobs = w.Jobs.Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Done)
                                  .Select(j => new
                                  {
                                      JobTypeName = j.JobType.Name,

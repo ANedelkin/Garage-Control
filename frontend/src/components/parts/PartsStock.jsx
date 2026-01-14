@@ -66,7 +66,6 @@ const PartsStock = () => {
 
     return (
         <main className="main parts-stock">
-            <h1 style={{ color: 'red' }}>Add a "track" toggle depending on which the part will be tracked or not, rename car service to workshop</h1>
             <div className="tile">
                 <div className="horizontal grow">
                     <div className="form-left">

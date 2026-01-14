@@ -146,7 +146,7 @@ const Dashboard = () => {
                     </div>
                     <div className="parts-list">
                         {dashboardData.lowStockParts.length === 0 ? (
-                            <div style={{ padding: '10px', color: 'var(--text-secondary)' }}>No parts are low on stock</div>
+                            <div className="list-empty">No parts low on stock</div>
                         ) : (
                             dashboardData.lowStockParts.map(p => (
                                 <div key={p.id} className="part-row" onClick={() => navigate(`/parts?id=${p.id}`)}>
@@ -162,7 +162,7 @@ const Dashboard = () => {
 
                 <div className="tile chart-card worker-performance">
                     <div className="tile-header">
-                        <h3>Worker performance</h3>
+                        <h3>Worker performance — finished jobs</h3>
                     </div>
                     <div className="parts-list">
                         {dashboardData.workerPerformance.length === 0 ? (
@@ -190,7 +190,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="tile small-card ">
-                    <h3 className="tile-header">Job types — last month</h3>
+                    <h3 className="tile-header">Finished jobs' types — last month</h3>
                     <div>
                         <canvas ref={pieChartRef} />
                     </div>
