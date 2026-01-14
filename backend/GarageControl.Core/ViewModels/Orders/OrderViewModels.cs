@@ -18,7 +18,6 @@ namespace GarageControl.Core.ViewModels.Orders
     {
         public string Id { get; set; } = null!;
         public string Type { get; set; } = null!;
-        public string JobTypeColor { get; set; } = null!;
         public string Description { get; set; } = null!;
         public string Status { get; set; } = null!;
         public string MechanicName { get; set; } = null!;

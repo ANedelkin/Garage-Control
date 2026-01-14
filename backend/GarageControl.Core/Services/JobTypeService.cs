@@ -31,7 +31,6 @@ namespace GarageControl.Core.Services
                     Id = j.Id,
                     Name = j.Name,
                     Description = j.Description,
-                    Color = j.Color,
                     Mechanics = j.Workers.Select(w => w.User.UserName!).ToList()
                 })
                 .ToListAsync();
@@ -46,7 +45,6 @@ namespace GarageControl.Core.Services
             {
                 Name = model.Name,
                 Description = model.Description,
-                Color = model.Color,
                 CarServiceId = serviceId
             };
 
@@ -75,7 +73,6 @@ namespace GarageControl.Core.Services
                     Id = j.Id,
                     Name = j.Name,
                     Description = j.Description,
-                    Color = j.Color,
                     Mechanics = j.Workers.Select(w => w.User.UserName!).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -88,7 +85,6 @@ namespace GarageControl.Core.Services
             {
                 jobType.Name = model.Name;
                 jobType.Description = model.Description;
-                jobType.Color = model.Color;
                 
                 // Note: Update mechanics relation here if feasible
                 

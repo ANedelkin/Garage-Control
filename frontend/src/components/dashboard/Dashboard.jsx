@@ -12,6 +12,14 @@ const Dashboard = () => {
     const jobsChartInstanceRef = useRef(null);
     const pieChartRef = useRef(null);
     const pieChartInstanceRef = useRef(null);
+    const colors = [
+        'rgb(255,122,24)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(153, 102, 255)',
+        'rgb(255, 99, 132)'
+    ];
 
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -44,20 +52,11 @@ const Dashboard = () => {
         });
         const jobTypes = Array.from(allJobTypes);
 
-        // Generate colors for each job type
-        const colors = [
-            'rgb(255,122,24)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 205, 86)',
-            'rgb(75, 192, 192)',
-            'rgb(153, 102, 255)',
-            'rgb(255, 99, 132)'
-        ];
 
         const datasets = jobTypes.map((type, index) => ({
             label: type,
             data: dashboardData.jobsCompletedByDay.map(day => day.jobTypesCounts[type] || 0),
-            backgroundColor: dashboardData.jobTypeColors[type] || colors[index % colors.length]
+            backgroundColor: colors[index % colors.length]
         }));
 
         const labels = dashboardData.jobsCompletedByDay.map(day => {
@@ -97,7 +96,7 @@ const Dashboard = () => {
                 labels: dashboardData.jobTypeDistribution.map(jt => jt.jobTypeName),
                 datasets: [{
                     data: dashboardData.jobTypeDistribution.map(jt => jt.count),
-                    backgroundColor: dashboardData.jobTypeDistribution.map(jt => jt.color)
+                    backgroundColor: dashboardData.jobTypeDistribution.map((_, index) => colors[index % colors.length])
                 }]
             },
             options: {
@@ -174,7 +173,7 @@ const Dashboard = () => {
                                         <div className="worker-name">{w.workerName}</div>
                                         <div className="worker-stats">
                                             {Object.entries(w.jobTypesCounts).map(([type, count]) => (
-                                                <span key={type} className="job-type-badge" style={{ borderLeft: `3px solid ${dashboardData.jobTypeColors[type]}` }}>
+                                                <span key={type} className="job-type-badge">
                                                     {type}: {count}
                                                 </span>
                                             ))}

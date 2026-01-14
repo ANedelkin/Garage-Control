@@ -13,8 +13,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         [Required]
-        public string Color { get; set; } = null!;
-        [Required]
         public string CarServiceId { get; set; } = null!;
         [ForeignKey(nameof(CarServiceId))]
         public CarService CarService { get; set; } = null!;

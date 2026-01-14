@@ -43,7 +43,6 @@ const JobTypes = () => {
             to={`/job-types/${jobType.id}`}
             key={jobType.id || index}
             className="tile horizontal"
-            style={{ borderLeft: `5px solid ${jobType.color}` }}
           >
             <div className="job-type-content">
               <h3>{jobType.name}</h3>

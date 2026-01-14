@@ -46,7 +46,6 @@ namespace GarageControl.Core.Services
                         j.StartTime,
                         j.EndTime,
                         j.LaborCost,
-                        JobTypeColor = j.JobType.Color
                     }).ToList()
                 })
                 .ToListAsync();
@@ -69,7 +68,6 @@ namespace GarageControl.Core.Services
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
                     LaborCost = j.LaborCost,
-                    JobTypeColor = j.JobTypeColor
                 }).ToList()
             }).ToList();
         }

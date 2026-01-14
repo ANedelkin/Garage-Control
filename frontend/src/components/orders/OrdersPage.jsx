@@ -128,7 +128,7 @@ const OrdersPage = () => {
                                                     </span>
                                                 </td>
                                                 <td>{formatDate(job.startTime)}</td>
-                                                <td style={{ color: job.jobTypeColor, fontWeight: 600 }}>{job.type}</td>
+                                                <td style={{ fontWeight: 600 }}>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
                                                 <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
                                                 <td onClick={e => e.stopPropagation()}>

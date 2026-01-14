@@ -4,11 +4,10 @@ import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
 
 const EditJobType = () => {
-  const {id} = useParams();
+  const { id } = useParams();
   const [jobTypeData, setJobTypeData] = useState(null);
   const [isNew, setIsNew] = useState(id === '');
   const [newMechanic, setNewMechanic] = useState('');
-  const colorInputRef = useRef(null);
 
   useEffect(() => {
     if (!isNew) {
@@ -25,7 +24,6 @@ const EditJobType = () => {
       setJobTypeData({
         name: '',
         description: '',
-        color: '#000000',
         mechanics: [],
       });
     }
@@ -36,9 +34,6 @@ const EditJobType = () => {
     jobTypeApi.editJobType(jobTypeData);
   };
 
-  const openColorPicker = () => {
-    if (colorInputRef.current) colorInputRef.current.click();
-  };
 
   const handleAddMechanic = () => {
     if (newMechanic.trim() === '') return;
@@ -77,32 +72,6 @@ const EditJobType = () => {
                       setJobTypeData({ ...jobTypeData, name: e.target.value })
                     }
                   />
-                </div>
-
-                <div className="form-section fit-width">
-                  <label>Color</label>
-                  <input
-                    ref={colorInputRef}
-                    type="color"
-                    value={jobTypeData.color}
-                    onChange={(e) =>
-                      setJobTypeData({ ...jobTypeData, color: e.target.value })
-                    }
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    type="button"
-                    className="color-button"
-                    onClick={() => colorInputRef.current.click()}
-                    style={{
-                      backgroundColor: jobTypeData.color,
-                      color: '#fff',
-                      border: '1px solid var(--border2)',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {jobTypeData.color}
-                  </button>
                 </div>
               </div>
 

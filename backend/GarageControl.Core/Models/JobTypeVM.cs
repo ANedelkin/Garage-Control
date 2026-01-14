@@ -8,8 +8,6 @@ namespace GarageControl.Core.Models
         [Required]
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        [Required]
-        public string Color { get; set; } = null!;
         public List<string> Mechanics { get; set; } = new List<string>();
     }
 }

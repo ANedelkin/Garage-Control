@@ -7,7 +7,6 @@ namespace GarageControl.Core.ViewModels.Dashboard
         public List<LowStockPartViewModel> LowStockParts { get; set; } = new();
         public List<JobTypeDistributionViewModel> JobTypeDistribution { get; set; } = new();
         public List<WorkerPerformanceViewModel> WorkerPerformance { get; set; } = new();
-        public Dictionary<string, string> JobTypeColors { get; set; } = new();
     }
 
     public class OrderStatsViewModel
@@ -35,7 +34,6 @@ namespace GarageControl.Core.ViewModels.Dashboard
     {
         public string JobTypeName { get; set; } = null!;
         public int Count { get; set; }
-        public string Color { get; set; } = null!;
     }
 
     public class WorkerPerformanceViewModel

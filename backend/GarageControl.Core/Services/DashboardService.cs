@@ -21,18 +21,14 @@ namespace GarageControl.Core.Services
 
         public async Task<DashboardViewModel> GetDashboardDataAsync(string garageId)
         {
-            var jobTypeColors = await _context.JobTypes
-                .Where(jt => jt.CarServiceId == garageId)
-                .ToDictionaryAsync(jt => jt.Name, jt => jt.Color);
 
             var dashboard = new DashboardViewModel
             {
                 OrderStats = await GetOrderStatsAsync(garageId),
                 JobsCompletedByDay = await GetJobsCompletedByDayAsync(garageId),
                 LowStockParts = await GetLowStockPartsAsync(garageId),
-                JobTypeDistribution = await GetJobTypeDistributionAsync(garageId, jobTypeColors),
+                JobTypeDistribution = await GetJobTypeDistributionAsync(garageId),
                 WorkerPerformance = await GetWorkerPerformanceAsync(garageId),
-                JobTypeColors = jobTypeColors
             };
 
             return dashboard;
@@ -115,7 +111,7 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string garageId, Dictionary<string, string> jobTypeColors)
+        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string garageId)
         {
             var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
 
@@ -134,7 +130,6 @@ namespace GarageControl.Core.Services
             {
                 JobTypeName = x.JobTypeName,
                 Count = x.Count,
-                Color = jobTypeColors.GetValueOrDefault(x.JobTypeName, "#000000")
             }).ToList();
         }
 
