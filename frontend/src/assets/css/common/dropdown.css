@@ -11,6 +11,7 @@
     transform: translateY(-50%);
     color: var(--text-clr2);
     pointer-events: none;
+    z-index: 3;
 }
 
 .select-wrapper:hover {
