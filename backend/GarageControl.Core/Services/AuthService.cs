@@ -40,7 +40,7 @@ namespace GarageControl.Core.Services
             _jwtSecret = _configuration["Jwt:Key"];
             _jwtIssuer = _configuration["Jwt:Issuer"];
             _jwtAudience = _configuration["Jwt:Audience"];
-            _accessTokenExpiryMinutes = 15;
+            _accessTokenExpiryMinutes = 30;
         }
 
         public async Task<LoginResponse> SignUp(AuthVM model)
@@ -139,7 +139,7 @@ namespace GarageControl.Core.Services
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(7)
+                Expires = DateTime.UtcNow.AddDays(14)
             });
 
             return Task.CompletedTask;
@@ -148,7 +148,7 @@ namespace GarageControl.Core.Services
         private async Task<LoginResponse> DoLogin(User user)
         {
             user.RefreshToken = GenerateRefreshToken();
-            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(14);
             await _userManager.UpdateAsync(user);
 
             var garageId = await GetUserGarageId(user.Id);
