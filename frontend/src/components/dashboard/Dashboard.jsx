@@ -166,7 +166,7 @@ const Dashboard = () => {
                     </div>
                     <div className="parts-list">
                         {dashboardData.workerPerformance.length === 0 ? (
-                            <div style={{ padding: '10px', color: 'var(--text-secondary)' }}>No worker data available</div>
+                            <div className="list-empty">No worker data available</div>
                         ) : (
                             <div className="worker-grid">
                                 {dashboardData.workerPerformance.map(w => (
@@ -189,9 +189,9 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="tile small-card pie-chart">
+                <div className="tile small-card ">
                     <h3 className="tile-header">Job types — last month</h3>
-                    <div style={{ flex: 1, minHeight: 0 }}>
+                    <div>
                         <canvas ref={pieChartRef} />
                     </div>
                 </div>
