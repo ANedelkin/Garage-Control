@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { orderApi } from '../../services/orderApi';
 import Dropdown from '../common/Dropdown';
+import '../../assets/css/common/status.css';
 import '../../assets/css/orders.css';
 import { Link } from 'react-router-dom';
 
@@ -121,7 +122,7 @@ const OrdersPage = () => {
                                                     <span className={`job-status ${job.status}`}>
                                                         <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
                                                             job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
-                                                            } status-icon`}></i>
+                                                            } job-status-${job.status} status-icon`}></i>
                                                         {job.status === 'pending' ? 'Pending' :
                                                             job.status === 'inprogress' ? 'In Progress' : 'Done'
                                                         }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { partApi } from '../../services/partApi';
 import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
+import '../../assets/css/common/status.css';
 
 const ServiceForm = ({ service, index, updateService, removeService, jobTypes, workers, allParts = [] }) => {
     // For part search
@@ -98,7 +99,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                     <div className="form-section">
                         <label>Job Status</label>
                         <DropDown
-                            className={service.status === 0 ? 'pending' : service.status === 1 ? 'inprogress' : 'finished'}
+                            className={`status-glow job-status-${service.status === 0 ? 'pending' : service.status === 1 ? 'inprogress' : 'finished'}`}
                             value={service.status}
                             onChange={e => handleChange('status', parseInt(e.target.value))}
                         >

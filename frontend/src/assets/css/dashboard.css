@@ -13,18 +13,6 @@
     margin-left: auto;
 }
 
-.tile.all-orders {
-    background: var(--all-orders);
-}
-
-.tile.pending-orders {
-    background: var(--pending-orders);
-}
-
-.tile.inprogress-orders {
-    background: var(--inprogress-orders);
-}
-
 .tile.clickable {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;

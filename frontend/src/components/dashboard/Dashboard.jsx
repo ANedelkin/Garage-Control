@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 import '../../assets/css/dashboard.css';
+import '../../assets/css/common/status.css';
 import { dashboardApi } from '../../services/dashboardApi';
 
 const Dashboard = () => {
@@ -123,13 +124,13 @@ const Dashboard = () => {
     return (
         <main className="main dashboard">
             <section className="grid">
-                <div className="tile all-orders clickable" onClick={() => navigate('/orders')}>
+                <div className="tile status-glow job-status-all" onClick={() => navigate('/orders')}>
                     <h3>All orders <span className="count">{dashboardData.orderStats.allOrders}</span></h3>
                 </div>
-                <div className="tile pending-orders clickable" onClick={() => navigate('/orders?status=pending')}>
+                <div className="tile status-glow job-status-pending" onClick={() => navigate('/orders?status=pending')}>
                     <h3>Pending jobs <span className="count">{dashboardData.orderStats.pendingJobs}</span></h3>
                 </div>
-                <div className="tile inprogress-orders clickable" onClick={() => navigate('/orders?status=inprogress')}>
+                <div className="tile status-glow job-status-inprogress" onClick={() => navigate('/orders?status=inprogress')}>
                     <h3>Jobs in progress <span className="count">{dashboardData.orderStats.inProgressJobs}</span></h3>
                 </div>
 
