@@ -110,7 +110,7 @@ namespace GarageControl.Controllers
             {
                 await _authService.SetAuthCookies(Response, response);
 
-                var frontendRedirectUri = $"http://localhost:5174";
+                var frontendRedirectUri = $"https://localhost:5173";
 
                 return Redirect(frontendRedirectUri);
             }

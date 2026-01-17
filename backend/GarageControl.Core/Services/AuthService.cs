@@ -130,7 +130,7 @@ namespace GarageControl.Core.Services
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddMinutes(_accessTokenExpiryMinutes)
             });
 
@@ -138,7 +138,7 @@ namespace GarageControl.Core.Services
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddDays(14)
             });
 
