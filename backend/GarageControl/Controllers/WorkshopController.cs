@@ -9,27 +9,27 @@ namespace GarageControl.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ServiceController : ControllerBase
+    public class WorkshopController : ControllerBase
     {
-        private readonly ICarServiceService _carServiceService;
-        public ServiceController(ICarServiceService carServiceService)
+        private readonly IWorkshopService _workshopService;
+        public WorkshopController(IWorkshopService workshopService)
         {
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
-        [HttpGet("has-service")]
-        public async Task<IActionResult> HasService()
+        [HttpGet("has-workshop")]
+        public async Task<IActionResult> HasWorkshop()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var service = await _carServiceService.GetServiceDetailsByUser(userId);
-            if (service == null)
+            var workshop = await _workshopService.GetWorkshopDetailsByUser(userId);
+            if (workshop == null)
             {
-                return Ok(new { hasService = false });
+                return Ok(new { hasWorkshop = false });
             }
-            return Ok(new { hasService = true });
+            return Ok(new { hasWorkshop = true });
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] ServiceVM service)
+        public async Task<IActionResult> Create([FromBody] WorkshopVM workshop)
         {
             if (!ModelState.IsValid)
             {
@@ -45,24 +45,24 @@ namespace GarageControl.Controllers
                 return Unauthorized(new { message = "User not authenticated or token is invalid." });
             }
             
-            await _carServiceService.CreateService(userId, service);
+            await _workshopService.CreateWorkshop(userId, workshop);
 
-            return Ok(new { message = "Service created successfully." });
+            return Ok(new { message = "Workshop created successfully." });
         }
 
         [HttpGet("details")]
         public async Task<IActionResult> Details()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var service = await _carServiceService.GetServiceDetailsByUser(userId);
-            if (service == null)
+            var workshop = await _workshopService.GetWorkshopDetailsByUser(userId);
+            if (workshop == null)
             {
-                return NotFound(new { message = "Service not found." });
+                return NotFound(new { message = "Workshop not found." });
             }
-            return Ok(service);
+            return Ok(workshop);
         }
         [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] ServiceVM service)
+        public async Task<IActionResult> Edit([FromBody] WorkshopVM workshop)
         {
             if (!ModelState.IsValid)
             {
@@ -72,8 +72,8 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = "Invalid model", errors });
             }
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _carServiceService.UpdateServiceDetails(userId, service);
-            return Ok(new { message = "Service edited successfully." });
+            await _workshopService.UpdateWorkshopDetails(userId, workshop);
+            return Ok(new { message = "Workshop edited successfully." });
         }
     }
 }

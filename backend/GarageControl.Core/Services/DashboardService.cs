@@ -7,7 +7,7 @@ namespace GarageControl.Core.Services
 {
     public interface IDashboardService
     {
-        Task<DashboardViewModel> GetDashboardDataAsync(string garageId);
+        Task<DashboardViewModel> GetDashboardDataAsync(string workshopId);
     }
 
     public class DashboardService : IDashboardService
@@ -19,33 +19,33 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<DashboardViewModel> GetDashboardDataAsync(string garageId)
+        public async Task<DashboardViewModel> GetDashboardDataAsync(string workshopId)
         {
 
             var dashboard = new DashboardViewModel
             {
-                OrderStats = await GetOrderStatsAsync(garageId),
-                JobsCompletedByDay = await GetJobsCompletedByDayAsync(garageId),
-                LowStockParts = await GetLowStockPartsAsync(garageId),
-                JobTypeDistribution = await GetJobTypeDistributionAsync(garageId),
-                WorkerPerformance = await GetWorkerPerformanceAsync(garageId),
+                OrderStats = await GetOrderStatsAsync(workshopId),
+                JobsCompletedByDay = await GetJobsCompletedByDayAsync(workshopId),
+                LowStockParts = await GetLowStockPartsAsync(workshopId),
+                JobTypeDistribution = await GetJobTypeDistributionAsync(workshopId),
+                WorkerPerformance = await GetWorkerPerformanceAsync(workshopId),
             };
 
             return dashboard;
         }
 
-        private async Task<OrderStatsViewModel> GetOrderStatsAsync(string garageId)
+        private async Task<OrderStatsViewModel> GetOrderStatsAsync(string workshopId)
         {
             var allOrders = await _context.Orders
-                .Where(o => o.Car.Owner.CarServiceId == garageId)
+                .Where(o => o.Car.Owner.WorkshopId == workshopId)
                 .CountAsync();
 
             var pendingJobs = await _context.Jobs
-                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Pending)
+                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && j.Status == JobStatus.Pending)
                 .CountAsync();
 
             var inProgressJobs = await _context.Jobs
-                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.InProgress)
+                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && j.Status == JobStatus.InProgress)
                 .CountAsync();
 
             return new OrderStatsViewModel
@@ -56,12 +56,12 @@ namespace GarageControl.Core.Services
             };
         }
 
-        private async Task<List<JobsCompletedByDayViewModel>> GetJobsCompletedByDayAsync(string garageId)
+        private async Task<List<JobsCompletedByDayViewModel>> GetJobsCompletedByDayAsync(string workshopId)
         {
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).Date;
 
             var completedJobs = await _context.Jobs
-                .Where(j => j.Order.Car.Owner.CarServiceId == garageId 
+                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId 
                     && j.Status == JobStatus.Done 
                     && j.EndTime >= thirtyDaysAgo)
                 .Select(j => new
@@ -96,10 +96,10 @@ namespace GarageControl.Core.Services
             return allDays;
         }
 
-        private async Task<List<LowStockPartViewModel>> GetLowStockPartsAsync(string garageId)
+        private async Task<List<LowStockPartViewModel>> GetLowStockPartsAsync(string workshopId)
         {
             return await _context.Parts
-                .Where(p => p.CarServiceId == garageId && p.Quantity < p.MinimumQuantity)
+                .Where(p => p.WorkshopId == workshopId && p.Quantity < p.MinimumQuantity)
                 .Select(p => new LowStockPartViewModel
                 {
                     Id = p.Id,
@@ -111,12 +111,12 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string garageId)
+        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string workshopId)
         {
             var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
 
             var distribution = await _context.Jobs
-                .Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Done && j.EndTime >= oneMonthAgo)
+                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && j.Status == JobStatus.Done && j.EndTime >= oneMonthAgo)
                 .GroupBy(j => j.JobType.Name)
                 .Select(g => new
                 {
@@ -133,15 +133,15 @@ namespace GarageControl.Core.Services
             }).ToList();
         }
 
-        private async Task<List<WorkerPerformanceViewModel>> GetWorkerPerformanceAsync(string garageId)
+        private async Task<List<WorkerPerformanceViewModel>> GetWorkerPerformanceAsync(string workshopId)
         {
             var workers = await _context.Workers
-                .Where(w => w.CarServiceId == garageId)
+                .Where(w => w.WorkshopId == workshopId)
                 .Select(w => new
                 {
                     w.Id,
                     w.Name,
-                    Jobs = w.Jobs.Where(j => j.Order.Car.Owner.CarServiceId == garageId && j.Status == JobStatus.Done)
+                    Jobs = w.Jobs.Where(j => j.Order.Car.Owner.WorkshopId == workshopId && j.Status == JobStatus.Done)
                                  .Select(j => new
                                  {
                                      JobTypeName = j.JobType.Name,

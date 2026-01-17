@@ -12,13 +12,13 @@ namespace GarageControl.Core.Services
     {
         private readonly IRepository _repo;
         private readonly UserManager<User> _userManager;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
         
-        public WorkerService(IRepository repo, UserManager<User> userManager, ICarServiceService carServiceService)
+        public WorkerService(IRepository repo, UserManager<User> userManager, IWorkshopService workshopService)
         {
             _repo = repo;
             _userManager = userManager;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task<IEnumerable<AccessVM>> AllAccesses()
@@ -35,11 +35,11 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<WorkerVM>> All(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return new List<WorkerVM>();
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) return new List<WorkerVM>();
 
             var workers = await _repo.GetAllAsNoTrackingAsync<Worker>()
-                .Where(w => w.CarServiceId == serviceId)
+                .Where(w => w.WorkshopId == workshopId)
                 .Include(w => w.User)
                 .Include(w => w.Accesses)
                 .Include(w => w.Activities)
@@ -77,8 +77,8 @@ namespace GarageControl.Core.Services
 
         public async Task Create(WorkerVM model, string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) throw new ArgumentException("User does not have a service");
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
             // 1. Create Identity User
             var user = new User
@@ -99,7 +99,7 @@ namespace GarageControl.Core.Services
             {
                 UserId = user.Id,
                 Name = model.Name,
-                CarServiceId = serviceId,
+                WorkshopId = workshopId,
                 HiredOn = model.HiredOn
             };
             

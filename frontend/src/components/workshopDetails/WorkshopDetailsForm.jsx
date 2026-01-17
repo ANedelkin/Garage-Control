@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import '../../assets/css/service-details.css';
-import { carServiceApi } from '../../services/carServiceApi.js';
+import { workshopApi } from '../../services/workshopApi.js';
 
-const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
-    const [serviceData, setServiceData] = useState(initialData);
+const WorkshopDetailsForm = ({ handleSubmit, initialData = null }) => {
+    const [workshopData, setWorkshopData] = useState(initialData);
 
     // Update state when initialData changes (after API call completes)
     useEffect(() => {
         console.log('initialData changed:', initialData);
         if (initialData) {
-            setServiceData(initialData);
+            setWorkshopData(initialData);
         }
     }, [initialData]);
 
     const handleFormSubmit = (e) => {
-        handleSubmit(e, serviceData);
+        handleSubmit(e, workshopData);
     }
 
     return (
         <div className="tile">
-            <h3 className="tile-header">Service Information</h3>
+            <h3 className="tile-header">Workshop Information</h3>
             <form onSubmit={handleFormSubmit}>
                 <div className="form-section">
-                    <label htmlFor="name">Service Name</label>
+                    <label htmlFor="name">Workshop Name</label>
                     <input
                         type="text"
                         id="name"
-                        placeholder="Enter service name"
-                        value={serviceData ? serviceData.name : ''}
-                        onChange={(e) => setServiceData({ ...serviceData, name: e.target.value })}
+                        placeholder="Enter workshop name"
+                        value={workshopData ? workshopData.name : ''}
+                        onChange={(e) => setWorkshopData({ ...workshopData, name: e.target.value })}
                         required
                     />
                 </div>
@@ -38,8 +38,8 @@ const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
                         type="text"
                         id="address"
                         placeholder="Enter address"
-                        value={serviceData ? serviceData.address : ''}
-                        onChange={(e) => setServiceData({ ...serviceData, address: e.target.value })}
+                        value={workshopData ? workshopData.address : ''}
+                        onChange={(e) => setWorkshopData({ ...workshopData, address: e.target.value })}
                         required
                     />
                 </div>
@@ -49,8 +49,8 @@ const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
                         type="text"
                         id="registrationNumber"
                         placeholder="Enter registration number"
-                        value={serviceData ? serviceData.registrationNumber : ''}
-                        onChange={(e) => setServiceData({ ...serviceData, registrationNumber: e.target.value })}
+                        value={workshopData ? workshopData.registrationNumber : ''}
+                        onChange={(e) => setWorkshopData({ ...workshopData, registrationNumber: e.target.value })}
                         required
                     />
                 </div>
@@ -62,4 +62,4 @@ const ServiceDetailsForm = ({ handleSubmit, initialData = null }) => {
     );
 };
 
-export default ServiceDetailsForm;
+export default WorkshopDetailsForm;

@@ -9,24 +9,24 @@ namespace GarageControl.Core.Services
     public class ModelService : IModelService
     {
         private readonly IRepository _repo;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
 
-        public ModelService(IRepository repo, ICarServiceService carServiceService)
+        public ModelService(IRepository repo, IWorkshopService workshopService)
         {
             _repo = repo;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task CreateModel(ModelVM model, string userId)
         {
-            var bossId = await GetBossId(userId);
-            if (bossId == null) throw new ArgumentException("User is not associated with a service or owner.");
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
+            if (bossId == null) throw new ArgumentException("User is not associated with a workshop or owner.");
 
             var carModel = new CarModel
             {
                 Name = model.Name,
                 CarMakeId = model.MakeId,
-                CreatorId = bossId
+                CreatorId = bossId // Using bossId as creatorId here since it was using bossId but bossId was fetched from service.
             };
 
             await _repo.AddAsync(carModel);
@@ -64,11 +64,7 @@ namespace GarageControl.Core.Services
 
         private async Task<string?> GetBossId(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return null;
-
-            var service = await _repo.GetByIdAsync<CarService>(serviceId);
-            return service?.BossId;
+            return await _workshopService.GetWorkshopBossId(userId);
         }
     }
 }

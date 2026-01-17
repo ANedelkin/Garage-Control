@@ -14,7 +14,7 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<FolderContentViewModel> GetFolderContentAsync(string garageId, string? folderId)
+        public async Task<FolderContentViewModel> GetFolderContentAsync(string workshopId, string? folderId)
         {
             var result = new FolderContentViewModel
             {
@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
             if (!string.IsNullOrEmpty(folderId))
             {
                 var currentFolder = await _context.PartsFolders
-                    .FirstOrDefaultAsync(f => f.Id == folderId && f.CarServiceId == garageId);
+                    .FirstOrDefaultAsync(f => f.Id == folderId && f.WorkshopId == workshopId);
                 
                 if (currentFolder == null)
                 {
@@ -36,10 +36,10 @@ namespace GarageControl.Core.Services
             }
 
             var foldersQuery = _context.PartsFolders
-                .Where(f => f.CarServiceId == garageId);
+                .Where(f => f.WorkshopId == workshopId);
             
             var partsQuery = _context.Parts
-                .Where(p => p.CarServiceId == garageId);
+                .Where(p => p.WorkshopId == workshopId);
 
             if (string.IsNullOrEmpty(folderId))
             {
@@ -77,10 +77,10 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task<List<PartViewModel>> GetAllPartsAsync(string garageId)
+        public async Task<List<PartViewModel>> GetAllPartsAsync(string workshopId)
         {
             return await _context.Parts
-                .Where(p => p.CarServiceId == garageId)
+                .Where(p => p.WorkshopId == workshopId)
                 .Select(p => new PartViewModel
                 {
                     Id = p.Id,
@@ -94,7 +94,7 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<PartViewModel> CreatePartAsync(string garageId, CreatePartViewModel model)
+        public async Task<PartViewModel> CreatePartAsync(string workshopId, CreatePartViewModel model)
         {
             var part = new Part
             {
@@ -104,7 +104,7 @@ namespace GarageControl.Core.Services
                 Quantity = model.Quantity,
                 MinimumQuantity = model.MinimumQuantity,
                 ParentId = model.ParentId,
-                CarServiceId = garageId
+                WorkshopId = workshopId
             };
 
             _context.Parts.Add(part);
@@ -122,10 +122,10 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task<PartWithPathViewModel?> GetPartAsync(string garageId, string partId)
+        public async Task<PartWithPathViewModel?> GetPartAsync(string workshopId, string partId)
         {
             var part = await _context.Parts
-                .FirstOrDefaultAsync(p => p.Id == partId && p.CarServiceId == garageId);
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             
             if (part == null) return null;
 
@@ -154,10 +154,10 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task EditPartAsync(string garageId, UpdatePartViewModel model)
+        public async Task EditPartAsync(string workshopId, UpdatePartViewModel model)
         {
             var part = await _context.Parts
-                .FirstOrDefaultAsync(p => p.Id == model.Id && p.CarServiceId == garageId);
+                .FirstOrDefaultAsync(p => p.Id == model.Id && p.WorkshopId == workshopId);
 
             if (part == null) throw new ArgumentException("Part not found");
 
@@ -170,10 +170,10 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeletePartAsync(string garageId, string partId)
+        public async Task DeletePartAsync(string workshopId, string partId)
         {
             var part = await _context.Parts
-                .FirstOrDefaultAsync(p => p.Id == partId && p.CarServiceId == garageId);
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
 
             if (part != null)
             {
@@ -182,13 +182,13 @@ namespace GarageControl.Core.Services
             }
         }
 
-        public async Task<PartsFolderViewModel> CreateFolderAsync(string garageId, CreateFolderViewModel model)
+        public async Task<PartsFolderViewModel> CreateFolderAsync(string workshopId, CreateFolderViewModel model)
         {
             var folder = new PartsFolder
             {
                 Name = model.Name,
                 ParentId = model.ParentId,
-                CarServiceId = garageId
+                WorkshopId = workshopId
             };
 
             _context.PartsFolders.Add(folder);
@@ -202,10 +202,10 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task RenameFolderAsync(string garageId, string folderId, string newName)
+        public async Task RenameFolderAsync(string workshopId, string folderId, string newName)
         {
              var folder = await _context.PartsFolders
-                .FirstOrDefaultAsync(f => f.Id == folderId && f.CarServiceId == garageId);
+                .FirstOrDefaultAsync(f => f.Id == folderId && f.WorkshopId == workshopId);
 
             if (folder == null) throw new ArgumentException("Folder not found");
 
@@ -213,13 +213,13 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteFolderAsync(string garageId, string folderId)
+        public async Task DeleteFolderAsync(string workshopId, string folderId)
         {
             // Recursive delete
             var folder = await _context.PartsFolders
                 .Include(f => f.FolderChildren)
                 .Include(f => f.PartsChildren)
-                .FirstOrDefaultAsync(f => f.Id == folderId && f.CarServiceId == garageId);
+                .FirstOrDefaultAsync(f => f.Id == folderId && f.WorkshopId == workshopId);
             
             if (folder == null) return;
 

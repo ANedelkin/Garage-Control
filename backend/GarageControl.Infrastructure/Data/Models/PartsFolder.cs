@@ -11,9 +11,9 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(FolderConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
-        public string? CarServiceId { get; set; } = null!;
-        [ForeignKey(nameof(CarServiceId))]
-        public CarService? CarService { get; set; }
+        public string? WorkshopId { get; set; } = null!;
+        [ForeignKey(nameof(WorkshopId))]
+        public Workshop? Workshop { get; set; }
         public string? ParentId { get; set; } = null!;
         [ForeignKey(nameof(ParentId))]
         public PartsFolder? Parent { get; set; }

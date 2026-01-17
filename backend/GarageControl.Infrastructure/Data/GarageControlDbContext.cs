@@ -16,9 +16,9 @@ namespace GarageControl.Infrastructure.Data
             base.OnModelCreating(builder);
 
             builder.Entity<Worker>()
-                .HasOne(w => w.CarService)
+                .HasOne(w => w.Workshop)
                 .WithMany(cs => cs.Workers)
-                .HasForeignKey(w => w.CarServiceId)
+                .HasForeignKey(w => w.WorkshopId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Worker>()
@@ -33,10 +33,10 @@ namespace GarageControl.Infrastructure.Data
                 .HasForeignKey(cm => cm.CreatorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<CarService>()
+            builder.Entity<Workshop>()
                 .HasOne(cs => cs.Boss)
-                .WithOne(u => u.CarService)
-                .HasForeignKey<CarService>(cs => cs.BossId)
+                .WithOne(u => u.Workshop)
+                .HasForeignKey<Workshop>(cs => cs.BossId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Worker>()
@@ -61,9 +61,9 @@ namespace GarageControl.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Client>()
-                .HasOne(c => c.CarService)
+                .HasOne(c => c.Workshop)
                 .WithMany(s => s.Clients)
-                .HasForeignKey(c => c.CarServiceId)
+                .HasForeignKey(c => c.WorkshopId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<JobPart>()
@@ -82,7 +82,7 @@ namespace GarageControl.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
-        public DbSet<CarService> CarServices { get; set; } = null!;
+        public DbSet<Workshop> Workshops { get; set; } = null!;
         public DbSet<Worker> Workers { get; set; } = null!;
         public DbSet<Access> Accesses { get; set; } = null!;
         public DbSet<JobType> JobTypes { get; set; } = null!;

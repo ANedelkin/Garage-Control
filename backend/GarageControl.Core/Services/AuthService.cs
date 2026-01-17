@@ -116,12 +116,12 @@ namespace GarageControl.Core.Services
             if (user.RefreshTokenExpiry < DateTime.UtcNow)
                 return new LoginResponse(false, "Refresh token expired");
 
-            var garageId = await GetUserGarageId(user.Id);
-            string newAccess = GenerateAccessToken(user, garageId);
+            var workshopId = await GetUserWorkshopId(user.Id);
+            string newAccess = GenerateAccessToken(user, workshopId);
             var accesses = await GetUserAccess(user.Id);
-            bool hasService = await UserHasService(user.Id);
+            bool hasWorkshop = await UserHasWorkshop(user.Id);
 
-            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses, hasService);
+            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop);
         }
 
         public Task SetAuthCookies(HttpResponse response, LoginResponse body)
@@ -151,23 +151,23 @@ namespace GarageControl.Core.Services
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(14);
             await _userManager.UpdateAsync(user);
 
-            var garageId = await GetUserGarageId(user.Id);
-            string token = GenerateAccessToken(user, garageId);
+            var workshopId = await GetUserWorkshopId(user.Id);
+            string token = GenerateAccessToken(user, workshopId);
             var accesses = await GetUserAccess(user.Id);
-            bool hasService = await UserHasService(user.Id);
+            bool hasWorkshop = await UserHasWorkshop(user.Id);
 
-            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses, hasService);
+            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop);
         }
 
-        private async Task<bool> UserHasService(string userId)
+        private async Task<bool> UserHasWorkshop(string userId)
         {
-            var isOwner = await _repo.GetAllAsNoTrackingAsync<CarService>().AnyAsync(s => s.BossId == userId);
+            var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner) return true;
 
             var isWorker = await _repo.GetAllAsNoTrackingAsync<Worker>().AnyAsync(w => w.UserId == userId);
             return isWorker;
         }
-        private string GenerateAccessToken(User user, string? garageId = null)
+        private string GenerateAccessToken(User user, string? workshopId = null)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
@@ -178,9 +178,9 @@ namespace GarageControl.Core.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email)
             };
 
-            if (!string.IsNullOrEmpty(garageId))
+            if (!string.IsNullOrEmpty(workshopId))
             {
-                claims.Add(new Claim("GarageId", garageId));
+                claims.Add(new Claim("WorkshopId", workshopId));
             }
 
             var token = handler.CreateToken(new SecurityTokenDescriptor
@@ -205,19 +205,19 @@ namespace GarageControl.Core.Services
         private async Task<User?> FindByToken(string token) =>
             await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
 
-        private async Task<string?> GetUserGarageId(string userId)
+        private async Task<string?> GetUserWorkshopId(string userId)
         {
-            var service = await _repo.GetAllAsNoTrackingAsync<CarService>().FirstOrDefaultAsync(s => s.BossId == userId);
-            if (service != null) return service.Id;
+            var workshop = await _repo.GetAllAsNoTrackingAsync<Workshop>().FirstOrDefaultAsync(s => s.BossId == userId);
+            if (workshop != null) return workshop.Id;
 
             var worker = await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == userId);
-            return worker?.CarServiceId;
+            return worker?.WorkshopId;
         }
 
         private async Task<List<string>> GetUserAccess(string userId)
         {
             // Check if Owner
-            var isOwner = await _repo.GetAllAsNoTrackingAsync<CarService>().AnyAsync(s => s.BossId == userId);
+            var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner)
             {
                 return await _repo.GetAllAsNoTrackingAsync<Access>().Select(a => a.Name).ToListAsync();

@@ -8,10 +8,10 @@ namespace GarageControl.Core.Services
 {
     public interface IOrderService
     {
-        Task<List<OrderListViewModel>> GetOrdersAsync(string garageId);
-        Task<object> CreateOrderAsync(string garageId, CreateOrderViewModel model);
-        Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string garageId);
-        Task<object> UpdateOrderAsync(string id, string garageId, UpdateOrderViewModel model);
+        Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId);
+        Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model);
+        Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
+        Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model);
     }
 
     public class OrderService : IOrderService
@@ -23,11 +23,11 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<List<OrderListViewModel>> GetOrdersAsync(string garageId)
+        public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId)
         {
             var rawData = await _context.Orders
                 .AsNoTracking()
-                .Where(o => o.Car.Owner.CarServiceId == garageId)
+                .Where(o => o.Car.Owner.WorkshopId == workshopId)
                 .Select(o => new
                 {
                     o.Id,
@@ -72,11 +72,11 @@ namespace GarageControl.Core.Services
             }).ToList();
         }
 
-        public async Task<object> CreateOrderAsync(string garageId, CreateOrderViewModel model)
+        public async Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model)
         {
             var car = await _context.Cars
                 .Include(c => c.Owner)
-                .FirstOrDefaultAsync(c => c.Id == model.CarId && c.Owner.CarServiceId == garageId);
+                .FirstOrDefaultAsync(c => c.Id == model.CarId && c.Owner.WorkshopId == workshopId);
 
             if (car == null)
             {
@@ -132,11 +132,11 @@ namespace GarageControl.Core.Services
             return new { orderId = order.Id, message = "Order created successfully" };
         }
 
-        public async Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string garageId)
+        public async Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId)
         {
             return await _context.Orders
                 .AsNoTracking()
-                .Where(o => o.Id == id && o.Car.Owner.CarServiceId == garageId)
+                .Where(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId)
                 .Select(o => new OrderDetailsViewModel
                 {
                     Id = o.Id,
@@ -166,7 +166,7 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<object> UpdateOrderAsync(string id, string garageId, UpdateOrderViewModel model)
+        public async Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model)
         {
             var order = await _context.Orders
                 .Include(o => o.Car)
@@ -174,7 +174,7 @@ namespace GarageControl.Core.Services
                 .Include(o => o.Jobs)
                     .ThenInclude(j => j.JobParts)
                         .ThenInclude(jp => jp.Part)
-                .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.CarServiceId == garageId);
+                .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null)
             {

@@ -13,9 +13,9 @@ namespace GarageControl.Infrastructure.Data.Models
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         [Required]
-        public string CarServiceId { get; set; } = null!;
-        [ForeignKey(nameof(CarServiceId))]
-        public CarService CarService { get; set; } = null!;
+        public string WorkshopId { get; set; } = null!;
+        [ForeignKey(nameof(WorkshopId))]
+        public Workshop Workshop { get; set; } = null!;
         public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
         public ICollection<Job> Jobs { get; set; } = new HashSet<Job>();
     }

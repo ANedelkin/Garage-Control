@@ -22,9 +22,9 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         public int MinimumQuantity { get; set; }
         public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
-        public string? CarServiceId { get; set; } = null!;
-        [ForeignKey(nameof(CarServiceId))]
-        public CarService? CarService { get; set; }
+        public string? WorkshopId { get; set; } = null!;
+        [ForeignKey(nameof(WorkshopId))]
+        public Workshop? Workshop { get; set; }
         public string? ParentId { get; set; } = null!;
         [ForeignKey(nameof(ParentId))]
         public PartsFolder? Parent { get; set; }

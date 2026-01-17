@@ -8,8 +8,8 @@ import SignUpPage from './components/auth/SignUp';
 import Dashboard from './components/dashboard/Dashboard';
 import Workers from './components/workers/Workers';
 import EditWorker from './components/workers/EditWorker';
-import ServiceDetails from './components/serviceDetails/ServiceDetails';
-import ServiceDetailsInitial from './components/serviceDetails/ServiceDetailsInitial';
+import WorkshopDetails from './components/workshopDetails/WorkshopDetails';
+import WorkshopDetailsInitial from './components/workshopDetails/WorkshopDetailsInitial';
 import JobTypes from './components/orders/JobTypes';
 import EditJobType from './components/orders/EditJobType.jsx';
 import MakesAndModels from './components/cars/MakesAndModels.jsx';
@@ -30,9 +30,9 @@ const PrivateRoute = ({ children }) => {
   if (!loggedIn) {
     return <Navigate to="/login" />;
   }
-  const hasService = localStorage.getItem('HasService');
-  if (hasService === 'false' && window.location.pathname !== '/service-details-initial') {
-    return <Navigate to="/service-details-initial" />;
+  const hasWorkshop = localStorage.getItem('HasWorkshop');
+  if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
+    return <Navigate to="/workshop-details-initial" />;
   }
   return children;
 };
@@ -56,8 +56,8 @@ function App() {
           }
         }
 
-        // if (hasService === 'false' && window.location.pathname !== '/service-details-initial') {
-        //   navigate('/service-details-initial');
+        // if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
+        //   navigate('/workshop-details-initial');
         // }
 
         setHydrated(true);
@@ -70,8 +70,8 @@ function App() {
             if (data.accesses) {
               setAccesses(data.accesses);
             }
-            // if (data.hasService === false && window.location.pathname !== '/service-details-initial') {
-            //   window.location.href = '/service-details-initial';
+            // if (data.hasWorkshop === false && window.location.pathname !== '/workshop-details-initial') {
+            //   window.location.href = '/workshop-details-initial';
             //   return;
             // }
           }
@@ -129,7 +129,7 @@ function App() {
         { path: '/:id', element: <EditClient /> }
       ]
     },
-    { path: '/service-details', element: <ServiceDetails />, children: [], access: 'Service Details' },
+    { path: '/workshop-details', element: <WorkshopDetails />, children: [], access: 'Workshop Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
   ];
@@ -141,9 +141,9 @@ function App() {
           <Route path="/login" element={<LogInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
 
-          <Route path="/service-details-initial" element={<PrivateRoute>
+          <Route path="/workshop-details-initial" element={<PrivateRoute>
             <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-            <ServiceDetailsInitial />
+            <WorkshopDetailsInitial />
           </PrivateRoute>} />
 
           {routes.filter(r => !r.access || accesses.includes(r.access)).map((route, i) => (

@@ -9,18 +9,18 @@ namespace GarageControl.Core.Services
     public class MakeService : IMakeService
     {
         private readonly IRepository _repo;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
 
-        public MakeService(IRepository repo, ICarServiceService carServiceService)
+        public MakeService(IRepository repo, IWorkshopService workshopService)
         {
             _repo = repo;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task CreateMake(MakeVM model, string userId)
         {
-            var bossId = await GetBossId(userId);
-            if (bossId == null) throw new ArgumentException("User is not associated with a service or owner.");
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
+            if (bossId == null) throw new ArgumentException("User is not associated with a workshop or owner.");
 
             var make = new CarMake
             {
@@ -52,7 +52,7 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<MakeVM>> GetMakes(string userId)
         {
-            var bossId = await GetBossId(userId);
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
             if (bossId == null) return new List<MakeVM>();
 
             return await _repo.GetAllAsNoTrackingAsync<CarMake>()
@@ -77,11 +77,7 @@ namespace GarageControl.Core.Services
 
         private async Task<string?> GetBossId(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return null;
-
-            var service = await _repo.GetByIdAsync<CarService>(serviceId);
-            return service?.BossId;
+            return await _workshopService.GetWorkshopBossId(userId);
         }
     }
 }

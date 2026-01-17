@@ -20,7 +20,7 @@ builder.Services.AddDbContext<GarageControlDbContext>(options =>
 
 builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ICarServiceService, CarServiceService>();
+builder.Services.AddScoped<IWorkshopService, WorkshopService>();
 builder.Services.AddScoped<IJobTypeService, JobTypeService>();
 builder.Services.AddScoped<IWorkerService, WorkerService>();
 builder.Services.AddScoped<IMakeService, MakeService>();

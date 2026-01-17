@@ -21,7 +21,7 @@ const Sidebar = ({ open, onClose }) => {
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
     { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
     { path: '/clients', icon: 'fa-user', label: 'Clients', access: 'Clients' },
-    { path: '/service-details', icon: 'fa-circle-info', label: 'Service Details', access: 'Service Details' },
+    { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
     { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
     { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
   ];

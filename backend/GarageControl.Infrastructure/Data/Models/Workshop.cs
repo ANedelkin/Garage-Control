@@ -4,17 +4,17 @@ using GarageControl.Shared.Constants;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CarService
+    public class Workshop
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
-        [MaxLength(CarServiceConstants.nameMaxLength)]
+        [MaxLength(WorkshopConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
         [Required]
         [MaxLength(GenericConstants.addressMaxLength)]
         public string Address { get; set; } = null!;
-        [MaxLength(CarServiceConstants.registrationNumberMaxLength)]
+        [MaxLength(WorkshopConstants.registrationNumberMaxLength)]
         public string? RegistrationNumber { get; set; }
         [Required]
         public string BossId { get; set; } = null!;

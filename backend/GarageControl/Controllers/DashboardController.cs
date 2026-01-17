@@ -16,9 +16,9 @@ namespace GarageControl.Controllers
             _dashboardService = dashboardService;
         }
 
-        private string GetGarageId()
+        private string GetWorkshopId()
         {
-            return User.FindFirst("GarageId")?.Value!;
+            return User.FindFirst("WorkshopId")?.Value!;
         }
 
         [HttpGet]
@@ -26,7 +26,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var data = await _dashboardService.GetDashboardDataAsync(GetGarageId());
+                var data = await _dashboardService.GetDashboardDataAsync(GetWorkshopId());
                 return Ok(data);
             }
             catch (Exception ex)

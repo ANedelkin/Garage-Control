@@ -21,9 +21,9 @@ namespace GarageControl.Infrastructure.Data.Models
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
         [Required]
-        public string CarServiceId { get; set; } = null!;
-        [ForeignKey(nameof(CarServiceId))]
-        public CarService CarService { get; set; } = null!;
+        public string WorkshopId { get; set; } = null!;
+        [ForeignKey(nameof(WorkshopId))]
+        public Workshop Workshop { get; set; } = null!;
         public DateTime HiredOn { get; set; }
     }
 }

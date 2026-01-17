@@ -1,6 +1,6 @@
 namespace GarageControl.Shared.Constants
 {
-    public static class CarServiceConstants
+    public static class WorkshopConstants
     {
         public const int nameMinLength = 2;
         public const int nameMaxLength = 100;

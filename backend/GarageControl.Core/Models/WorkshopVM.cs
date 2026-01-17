@@ -1,22 +1,21 @@
 using System.ComponentModel.DataAnnotations;
 using GarageControl.Shared.Constants;
-using Microsoft.VisualBasic;
 
 namespace GarageControl.Core.Models
 {
-    public class ServiceVM
+    public class WorkshopVM
     {
         [Required]
-        [MinLength(CarServiceConstants.nameMinLength)]
-        [MaxLength(CarServiceConstants.nameMaxLength)]
+        [MinLength(WorkshopConstants.nameMinLength)]
+        [MaxLength(WorkshopConstants.nameMaxLength)]
         public string Name { get; set; } = string.Empty;
         [Required]
         [MinLength(GenericConstants.addressMinLength)]
         [MaxLength(GenericConstants.addressMaxLength)]
         public string Address { get; set; } = string.Empty;
         [Required]
-        [MinLength(CarServiceConstants.registrationNumberMinLength)]
-        [MaxLength(CarServiceConstants.registrationNumberMaxLength)]
+        [MinLength(WorkshopConstants.registrationNumberMinLength)]
+        [MaxLength(WorkshopConstants.registrationNumberMaxLength)]
         public string RegistrationNumber { get; set; } = string.Empty;
     }
 }

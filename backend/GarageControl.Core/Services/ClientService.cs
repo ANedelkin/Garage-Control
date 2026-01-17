@@ -9,21 +9,21 @@ namespace GarageControl.Core.Services
     public class ClientService : IClientService
     {
         private readonly IRepository _repo;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
 
-        public ClientService(IRepository repo, ICarServiceService carServiceService)
+        public ClientService(IRepository repo, IWorkshopService workshopService)
         {
             _repo = repo;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task<IEnumerable<ClientVM>> All(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return new List<ClientVM>();
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) return new List<ClientVM>();
 
             return await _repo.GetAllAsNoTrackingAsync<Client>()
-                .Where(c => c.CarServiceId == serviceId)
+                .Where(c => c.WorkshopId == workshopId)
                 .Select(c => new ClientVM
                 {
                     Id = c.Id,
@@ -38,8 +38,8 @@ namespace GarageControl.Core.Services
 
         public async Task Create(ClientVM model, string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) throw new ArgumentException("User does not have a service");
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
             var client = new Client
             {
@@ -48,7 +48,7 @@ namespace GarageControl.Core.Services
                 Email = model.Email,
                 Address = model.Address,
                 RegistrationNumber = model.RegistrationNumber,
-                CarServiceId = serviceId
+                WorkshopId = workshopId
             };
 
             await _repo.AddAsync(client);

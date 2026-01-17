@@ -9,21 +9,21 @@ namespace GarageControl.Core.Services
     public class JobTypeService : IJobTypeService
     {
         private readonly IRepository _repo;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
 
-        public JobTypeService(IRepository repo, ICarServiceService carServiceService)
+        public JobTypeService(IRepository repo, IWorkshopService workshopService)
         {
             _repo = repo;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task<IEnumerable<JobTypeVM>> All(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return new List<JobTypeVM>();
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) return new List<JobTypeVM>();
 
             return await _repo.GetAllAsNoTrackingAsync<JobType>()
-                .Where(j => j.CarServiceId == serviceId)
+                .Where(j => j.WorkshopId == workshopId)
                 .Include(j => j.Workers)
                 .ThenInclude(w => w.User)
                 .Select(j => new JobTypeVM
@@ -38,14 +38,14 @@ namespace GarageControl.Core.Services
 
         public async Task Create(JobTypeVM model, string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) throw new ArgumentException("User does not have a service");
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
             var jobType = new JobType
             {
                 Name = model.Name,
                 Description = model.Description,
-                CarServiceId = serviceId
+                WorkshopId = workshopId
             };
 
             // Handle mechanics mapping if needed

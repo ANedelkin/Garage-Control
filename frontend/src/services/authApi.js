@@ -12,7 +12,7 @@ export const authApi = {
             if (data.success) {
                 localStorage.setItem('LoggedIn', 'true');
                 localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
-                localStorage.setItem('HasService', data.hasService);
+                localStorage.setItem('HasWorkshop', data.hasWorkshop);
             }
 
             return data;
@@ -33,7 +33,7 @@ export const authApi = {
             if (data.success) {
                 localStorage.setItem('LoggedIn', 'true');
                 localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
-                localStorage.setItem('HasService', data.hasService);
+                localStorage.setItem('HasWorkshop', data.hasWorkshop);
             }
 
             return data;
@@ -52,7 +52,7 @@ export const authApi = {
             // Always clear localStorage
             localStorage.removeItem('LoggedIn');
             localStorage.removeItem('accesses');
-            localStorage.removeItem('HasService');
+            localStorage.removeItem('HasWorkshop');
         }
         return { success: true };
     },
@@ -65,14 +65,14 @@ export const authApi = {
             if (!response.ok || !data.success) {
                 localStorage.removeItem('LoggedIn');
                 localStorage.removeItem('accesses');
-                localStorage.removeItem('HasService');
+                localStorage.removeItem('HasWorkshop');
                 throw new Error('Token refresh failed');
             }
             localStorage.setItem('LoggedIn', 'true');
             if (data.accesses) {
                 localStorage.setItem('accesses', JSON.stringify(data.accesses));
             }
-            localStorage.setItem('HasService', data.hasService);
+            localStorage.setItem('HasWorkshop', data.hasWorkshop);
             return data;
         } catch (error) {
             console.error('Token refresh error:', error);

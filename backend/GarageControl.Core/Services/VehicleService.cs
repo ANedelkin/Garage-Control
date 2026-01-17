@@ -9,24 +9,24 @@ namespace GarageControl.Core.Services
     public class VehicleService : IVehicleService
     {
         private readonly IRepository _repo;
-        private readonly ICarServiceService _carServiceService;
+        private readonly IWorkshopService _workshopService;
 
-        public VehicleService(IRepository repo, ICarServiceService carServiceService)
+        public VehicleService(IRepository repo, IWorkshopService workshopService)
         {
             _repo = repo;
-            _carServiceService = carServiceService;
+            _workshopService = workshopService;
         }
 
         public async Task<IEnumerable<VehicleVM>> All(string userId)
         {
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) return new List<VehicleVM>();
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) return new List<VehicleVM>();
 
             return await _repo.GetAllAsNoTrackingAsync<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
-                .Where(c => c.Owner.CarServiceId == serviceId)
+                .Where(c => c.Owner.WorkshopId == workshopId)
                 .Select(c => new VehicleVM
                 {
                     Id = c.Id,
@@ -85,11 +85,11 @@ namespace GarageControl.Core.Services
         public async Task Create(VehicleVM model, string userId)
         {
             // Verify user belongs to the same service as the client (Owner)
-            var serviceId = await _carServiceService.GetServiceId(userId);
-            if (serviceId == null) throw new ArgumentException("User does not have a service");
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
             var client = await _repo.GetByIdAsync<Client>(model.OwnerId);
-            if (client == null || client.CarServiceId != serviceId)
+            if (client == null || client.WorkshopId != workshopId)
             {
                 throw new ArgumentException("Invalid client or access denied");
             }

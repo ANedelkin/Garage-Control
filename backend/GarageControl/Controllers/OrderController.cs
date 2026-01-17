@@ -17,9 +17,9 @@ namespace GarageControl.Controllers
             _orderService = orderService;
         }
 
-        private string GetGarageId()
+        private string GetWorkshopId()
         {
-            return User.FindFirst("GarageId")?.Value!;
+            return User.FindFirst("WorkshopId")?.Value!;
         }
 
         [HttpGet]
@@ -27,7 +27,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetGarageId());
+                var orders = await _orderService.GetOrdersAsync(GetWorkshopId());
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -41,7 +41,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var order = await _orderService.CreateOrderAsync(GetGarageId(), model);
+                var order = await _orderService.CreateOrderAsync(GetWorkshopId(), model);
                 return Ok(order);
             }
             catch (Exception ex)
@@ -54,7 +54,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var order = await _orderService.GetOrderByIdAsync(id, GetGarageId());
+                var order = await _orderService.GetOrderByIdAsync(id, GetWorkshopId());
                 if (order == null) return NotFound();
                 return Ok(order);
             }
@@ -69,7 +69,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.UpdateOrderAsync(id, GetGarageId(), model);
+                var result = await _orderService.UpdateOrderAsync(id, GetWorkshopId(), model);
                 return Ok(result);
             }
             catch (Exception ex)
