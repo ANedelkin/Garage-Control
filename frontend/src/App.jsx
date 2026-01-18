@@ -20,6 +20,10 @@ import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
 import NewOrderPage from './components/orders/EditOrder.jsx';
 
+import AdminDashboard from './components/admin/AdminDashboard';
+import AdminUsers from './components/admin/AdminUsers';
+import AdminWorkshops from './components/admin/AdminWorkshops';
+
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 
@@ -55,11 +59,6 @@ function App() {
             console.error("Failed to parse stored accesses", e);
           }
         }
-
-        // if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
-        //   navigate('/workshop-details-initial');
-        // }
-
         setHydrated(true);
       } else {
         try {
@@ -70,10 +69,6 @@ function App() {
             if (data.accesses) {
               setAccesses(data.accesses);
             }
-            // if (data.hasWorkshop === false && window.location.pathname !== '/workshop-details-initial') {
-            //   window.location.href = '/workshop-details-initial';
-            //   return;
-            // }
           }
         } catch (e) {
           console.log(e);
@@ -103,7 +98,7 @@ function App() {
   }
 
   const routes = [
-    { path: '/', element: <Dashboard />, children: [] },
+    { path: '/', element: accesses.includes('Admin Dashboard') ? <Navigate to="/admin/dashboard" /> : <Dashboard />, children: [] },
     {
       path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderPage /> },
@@ -132,6 +127,10 @@ function App() {
     { path: '/workshop-details', element: <WorkshopDetails />, children: [], access: 'Workshop Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
+    { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin Dashboard' },
+    { path: '/admin/makes-models', element: <MakesAndModels />, children: [], access: 'Admin Makes and Models' },
+    { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin Users' },
+    { path: '/admin/workshops', element: <AdminWorkshops />, children: [], access: 'Admin Workshops' },
   ];
 
   return (
@@ -156,6 +155,7 @@ function App() {
                     <LayoutWithHeader
                       sidebarOpen={sidebarOpen}
                       setSidebarOpen={setSidebarOpen}
+                      accesses={accesses}
                     >
                       {route.element}
                     </LayoutWithHeader>
@@ -171,6 +171,7 @@ function App() {
                       <LayoutWithHeader
                         sidebarOpen={sidebarOpen}
                         setSidebarOpen={setSidebarOpen}
+                        accesses={accesses}
                       >
                         {childRoute.element}
                       </LayoutWithHeader>
@@ -191,12 +192,12 @@ function App() {
 
 export default App;
 
-function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen }) {
+function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen, accesses }) {
   return (
     <>
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div className="horizontal work-area">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} accesses={accesses} />
         {children}
       </div>
     </>

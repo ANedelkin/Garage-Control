@@ -14,8 +14,12 @@ const LogInPage = () => {
         setError('');
 
         try {
-            await authApi.login(formData.email, formData.password);
-            navigate('/');
+            const data = await authApi.login(formData.email, formData.password);
+            if (data.accesses && data.accesses.includes('Admin Dashboard')) {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             setError(err.message || 'An error occurred during login');
         } finally {

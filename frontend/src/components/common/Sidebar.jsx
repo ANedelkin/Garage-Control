@@ -4,7 +4,7 @@ import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';
 
-const Sidebar = ({ open, onClose }) => {
+const Sidebar = ({ open, onClose, accesses = [] }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const location = useLocation();
 
@@ -15,7 +15,7 @@ const Sidebar = ({ open, onClose }) => {
   }, [theme]);
 
   const navItems = [
-    { path: '/', icon: 'fa-house', label: 'Home', access: null },
+    { path: '/', icon: 'fa-house', label: 'Home', access: 'Dashboard' },
     { path: '/orders', icon: 'fa-screwdriver-wrench', label: 'Orders', access: 'Orders' },
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', access: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
@@ -24,9 +24,13 @@ const Sidebar = ({ open, onClose }) => {
     { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
     { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
     { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
+    { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', access: 'Admin Dashboard' },
+    { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', access: 'Admin Makes and Models' },
+    { path: '/admin/users', icon: 'fa-users', label: 'Users', access: 'Admin Users' },
+    { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', access: 'Admin Workshops' },
   ];
 
-  const accesses = JSON.parse(localStorage.getItem('accesses') || '[]');
+  console.log(accesses);
   const filteredNavItems = navItems.filter(item => {
     if (!item.access) return true;
     return accesses.includes(item.access);

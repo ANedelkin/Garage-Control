@@ -161,6 +161,12 @@ namespace GarageControl.Core.Services
 
         private async Task<bool> UserHasWorkshop(string userId)
         {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return true;
+            }
+
             var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner) return true;
 
@@ -216,11 +222,25 @@ namespace GarageControl.Core.Services
 
         private async Task<List<string>> GetUserAccess(string userId)
         {
+            // Check if Admin
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return new List<string>
+                {
+                    "Admin Dashboard",
+                    "Admin Makes and Models",
+                    "Admin Users",
+                    "Admin Workshops"
+                };
+            }
+
             // Check if Owner
             var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner)
             {
-                return await _repo.GetAllAsNoTrackingAsync<Access>().Select(a => a.Name).ToListAsync();
+                var ownerAccesses = await _repo.GetAllAsNoTrackingAsync<Access>().Select(a => a.Name).ToListAsync();
+                return ownerAccesses;
             }
 
             // Check if Worker
@@ -230,7 +250,8 @@ namespace GarageControl.Core.Services
 
             if (worker != null)
             {
-                return worker.Accesses.Select(a => a.Name).ToList();
+                var workerAccesses = worker.Accesses.Select(a => a.Name).ToList();
+                return workerAccesses;
             }
 
             return new List<string>();
