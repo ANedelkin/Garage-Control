@@ -82,7 +82,11 @@ namespace GarageControl.Core.Services
             if (!passwordMatch)
                 return new LoginResponse(false, "Invalid credentials");
 
+            if (user.LockoutEnd > DateTimeOffset.UtcNow)
+                return new LoginResponse(false, "Your account has been blocked. Please contact the administrator.");
+
             return await DoLogin(user);
+
         }
 
         public async Task LogOut(HttpRequest request, HttpResponse response)
@@ -116,8 +120,12 @@ namespace GarageControl.Core.Services
             if (user.RefreshTokenExpiry < DateTime.UtcNow)
                 return new LoginResponse(false, "Refresh token expired");
 
+            if (user.LockoutEnd > DateTimeOffset.UtcNow)
+                return new LoginResponse(false, "Your account has been blocked.");
+
             var workshopId = await GetUserWorkshopId(user.Id);
-            string newAccess = GenerateAccessToken(user, workshopId);
+            var roles = await _userManager.GetRolesAsync(user);
+            string newAccess = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
 
@@ -152,7 +160,8 @@ namespace GarageControl.Core.Services
             await _userManager.UpdateAsync(user);
 
             var workshopId = await GetUserWorkshopId(user.Id);
-            string token = GenerateAccessToken(user, workshopId);
+            var roles = await _userManager.GetRolesAsync(user);
+            string token = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
 
@@ -173,7 +182,7 @@ namespace GarageControl.Core.Services
             var isWorker = await _repo.GetAllAsNoTrackingAsync<Worker>().AnyAsync(w => w.UserId == userId);
             return isWorker;
         }
-        private string GenerateAccessToken(User user, string? workshopId = null)
+        private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
@@ -183,6 +192,11 @@ namespace GarageControl.Core.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email)
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             if (!string.IsNullOrEmpty(workshopId))
             {

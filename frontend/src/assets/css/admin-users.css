@@ -1,0 +1,44 @@
+.admin-users-page .status-btn::after,
+.admin-users-page .status-btn::before {
+    display: none !important;
+}
+
+.admin-users-page .status-btn.admin-active {
+    color: #28a745 !important;
+    border-color: rgba(40, 167, 69, 0.2) !important;
+}
+
+.admin-users-page .status-btn.admin-active:hover {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.admin-users-page .status-btn.admin-blocked {
+    color: #dc3545 !important;
+    border-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+.admin-users-page .status-btn.admin-blocked:hover {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* .admin-users-page .role-filter-dropdown {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--solid3);
+    color: var(--text-clr);
+    outline: none;
+    cursor: pointer;
+}
+
+.admin-users-page .role-filter-dropdown:focus {
+    border-color: var(--primary);
+} */
+
+.admin-users-page .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: var(--text-clr2);
+}
