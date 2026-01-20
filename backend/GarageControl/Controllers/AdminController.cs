@@ -28,11 +28,21 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> ToggleUserBlock(string userId)
         {
             var result = await _adminService.ToggleUserBlockAsync(userId);
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("workshops")]
+        public async Task<IActionResult> GetWorkshops()
+        {
+            var workshops = await _adminService.GetWorkshopsAsync();
+            return Ok(workshops);
+        }
+
+        [HttpPost("workshops/{workshopId}/toggle-block")]
+        public async Task<IActionResult> ToggleWorkshopBlock(string workshopId)
+        {
+            var result = await _adminService.ToggleWorkshopBlockAsync(workshopId);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

@@ -115,7 +115,7 @@ namespace GarageControl.Controllers
                 return Redirect(frontendRedirectUri);
             }
 
-            return BadRequest(new { Success = false, Message = "Authentication failed" });
+            return BadRequest(new { Success = false, Message = response.Message });
         }
     }
 }

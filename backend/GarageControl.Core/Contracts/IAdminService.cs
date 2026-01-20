@@ -8,5 +8,8 @@ namespace GarageControl.Core.Contracts
     {
         Task<List<UserAdminVM>> GetUsersAsync();
         Task<MethodResponse> ToggleUserBlockAsync(string userId);
+        Task<List<WorkshopAdminVM>> GetWorkshopsAsync();
+        Task<MethodResponse> ToggleWorkshopBlockAsync(string workshopId);
     }
 }
+

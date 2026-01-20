@@ -23,5 +23,7 @@ namespace GarageControl.Infrastructure.Data.Models
         public ICollection<Worker> Workers { get; set; } = new HashSet<Worker>();
         public ICollection<JobType> JobTypes { get; set; } = new HashSet<JobType>();
         public ICollection<Client> Clients { get; set; } = new HashSet<Client>();
+        public bool IsBlocked { get; set; }
     }
 }
+

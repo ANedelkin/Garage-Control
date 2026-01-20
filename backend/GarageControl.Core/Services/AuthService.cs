@@ -85,6 +85,21 @@ namespace GarageControl.Core.Services
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
                 return new LoginResponse(false, "Your account has been blocked. Please contact the administrator.");
 
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (!roles.Contains("Admin"))
+            {
+                var workshopId = await GetUserWorkshopId(user.Id);
+                if (workshopId != null)
+                {
+                    var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
+                    if (workshop != null && workshop.IsBlocked)
+                    {
+                        return new LoginResponse(false, "This workshop has been blocked by an administrator.");
+                    }
+                }
+            }
+
             return await DoLogin(user);
 
         }
@@ -123,8 +138,18 @@ namespace GarageControl.Core.Services
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
                 return new LoginResponse(false, "Your account has been blocked.");
 
-            var workshopId = await GetUserWorkshopId(user.Id);
             var roles = await _userManager.GetRolesAsync(user);
+            var workshopId = await GetUserWorkshopId(user.Id);
+
+            if (workshopId != null)
+            {
+                var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
+                if (workshop != null && workshop.IsBlocked)
+                {
+                    return new LoginResponse(false, "This workshop has been blocked by an administrator.");
+                }
+            }
+
             string newAccess = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);

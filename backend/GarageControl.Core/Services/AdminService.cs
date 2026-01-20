@@ -105,5 +105,41 @@ namespace GarageControl.Core.Services
 
             return new MethodResponse(true, isCurrentlyBlocked ? "User unblocked successfully" : "User blocked successfully");
         }
+
+        public async Task<List<WorkshopAdminVM>> GetWorkshopsAsync()
+        {
+            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>()
+                .Include(w => w.Boss)
+                .Include(w => w.Workers)
+                .ToListAsync();
+
+            return workshops.Select(w => new WorkshopAdminVM
+            {
+                Id = w.Id,
+                Name = w.Name,
+                Address = w.Address,
+                RegistrationNumber = w.RegistrationNumber,
+                BossEmail = w.Boss?.Email ?? "",
+                WorkerCount = w.Workers.Count,
+                IsBlocked = w.IsBlocked
+            }).ToList();
+        }
+
+        public async Task<MethodResponse> ToggleWorkshopBlockAsync(string workshopId)
+        {
+            var workshop = await _repo.GetAllAttachedAsync<Workshop>()
+                .FirstOrDefaultAsync(w => w.Id == workshopId);
+
+            if (workshop == null)
+            {
+                return new MethodResponse(false, "Workshop not found");
+            }
+
+            workshop.IsBlocked = !workshop.IsBlocked;
+            await _repo.SaveChangesAsync();
+
+            return new MethodResponse(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");
+        }
     }
 }
+
