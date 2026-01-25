@@ -21,7 +21,8 @@ namespace GarageControl.Controllers
         [HttpGet("all/{makeId}")]
         public async Task<IActionResult> All(string makeId)
         {
-            var models = await _modelService.GetModels(makeId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var models = await _modelService.GetModels(makeId, userId);
             return Ok(models);
         }
 
@@ -46,15 +47,31 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit([FromBody] ModelVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             await _modelService.UpdateModel(model);
-             return Ok(new { success = true });
+             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             try
+             {
+                 await _modelService.UpdateModel(model, userId);
+                 return Ok(new { success = true });
+             }
+             catch(UnauthorizedAccessException)
+             {
+                 return Forbid();
+             }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _modelService.DeleteModel(id);
-            return Ok(new { success = true });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                await _modelService.DeleteModel(id, userId);
+                return Ok(new { success = true });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
         }
     }
 }

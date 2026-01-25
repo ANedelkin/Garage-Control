@@ -7,7 +7,10 @@ namespace GarageControl.Core.Contracts
         Task<IEnumerable<MakeVM>> GetMakes(string userId);
         Task<MakeVM?> GetMake(string id);
         Task CreateMake(MakeVM model, string userId);
-        Task UpdateMake(MakeVM model);
-        Task DeleteMake(string id);
+        Task UpdateMake(MakeVM model, string userId);
+        Task DeleteMake(string id, string userId);
+        Task<IEnumerable<MetricSuggestionVM>> GetSuggestions();
+        Task<IEnumerable<MetricSuggestionVM>> GetSuggestedModels(string makeName);
+        Task PromoteSuggestion(string name, string? newName);
     }
 }

@@ -23,6 +23,7 @@ import NewOrderPage from './components/orders/EditOrder.jsx';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminUsers from './components/admin/AdminUsers';
 import AdminWorkshops from './components/admin/AdminWorkshops';
+import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
@@ -128,7 +129,7 @@ function App() {
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
     { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin Dashboard' },
-    { path: '/admin/makes-models', element: <MakesAndModels />, children: [], access: 'Admin Makes and Models' },
+    { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin Makes and Models' },
     { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin Users' },
     { path: '/admin/workshops', element: <AdminWorkshops />, children: [], access: 'Admin Workshops' },
   ];

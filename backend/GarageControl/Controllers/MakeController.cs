@@ -47,15 +47,61 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit([FromBody] MakeVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             await _makeService.UpdateMake(model);
+             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             try 
+             {
+                await _makeService.UpdateMake(model, userId);
+                return Ok(new { success = true });
+             } 
+             catch(UnauthorizedAccessException) 
+             {
+                 return Forbid();
+             }
+        }
+
+        [HttpGet("suggestions")]
+        // [Authorize(Roles = "Admin")] // Uncomment if Role-based auth is fully set up
+        public async Task<IActionResult> GetSuggestions()
+        {
+            var suggestions = await _makeService.GetSuggestions();
+            return Ok(suggestions);
+        }
+
+        [HttpGet("suggestions/{makeName}/models")]
+        // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetSuggestedModels(string makeName)
+        {
+            var models = await _makeService.GetSuggestedModels(makeName);
+            return Ok(models);
+        }
+
+        [HttpPost("promote")]
+        // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PromoteSource([FromBody] PromoteRequest request)
+        {
+             await _makeService.PromoteSuggestion(request.Name, request.NewName);
              return Ok(new { success = true });
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _makeService.DeleteMake(id);
-            return Ok(new { success = true });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                await _makeService.DeleteMake(id, userId);
+                return Ok(new { success = true });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
         }
+    }
+
+    public class PromoteRequest 
+    {
+        public string Name { get; set; } = null!;
+        public string? NewName { get; set; }
     }
 }

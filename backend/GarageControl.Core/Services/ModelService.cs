@@ -20,29 +20,54 @@ namespace GarageControl.Core.Services
         public async Task CreateModel(ModelVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
-            if (bossId == null) throw new ArgumentException("User is not associated with a workshop or owner.");
-
+            // Allow null bossId for Global creation
+            
             var carModel = new CarModel
             {
                 Name = model.Name,
                 CarMakeId = model.MakeId,
-                CreatorId = bossId // Using bossId as creatorId here since it was using bossId but bossId was fetched from service.
+                CreatorId = bossId 
             };
 
             await _repo.AddAsync(carModel);
             await _repo.SaveChangesAsync();
         }
 
-        public async Task DeleteModel(string id)
+        public async Task DeleteModel(string id, string userId)
         {
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var carModel = await _repo.GetByIdAsync<CarModel>(id);
+
+            if (carModel == null) return;
+
+             if (bossId != null && carModel.CreatorId != bossId)
+            {
+                throw new UnauthorizedAccessException("Cannot delete global or other workshop's model.");
+            }
+
             await _repo.DeleteAsync<CarModel>(id);
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ModelVM>> GetModels(string makeId)
+        public async Task<ModelVM?> GetModel(string id)
         {
             return await _repo.GetAllAsNoTrackingAsync<CarModel>()
-                .Where(m => m.CarMakeId == makeId)
+                .Where(m => m.Id == id)
+                .Select(m => new ModelVM
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    MakeId = m.CarMakeId
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<ModelVM>> GetModels(string makeId, string userId)
+        {
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
+
+            return await _repo.GetAllAsNoTrackingAsync<CarModel>()
+                .Where(m => m.CarMakeId == makeId && (m.CreatorId == null || (bossId != null && m.CreatorId == bossId)))
                 .Select(m => new ModelVM
                 {
                     Id = m.Id,
@@ -52,11 +77,18 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        public async Task UpdateModel(ModelVM model)
+        public async Task UpdateModel(ModelVM model, string userId)
         {
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
             var carModel = await _repo.GetByIdAsync<CarModel>(model.Id!);
+            
             if (carModel != null)
             {
+                if (bossId != null && carModel.CreatorId != bossId)
+                {
+                    throw new UnauthorizedAccessException("Cannot edit global or other workshop's model.");
+                }
+
                 carModel.Name = model.Name;
                 await _repo.SaveChangesAsync();
             }

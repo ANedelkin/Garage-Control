@@ -12,5 +12,14 @@ export const makeApi = {
     },
     deleteMake: async (id) => {
         return await (await request('DELETE', `make/${id}`)).json();
+    },
+    getSuggestions: async () => {
+        return await (await request('GET', 'make/suggestions')).json();
+    },
+    promote: async (data) => {
+        return await (await request('POST', 'make/promote', data)).json();
+    },
+    getSuggestedModels: async (makeName) => {
+        return await (await request('GET', `make/suggestions/${makeName}/models`)).json();
     }
 }
