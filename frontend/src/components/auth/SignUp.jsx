@@ -15,24 +15,9 @@ const SignUpPage = () => {
 
         try {
             await authApi.register(formData.email, formData.password);
-            navigate('/service-details-initial');
+            navigate('/workshop-details-initial');
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGoogle = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-
-        try {
-            await authApi.google(formData.email, formData.password);
-            navigate('/');
-        } catch (err) {
-            setError(err.message || 'An error occurred during login');
         } finally {
             setLoading(false);
         }
