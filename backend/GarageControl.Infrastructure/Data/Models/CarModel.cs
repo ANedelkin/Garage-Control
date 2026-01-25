@@ -15,9 +15,8 @@ namespace GarageControl.Infrastructure.Data.Models
         public string CarMakeId { get; set; } = null!;
         [ForeignKey(nameof(CarMakeId))]
         public CarMake CarMake { get; set; } = null!;
-        [Required]
-        public string CreatorId { get; set; } = null!;
+        public string? CreatorId { get; set; }
         [ForeignKey(nameof(CreatorId))]
-        public User Creator { get; set; } = null!;
+        public User? Creator { get; set; }
     }
 }

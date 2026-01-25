@@ -11,10 +11,9 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         [MaxLength(CarMakeConstants.nameMaxLength)]
         public string Name { get; set; } = null!;
-        [Required]
-        public string CreatorId { get; set; } = null!;
+        public string? CreatorId { get; set; }
         [ForeignKey(nameof(CreatorId))]
-        public User Creator { get; set; } = null!;
+        public User? Creator { get; set; }
         public ICollection<CarModel> CarModels { get; set; } = new HashSet<CarModel>();
     }
 }
