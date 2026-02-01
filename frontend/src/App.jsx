@@ -27,60 +27,39 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
+import AccessDenied from './components/common/AccessDenied.jsx';
 
 import { authApi } from './services/authApi';
+import { useAuth } from './context/AuthContext';
 
-const PrivateRoute = ({ children }) => {
-  const loggedIn = localStorage.getItem('LoggedIn');
+const PrivateRoute = ({ children, access }) => {
+  const { loggedIn, accesses } = useAuth();
+
   if (!loggedIn) {
     return <Navigate to="/login" />;
   }
+
   const hasWorkshop = localStorage.getItem('HasWorkshop');
   if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
     return <Navigate to="/workshop-details-initial" />;
   }
+
+  if (access) {
+    const storedAccesses = localStorage.getItem('accesses');
+    const accesses = storedAccesses ? JSON.parse(storedAccesses) : [];
+    if (!accesses.includes(access)) {
+      return <AccessDenied />;
+    }
+  }
+
   return children;
 };
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-  const [accesses, setAccesses] = useState([]);
+  const { accesses, loading } = useAuth();
 
   useEffect(() => {
-    const initAuth = async () => {
-      const loggedIn = localStorage.getItem('LoggedIn');
-      const storedAccesses = localStorage.getItem('accesses');
-
-      if (loggedIn) {
-        if (storedAccesses) {
-          try {
-            setAccesses(JSON.parse(storedAccesses));
-          } catch (e) {
-            console.error("Failed to parse stored accesses", e);
-          }
-        }
-        setHydrated(true);
-      } else {
-        try {
-          const data = await authApi.refreshToken();
-          console.log(data);
-          if (data && data.success) {
-            localStorage.setItem('LoggedIn', 'true');
-            if (data.accesses) {
-              setAccesses(data.accesses);
-            }
-          }
-        } catch (e) {
-          console.log(e);
-        } finally {
-          setHydrated(true);
-        }
-      }
-    };
-
-    initAuth();
-
     const handleResize = () => {
       const isDesktop = window.innerWidth > 1000;
       if (isDesktop) {
@@ -94,12 +73,12 @@ function App() {
     };
   }, []);
 
-  if (!hydrated) {
+  if (loading) {
     return null;
   }
 
   const routes = [
-    { path: '/', element: accesses.includes('Admin Dashboard') ? <Navigate to="/admin/dashboard" /> : <Dashboard />, children: [] },
+    { path: '/', element: <Dashboard />, children: [] },
     {
       path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderPage /> },
@@ -141,18 +120,30 @@ function App() {
           <Route path="/login" element={<LogInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
 
+          <Route path="/access-denied" element={
+            <PrivateRoute>
+              <LayoutWithHeader
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen}
+                accesses={accesses}
+              >
+                <AccessDenied />
+              </LayoutWithHeader>
+            </PrivateRoute>
+          } />
+
           <Route path="/workshop-details-initial" element={<PrivateRoute>
             <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
             <WorkshopDetailsInitial />
           </PrivateRoute>} />
 
-          {routes.filter(r => !r.access || accesses.includes(r.access)).map((route, i) => (
+          {routes.map((route, i) => (
             <>
               <Route
                 key={route.path}
                 path={route.path}
                 element={
-                  <PrivateRoute>
+                  <PrivateRoute access={route.access}>
                     <LayoutWithHeader
                       sidebarOpen={sidebarOpen}
                       setSidebarOpen={setSidebarOpen}
@@ -168,7 +159,7 @@ function App() {
                   key={route.path + childRoute.path}
                   path={route.path + childRoute.path}
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute access={route.access}>
                       <LayoutWithHeader
                         sidebarOpen={sidebarOpen}
                         setSidebarOpen={setSidebarOpen}

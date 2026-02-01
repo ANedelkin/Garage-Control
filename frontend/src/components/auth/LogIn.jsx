@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthTemplate from './AuthTemplate.jsx';
+import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../services/authApi.js';
 
 const LogInPage = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -15,6 +17,10 @@ const LogInPage = () => {
 
         try {
             const data = await authApi.login(formData.email, formData.password);
+
+            // Update AuthContext
+            login(data);
+
             if (data.accesses && data.accesses.includes('Admin Dashboard')) {
                 navigate('/admin/dashboard');
             } else {

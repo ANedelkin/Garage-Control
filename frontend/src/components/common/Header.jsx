@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../../services/authApi.js';
+import { useAuth } from '../../context/AuthContext';
 
 import '../../assets/css/common/controls.css';
 import '../../assets/css/header.css';
@@ -9,16 +9,12 @@ const Header = ({ onToggleSidebar }) => {
   const [services] = useState(["Main Street Garage", "Downtown Service", "AutoPro - East"]);
   const [selectedService, setSelectedService] = useState(services[0]);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     console.log('Logout clicked');
-    try {
-      await authApi.logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      navigate('/login');
-    }
+    await logout();
+    navigate('/login');
   };
 
   return (
