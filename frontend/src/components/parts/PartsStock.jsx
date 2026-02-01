@@ -53,6 +53,10 @@ const PartsStock = () => {
     const fetchFolderContent = async (folderId) => {
         try {
             const data = await partApi.getFolderContent(folderId);
+            // Sort alphabetically
+            if (data.subFolders) data.subFolders.sort((a, b) => a.name.localeCompare(b.name));
+            if (data.parts) data.parts.sort((a, b) => a.name.localeCompare(b.name));
+
             if (!folderId) {
                 setRootFolders(data.subFolders);
                 setRootParts(data.parts);

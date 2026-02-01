@@ -8,6 +8,8 @@
     height: 100%;
     max-height: 1000px;
     display: flex;
+    overflow: hidden;
+    /* Prevent tile overflow */
 }
 
 .parts-stock .form-left {
@@ -16,12 +18,52 @@
     max-width: 450px;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    /* Ensure full height */
 }
 
 .parts-stock .form-right {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    /* Ensure full height */
+    overflow: hidden;
+    /* Prevent overflow */
+}
+
+.list-container {
+    overflow: hidden;
+    /* Hide overflow on container */
+    display: flex;
+    flex-direction: column;
+}
+
+.parts-tree {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    /* Container hidden overflow */
+}
+
+.parts-tree .section-header-small {
+    flex-shrink: 0;
+    /* Header stays fixed size */
+    padding-bottom: 10px;
+    background: var(--bg-primary);
+    /* Ensure background is opaque */
+    z-index: 1;
+}
+
+/* Target the PartsTree Component wrapper div */
+.parts-tree>div:last-child {
+    overflow-y: auto;
+    /* Scrollable content */
+    flex-grow: 1;
+    /* Custom Scrollbar for better look */
+    scrollbar-width: thin;
+    padding-right: 5px;
 }
 
 /* .parts-stock .vertical-divider {
