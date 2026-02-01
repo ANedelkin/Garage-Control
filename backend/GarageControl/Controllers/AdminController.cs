@@ -44,5 +44,12 @@ namespace GarageControl.Controllers
             var result = await _adminService.ToggleWorkshopBlockAsync(workshopId);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var stats = await _adminService.GetDashboardStatsAsync();
+            return Ok(stats);
+        }
     }
 }

@@ -140,6 +140,66 @@ namespace GarageControl.Core.Services
 
             return new MethodResponse(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");
         }
+
+        public async Task<DashboardStatsVM> GetDashboardStatsAsync()
+        {
+            var totalUsers = await _userManager.Users.CountAsync();
+            var totalWorkshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().CountAsync();
+            var totalOrders = await _repo.GetAllAsNoTrackingAsync<Order>().CountAsync();
+
+            var recentUsersList = await _userManager.Users
+                .OrderByDescending(u => u.Id) // Assuming Id is vaguely time ordered or just taking any
+                .Take(5)
+                .ToListAsync();
+
+            var recentUsersVM = new List<UserAdminVM>();
+            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().ToListAsync();
+            var workers = await _repo.GetAllAsNoTrackingAsync<Worker>().Include(w => w.Workshop).ToListAsync();
+
+            foreach (var user in recentUsersList)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                string role = "Worker";
+                string? workshopName = null;
+
+                if (roles.Contains("Admin"))
+                {
+                    role = "Admin";
+                }
+                else
+                {
+                    var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
+                    if (worker != null)
+                    {
+                        role = "Worker";
+                        workshopName = worker.Workshop?.Name;
+                    }
+                    else
+                    {
+                        role = "Owner";
+                        var ownerWorkshop = workshops.FirstOrDefault(w => w.BossId == user.Id);
+                        workshopName = ownerWorkshop?.Name;
+                    }
+                }
+
+                recentUsersVM.Add(new UserAdminVM
+                {
+                    Id = user.Id,
+                    Email = user.Email ?? "",
+                    IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
+                    Role = role,
+                    WorkshopName = workshopName
+                });
+            }
+
+            return new DashboardStatsVM
+            {
+                TotalUsers = totalUsers,
+                TotalWorkshops = totalWorkshops,
+                TotalOrders = totalOrders,
+                RecentUsers = recentUsersVM
+            };
+        }
     }
 }
 

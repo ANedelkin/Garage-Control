@@ -19,6 +19,11 @@ export const adminApi = {
     toggleWorkshopBlock: async (workshopId) => {
         const response = await request('POST', `admin/workshops/${workshopId}/toggle-block`);
         return response.json();
+    },
+
+    getStats: async () => {
+        const response = await request('GET', 'admin/stats');
+        return response.json();
     }
 };
 
