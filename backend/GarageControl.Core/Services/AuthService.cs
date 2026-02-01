@@ -285,11 +285,16 @@ namespace GarageControl.Core.Services
             // Check if Worker
             var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
                 .Include(w => w.Accesses)
+                .Include(w => w.Activities)
                 .FirstOrDefaultAsync(w => w.UserId == userId);
 
             if (worker != null)
             {
                 var workerAccesses = worker.Accesses.Select(a => a.Name).ToList();
+                if (worker.Activities.Any())
+                {
+                    workerAccesses.Add("To Do");
+                }
                 return workerAccesses;
             }
 

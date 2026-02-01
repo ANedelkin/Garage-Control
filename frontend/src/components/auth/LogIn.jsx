@@ -21,7 +21,9 @@ const LogInPage = () => {
             // Update AuthContext
             login(data);
 
-            if (data.accesses && data.accesses.includes('Admin Dashboard')) {
+            if (data.accesses && data.accesses.includes('To Do')) {
+                navigate('/todo');
+            } else if (data.accesses && data.accesses.includes('Admin Dashboard')) {
                 navigate('/admin/dashboard');
             } else {
                 navigate('/');

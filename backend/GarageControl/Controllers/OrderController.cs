@@ -77,5 +77,21 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("my-jobs")]
+        public async Task<IActionResult> GetMyJobs()
+        {
+            try
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+                var jobs = await _orderService.GetMyJobsAsync(userId, GetWorkshopId());
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

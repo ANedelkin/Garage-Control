@@ -12,6 +12,9 @@ const orderApi = {
     },
     updateOrder: async (id, data) => {
         return (await request('PUT', `order/${id}`, data)).json();
+    },
+    getMyJobs: async () => {
+        return (await request('GET', 'order/my-jobs')).json();
     }
 };
 

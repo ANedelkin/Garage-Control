@@ -1,4 +1,5 @@
 using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace GarageControl.Core.Services
         Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model);
         Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
         Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model);
+        Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId);
     }
 
     public class OrderService : IOrderService
@@ -266,6 +268,34 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
             return new { orderId = order.Id, message = "Order updated successfully" };
+        }
+        public async Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId)
+        {
+            return await _context.Jobs
+                .AsNoTracking()
+                .Include(j => j.JobType)
+                .Include(j => j.Order)
+                    .ThenInclude(o => o.Car)
+                        .ThenInclude(c => c.Owner)
+                .Include(j => j.Order.Car.Model.CarMake)
+                .Include(j => j.Order.Car.Model)
+                .Include(j => j.Worker)
+                .Where(j => j.Worker.UserId == userId && j.Order.Car.Owner.WorkshopId == workshopId)
+                .OrderBy(j => j.StartTime)
+                .Select(j => new JobToDoViewModel
+                {
+                    Id = j.Id,
+                    TypeName = j.JobType.Name,
+                    Description = j.Description ?? "",
+                    Status = j.Status,
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
+                    OrderId = j.OrderId,
+                    CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
+                    CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                    ClientName = j.Order.Car.Owner.Name
+                })
+                .ToListAsync();
         }
     }
 }

@@ -19,6 +19,7 @@ import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
 import NewOrderPage from './components/orders/EditOrder.jsx';
+import ToDoPage from './components/todo/ToDoPage.jsx';
 
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminUsers from './components/admin/AdminUsers';
@@ -45,8 +46,6 @@ const PrivateRoute = ({ children, access }) => {
   }
 
   if (access) {
-    const storedAccesses = localStorage.getItem('accesses');
-    const accesses = storedAccesses ? JSON.parse(storedAccesses) : [];
     if (!accesses.includes(access)) {
       return <AccessDenied />;
     }
@@ -79,6 +78,7 @@ function App() {
 
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
+    { path: '/todo', element: <ToDoPage />, access: 'To Do', children: [] },
     {
       path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderPage /> },
