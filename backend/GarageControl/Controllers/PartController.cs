@@ -150,5 +150,32 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPut("move/{id}")]
+        public async Task<IActionResult> MovePart(string id, [FromBody] string? newParentId)
+        {
+            try
+            {
+                await _partService.MovePartAsync(GetWorkshopId(), id, newParentId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("folder/move/{id}")]
+        public async Task<IActionResult> MoveFolder(string id, [FromBody] string? newParentId)
+        {
+            try
+            {
+                await _partService.MoveFolderAsync(GetWorkshopId(), id, newParentId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

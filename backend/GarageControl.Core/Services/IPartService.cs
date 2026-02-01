@@ -13,5 +13,7 @@ namespace GarageControl.Core.Services
         Task<PartsFolderViewModel> CreateFolderAsync(string garageId, CreateFolderViewModel model);
         Task RenameFolderAsync(string garageId, string folderId, string newName);
         Task DeleteFolderAsync(string garageId, string folderId);
+        Task MovePartAsync(string garageId, string partId, string? newParentId);
+        Task MoveFolderAsync(string garageId, string folderId, string? newParentId);
     }
 }

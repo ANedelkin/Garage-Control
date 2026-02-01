@@ -14,7 +14,9 @@ const ItemsTree = ({
     actions,
     labels,
     renderIcon,
-    renderActions
+    renderActions,
+    allowDrag,
+    parentId
 }) => {
     return (
         <>
@@ -34,6 +36,8 @@ const ItemsTree = ({
                     labels={labels}
                     renderIcon={renderIcon}
                     renderActions={renderActions}
+                    allowDrag={allowDrag}
+                    parentId={parentId}
                 />
             ))}
             {items && items.map(item => (
@@ -52,6 +56,8 @@ const ItemsTree = ({
                     labels={labels}
                     renderIcon={renderIcon}
                     renderActions={renderActions}
+                    allowDrag={allowDrag}
+                    parentId={parentId}
                 />
             ))}
         </>

@@ -15,7 +15,9 @@ const ItemsTreeNode = ({
     actions = {},
     labels = {},
     renderIcon,
-    renderActions
+    renderActions,
+    allowDrag,
+    parentId
 }) => {
     const [expanded, setExpanded] = useState(false);
     const [children, setChildren] = useState({ groups: [], items: [] });
@@ -26,10 +28,8 @@ const ItemsTreeNode = ({
     const menuRef = useRef(null);
 
     useEffect(() => {
-        if (type === 'group' && selectedPath.includes(node.id) && !expanded) {
-            handleExpand({ stopPropagation: () => { } });
-        }
-    }, [selectedPath]);
+        // Auto-expand logic removed to respect user preference
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -124,12 +124,60 @@ const ItemsTreeNode = ({
         return <i className="fa-solid fa-gear"></i>;
     };
 
+    // Drag and Drop Handlers
+    const handleDragStart = (e) => {
+        if (!allowDrag) return;
+        e.dataTransfer.setData("application/json", JSON.stringify({ id: node.id, type: type }));
+        e.stopPropagation();
+    };
+
+    const handleDragOver = (e) => {
+        if (!allowDrag) return;
+        e.preventDefault(); // Always allow drop (we handle logic in Drop)
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e) => {
+        if (!allowDrag) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+            const data = JSON.parse(e.dataTransfer.getData("application/json"));
+            if (data.id === node.id) return; // Cannot drop on itself
+
+            // Determine target: self (if group) or parent (if item)
+            let targetId = null;
+            if (type === 'group') {
+                targetId = node.id;
+            } else {
+                targetId = parentId || null;
+            }
+
+            if (actions.onMoveItem) {
+                actions.onMoveItem(data, { id: targetId }, () => {
+                    // If target was this group, refresh it
+                    if (type === 'group') {
+                        setLoaded(false);
+                        refreshNodeContent().then(() => setLoaded(true));
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Drop error", err);
+        }
+    };
+
     return (
         <>
             <div
                 className={`list-item ${isActive ? 'active' : ''} ${node.className || ''}`}
                 onClick={handleExpand}
                 onContextMenu={handleContextMenu}
+                draggable={allowDrag}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
             >
                 <div className="item-label">
                     {getIcon()}
@@ -168,6 +216,8 @@ const ItemsTreeNode = ({
                         labels={labels}
                         renderIcon={renderIcon}
                         renderActions={renderActions}
+                        allowDrag={allowDrag}
+                        parentId={node.id}
                     />
                 </div>
             )}

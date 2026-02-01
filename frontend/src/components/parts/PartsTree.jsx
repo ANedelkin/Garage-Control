@@ -37,6 +37,22 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
         onAddItem: async (node, onSuccess) => {
             const newPart = await handleAddPart(node.id, onSuccess);
             return newPart;
+        },
+        onMoveItem: async (draggedItem, targetFolder, onSuccess) => {
+            // draggedItem: { id, type }
+            // targetFolder: node (the folder we dropped onto)
+            try {
+                if (draggedItem.type === 'item') {
+                    await partApi.movePart(draggedItem.id, targetFolder.id);
+                } else if (draggedItem.type === 'group') {
+                    await partApi.moveFolder(draggedItem.id, targetFolder.id);
+                }
+                onSuccess(); // Refreshes the target folder
+                onRefresh(); // Refreshes the whole tree (or source folder ideally, but full refresh is safer for now)
+            } catch (error) {
+                alert("Failed to move item");
+                console.error(error);
+            }
         }
     };
 
@@ -50,19 +66,34 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
     // Defaults in ItemsTreeNode match this.
 
     return (
-        <ItemsTree
-            groups={folders}
-            items={parts}
-            onSelectItem={onSelectPart}
-            fetchChildren={fetchContent}
-            onRefresh={onRefresh}
-            refreshTrigger={refreshTrigger}
-            selectedItemId={selectedPartId}
-            selectedPath={selectedPath}
-            currentPath={currentPath}
-            actions={actions}
-            labels={labels}
-        />
+        <div
+            style={{ minHeight: '100px', height: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}
+            onDragOver={(e) => { e.preventDefault(); }}
+            onDrop={(e) => {
+                e.preventDefault();
+                try {
+                    const data = JSON.parse(e.dataTransfer.getData("application/json"));
+                    // Dropped on empty space -> Move to root
+                    actions.onMoveItem(data, { id: null }, () => { });
+                } catch (err) { console.error(err); }
+            }}
+        >
+            <ItemsTree
+                groups={folders}
+                items={parts}
+                onSelectItem={onSelectPart}
+                fetchChildren={fetchContent}
+                onRefresh={onRefresh}
+                refreshTrigger={refreshTrigger}
+                selectedItemId={selectedPartId}
+                selectedPath={selectedPath}
+                currentPath={currentPath}
+                actions={actions}
+                labels={labels}
+                allowDrag={true} // Enable Drag and Drop
+                parentId={null}
+            />
+        </div>
     );
 };
 

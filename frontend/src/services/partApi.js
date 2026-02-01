@@ -27,6 +27,12 @@ const partApi = {
     },
     deleteFolder: async (id) => {
         await request('DELETE', `part/folder/delete/${id}`);
+    },
+    movePart: async (id, newParentId) => {
+        await request('PUT', `part/move/${id}`, newParentId);
+    },
+    moveFolder: async (id, newParentId) => {
+        await request('PUT', `part/folder/move/${id}`, newParentId);
     }
 };
 
