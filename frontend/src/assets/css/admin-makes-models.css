@@ -1,0 +1,13 @@
+.admin-makes-models .tile {
+    width: fit-content;
+    height: 700px;
+    display: flex;
+}
+
+.admin-makes-models .form-left,
+.admin-makes-models .form-right {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 400px;
+}

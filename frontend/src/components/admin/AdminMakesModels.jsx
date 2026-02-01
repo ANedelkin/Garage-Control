@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ItemsTree from '../common/tree/ItemsTree';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
-import '../../assets/css/makes-models.css';
+import '../../assets/css/admin-makes-models.css';
 
 const AdminMakesModels = () => {
     const [existing, setExisting] = useState([]);
@@ -190,40 +190,36 @@ const AdminMakesModels = () => {
     };
 
     return (
-        <div className="makes-models page-content">
-            {/* Mobile Tabs */}
-            <div className="tab-header mobile-only" style={{ display: 'none' }}> {/* Add media query logic or generic class if available */}
-                <button className={`btn ${activeTab === 'suggested' ? 'active' : ''}`} onClick={() => setActiveTab('suggested')}>Suggested</button>
-                <button className={`btn ${activeTab === 'existing' ? 'active' : ''}`} onClick={() => setActiveTab('existing')}>Existing</button>
-            </div>
+        <div className="main admin-makes-models container">
 
             <div className="tile">
-                <div className={`form-left pane ${activeTab === 'suggested' ? 'active' : ''}`}>
-                    <div className="pane-header">
+                <div className="horizontal grow"></div>
+                <div className={`form-left`}>
+                    <div className="section-header">
                         <h3>Suggested</h3>
                         <button className="btn icon-btn" onClick={loadData} title="Refresh">
                             <i className="fa-solid fa-rotate-right"></i>
                         </button>
                     </div>
-                    <div className="tree-container">
+                    <div className="list-container grow">
                         <ItemsTree
                             groups={suggestions}
                             fetchChildren={fetchSuggestedModels} // Enable expansion
                             actions={{}}
                             renderActions={renderSuggestionActions}
                         />
-                        {suggestions.length === 0 && <div className="text-muted p-2">No suggestions</div>}
+                        {suggestions.length === 0 && <div className="list-empty">No suggestions</div>}
                     </div>
                 </div>
 
-                <div className={`form-right pane ${activeTab === 'existing' ? 'active' : ''}`}>
-                    <div className="pane-header">
+                <div className="vertical-divider"></div>
+
+                <div className={`form-right`}>
+                    <div className="section-header">
                         <h3>Existing</h3>
-                        <button className="btn btn-primary" onClick={handleAddMake}>
-                            <i className="fa-solid fa-plus"></i> Add Make
-                        </button>
+                        <button className="btn" onClick={handleAddMake}>+ Add Make</button>
                     </div>
-                    <div className="tree-container">
+                    <div className="list-container grow">
                         <ItemsTree
                             groups={existing}
                             fetchChildren={fetchModels}

@@ -32,7 +32,7 @@ const SignUpPage = () => {
     return (
         <AuthTemplate
             title="Create Account"
-            handlers={{ handleSubmit, handleGoogle, handleMicrosoft }}
+            handlers={{ handleSubmit, handleMicrosoft }}
         >
             {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</p>}
             <p className="lnk">Already have an account? <Link to="/">Log In!</Link></p>
