@@ -26,6 +26,7 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
     { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
     { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
+    { path: '/activity-log', icon: 'fa-clock-rotate-left', label: 'Activity Log', access: 'Activity Log' },
     { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', access: 'Admin Dashboard' },
     { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', access: 'Admin Makes and Models' },
     { path: '/admin/users', icon: 'fa-users', label: 'Users', access: 'Admin Users' },

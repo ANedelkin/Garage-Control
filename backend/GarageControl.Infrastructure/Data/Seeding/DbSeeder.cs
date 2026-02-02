@@ -25,6 +25,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 "Service Details",
                 "Makes and Models",
                 "Cars",
+                "Activity Log",
             };
 
             var missingAccesses = accesses

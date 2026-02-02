@@ -57,10 +57,10 @@ namespace GarageControl.Controllers
 
             if (string.IsNullOrEmpty(model.Id))
             {
-                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                 var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                  try
                  {
-                    await _workerService.Create(model, userId);
+                    await _workerService.Create(model, actingUserId!);
                     return Ok(new { message = "Worker created successfully" });
                  }
                  catch (Exception ex)
@@ -71,7 +71,8 @@ namespace GarageControl.Controllers
 
             try
             {
-                await _workerService.Edit(model);
+                var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                await _workerService.Edit(model, actingUserId!);
                 return Ok(new { message = "Worker updated successfully" });
             }
             catch (Exception ex)
@@ -90,7 +91,8 @@ namespace GarageControl.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _workerService.Delete(id);
+            var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _workerService.Delete(id, actingUserId!);
              return Ok(new { message = "Worker deleted successfully" });
         }
     }

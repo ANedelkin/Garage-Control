@@ -6,14 +6,14 @@ namespace GarageControl.Core.Services
     {
         Task<FolderContentViewModel> GetFolderContentAsync(string garageId, string? folderId);
         Task<List<PartViewModel>> GetAllPartsAsync(string garageId);
-        Task<PartViewModel> CreatePartAsync(string garageId, CreatePartViewModel model);
+        Task<PartViewModel> CreatePartAsync(string userId, string garageId, CreatePartViewModel model);
         Task<PartWithPathViewModel?> GetPartAsync(string garageId, string partId);
-        Task EditPartAsync(string garageId, UpdatePartViewModel model);
-        Task DeletePartAsync(string garageId, string partId);
-        Task<PartsFolderViewModel> CreateFolderAsync(string garageId, CreateFolderViewModel model);
-        Task RenameFolderAsync(string garageId, string folderId, string newName);
-        Task DeleteFolderAsync(string garageId, string folderId);
-        Task MovePartAsync(string garageId, string partId, string? newParentId);
-        Task MoveFolderAsync(string garageId, string folderId, string? newParentId);
+        Task EditPartAsync(string userId, string garageId, UpdatePartViewModel model);
+        Task DeletePartAsync(string userId, string garageId, string partId);
+        Task<PartsFolderViewModel> CreateFolderAsync(string userId, string garageId, CreateFolderViewModel model);
+        Task RenameFolderAsync(string userId, string garageId, string folderId, string newName);
+        Task DeleteFolderAsync(string userId, string garageId, string folderId);
+        Task MovePartAsync(string userId, string garageId, string partId, string? newParentId);
+        Task MoveFolderAsync(string userId, string garageId, string folderId, string? newParentId);
     }
 }

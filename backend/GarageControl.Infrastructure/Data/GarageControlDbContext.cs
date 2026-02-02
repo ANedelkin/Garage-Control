@@ -104,5 +104,6 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<WorkerSchedule> WorkerSchedules { get; set; } = null!;
         public DbSet<WorkerLeave> WorkerLeaves { get; set; } = null!;
         public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<ActivityLog> ActivityLogs { get; set; } = null!;
     }
 }

@@ -8,10 +8,12 @@ namespace GarageControl.Core.Services
     public class PartService : IPartService
     {
         private readonly GarageControlDbContext _context;
+        private readonly IActivityLogService _activityLogService;
 
-        public PartService(GarageControlDbContext context)
+        public PartService(GarageControlDbContext context, IActivityLogService activityLogService)
         {
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         public async Task<FolderContentViewModel> GetFolderContentAsync(string workshopId, string? folderId)
@@ -94,7 +96,7 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        public async Task<PartViewModel> CreatePartAsync(string workshopId, CreatePartViewModel model)
+        public async Task<PartViewModel> CreatePartAsync(string userId, string workshopId, CreatePartViewModel model)
         {
             var part = new Part
             {
@@ -109,6 +111,14 @@ namespace GarageControl.Core.Services
 
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "created",
+                part.Id,
+                part.Name,
+                "Part");
 
             return new PartViewModel
             {
@@ -154,7 +164,7 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task EditPartAsync(string workshopId, UpdatePartViewModel model)
+        public async Task EditPartAsync(string userId, string workshopId, UpdatePartViewModel model)
         {
             var part = await _context.Parts
                 .FirstOrDefaultAsync(p => p.Id == model.Id && p.WorkshopId == workshopId);
@@ -168,21 +178,38 @@ namespace GarageControl.Core.Services
             part.MinimumQuantity = model.MinimumQuantity;
 
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "updated",
+                part.Id,
+                part.Name,
+                "Part");
         }
 
-        public async Task DeletePartAsync(string workshopId, string partId)
+        public async Task DeletePartAsync(string userId, string workshopId, string partId)
         {
             var part = await _context.Parts
                 .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
 
             if (part != null)
             {
+                string partName = part.Name;
                 _context.Parts.Remove(part);
                 await _context.SaveChangesAsync();
+
+                await _activityLogService.LogActionAsync(
+                    userId,
+                    workshopId,
+                    "deleted",
+                    null,
+                    partName,
+                    "Part");
             }
         }
 
-        public async Task<PartsFolderViewModel> CreateFolderAsync(string workshopId, CreateFolderViewModel model)
+        public async Task<PartsFolderViewModel> CreateFolderAsync(string userId, string workshopId, CreateFolderViewModel model)
         {
             var folder = new PartsFolder
             {
@@ -194,6 +221,14 @@ namespace GarageControl.Core.Services
             _context.PartsFolders.Add(folder);
             await _context.SaveChangesAsync();
 
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "created",
+                folder.Id,
+                folder.Name,
+                "group of parts");
+
             return new PartsFolderViewModel
             {
                 Id = folder.Id,
@@ -202,7 +237,7 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task RenameFolderAsync(string workshopId, string folderId, string newName)
+        public async Task RenameFolderAsync(string userId, string workshopId, string folderId, string newName)
         {
              var folder = await _context.PartsFolders
                 .FirstOrDefaultAsync(f => f.Id == folderId && f.WorkshopId == workshopId);
@@ -211,9 +246,17 @@ namespace GarageControl.Core.Services
 
             folder.Name = newName;
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                $"renamed to '{newName}'",
+                folder.Id,
+                folder.Name,
+                "group of parts");
         }
 
-        public async Task DeleteFolderAsync(string workshopId, string folderId)
+        public async Task DeleteFolderAsync(string userId, string workshopId, string folderId)
         {
             // Recursive delete
             var folder = await _context.PartsFolders
@@ -229,8 +272,17 @@ namespace GarageControl.Core.Services
             // But waiting, deleting a folder should delete its content.
             // Let's implement a recursive helper or use loading.
             
+            string folderName = folder.Name;
             await DeleteFolderRecursive(folder);
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "deleted",
+                null,
+                folderName,
+                "group of parts");
         }
 
         private async Task DeleteFolderRecursive(PartsFolder folder)
@@ -265,7 +317,7 @@ namespace GarageControl.Core.Services
             _context.PartsFolders.Remove(folder);
         }
 
-        public async Task MovePartAsync(string workshopId, string partId, string? newParentId)
+        public async Task MovePartAsync(string userId, string workshopId, string partId, string? newParentId)
         {
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) throw new ArgumentException("Part not found");
@@ -278,9 +330,17 @@ namespace GarageControl.Core.Services
 
             part.ParentId = newParentId;
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "moved",
+                part.Id,
+                part.Name,
+                "Part");
         }
 
-        public async Task MoveFolderAsync(string workshopId, string folderId, string? newParentId)
+        public async Task MoveFolderAsync(string userId, string workshopId, string folderId, string? newParentId)
         {
             var folder = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == folderId && f.WorkshopId == workshopId);
             if (folder == null) throw new ArgumentException("Folder not found");
@@ -291,14 +351,18 @@ namespace GarageControl.Core.Services
             {
                 var parent = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == newParentId && f.WorkshopId == workshopId);
                 if (parent == null) throw new ArgumentException("Target folder not found");
-                
-                // Circular dependency check (simple: parent cannot be child of current)
-                // This would require fetching all parents of target. 
-                // For simplicity, we assume robust UI or basic check.
             }
 
             folder.ParentId = newParentId;
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "moved",
+                folder.Id,
+                folder.Name,
+                "group of parts");
         }
     }
 }

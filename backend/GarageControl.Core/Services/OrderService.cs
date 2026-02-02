@@ -10,22 +10,24 @@ namespace GarageControl.Core.Services
     public interface IOrderService
     {
         Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null);
-        Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model);
+        Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderViewModel model);
         Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
-        Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model);
+        Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model);
         Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId);
         Task<JobDetailsViewModel?> GetJobByIdAsync(string jobId, string workshopId);
-        Task CreateJobAsync(string orderId, string workshopId, CreateJobViewModel model);
-        Task UpdateJobAsync(string jobId, string workshopId, UpdateJobViewModel model);
+        Task CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model);
+        Task UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model);
     }
 
     public class OrderService : IOrderService
     {
         private readonly GarageControlDbContext _context;
+        private readonly IActivityLogService _activityLogService;
 
-        public OrderService(GarageControlDbContext context)
+        public OrderService(GarageControlDbContext context, IActivityLogService activityLogService)
         {
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null)
@@ -88,10 +90,12 @@ namespace GarageControl.Core.Services
             }).ToList();
         }
 
-        public async Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model)
+        public async Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderViewModel model)
         {
             var car = await _context.Cars
                 .Include(c => c.Owner)
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.CarMake)
                 .FirstOrDefaultAsync(c => c.Id == model.CarId && c.Owner.WorkshopId == workshopId);
 
             if (car == null)
@@ -147,6 +151,14 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
             
+            await _activityLogService.LogActionAsync(
+                userId, 
+                workshopId, 
+                "created", 
+                order.Id, 
+                $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})", 
+                "Order");
+
             return new { orderId = order.Id, message = "Order created successfully" };
         }
 
@@ -186,11 +198,12 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model)
+        public async Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model)
         {
             var order = await _context.Orders
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                .Include(o => o.Car.Model.CarMake)
                 .Include(o => o.Jobs)
                     .ThenInclude(j => j.JobParts)
                         .ThenInclude(jp => jp.Part)
@@ -292,6 +305,16 @@ namespace GarageControl.Core.Services
             }
 
             await _context.SaveChangesAsync();
+
+            string actionText = order.IsDone ? "completed" : "updated details of";
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                actionText,
+                order.Id,
+                $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
+                "Order");
+
             return new { orderId = order.Id, message = "Order updated successfully" };
         }
 
@@ -349,14 +372,18 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task CreateJobAsync(string orderId, string workshopId, CreateJobViewModel model)
+        public async Task CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model)
         {
             var order = await _context.Orders
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                .Include(o => o.Car.Model.CarMake)
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null) throw new Exception("Order not found or access denied.");
+
+            var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
+            string jobTypeName = jobType?.Name ?? "Job";
 
             var job = new Job
             {
@@ -394,19 +421,31 @@ namespace GarageControl.Core.Services
             }
 
             await _context.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                $"added job '{jobTypeName}' to",
+                order.Id,
+                $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
+                "Order");
         }
 
-        public async Task UpdateJobAsync(string jobId, string workshopId, UpdateJobViewModel model)
+        public async Task UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model)
         {
             var job = await _context.Jobs
                 .Include(j => j.Order)
                     .ThenInclude(o => o.Car)
                         .ThenInclude(c => c.Owner)
+                .Include(j => j.Order.Car.Model.CarMake)
                 .Include(j => j.JobParts)
                     .ThenInclude(jp => jp.Part)
                 .FirstOrDefaultAsync(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId);
 
             if (job == null) throw new Exception("Job not found or access denied.");
+
+            var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
+            string jobTypeName = jobType?.Name ?? "Job";
 
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
@@ -462,6 +501,19 @@ namespace GarageControl.Core.Services
             }
 
             await _context.SaveChangesAsync();
+
+            string statusName = model.Status.ToString();
+            string actionText = model.Status == Shared.Enums.JobStatus.Done 
+                ? $"finished job '{jobTypeName}' for" 
+                : $"changed status of job '{jobTypeName}' to {statusName} for";
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                actionText,
+                job.OrderId,
+                $"{job.Order.Car.Model.CarMake.Name} {job.Order.Car.Model.Name} ({job.Order.Car.RegistrationNumber})",
+                "Order");
         }
     }
 }

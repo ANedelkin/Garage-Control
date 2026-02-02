@@ -21,6 +21,7 @@ import OrdersPage from './components/orders/OrdersPage.jsx';
 import NewOrderSetup from './components/orders/NewOrderSetup.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
+import ActivityLog from './components/activityLog/ActivityLog.jsx';
 
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminUsers from './components/admin/AdminUsers';
@@ -110,6 +111,7 @@ function App() {
     { path: '/workshop-details', element: <WorkshopDetails />, children: [], access: 'Workshop Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
+    { path: '/activity-log', element: <ActivityLog />, children: [], access: 'Activity Log' },
     { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin Dashboard' },
     { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin Makes and Models' },
     { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin Users' },

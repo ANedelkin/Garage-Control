@@ -13,12 +13,14 @@ namespace GarageControl.Core.Services
         private readonly IRepository _repo;
         private readonly UserManager<User> _userManager;
         private readonly IWorkshopService _workshopService;
+        private readonly IActivityLogService _activityLogService;
         
-        public WorkerService(IRepository repo, UserManager<User> userManager, IWorkshopService workshopService)
+        public WorkerService(IRepository repo, UserManager<User> userManager, IWorkshopService workshopService, IActivityLogService activityLogService)
         {
             _repo = repo;
             _userManager = userManager;
             _workshopService = workshopService;
+            _activityLogService = activityLogService;
         }
 
         public async Task<IEnumerable<AccessVM>> AllAccesses()
@@ -108,10 +110,21 @@ namespace GarageControl.Core.Services
 
             // 3. Add Relations (Roles, Schedules, Leaves, JobTypes)
             await UpdateWorkerRelations(worker.Id, model);
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "hired",
+                worker.Id,
+                worker.Name,
+                "Worker");
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string id, string userId)
         {
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+
             var worker = await _repo.GetAllAttachedAsync<Worker>()
                 .Where(w => w.Id == id)
                 .Include(w => w.Schedules)
@@ -119,6 +132,8 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
 
             if (worker == null) return;
+
+            string workerName = worker.Name;
 
             // 1. Delete Schedules
             if (worker.Schedules != null && worker.Schedules.Any())
@@ -160,6 +175,14 @@ namespace GarageControl.Core.Services
                     await _userManager.DeleteAsync(user);
                 }
             }
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "fired",
+                null,
+                workerName,
+                "Worker");
         }
 
         public async Task<WorkerVM?> Details(string id)
@@ -216,8 +239,11 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task Edit(WorkerVM model)
+        public async Task Edit(WorkerVM model, string userId)
         {
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+
             var worker = await _repo.GetByIdAsync<Worker>(model.Id!);
             if (worker == null) return;
             
@@ -255,6 +281,14 @@ namespace GarageControl.Core.Services
             await _repo.SaveChangesAsync();
 
             await UpdateWorkerRelations(worker.Id, model);
+
+            await _activityLogService.LogActionAsync(
+                userId,
+                workshopId,
+                "updated",
+                worker.Id,
+                worker.Name,
+                "Worker");
         }
         
         private async Task UpdateWorkerRelations(string workerId, WorkerVM model)

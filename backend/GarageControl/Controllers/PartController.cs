@@ -24,6 +24,11 @@ namespace GarageControl.Controllers
             return User.FindFirst("WorkshopId")?.Value!;
         }
 
+        private string GetUserId()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+        }
+
         [HttpGet("folder-content")]
         public async Task<IActionResult> GetFolderContent([FromQuery] string? folderId)
         {
@@ -72,7 +77,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var part = await _partService.CreatePartAsync(GetWorkshopId(), model);
+                var part = await _partService.CreatePartAsync(GetUserId(), GetWorkshopId(), model);
                 return Ok(part);
             }
             catch (Exception ex)
@@ -86,7 +91,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.EditPartAsync(GetWorkshopId(), model);
+                await _partService.EditPartAsync(GetUserId(), GetWorkshopId(), model);
                 return Ok();
             }
             catch (Exception ex)
@@ -100,7 +105,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.DeletePartAsync(GetWorkshopId(), id);
+                await _partService.DeletePartAsync(GetUserId(), GetWorkshopId(), id);
                 return Ok();
             }
             catch (Exception ex)
@@ -114,7 +119,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var folder = await _partService.CreateFolderAsync(GetWorkshopId(), model);
+                var folder = await _partService.CreateFolderAsync(GetUserId(), GetWorkshopId(), model);
                 return Ok(folder);
             }
             catch (Exception ex)
@@ -128,7 +133,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.RenameFolderAsync(GetWorkshopId(), id, newName);
+                await _partService.RenameFolderAsync(GetUserId(), GetWorkshopId(), id, newName);
                 return Ok();
             }
             catch (Exception ex)
@@ -142,7 +147,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.DeleteFolderAsync(GetWorkshopId(), id);
+                await _partService.DeleteFolderAsync(GetUserId(), GetWorkshopId(), id);
                 return Ok();
             }
             catch (Exception ex)
@@ -155,7 +160,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.MovePartAsync(GetWorkshopId(), id, newParentId);
+                await _partService.MovePartAsync(GetUserId(), GetWorkshopId(), id, newParentId);
                 return Ok();
             }
             catch (Exception ex)
@@ -169,7 +174,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _partService.MoveFolderAsync(GetWorkshopId(), id, newParentId);
+                await _partService.MoveFolderAsync(GetUserId(), GetWorkshopId(), id, newParentId);
                 return Ok();
             }
             catch (Exception ex)

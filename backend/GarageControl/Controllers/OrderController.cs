@@ -22,6 +22,11 @@ namespace GarageControl.Controllers
             return User.FindFirst("WorkshopId")?.Value!;
         }
 
+        private string GetUserId()
+        {
+            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
@@ -69,7 +74,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var order = await _orderService.CreateOrderAsync(GetWorkshopId(), model);
+                var order = await _orderService.CreateOrderAsync(GetUserId(), GetWorkshopId(), model);
                 return Ok(order);
             }
             catch (Exception ex)
@@ -97,7 +102,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.UpdateOrderAsync(id, GetWorkshopId(), model);
+                var result = await _orderService.UpdateOrderAsync(GetUserId(), id, GetWorkshopId(), model);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -142,7 +147,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _orderService.CreateJobAsync(id, GetWorkshopId(), model);
+                await _orderService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
                 return Ok(new { success = true });
             }
             catch (Exception ex)
@@ -156,7 +161,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _orderService.UpdateJobAsync(jobId, GetWorkshopId(), model);
+                await _orderService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
                 return Ok(new { success = true });
             }
             catch (Exception ex)
