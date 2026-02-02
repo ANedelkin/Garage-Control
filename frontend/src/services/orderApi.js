@@ -4,6 +4,12 @@ const orderApi = {
     getOrders: async () => {
         return (await request('GET', 'order')).json();
     },
+    getActiveOrders: async () => {
+        return (await request('GET', 'order/active')).json();
+    },
+    getCompletedOrders: async () => {
+        return (await request('GET', 'order/completed')).json();
+    },
     createOrder: async (data) => {
         return (await request('POST', 'order/create', data)).json();
     },

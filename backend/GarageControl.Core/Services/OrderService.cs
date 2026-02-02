@@ -9,7 +9,7 @@ namespace GarageControl.Core.Services
 {
     public interface IOrderService
     {
-        Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId);
+        Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null);
         Task<object> CreateOrderAsync(string workshopId, CreateOrderViewModel model);
         Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
         Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model);
@@ -28,11 +28,18 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId)
+        public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null)
         {
-            var rawData = await _context.Orders
+            var query = _context.Orders
                 .AsNoTracking()
-                .Where(o => o.Car.Owner.WorkshopId == workshopId)
+                .Where(o => o.Car.Owner.WorkshopId == workshopId);
+
+            if (isDone.HasValue)
+            {
+                query = query.Where(o => o.IsDone == isDone.Value);
+            }
+
+            var rawData = await query
                 .Select(o => new
                 {
                     o.Id,
@@ -197,6 +204,11 @@ namespace GarageControl.Core.Services
             order.CarId = model.CarId;
             order.Kilometers = model.Kilometers;
             order.IsDone = model.IsDone;
+
+            if (order.IsDone)
+            {
+                order.Car.Kilometers = order.Kilometers;
+            }
 
             var jobIdsInModel = model.Jobs.Where(j => j.Id != null).Select(j => j.Id).ToList();
             var jobsToRemove = order.Jobs.Where(j => !jobIdsInModel.Contains(j.Id)).ToList();

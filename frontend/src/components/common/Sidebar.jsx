@@ -18,6 +18,7 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/', icon: 'fa-house', label: 'Home', access: 'Dashboard' },
     { path: '/todo', icon: 'fa-clipboard-list', label: 'To Do', access: 'To Do' },
     { path: '/orders', icon: 'fa-screwdriver-wrench', label: 'Orders', access: 'Orders' },
+    { path: '/done-orders', icon: 'fa-check-double', label: 'Done Orders', access: 'Orders' },
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', access: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
     { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },

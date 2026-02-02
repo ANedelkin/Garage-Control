@@ -130,17 +130,19 @@ const Cars = () => {
                                 <th>Model</th>
                                 <th>Plate</th>
                                 <th>VIN</th>
+                                <th>KM</th>
                                 <th>Owner</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="6">Loading...</td></tr> : filteredCars.map(c => (
+                            {loading ? <tr><td colSpan="7">Loading...</td></tr> : filteredCars.map(c => (
                                 <tr key={c.id} onClick={() => handleRowClick(c)} style={{ cursor: 'pointer' }} className="clickable-row">
                                     <td>{makes[c.makeId] || c.makeId}</td>
                                     <td>{models[c.modelId] || c.modelId}</td>
                                     <td>{c.registrationNumber}</td>
                                     <td>{c.vin || '-'}</td>
+                                    <td>{c.kilometers}</td>
                                     <td>{c.ownerName}</td>
                                     <td>
                                         <button className="btn delete icon-btn" onClick={(e) => handleDelete(e, c.id)}>

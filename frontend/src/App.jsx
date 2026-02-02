@@ -81,12 +81,13 @@ function App() {
     { path: '/', element: <Dashboard />, children: [] },
     { path: '/todo', element: <ToDoPage />, access: 'To Do', children: [] },
     {
-      path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
+      path: '/orders', element: <OrdersPage mode="active" />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderSetup /> },
         { path: '/:orderId/jobs/new', element: <EditJobPage /> },
         { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> }
       ]
     },
+    { path: '/done-orders', element: <OrdersPage mode="completed" />, access: 'Orders', children: [] },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
     {
       path: '/workers', element: <Workers />, access: 'Workers', children: [

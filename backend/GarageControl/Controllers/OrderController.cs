@@ -36,6 +36,34 @@ namespace GarageControl.Controllers
             }
         }
 
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveOrders()
+        {
+            try
+            {
+                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isDone: false);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("completed")]
+        public async Task<IActionResult> GetCompletedOrders()
+        {
+            try
+            {
+                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isDone: true);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderViewModel model)
         {

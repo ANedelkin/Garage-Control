@@ -8,7 +8,8 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
         makeId: "",
         modelId: "",
         registrationNumber: "",
-        vin: ""
+        vin: "",
+        kilometers: 0
     });
     const [popupModels, setPopupModels] = useState([]);
 
@@ -16,7 +17,7 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
         if (isOpen && car) {
             setCurrentCar({ ...car });
         } else if (isOpen) {
-            setCurrentCar({ id: null, makeId: "", modelId: "", registrationNumber: "", vin: "" });
+            setCurrentCar({ id: null, makeId: "", modelId: "", registrationNumber: "", vin: "", kilometers: 0 });
         }
     }, [isOpen, car]);
 
@@ -85,6 +86,15 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
                         type="text"
                         value={currentCar.vin || ''}
                         onChange={e => setCurrentCar({ ...currentCar, vin: e.target.value })}
+                    />
+                </div>
+
+                <div className="form-section">
+                    <label>Kilometers</label>
+                    <input
+                        type="number"
+                        value={currentCar.kilometers}
+                        onChange={e => setCurrentCar({ ...currentCar, kilometers: parseInt(e.target.value) || 0 })}
                     />
                 </div>
 

@@ -21,6 +21,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public string OwnerId { get; set; } = null!;
         [ForeignKey(nameof(OwnerId))]
         public Client Owner { get; set; } = null!;
-
+        public int Kilometers { get; set; }
     }
 }

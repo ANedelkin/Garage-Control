@@ -36,6 +36,7 @@ namespace GarageControl.Core.Services
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
+                    Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
                         Id = c.Model.Id,
@@ -67,6 +68,7 @@ namespace GarageControl.Core.Services
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
+                    Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
                         Id = c.Model.Id,
@@ -99,7 +101,8 @@ namespace GarageControl.Core.Services
                 ModelId = model.ModelId,
                 RegistrationNumber = model.RegistrationNumber,
                 VIN = model.VIN,
-                OwnerId = model.OwnerId
+                OwnerId = model.OwnerId,
+                Kilometers = model.Kilometers
             };
 
             await _repo.AddAsync(car);
@@ -114,6 +117,7 @@ namespace GarageControl.Core.Services
                 car.ModelId = model.ModelId;
                 car.RegistrationNumber = model.RegistrationNumber;
                 car.VIN = model.VIN;
+                car.Kilometers = model.Kilometers;
                 // OwnerId typically isn't changed during a simple edit, but if needed:
                 // car.OwnerId = model.OwnerId; 
                 
@@ -143,6 +147,7 @@ namespace GarageControl.Core.Services
                     VIN = c.VIN,
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
+                    Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
                         Id = c.Model.Id,
