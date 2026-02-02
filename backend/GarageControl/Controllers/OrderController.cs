@@ -93,5 +93,48 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("job/{jobId}")]
+        public async Task<IActionResult> GetJobById(string jobId)
+        {
+            try
+            {
+                var job = await _orderService.GetJobByIdAsync(jobId, GetWorkshopId());
+                if (job == null) return NotFound();
+                return Ok(job);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/job")]
+        public async Task<IActionResult> CreateJob(string id, [FromBody] CreateJobViewModel model)
+        {
+            try
+            {
+                await _orderService.CreateJobAsync(id, GetWorkshopId(), model);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("job/{jobId}")]
+        public async Task<IActionResult> UpdateJob(string jobId, [FromBody] UpdateJobViewModel model)
+        {
+            try
+            {
+                await _orderService.UpdateJobAsync(jobId, GetWorkshopId(), model);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

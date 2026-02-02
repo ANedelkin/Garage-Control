@@ -14,6 +14,9 @@ namespace GarageControl.Core.Services
         Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
         Task<object> UpdateOrderAsync(string id, string workshopId, UpdateOrderViewModel model);
         Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId);
+        Task<JobDetailsViewModel?> GetJobByIdAsync(string jobId, string workshopId);
+        Task CreateJobAsync(string orderId, string workshopId, CreateJobViewModel model);
+        Task UpdateJobAsync(string jobId, string workshopId, UpdateJobViewModel model);
     }
 
     public class OrderService : IOrderService
@@ -38,6 +41,8 @@ namespace GarageControl.Core.Services
                     CarModelName = o.Car.Model.Name,
                     o.Car.RegistrationNumber,
                     o.Car.Owner.Name,
+                    o.Kilometers,
+                    o.IsDone,
                     Jobs = o.Jobs.Select(j => new
                     {
                         j.Id,
@@ -59,6 +64,8 @@ namespace GarageControl.Core.Services
                 CarName = $"{o.CarMakeName} {o.CarModelName}",
                 CarRegistrationNumber = o.RegistrationNumber,
                 ClientName = o.Name,
+                Kilometers = o.Kilometers,
+                IsDone = o.IsDone,
                 Jobs = o.Jobs.Select(j => new JobListViewModel
                 {
                     Id = j.Id,
@@ -88,6 +95,8 @@ namespace GarageControl.Core.Services
             var order = new Order
             {
                 CarId = model.CarId,
+                Kilometers = model.Kilometers,
+                IsDone = false
             };
 
             _context.Orders.Add(order);
@@ -146,6 +155,8 @@ namespace GarageControl.Core.Services
                     CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,
+                    Kilometers = o.Kilometers,
+                    IsDone = o.IsDone,
                     Jobs = o.Jobs.Select(j => new JobDetailsViewModel
                     {
                         Id = j.Id,
@@ -184,6 +195,8 @@ namespace GarageControl.Core.Services
             }
 
             order.CarId = model.CarId;
+            order.Kilometers = model.Kilometers;
+            order.IsDone = model.IsDone;
 
             var jobIdsInModel = model.Jobs.Where(j => j.Id != null).Select(j => j.Id).ToList();
             var jobsToRemove = order.Jobs.Where(j => !jobIdsInModel.Contains(j.Id)).ToList();
@@ -269,6 +282,7 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
             return new { orderId = order.Id, message = "Order updated successfully" };
         }
+
         public async Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId)
         {
             return await _context.Jobs
@@ -296,6 +310,146 @@ namespace GarageControl.Core.Services
                     ClientName = j.Order.Car.Owner.Name
                 })
                 .ToListAsync();
+        }
+        public async Task<JobDetailsViewModel?> GetJobByIdAsync(string jobId, string workshopId)
+        {
+            return await _context.Jobs
+                .AsNoTracking()
+                .Where(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId)
+                .Select(j => new JobDetailsViewModel
+                {
+                    Id = j.Id,
+                    JobTypeId = j.JobTypeId,
+                    WorkerId = j.WorkerId,
+                    Description = j.Description ?? "",
+                    Status = j.Status,
+                    LaborCost = j.LaborCost,
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
+                    Parts = j.JobParts.Select(jp => new JobPartDetailsViewModel
+                    {
+                        PartId = jp.PartId,
+                        PartName = jp.Part.Name,
+                        Quantity = jp.Quantity,
+                        Price = jp.Price
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task CreateJobAsync(string orderId, string workshopId, CreateJobViewModel model)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Car)
+                    .ThenInclude(c => c.Owner)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
+
+            if (order == null) throw new Exception("Order not found or access denied.");
+
+            var job = new Job
+            {
+                OrderId = orderId,
+                JobTypeId = model.JobTypeId,
+                Description = model.Description,
+                WorkerId = model.WorkerId,
+                Status = model.Status,
+                LaborCost = model.LaborCost,
+                StartTime = model.StartTime,
+                EndTime = model.EndTime
+            };
+
+            _context.Jobs.Add(job);
+            
+            foreach (var partModel in model.Parts)
+            {
+                var part = await _context.Parts.FindAsync(partModel.PartId);
+                if (part != null)
+                {
+                    var jobPart = new JobPart
+                    {
+                        JobId = job.Id,
+                        PartId = part.Id,
+                        Quantity = partModel.Quantity,
+                        Price = part.Price
+                    };
+                    _context.JobParts.Add(jobPart);
+
+                    if (part.Quantity >= partModel.Quantity)
+                    {
+                        part.Quantity -= partModel.Quantity;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateJobAsync(string jobId, string workshopId, UpdateJobViewModel model)
+        {
+            var job = await _context.Jobs
+                .Include(j => j.Order)
+                    .ThenInclude(o => o.Car)
+                        .ThenInclude(c => c.Owner)
+                .Include(j => j.JobParts)
+                    .ThenInclude(jp => jp.Part)
+                .FirstOrDefaultAsync(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId);
+
+            if (job == null) throw new Exception("Job not found or access denied.");
+
+            job.JobTypeId = model.JobTypeId;
+            job.WorkerId = model.WorkerId;
+            job.Description = model.Description;
+            job.Status = model.Status;
+            job.LaborCost = model.LaborCost;
+            job.StartTime = model.StartTime;
+            job.EndTime = model.EndTime;
+
+            // Parts sync
+            var partIdsInModel = model.Parts.Select(p => p.PartId).ToList();
+            var partsToRemove = job.JobParts.Where(jp => !partIdsInModel.Contains(jp.PartId)).ToList();
+            
+            foreach (var jp in partsToRemove)
+            {
+                if (jp.Part != null)
+                {
+                    jp.Part.Quantity += jp.Quantity;
+                }
+                _context.JobParts.Remove(jp);
+            }
+
+            foreach (var partModel in model.Parts)
+            {
+                var existingJobPart = job.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);
+                var part = await _context.Parts.FindAsync(partModel.PartId);
+                if (part == null) continue;
+
+                if (existingJobPart != null)
+                {
+                    int diff = partModel.Quantity - existingJobPart.Quantity;
+                    if (part.Quantity >= diff)
+                    {
+                        part.Quantity -= diff;
+                        existingJobPart.Quantity = partModel.Quantity;
+                    }
+                }
+                else
+                {
+                    var newJobPart = new JobPart
+                    {
+                        JobId = job.Id,
+                        PartId = part.Id,
+                        Quantity = partModel.Quantity,
+                        Price = part.Price
+                    };
+                    _context.JobParts.Add(newJobPart);
+                    if (part.Quantity >= partModel.Quantity)
+                    {
+                        part.Quantity -= partModel.Quantity;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

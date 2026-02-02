@@ -89,9 +89,11 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                         {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.name}</option>)}
                     </DropDown>
                 </div>
-                <button type="button" className="btn delete" onClick={() => removeService(service.id)}>
-                    <i className="fa-solid fa-trash"></i>
-                </button>
+                {removeService && (
+                    <button type="button" className="btn delete" onClick={() => removeService(service.id)}>
+                        <i className="fa-solid fa-trash"></i>
+                    </button>
+                )}
             </div>
 
             <div className="service-form">

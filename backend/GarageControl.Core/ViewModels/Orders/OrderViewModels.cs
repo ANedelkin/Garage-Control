@@ -11,6 +11,8 @@ namespace GarageControl.Core.ViewModels.Orders
         public string CarRegistrationNumber { get; set; } = null!;
         public string ClientName { get; set; } = null!;
         public DateTime Date { get; set; }
+        public int Kilometers { get; set; }
+        public bool IsDone { get; set; }
         public List<JobListViewModel> Jobs { get; set; } = new List<JobListViewModel>();
     }
 
@@ -31,6 +33,7 @@ namespace GarageControl.Core.ViewModels.Orders
         [Required]
         public string CarId { get; set; } = null!;
         public List<CreateJobViewModel> Jobs { get; set; } = new List<CreateJobViewModel>();
+        public int Kilometers { get; set; }
     }
 
     public class CreateJobViewModel
@@ -59,6 +62,8 @@ namespace GarageControl.Core.ViewModels.Orders
         [Required]
         public string CarId { get; set; } = null!;
         public List<UpdateJobViewModel> Jobs { get; set; } = new List<UpdateJobViewModel>();
+        public int Kilometers { get; set; }
+        public bool IsDone { get; set; }
     }
 
     public class UpdateJobViewModel
@@ -83,6 +88,8 @@ namespace GarageControl.Core.ViewModels.Orders
         public string CarName { get; set; } = null!;
         public string CarRegistrationNumber { get; set; } = null!;
         public string ClientName { get; set; } = null!;
+        public int Kilometers { get; set; }
+        public bool IsDone { get; set; }
         public List<JobDetailsViewModel> Jobs { get; set; } = new List<JobDetailsViewModel>();
     }
 

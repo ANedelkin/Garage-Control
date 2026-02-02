@@ -18,7 +18,8 @@ import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
-import NewOrderPage from './components/orders/EditOrder.jsx';
+import NewOrderSetup from './components/orders/NewOrderSetup.jsx';
+import EditJobPage from './components/orders/EditJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
 
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -81,8 +82,9 @@ function App() {
     { path: '/todo', element: <ToDoPage />, access: 'To Do', children: [] },
     {
       path: '/orders', element: <OrdersPage />, access: 'Orders', children: [
-        { path: '/new', element: <NewOrderPage /> },
-        { path: '/:id', element: <NewOrderPage /> }
+        { path: '/new', element: <NewOrderSetup /> },
+        { path: '/:orderId/jobs/new', element: <EditJobPage /> },
+        { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> }
       ]
     },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
