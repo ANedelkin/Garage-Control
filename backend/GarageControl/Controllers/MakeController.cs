@@ -34,8 +34,8 @@ namespace GarageControl.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                await _makeService.CreateMake(model, userId);
-                return Ok(new { success = true });
+                var id = await _makeService.CreateMake(model, userId);
+                return Ok(new { success = true, id });
             }
             catch (Exception ex)
             {

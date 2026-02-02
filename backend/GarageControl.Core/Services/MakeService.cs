@@ -17,7 +17,7 @@ namespace GarageControl.Core.Services
             _workshopService = workshopService;
         }
 
-        public async Task CreateMake(MakeVM model, string userId)
+        public async Task<string> CreateMake(MakeVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             // If bossId is null (Admin or unassigned), we create a Global make (CreatorId = null)
@@ -31,6 +31,7 @@ namespace GarageControl.Core.Services
 
             await _repo.AddAsync(make);
             await _repo.SaveChangesAsync();
+            return make.Id;
         }
 
         public async Task DeleteMake(string id, string userId)
@@ -79,19 +80,20 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<MetricSuggestionVM>> GetSuggestions()
         {
-            // Fetch all local makes (CreatorId != null)
-            // Group by Normalized Name
+            // Fetch all makes that have user content (Make is User OR has User Models)
             var data = await _repo.GetAllAsNoTrackingAsync<CarMake>()
-                .Where(m => m.CreatorId != null)
-                .Select(m => m.Name)
+                .Include(m => m.CarModels)
+                .Where(m => m.CreatorId != null || m.CarModels.Any(model => model.CreatorId != null))
+                .Select(m => new { m.Name, m.CreatorId })
                 .ToListAsync();
 
             return data
-                .GroupBy(n => n.Trim().ToUpper())
+                .GroupBy(n => n.Name.Trim().ToUpper())
                 .Select(g => new MetricSuggestionVM 
                 { 
-                    Name = g.First().Trim(), 
-                    Count = g.Count() 
+                    Name = g.First().Name.Trim(), 
+                    Count = g.Count(), // Or sum of new models? The original count was just grouping makes. Stick to that for now.
+                    IsExisting = g.Any(x => x.CreatorId == null) // If any make in this group is System, it's Existing.
                 })
                 .OrderByDescending(x => x.Count);
         }
@@ -100,17 +102,12 @@ namespace GarageControl.Core.Services
         {
              var normalized = makeName.Trim().ToUpper();
              
-             // 1. Find all local Makes with this name
-             // 2. Select their Models
-             // 3. Aggregate models by name
-             
-             // This needs to link CarMake -> CarModel
-             // Assuming CarMake has collection CarModels
-             
+             // Get models from makes with this name, where model is user-created.
              var models = await _repo.GetAllAsNoTrackingAsync<CarMake>()
                 .Include(m => m.CarModels)
-                .Where(m => m.CreatorId != null && m.Name.ToUpper() == normalized)
+                .Where(m => m.Name.ToUpper() == normalized)
                 .SelectMany(m => m.CarModels)
+                .Where(model => model.CreatorId != null)
                 .Select(Model => Model.Name)
                 .ToListAsync();
 
@@ -119,7 +116,8 @@ namespace GarageControl.Core.Services
                 .Select(g => new MetricSuggestionVM
                 {
                     Name = g.First(),
-                    Count = g.Count()
+                    Count = g.Count(),
+                    IsExisting = false // Models are inherently new suggestions here
                 })
                 .OrderByDescending(x => x.Count);
         }

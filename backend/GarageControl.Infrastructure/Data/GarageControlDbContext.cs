@@ -80,6 +80,12 @@ namespace GarageControl.Infrastructure.Data
                 .WithMany(p => p.JobParts)
                 .HasForeignKey(jp => jp.PartId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Workshop> Workshops { get; set; } = null!;
@@ -97,5 +103,6 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<JobPart> JobParts { get; set; } = null!;
         public DbSet<WorkerSchedule> WorkerSchedules { get; set; } = null!;
         public DbSet<WorkerLeave> WorkerLeaves { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; } = null!;
     }
 }

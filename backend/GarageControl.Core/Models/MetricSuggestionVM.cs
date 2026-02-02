@@ -4,5 +4,6 @@ namespace GarageControl.Core.Models
     {
         public string Name { get; set; } = null!;
         public int Count { get; set; }
+        public bool IsExisting { get; set; }
     }
 }

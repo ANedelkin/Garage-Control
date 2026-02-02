@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import ItemsTree from '../common/tree/ItemsTree';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
+import SuggestedModelPopup from './SuggestedModelPopup';
 import '../../assets/css/admin-makes-models.css';
+import '../../assets/css/popup.css';
 
 const AdminMakesModels = () => {
     const [existing, setExisting] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('existing'); // For small screens
+    const [popupNode, setPopupNode] = useState(null);
 
     const loadData = async () => {
         setLoading(true);
@@ -32,8 +35,9 @@ const AdminMakesModels = () => {
                 id: s.name,
                 name: s.name, // Capitalized/Trimmed from backend
                 count: s.count,
+                isExisting: s.isExisting,
                 type: 'group', // Can't expand yet as we don't fetch sub-models for suggestions
-                className: 'suggestion-node'
+                className: s.isExisting ? 'suggestion-node existing' : 'suggestion-node'
             })));
 
         } catch (error) {
@@ -64,6 +68,7 @@ const AdminMakesModels = () => {
                 ...m,
                 id: `SUGG_MOD_${m.name}`, // Unique ID for tree
                 type: 'item',
+                makeName: makeName, // Pass parent make name for popup
                 className: 'suggestion-model-node'
             })),
             groups: []
@@ -107,8 +112,13 @@ const AdminMakesModels = () => {
         onDelete: async (node, type, onSuccess) => {
             if (!window.confirm(`Delete coverage for ${node.name}?`)) return;
             try {
-                if (type === 'group') await makeApi.deleteMake(node.id);
-                else await modelApi.deleteModel(node.id);
+                if (type === 'group') {
+                    const res = await makeApi.deleteMake(node.id);
+                    if (!res.success) throw new Error("Failed");
+                } else {
+                    const res = await modelApi.deleteModel(node.id);
+                    if (!res.success) throw new Error("Failed");
+                }
                 onSuccess();
             } catch (e) {
                 alert("Failed to delete");
@@ -128,6 +138,26 @@ const AdminMakesModels = () => {
     };
 
     // --- Actions for Suggestions ---
+    const handleOpenPopup = (node) => {
+        // If it's a make and NOT existing, we promote it directly (or open popup? User said "When a model... has its add button pressed... popup")
+        // "Their make should be shown as a folder... just without an add button" (If existing).
+
+        if (node.type === 'group') {
+            if (!node.isExisting) handlePromote(node);
+            return;
+        }
+
+        // It's a model
+        // Find if parent make is existing using the makeName we passed
+        const parentMake = existing.find(m => m.name.toUpperCase() === node.makeName?.toUpperCase());
+
+        setPopupNode({
+            ...node,
+            makeName: node.makeName,
+            isMakeExisting: !!parentMake
+        });
+    };
+
     const handlePromote = async (node) => {
         const newName = prompt("Enter name for the new Make:", node.name);
         if (!newName) return;
@@ -139,9 +169,6 @@ const AdminMakesModels = () => {
         if (duplicate) {
             const confirmed = window.confirm(`Make "${duplicate.name}" already exists. Do you want to use the existing one instead? (Cancels creation)`);
             if (confirmed) return;
-            // If they say No (don't use existing), do we create a duplicate?
-            // "if yes, the new one won’t be created".
-            // If no? "duplicates allowed".
         }
 
         try {
@@ -152,12 +179,42 @@ const AdminMakesModels = () => {
         }
     };
 
+    const handleConfirmModelAdd = async (makeName, modelName) => {
+        try {
+            let makeId = null;
+            // Check if Make exists
+            const knownMake = existing.find(m => m.name.toUpperCase() === makeName.toUpperCase());
+
+            if (knownMake) {
+                makeId = knownMake.id;
+            } else {
+                // Create Make
+                const res = await makeApi.createMake({ name: makeName });
+                if (res.success && res.id) {
+                    makeId = res.id;
+                } else {
+                    throw new Error("Failed to create Make");
+                }
+            }
+
+            // Create Model
+            await modelApi.createModel({ name: modelName, makeId });
+            setPopupNode(null);
+            loadData(); // Refresh everything
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    };
+
     const renderSuggestionActions = (node, type) => {
+        // If existing make, no button
+        if (type === 'group' && node.isExisting) return null;
+
         return (
             <button
                 className="icon-btn btn success-text"
                 title="Add to system"
-                onClick={(e) => { e.stopPropagation(); handlePromote(node); }}
+                onClick={(e) => { e.stopPropagation(); handleOpenPopup(node); }}
                 style={{ marginRight: '10px' }}
             >
                 <i className="fa-solid fa-plus"></i>
@@ -229,6 +286,14 @@ const AdminMakesModels = () => {
                     </div>
                 </div>
             </div>
+
+            {popupNode && (
+                <SuggestedModelPopup
+                    node={popupNode}
+                    onClose={() => setPopupNode(null)}
+                    onConfirm={handleConfirmModelAdd}
+                />
+            )}
         </div>
     );
 };
