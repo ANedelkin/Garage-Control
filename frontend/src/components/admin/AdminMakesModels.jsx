@@ -181,24 +181,14 @@ const AdminMakesModels = () => {
 
     const handleConfirmModelAdd = async (makeName, modelName) => {
         try {
-            let makeId = null;
-            // Check if Make exists
-            const knownMake = existing.find(m => m.name.toUpperCase() === makeName.toUpperCase());
+            // Use promote model flow which handles notifications and existing check
+            await makeApi.promoteModel({
+                makeName: popupNode.makeName, // Original make name
+                newMakeName: makeName !== popupNode.makeName ? makeName : null,
+                modelName: popupNode.name,    // Original suggested name
+                newModelName: modelName !== popupNode.name ? modelName : null
+            });
 
-            if (knownMake) {
-                makeId = knownMake.id;
-            } else {
-                // Create Make
-                const res = await makeApi.createMake({ name: makeName });
-                if (res.success && res.id) {
-                    makeId = res.id;
-                } else {
-                    throw new Error("Failed to create Make");
-                }
-            }
-
-            // Create Model
-            await modelApi.createModel({ name: modelName, makeId });
             setPopupNode(null);
             loadData(); // Refresh everything
         } catch (e) {

@@ -10,5 +10,8 @@ namespace GarageControl.Core.Models
         [Required]
         [StringLength(CarMakeConstants.nameMaxLength, MinimumLength = CarMakeConstants.nameMinLength)]
         public string Name { get; set; } = null!;
+
+        public bool IsCustom { get; set; }
+        public string? GlobalId { get; set; }
     }
 }

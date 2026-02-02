@@ -12,5 +12,7 @@ namespace GarageControl.Core.Contracts
         Task<IEnumerable<MetricSuggestionVM>> GetSuggestions();
         Task<IEnumerable<MetricSuggestionVM>> GetSuggestedModels(string makeName);
         Task PromoteSuggestion(string name, string? newName);
+        Task PromoteModelSuggestion(string makeName, string modelName, string? newModelName, string? newMakeName);
+        Task MergeMakeWithGlobal(string customMakeId, string globalMakeId, string userId);
     }
 }

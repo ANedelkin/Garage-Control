@@ -19,7 +19,13 @@ export const makeApi = {
     promote: async (data) => {
         return await (await request('POST', 'make/promote', data)).json();
     },
+    promoteModel: async (data) => {
+        return await (await request('POST', 'make/promote-model', data)).json();
+    },
     getSuggestedModels: async (makeName) => {
         return await (await request('GET', `make/suggestions/${makeName}/models`)).json();
+    },
+    mergeMakeWithGlobal: async (customMakeId, globalMakeId) => {
+        return await (await request('POST', 'make/merge-with-global', { customMakeId, globalMakeId })).json();
     }
 }

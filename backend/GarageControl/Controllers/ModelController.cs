@@ -73,5 +73,30 @@ namespace GarageControl.Controllers
                 return Forbid();
             }
         }
+
+        [HttpPost("merge-with-global")]
+        public async Task<IActionResult> MergeModelWithGlobal([FromBody] MergeModelRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                await _modelService.MergeModelWithGlobal(request.CustomModelId, request.GlobalModelId, userId);
+                return Ok(new { success = true });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+    }
+
+    public class MergeModelRequest
+    {
+        public string CustomModelId { get; set; } = null!;
+        public string GlobalModelId { get; set; } = null!;
     }
 }

@@ -9,5 +9,6 @@ namespace GarageControl.Core.Contracts
         Task CreateModel(ModelVM model, string userId);
         Task UpdateModel(ModelVM model, string userId);
         Task DeleteModel(string id, string userId);
+        Task MergeModelWithGlobal(string customModelId, string globalModelId, string userId);
     }
 }

@@ -12,5 +12,8 @@ export const modelApi = {
     },
     deleteModel: async (id) => {
         return (await request('DELETE', `model/${id}`)).json();
+    },
+    mergeModelWithGlobal: async (customModelId, globalModelId) => {
+        return (await request('POST', 'model/merge-with-global', { customModelId, globalModelId })).json();
     }
 }

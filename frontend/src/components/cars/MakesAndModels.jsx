@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../../assets/css/makes-models.css';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
+import MergePopup from './MergePopup';
 
 const MakesAndModels = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [makes, setMakes] = useState([]);
     const [models, setModels] = useState([]);
     const [selectedMake, setSelectedMake] = useState(null);
@@ -16,6 +19,12 @@ const MakesAndModels = () => {
     const [editingItem, setEditingItem] = useState(null); // null for create, object for edit
     const [itemName, setItemName] = useState('');
 
+    // Merge State
+    const [showMergePopup, setShowMergePopup] = useState(false);
+    const [mergeType, setMergeType] = useState('make');
+    const [customItem, setCustomItem] = useState(null);
+    const [globalItem, setGlobalItem] = useState(null);
+
     useEffect(() => {
         fetchMakes();
     }, []);
@@ -27,6 +36,56 @@ const MakesAndModels = () => {
             setModels([]);
         }
     }, [selectedMake]);
+
+    // Handle query params for merge from notification
+    useEffect(() => {
+        const handleMergeFromParams = async () => {
+            const merge = searchParams.get('merge');
+            const customId = searchParams.get('customId');
+            const globalId = searchParams.get('globalId');
+
+            if (merge && customId && globalId) {
+                try {
+                    if (merge === 'make') {
+                        // Fetch both makes
+                        const allMakes = await makeApi.getAll();
+                        const custom = allMakes.find(m => m.id === customId);
+                        const global = allMakes.find(m => m.id === globalId);
+
+                        if (custom && global) {
+                            setMergeType('make');
+                            setCustomItem(custom);
+                            setGlobalItem(global);
+                            setShowMergePopup(true);
+                        }
+                    } else if (merge === 'model') {
+                        // Need to find the make first
+                        const allMakes = await makeApi.getAll();
+                        for (const make of allMakes) {
+                            const makeModels = await modelApi.getAll(make.id);
+                            const custom = makeModels.find(m => m.id === customId);
+                            const global = makeModels.find(m => m.id === globalId);
+
+                            if (custom && global) {
+                                setMergeType('model');
+                                setCustomItem(custom);
+                                setGlobalItem(global);
+                                setShowMergePopup(true);
+                                break;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading merge items:', error);
+                }
+
+                // Clear query params
+                setSearchParams({});
+            }
+        };
+
+        handleMergeFromParams();
+    }, [searchParams, setSearchParams]);
 
     const fetchMakes = async () => {
         setLoadingMakes(true);
@@ -101,6 +160,40 @@ const MakesAndModels = () => {
         }
     };
 
+    const handleOpenMerge = (type, custom, global) => {
+        setMergeType(type);
+        setCustomItem(custom);
+        setGlobalItem(global);
+        setShowMergePopup(true);
+    };
+
+    const handleMerge = async () => {
+        try {
+            if (mergeType === 'make') {
+                await makeApi.mergeMakeWithGlobal(customItem.id, globalItem.id);
+                if (selectedMake && selectedMake.id === customItem.id) setSelectedMake(null);
+                fetchMakes();
+            } else {
+                await modelApi.mergeModelWithGlobal(customItem.id, globalItem.id);
+                fetchModels(selectedMake.id);
+            }
+            setShowMergePopup(false);
+            alert('Merge completed successfully!');
+        } catch (error) {
+            console.error('Error merging:', error);
+            alert('Failed to merge. Check console.');
+        }
+    };
+
+    // Helper to find matching global make/model
+    const findGlobalMatch = (items, item) => {
+        return items.find(i =>
+            i.id !== item.id &&
+            i.name.trim().toUpperCase() === item.name.trim().toUpperCase()
+        );
+    };
+
+
     return (
         <main className="main makes-models container">
             <div className="tile">
@@ -120,6 +213,18 @@ const MakesAndModels = () => {
                                 >
                                     <span>{make.name}</span>
                                     <div>
+                                        {make.globalId && (
+                                            <button
+                                                className="btn icon-btn merge"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenMerge('make', make, { id: make.globalId, name: make.name });
+                                                }}
+                                                title="Merge with global"
+                                            >
+                                                <i className="fa-solid fa-code-merge"></i>
+                                            </button>
+                                        )}
                                         <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
@@ -152,6 +257,15 @@ const MakesAndModels = () => {
                                     <div key={model.id} className="list-item">
                                         <span>{model.name}</span>
                                         <div>
+                                            {model.globalId && (
+                                                <button
+                                                    className="btn icon-btn merge"
+                                                    onClick={() => handleOpenMerge('model', model, { id: model.globalId, name: model.name })}
+                                                    title="Merge with global"
+                                                >
+                                                    <i className="fa-solid fa-code-merge"></i>
+                                                </button>
+                                            )}
                                             <button className="btn icon-btn" onClick={() => handleOpenModal('model', model)}>
                                                 <i className="fa-solid fa-pen"></i>
                                             </button>
@@ -191,6 +305,16 @@ const MakesAndModels = () => {
                     </div>
                 </div>
             )}
+
+            {/* Merge Popup */}
+            <MergePopup
+                isOpen={showMergePopup}
+                onClose={() => setShowMergePopup(false)}
+                mergeType={mergeType}
+                customItem={customItem}
+                globalItem={globalItem}
+                onMerge={handleMerge}
+            />
         </main>
     );
 };
