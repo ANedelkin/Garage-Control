@@ -408,7 +408,6 @@ namespace GarageControl.Core.Services
 
             // Leaves
             var oldLeaves = worker.Leaves.ToList();
-            foreach(var l in oldLeaves) _repo.Delete(l);
             
             foreach(var l in model.Leaves)
             {
@@ -423,18 +422,18 @@ namespace GarageControl.Core.Services
                 else
                 {
                     changes.Add($"added leave from <b>{startDate:yyyy-MM-dd}</b> to <b>{endDate:yyyy-MM-dd}</b>");
+                    await _repo.AddAsync(new WorkerLeave
+                    {
+                        WorkerId = workerId,
+                        StartDate = startDate,
+                        EndDate = endDate
+                    });
                 }
-
-                await _repo.AddAsync(new WorkerLeave
-                {
-                    WorkerId = workerId,
-                    StartDate = startDate,
-                    EndDate = endDate
-                });
             }
             foreach (var ol in oldLeaves)
             {
                 changes.Add($"deleted leave from <b>{ol.StartDate:yyyy-MM-dd}</b> to <b>{ol.EndDate:yyyy-MM-dd}</b>");
+                _repo.Delete(ol);
             }
 
             await _repo.SaveChangesAsync();

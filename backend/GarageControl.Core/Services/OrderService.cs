@@ -203,6 +203,8 @@ namespace GarageControl.Core.Services
                     .ThenInclude(c => c.Owner)
                 .Include(o => o.Car.Model.CarMake)
                 .Include(o => o.Jobs)
+                    .ThenInclude(j => j.JobType)
+                .Include(o => o.Jobs)
                     .ThenInclude(j => j.JobParts)
                         .ThenInclude(jp => jp.Part)
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
@@ -214,6 +216,7 @@ namespace GarageControl.Core.Services
 
             var changes = new List<string>();
             string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            string FormatQty(decimal q) => q.ToString("G29", CultureInfo.InvariantCulture);
             bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
 
             if (order.CarId != model.CarId)
@@ -309,7 +312,7 @@ namespace GarageControl.Core.Services
                     {
                         if (existingJobPart.Quantity != partModel.Quantity)
                         {
-                            changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b> in job '<b>{job.JobType?.Name}</b>'");
+                            changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{FormatQty(existingJobPart.Quantity)}</b> to <b>{FormatQty(partModel.Quantity)}</b> in job '<b>{job.JobType?.Name}</b>'");
                             int diff = partModel.Quantity - existingJobPart.Quantity;
                             if (part.Quantity >= diff)
                             {
@@ -494,6 +497,7 @@ namespace GarageControl.Core.Services
             string oldJobTypeName = job.JobType.Name;
 
             string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            string FormatQty(decimal q) => q.ToString("G29", CultureInfo.InvariantCulture);
             bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
             
             if (job.JobTypeId != model.JobTypeId)
@@ -558,7 +562,7 @@ namespace GarageControl.Core.Services
                 {
                     if (existingJobPart.Quantity != partModel.Quantity)
                     {
-                        changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b>");
+                        changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{FormatQty(existingJobPart.Quantity)}</b> to <b>{FormatQty(partModel.Quantity)}</b>");
                         int diff = partModel.Quantity - existingJobPart.Quantity;
                         if (part.Quantity >= diff)
                         {
