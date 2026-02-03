@@ -10,11 +10,13 @@ namespace GarageControl.Core.Services
     {
         private readonly IRepository _repo;
         private readonly IWorkshopService _workshopService;
+        private readonly IActivityLogService _activityLogService;
 
-        public JobTypeService(IRepository repo, IWorkshopService workshopService)
+        public JobTypeService(IRepository repo, IWorkshopService workshopService, IActivityLogService activityLogService)
         {
             _repo = repo;
             _workshopService = workshopService;
+            _activityLogService = activityLogService;
         }
 
         public async Task<IEnumerable<JobTypeVM>> All(string userId)
@@ -48,18 +50,26 @@ namespace GarageControl.Core.Services
                 WorkshopId = workshopId
             };
 
-            // Handle mechanics mapping if needed
-            // For now, simple implementation assuming mechanics are managed separately or we try to find them
-            // Implementation omitted for string->Worker mapping complexity without explicit IDs
-
             await _repo.AddAsync(jobType);
             await _repo.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(userId, workshopId, $"created Job Type <b>{jobType.Name}</b>");
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string id, string userId)
         {
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+
+            var jobType = await _repo.GetByIdAsync<JobType>(id);
+            if (jobType == null) return;
+
+            string name = jobType.Name;
+
             await _repo.DeleteAsync<JobType>(id);
             await _repo.SaveChangesAsync();
+
+            await _activityLogService.LogActionAsync(userId, workshopId, $"deleted Job Type <b>{name}</b>");
         }
 
         public async Task<JobTypeVM?> Details(string id)
@@ -78,17 +88,47 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task Edit(JobTypeVM model)
+        public async Task Edit(JobTypeVM model, string userId)
         {
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+
             var jobType = await _repo.GetByIdAsync<JobType>(model.Id);
             if (jobType != null)
             {
+                var changes = new List<string>();
+                if (jobType.Name != model.Name)
+                {
+                    changes.Add($"name from <b>{jobType.Name}</b> to <b>{model.Name}</b>");
+                }
+                if (jobType.Description != model.Description)
+                {
+                    changes.Add("updated description");
+                }
+
                 jobType.Name = model.Name;
                 jobType.Description = model.Description;
                 
-                // Note: Update mechanics relation here if feasible
-                
                 await _repo.SaveChangesAsync();
+
+                if (changes.Count > 0)
+                {
+                    string actionHtml;
+                    if (changes.Count == 1 && changes[0].Contains("from"))
+                    {
+                        actionHtml = $"changed {changes[0]} of Job Type <b>{jobType.Name}</b>";
+                    }
+                    else if (changes.All(c => !c.Contains("from")))
+                    {
+                        actionHtml = $"updated details of Job Type <b>{jobType.Name}</b>";
+                    }
+                    else
+                    {
+                        actionHtml = $"updated Job Type <b>{jobType.Name}</b>: {string.Join(", ", changes)}";
+                    }
+
+                    await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+                }
             }
         }
     }

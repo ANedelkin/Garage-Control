@@ -151,13 +151,11 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
             
+            string carName = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
             await _activityLogService.LogActionAsync(
                 userId, 
                 workshopId, 
-                "created", 
-                order.Id, 
-                $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})", 
-                "Order");
+                $"created <a href='/orders' class='log-link target-link'>order for {carName}</a>");
 
             return new { orderId = order.Id, message = "Order created successfully" };
         }
@@ -214,6 +212,28 @@ namespace GarageControl.Core.Services
                 throw new Exception("Order not found or access denied.");
             }
 
+            var changes = new List<string>();
+            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
+
+            if (order.CarId != model.CarId)
+            {
+                var oldCar = order.Car;
+                var newCar = await _context.Cars.Include(c => c.Model.CarMake).FirstOrDefaultAsync(c => c.Id == model.CarId);
+                string oldCarDisp = $"{oldCar.Model.CarMake.Name} {oldCar.Model.Name} ({oldCar.RegistrationNumber})";
+                string newCarDisp = newCar != null ? $"{newCar.Model.CarMake.Name} {newCar.Model.Name} ({newCar.RegistrationNumber})" : "Unknown";
+                changes.Add($"car from <b>{oldCarDisp}</b> to <b>{newCarDisp}</b>");
+            }
+
+            if (order.Kilometers != model.Kilometers)
+            {
+                changes.Add($"kilometers from <b>{order.Kilometers}</b> to <b>{model.Kilometers}</b>");
+            }
+            if (order.IsDone != model.IsDone)
+            {
+                changes.Add($"status from <b>{(order.IsDone ? "Finished" : "Active")}</b> to <b>{(model.IsDone ? "Finished" : "Active")}</b>");
+            }
+
             order.CarId = model.CarId;
             order.Kilometers = model.Kilometers;
             order.IsDone = model.IsDone;
@@ -236,6 +256,7 @@ namespace GarageControl.Core.Services
                     }
                 }
                 _context.Jobs.Remove(job);
+                changes.Add($"removed job '<b>{job.JobType?.Name ?? "Job"}</b>'");
             }
 
             foreach (var jobModel in model.Jobs)
@@ -250,8 +271,14 @@ namespace GarageControl.Core.Services
                 {
                     job = new Job { OrderId = order.Id };
                     _context.Jobs.Add(job);
+                    var jt = await _context.JobTypes.FindAsync(jobModel.JobTypeId);
+                    changes.Add($"added job '<b>{jt?.Name ?? "Job"}</b>'");
                 }
 
+                // Internal job changes are not logged here in detail to avoid overwhelming the order log,
+                // BUT the user specifically asked for job part changes and car changes.
+                // Car change is above. Parts are below.
+                
                 job.JobTypeId = jobModel.JobTypeId;
                 job.WorkerId = jobModel.WorkerId;
                 job.Description = jobModel.Description;
@@ -268,6 +295,7 @@ namespace GarageControl.Core.Services
                     {
                         jp.Part.Quantity += jp.Quantity;
                     }
+                    changes.Add($"removed part '<b>{jp.Part?.Name}</b>' from job '<b>{job.JobType?.Name}</b>'");
                     _context.JobParts.Remove(jp);
                 }
 
@@ -279,11 +307,15 @@ namespace GarageControl.Core.Services
 
                     if (existingJobPart != null)
                     {
-                        int diff = partModel.Quantity - existingJobPart.Quantity;
-                        if (part.Quantity >= diff)
+                        if (existingJobPart.Quantity != partModel.Quantity)
                         {
-                            part.Quantity -= diff;
-                            existingJobPart.Quantity = partModel.Quantity;
+                            changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b> in job '<b>{job.JobType?.Name}</b>'");
+                            int diff = partModel.Quantity - existingJobPart.Quantity;
+                            if (part.Quantity >= diff)
+                            {
+                                part.Quantity -= diff;
+                                existingJobPart.Quantity = partModel.Quantity;
+                            }
                         }
                     }
                     else
@@ -296,6 +328,7 @@ namespace GarageControl.Core.Services
                             Price = part.Price
                         };
                         _context.JobParts.Add(newJobPart);
+                        changes.Add($"added part '<b>{part.Name}</b>' to job '<b>{job.JobType?.Name}</b>'");
                         if (part.Quantity >= partModel.Quantity)
                         {
                             part.Quantity -= partModel.Quantity;
@@ -306,14 +339,27 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
-            string actionText = order.IsDone ? "completed" : "updated details of";
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                actionText,
-                order.Id,
-                $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
-                "Order");
+            if (changes.Count > 0)
+            {
+                string carName = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
+                string orderLink = $"<a href='/orders' class='log-link target-link'>order for {carName}</a>";
+                string actionHtml;
+
+                if (changes.Count == 1 && changes[0].Contains("from"))
+                {
+                    actionHtml = $"changed {changes[0]} of {orderLink}";
+                }
+                else if (changes.All(c => !c.Contains("from") && !c.Contains("added") && !c.Contains("removed")))
+                {
+                    actionHtml = $"updated details of {orderLink}";
+                }
+                else
+                {
+                    actionHtml = $"updated {orderLink}: {string.Join(", ", changes)}";
+                }
+
+                await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+            }
 
             return new { orderId = order.Id, message = "Order updated successfully" };
         }
@@ -422,18 +468,18 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
+            string carName = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                $"added job '{jobTypeName}' to",
-                order.Id,
-                $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
-                "Order");
+                $"added job '{jobTypeName}' to <a href='/orders' class='log-link target-link'>order for {carName}</a>");
         }
 
         public async Task UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model)
         {
             var job = await _context.Jobs
+                .Include(j => j.JobType)
+                .Include(j => j.Worker)
                 .Include(j => j.Order)
                     .ThenInclude(o => o.Car)
                         .ThenInclude(c => c.Owner)
@@ -444,8 +490,41 @@ namespace GarageControl.Core.Services
 
             if (job == null) throw new Exception("Job not found or access denied.");
 
-            var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
-            string jobTypeName = jobType?.Name ?? "Job";
+            var changes = new List<string>();
+            string oldJobTypeName = job.JobType.Name;
+
+            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
+            
+            if (job.JobTypeId != model.JobTypeId)
+            {
+                var newType = await _context.JobTypes.FindAsync(model.JobTypeId);
+                changes.Add($"type from <b>{job.JobType.Name}</b> to <b>{newType?.Name}</b>");
+            }
+            if (job.WorkerId != model.WorkerId)
+            {
+                var newWorker = await _context.Workers.FindAsync(model.WorkerId);
+                changes.Add($"mechanic from <b>{job.Worker.Name}</b> to <b>{newWorker?.Name}</b>");
+            }
+            if (job.Status != model.Status)
+            {
+                changes.Add($"status from <b>{job.Status}</b> to <b>{model.Status}</b>");
+            }
+            if (!NumbersEqual(job.LaborCost, model.LaborCost))
+            {
+                changes.Add($"labor cost from <b>{FormatPrice(job.LaborCost)}</b> to <b>{FormatPrice(model.LaborCost)}</b>");
+            }
+            
+            bool timeChanged = job.StartTime != model.StartTime || job.EndTime != model.EndTime;
+            if (timeChanged)
+            {
+                changes.Add($"Updated interval from {job.StartTime:HH:mm}-{job.EndTime:HH:mm} to {model.StartTime:HH:mm}-{model.EndTime:HH:mm}");
+            }
+
+            if (job.Description != model.Description)
+            {
+                changes.Add("updated description");
+            }
 
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
@@ -465,6 +544,7 @@ namespace GarageControl.Core.Services
                 {
                     jp.Part.Quantity += jp.Quantity;
                 }
+                changes.Add($"removed part '<b>{jp.Part?.Name}</b>'");
                 _context.JobParts.Remove(jp);
             }
 
@@ -476,11 +556,15 @@ namespace GarageControl.Core.Services
 
                 if (existingJobPart != null)
                 {
-                    int diff = partModel.Quantity - existingJobPart.Quantity;
-                    if (part.Quantity >= diff)
+                    if (existingJobPart.Quantity != partModel.Quantity)
                     {
-                        part.Quantity -= diff;
-                        existingJobPart.Quantity = partModel.Quantity;
+                        changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b>");
+                        int diff = partModel.Quantity - existingJobPart.Quantity;
+                        if (part.Quantity >= diff)
+                        {
+                            part.Quantity -= diff;
+                            existingJobPart.Quantity = partModel.Quantity;
+                        }
                     }
                 }
                 else
@@ -493,6 +577,7 @@ namespace GarageControl.Core.Services
                         Price = part.Price
                     };
                     _context.JobParts.Add(newJobPart);
+                    changes.Add($"added part '<b>{part.Name}</b>'");
                     if (part.Quantity >= partModel.Quantity)
                     {
                         part.Quantity -= partModel.Quantity;
@@ -502,18 +587,31 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
-            string statusName = model.Status.ToString();
-            string actionText = model.Status == Shared.Enums.JobStatus.Done 
-                ? $"finished job '{jobTypeName}' for" 
-                : $"changed status of job '{jobTypeName}' to {statusName} for";
+            if (changes.Count > 0)
+            {
+                string carName = $"{job.Order.Car.Model.CarMake.Name} {job.Order.Car.Model.Name} ({job.Order.Car.RegistrationNumber})";
+                string orderLink = $"<a href='/orders' class='log-link target-link'>order for {carName}</a>";
+                string actionHtml;
 
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                actionText,
-                job.OrderId,
-                $"{job.Order.Car.Model.CarMake.Name} {job.Order.Car.Model.Name} ({job.Order.Car.RegistrationNumber})",
-                "Order");
+                if (changes.Count == 1 && changes[0].Contains("from"))
+                {
+                    actionHtml = $"changed {changes[0]} of job '{oldJobTypeName}' for {orderLink}";
+                }
+                else if (changes.Count == 1 && changes[0].Contains("Updated interval"))
+                {
+                    actionHtml = $"{changes[0]} for job '{oldJobTypeName}' for {orderLink}";
+                }
+                else if (changes.All(c => c == "updated description" || (!c.Contains("from") && !c.Contains("added") && !c.Contains("removed") && !c.Contains("interval"))))
+                {
+                    actionHtml = $"updated details of job '{oldJobTypeName}' for {orderLink}";
+                }
+                else
+                {
+                    actionHtml = $"updated job '{oldJobTypeName}' for {orderLink}: {string.Join(", ", changes)}";
+                }
+
+                await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+            }
         }
     }
 }

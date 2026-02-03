@@ -114,10 +114,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "hired",
-                worker.Id,
-                worker.Name,
-                "Worker");
+                $"hired <a href='/workers/{worker.Id}' class='log-link target-link'>{worker.Name}</a>");
         }
 
         public async Task Delete(string id, string userId)
@@ -179,10 +176,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "fired",
-                null,
-                workerName,
-                "Worker");
+                $"fired <b>{workerName}</b>");
         }
 
         public async Task<WorkerVM?> Details(string id)
@@ -250,6 +244,31 @@ namespace GarageControl.Core.Services
             var user = await _userManager.FindByIdAsync(worker.UserId);
             if (user != null)
             {
+                var changes = new List<string>();
+                void TrackChange(string fieldName, object? oldValue, object? newValue)
+                {
+                    string oldStr = oldValue?.ToString() ?? "";
+                    string newStr = newValue?.ToString() ?? "";
+                    if (oldStr != newStr)
+                    {
+                        string oldDisp = string.IsNullOrEmpty(oldStr) ? "[empty]" : oldStr;
+                        string newDisp = string.IsNullOrEmpty(newStr) ? "[empty]" : newStr;
+                        
+                        if (oldDisp.Length > 100 || newDisp.Length > 100)
+                        {
+                            changes.Add(fieldName);
+                        }
+                        else
+                        {
+                            changes.Add($"{fieldName} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
+                        }
+                    }
+                }
+
+                TrackChange("name", worker.Name, model.Name);
+                TrackChange("email", user.Email, model.Email);
+                TrackChange("hired date", worker.HiredOn.ToString("yyyy-MM-dd"), model.HiredOn.ToString("yyyy-MM-dd"));
+
                 worker.Name = model.Name;
                 
                 if (user.Email != model.Email)
@@ -274,78 +293,152 @@ namespace GarageControl.Core.Services
                 {
                     var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                     await _userManager.ResetPasswordAsync(user, token, model.Password);
+                    changes.Add("password");
+                }
+
+                worker.HiredOn = model.HiredOn;
+                await _repo.SaveChangesAsync();
+
+                var relationChanges = await UpdateWorkerRelations(worker.Id, model);
+                changes.AddRange(relationChanges);
+
+                if (changes.Count > 0)
+                {
+                    string workerLink = $"<a href='/workers/{worker.Id}' class='log-link target-link'>{worker.Name}</a>";
+                    string actionHtml;
+
+                    if (changes.Count == 1 && (changes[0].Contains("from") || changes[0].Contains("Updated schedule")))
+                    {
+                        actionHtml = $"changed {changes[0]} of worker {workerLink}";
+                    }
+                    else if (changes.All(c => !c.Contains("from") && !c.Contains("added") && !c.Contains("removed") && !c.Contains("Updated schedule") && !c.Contains("deleted")))
+                    {
+                        actionHtml = $"updated details of worker {workerLink}";
+                    }
+                    else
+                    {
+                        actionHtml = $"updated worker {workerLink}: {string.Join(", ", changes)}";
+                    }
+
+                    await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
                 }
             }
-
-            worker.HiredOn = model.HiredOn;
-            await _repo.SaveChangesAsync();
-
-            await UpdateWorkerRelations(worker.Id, model);
-
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                "updated",
-                worker.Id,
-                worker.Name,
-                "Worker");
         }
         
-        private async Task UpdateWorkerRelations(string workerId, WorkerVM model)
+        private async Task<List<string>> UpdateWorkerRelations(string workerId, WorkerVM model)
         {
+            var changes = new List<string>();
             var worker = await _repo.GetAllAttachedAsync<Worker>()
                 .Where(w => w.Id == workerId)
                 .Include(w => w.Accesses)
                 .Include(w => w.Activities) // JobTypes
                 .Include(w => w.Schedules)
+                .Include(w => w.Leaves)
                 .FirstOrDefaultAsync();
 
-            if (worker == null) return;
+            if (worker == null) return changes;
 
             // Accesses
+            var oldAccessIds = worker.Accesses.Select(r => r.Id).ToList();
+            var newAccessIds = model.Accesses.Where(r => r.IsSelected).Select(r => r.Id).ToList();
+            
+            var addedAccesses = model.Accesses.Where(r => r.IsSelected && !oldAccessIds.Contains(r.Id)).Select(r => r.Name).ToList();
+            var removedAccesses = worker.Accesses.Where(r => !newAccessIds.Contains(r.Id)).Select(r => r.Name).ToList();
+            
+            foreach (var a in addedAccesses) changes.Add($"added access <b>{a}</b>");
+            foreach (var a in removedAccesses) changes.Add($"removed access <b>{a}</b>");
+
             worker.Accesses.Clear();
-            var selectedAccessIds = model.Accesses.Where(r => r.IsSelected).Select(r => r.Id).ToList();
-            var accessesToAdd = await _repo.GetAllAttachedAsync<Access>().Where(r => selectedAccessIds.Contains(r.Id)).ToListAsync();
+            var accessesToAdd = await _repo.GetAllAttachedAsync<Access>().Where(r => newAccessIds.Contains(r.Id)).ToListAsync();
             foreach (var r in accessesToAdd) worker.Accesses.Add(r);
 
             // JobTypes (Activities)
+            var oldJobTypeIds = worker.Activities.Select(j => j.Id).ToList();
+            var newJobTypeIds = model.JobTypeIds ?? new List<string>();
+            
+            var addedJobTypes = await _repo.GetAllAsNoTrackingAsync<JobType>()
+                .Where(j => newJobTypeIds.Contains(j.Id) && !oldJobTypeIds.Contains(j.Id))
+                .Select(j => j.Name)
+                .ToListAsync();
+            var removedJobTypes = worker.Activities.Where(j => !newJobTypeIds.Contains(j.Id)).Select(j => j.Name).ToList();
+            
+            foreach (var j in addedJobTypes) changes.Add($"added job type <b>{j}</b>");
+            foreach (var j in removedJobTypes) changes.Add($"removed job type <b>{j}</b>");
+
             worker.Activities.Clear();
-            var jobTypesToAdd = await _repo.GetAllAttachedAsync<JobType>().Where(j => model.JobTypeIds.Contains(j.Id)).ToListAsync();
+            var jobTypesToAdd = await _repo.GetAllAttachedAsync<JobType>().Where(j => newJobTypeIds.Contains(j.Id)).ToListAsync();
             foreach (var j in jobTypesToAdd) worker.Activities.Add(j);
 
             // Schedules
-            // Update via collection to ensure change tracking works correctly with the attached worker entity
+            var oldSchedules = worker.Schedules.ToList();
             worker.Schedules.Clear();
             
             foreach(var s in model.Schedules)
             {
-               // Map Frontend Day (0=Mon) to Backend DayOfWeek (0=Sun, 1=Mon)
                var backendDayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7);
+               var startTime = TimeOnly.Parse(s.StartTime);
+               var endTime = TimeOnly.Parse(s.EndTime);
+
+               var existing = oldSchedules.FirstOrDefault(os => os.DayOfWeek == backendDayOfWeek);
+               if (existing != null)
+               {
+                   if (existing.StartTime != startTime || existing.EndTime != endTime)
+                   {
+                       changes.Add($"Updated schedule for <b>{backendDayOfWeek}</b> from <b>{existing.StartTime:HH:mm}-{existing.EndTime:HH:mm}</b> to <b>{startTime:HH:mm}-{endTime:HH:mm}</b>");
+                   }
+                   oldSchedules.Remove(existing);
+               }
+               else
+               {
+                   changes.Add($"added schedule for <b>{backendDayOfWeek}</b>: <b>{startTime:HH:mm}-{endTime:HH:mm}</b>");
+               }
 
                worker.Schedules.Add(new WorkerSchedule
                {
                    WorkerId = workerId,
                    DayOfWeek = backendDayOfWeek,
-                   StartTime = TimeOnly.Parse(s.StartTime),
-                   EndTime = TimeOnly.Parse(s.EndTime)
+                   StartTime = startTime,
+                   EndTime = endTime
                });
+            }
+            foreach (var os in oldSchedules)
+            {
+                changes.Add($"removed schedule for <b>{os.DayOfWeek}</b>");
             }
 
             // Leaves
-            var leavesToRemove = await _repo.GetAllAttachedAsync<WorkerLeave>().Where(l => l.WorkerId == workerId).ToListAsync();
-            foreach(var l in leavesToRemove) _repo.Delete(l);
+            var oldLeaves = worker.Leaves.ToList();
+            foreach(var l in oldLeaves) _repo.Delete(l);
             
             foreach(var l in model.Leaves)
             {
+                var startDate = DateOnly.FromDateTime(l.StartDate);
+                var endDate = DateOnly.FromDateTime(l.EndDate);
+                
+                var existing = oldLeaves.FirstOrDefault(ol => ol.StartDate == startDate && ol.EndDate == endDate);
+                if (existing != null)
+                {
+                    oldLeaves.Remove(existing);
+                }
+                else
+                {
+                    changes.Add($"added leave from <b>{startDate:yyyy-MM-dd}</b> to <b>{endDate:yyyy-MM-dd}</b>");
+                }
+
                 await _repo.AddAsync(new WorkerLeave
                 {
                     WorkerId = workerId,
-                    StartDate = DateOnly.FromDateTime(l.StartDate),
-                    EndDate = DateOnly.FromDateTime(l.EndDate)
+                    StartDate = startDate,
+                    EndDate = endDate
                 });
+            }
+            foreach (var ol in oldLeaves)
+            {
+                changes.Add($"deleted leave from <b>{ol.StartDate:yyyy-MM-dd}</b> to <b>{ol.EndDate:yyyy-MM-dd}</b>");
             }
 
             await _repo.SaveChangesAsync();
+            return changes;
         }
 
     }

@@ -7,7 +7,7 @@ namespace GarageControl.Core.Contracts
         Task<IEnumerable<JobTypeVM>> All(string userId);
         Task<JobTypeVM?> Details(string id);
         Task Create(JobTypeVM model, string userId);
-        Task Edit(JobTypeVM model);
-        Task Delete(string id);
+        Task Edit(JobTypeVM model, string userId);
+        Task Delete(string id, string userId);
     }
 }

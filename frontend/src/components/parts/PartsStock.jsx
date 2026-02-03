@@ -30,7 +30,7 @@ const PartsStock = () => {
 
     useEffect(() => {
         const loadLinkedPart = async () => {
-            const partId = searchParams.get('id');
+            const partId = searchParams.get('partId') || searchParams.get('id');
             if (partId) {
                 try {
                     const part = await partApi.getPart(partId);

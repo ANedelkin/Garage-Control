@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import activityLogApi from '../../services/activityLogApi';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/common/table.css';
@@ -7,6 +7,7 @@ import '../../assets/css/common/table.css';
 const ActivityLog = () => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -28,53 +29,15 @@ const ActivityLog = () => {
         return date.toLocaleString();
     };
 
-    const renderActivityContent = (log) => {
-        const actorLink = log.actorTargetId ? (
-            <Link to={`/workers/${log.actorTargetId}`} className="log-link actor-link">{log.actorName}</Link>
-        ) : (
-            <span className="actor-name">{log.actorName}</span>
-        );
-
-        let targetElement = null;
-        if (log.targetId && log.targetName) {
-            let path = '';
-            switch (log.targetType) {
-                case 'Order':
-                    path = '/orders';
-                    break;
-                case 'Client':
-                    path = `/clients/${log.targetId}`;
-                    break;
-                case 'Part':
-                    path = `/parts?partId=${log.targetId}`;
-                    break;
-                case 'group of parts':
-                    path = '/parts';
-                    break;
-                case 'Worker':
-                    path = `/workers/${log.targetId}`;
-                    break;
-                default:
-                    path = null;
+    const handleLogClick = (e) => {
+        const link = e.target.closest('a');
+        if (link && link.getAttribute('href')) {
+            const href = link.getAttribute('href');
+            if (href.startsWith('/')) {
+                e.preventDefault();
+                navigate(href);
             }
-
-            targetElement = (
-                <>
-                    {log.targetType && <span className="target-type">{log.targetType.toLowerCase()} </span>}
-                    {path ? (
-                        <Link to={path} className="log-link target-link">{log.targetName}</Link>
-                    ) : (
-                        <span className="target-name">{log.targetName}</span>
-                    )}
-                </>
-            );
         }
-
-        return (
-            <div className="activity-sentence">
-                {actorLink} <span className="action-text">{log.action}</span> {targetElement}
-            </div>
-        );
     };
 
     if (loading) {
@@ -88,7 +51,7 @@ const ActivityLog = () => {
             </div>
 
             <div className="tile no-hover" style={{ padding: '0' }}>
-                <div className="table">
+                <div className="table" onClick={handleLogClick}>
                     <table>
                         <thead>
                             <tr>
@@ -106,7 +69,10 @@ const ActivityLog = () => {
                                     <tr key={log.id}>
                                         <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top' }}>{formatTimestamp(log.timestamp)}</td>
                                         <td>
-                                            {renderActivityContent(log)}
+                                            <div
+                                                className="activity-sentence"
+                                                dangerouslySetInnerHTML={{ __html: log.messageHtml }}
+                                            />
                                         </td>
                                     </tr>
                                 ))
@@ -138,12 +104,6 @@ const ActivityLog = () => {
                 .target-link {
                     color: var(--primary-color);
                 }
-                .target-type {
-                    color: #888;
-                    font-style: italic;
-                    font-size: 0.9em;
-                    margin-right: 4px;
-                }
                 .action-text {
                     color: #555;
                 }
@@ -151,6 +111,13 @@ const ActivityLog = () => {
                     color: #bbb;
                 }
                 .actor-name {
+                    font-weight: 600;
+                    color: #2c3e50;
+                }
+                [data-theme='dark'] .actor-name {
+                    color: #ecf0f1;
+                }
+                b {
                     font-weight: 600;
                 }
             `}</style>

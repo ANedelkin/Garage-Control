@@ -13,44 +13,38 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task LogActionAsync(
-            string userId, 
-            string workshopId, 
-            string action, 
-            string? targetId, 
-            string? targetName, 
-            string? targetType)
+        public async Task LogActionAsync(string userId, string workshopId, string actionHtml)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return;
 
-            string actorName = user.Email ?? user.UserName ?? "Unknown";
-            string actorType = "Worker";
-            string? actorTargetId = null;
+            string actorDisplayName;
+            string? actorLink = null;
 
             var worker = await _context.Workers.AsNoTracking().FirstOrDefaultAsync(w => w.UserId == userId);
-            if (worker != null)
-            {
-                actorName = worker.Name;
-                actorTargetId = worker.Id;
-            }
-
             var workshop = await _context.Workshops.AsNoTracking().FirstOrDefaultAsync(w => w.Id == workshopId);
+
             if (workshop != null && workshop.BossId == userId)
             {
-                actorType = "Owner";
+                actorDisplayName = "Owner";
             }
+            else if (worker != null)
+            {
+                actorDisplayName = worker.Name;
+                actorLink = $"/workers/{worker.Id}";
+            }
+            else
+            {
+                actorDisplayName = user.UserName ?? "Unknown";
+            }
+
+            string actorHtml = actorLink != null 
+                ? $"<a href='{actorLink}' class='log-link actor-link'>{actorDisplayName}</a>" 
+                : $"<span class='actor-name'>{actorDisplayName}</span>";
 
             var log = new ActivityLog
             {
-                ActorId = userId,
-                ActorTargetId = actorTargetId,
-                ActorName = actorName,
-                ActorType = actorType,
-                Action = action,
-                TargetId = targetId,
-                TargetName = targetName,
-                TargetType = targetType,
+                MessageHtml = $"{actorHtml} {actionHtml}",
                 WorkshopId = workshopId,
                 Timestamp = DateTime.UtcNow
             };

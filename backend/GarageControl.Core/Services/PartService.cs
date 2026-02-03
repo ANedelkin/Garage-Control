@@ -1,3 +1,4 @@
+using System.Globalization;
 using GarageControl.Core.ViewModels.Parts;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
@@ -115,10 +116,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "created",
-                part.Id,
-                part.Name,
-                "Part");
+                $"created part <a href='/parts?partId={part.Id}' class='log-link target-link'>{part.Name}</a>");
 
             return new PartViewModel
             {
@@ -171,6 +169,45 @@ namespace GarageControl.Core.Services
 
             if (part == null) throw new ArgumentException("Part not found");
 
+            var changes = new List<string>();
+            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
+
+            void TrackChange(string fieldName, object? oldValue, object? newValue)
+            {
+                if (oldValue is decimal oldNum && newValue is decimal newNum)
+                {
+                    if (!NumbersEqual(oldNum, newNum))
+                    {
+                        changes.Add($"{fieldName} from <b>{FormatPrice(oldNum)}</b> to <b>{FormatPrice(newNum)}</b>");
+                    }
+                    return;
+                }
+
+                string oldStr = oldValue?.ToString() ?? "";
+                string newStr = newValue?.ToString() ?? "";
+                if (oldStr != newStr)
+                {
+                    string oldDisp = string.IsNullOrEmpty(oldStr) ? "[empty]" : oldStr;
+                    string newDisp = string.IsNullOrEmpty(newStr) ? "[empty]" : newStr;
+                    
+                    if (oldDisp.Length > 100 || newDisp.Length > 100)
+                    {
+                        changes.Add(fieldName);
+                    }
+                    else
+                    {
+                        changes.Add($"{fieldName} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
+                    }
+                }
+            }
+
+            TrackChange("name", part.Name, model.Name);
+            TrackChange("part number", part.PartNumber, model.PartNumber);
+            TrackChange("price", part.Price, model.Price);
+            TrackChange("quantity", (decimal)part.Quantity, (decimal)model.Quantity);
+            TrackChange("minimum quantity", (decimal)part.MinimumQuantity, (decimal)model.MinimumQuantity);
+
             part.Name = model.Name;
             part.PartNumber = model.PartNumber;
             part.Price = model.Price;
@@ -179,13 +216,26 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                "updated",
-                part.Id,
-                part.Name,
-                "Part");
+            if (changes.Count > 0)
+            {
+                string partLink = $"<a href='/parts?partId={part.Id}' class='log-link target-link'>{part.Name}</a>";
+                string actionHtml;
+
+                if (changes.Count == 1 && changes[0].Contains("from"))
+                {
+                    actionHtml = $"changed {changes[0]} of part {partLink}";
+                }
+                else if (changes.All(c => !c.Contains("from")))
+                {
+                    actionHtml = $"updated details of part {partLink}";
+                }
+                else
+                {
+                    actionHtml = $"updated part {partLink}: {string.Join(", ", changes)}";
+                }
+
+                await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+            }
         }
 
         public async Task DeletePartAsync(string userId, string workshopId, string partId)
@@ -202,10 +252,7 @@ namespace GarageControl.Core.Services
                 await _activityLogService.LogActionAsync(
                     userId,
                     workshopId,
-                    "deleted",
-                    null,
-                    partName,
-                    "Part");
+                    $"deleted part <b>{partName}</b>");
             }
         }
 
@@ -224,10 +271,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "created",
-                folder.Id,
-                folder.Name,
-                "group of parts");
+                $"created group of parts <b>{folder.Name}</b>");
 
             return new PartsFolderViewModel
             {
@@ -244,16 +288,14 @@ namespace GarageControl.Core.Services
 
             if (folder == null) throw new ArgumentException("Folder not found");
 
+            string oldName = folder.Name;
             folder.Name = newName;
             await _context.SaveChangesAsync();
 
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                $"renamed to '{newName}'",
-                folder.Id,
-                folder.Name,
-                "group of parts");
+                $"renamed group of parts <b>{oldName}</b> to <b>{newName}</b>");
         }
 
         public async Task DeleteFolderAsync(string userId, string workshopId, string folderId)
@@ -279,10 +321,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "deleted",
-                null,
-                folderName,
-                "group of parts");
+                $"deleted group of parts <b>{folderName}</b>");
         }
 
         private async Task DeleteFolderRecursive(PartsFolder folder)
@@ -322,10 +361,27 @@ namespace GarageControl.Core.Services
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) throw new ArgumentException("Part not found");
 
+            var oldParentId = part.ParentId;
+            if (oldParentId == newParentId) return;
+
             if (newParentId != null)
             {
                 var parent = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == newParentId && f.WorkshopId == workshopId);
                 if (parent == null) throw new ArgumentException("Target folder not found");
+            }
+
+            string oldParentName = "base";
+            if (oldParentId != null)
+            {
+                var oldFolder = await _context.PartsFolders.FindAsync(oldParentId);
+                oldParentName = oldFolder?.Name ?? "base";
+            }
+
+            string newParentName = "base";
+            if (newParentId != null)
+            {
+                var newFolder = await _context.PartsFolders.FindAsync(newParentId);
+                newParentName = newFolder?.Name ?? "base";
             }
 
             part.ParentId = newParentId;
@@ -334,10 +390,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "moved",
-                part.Id,
-                part.Name,
-                "Part");
+                $"moved part <a href='/parts?partId={part.Id}' class='log-link target-link'>{part.Name}</a> from <b>{oldParentName}</b> to <b>{newParentName}</b>");
         }
 
         public async Task MoveFolderAsync(string userId, string workshopId, string folderId, string? newParentId)
@@ -347,10 +400,27 @@ namespace GarageControl.Core.Services
             
             if (folder.Id == newParentId) throw new ArgumentException("Cannot move folder into itself");
 
+            var oldParentId = folder.ParentId;
+            if (oldParentId == newParentId) return;
+
             if (newParentId != null)
             {
                 var parent = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == newParentId && f.WorkshopId == workshopId);
                 if (parent == null) throw new ArgumentException("Target folder not found");
+            }
+
+            string oldParentName = "base";
+            if (oldParentId != null)
+            {
+                var oldFolder = await _context.PartsFolders.FindAsync(oldParentId);
+                oldParentName = oldFolder?.Name ?? "base";
+            }
+
+            string newParentName = "base";
+            if (newParentId != null)
+            {
+                var newFolder = await _context.PartsFolders.FindAsync(newParentId);
+                newParentName = newFolder?.Name ?? "base";
             }
 
             folder.ParentId = newParentId;
@@ -359,10 +429,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "moved",
-                folder.Id,
-                folder.Name,
-                "group of parts");
+                $"moved group of parts <b>{folder.Name}</b> from <b>{oldParentName}</b> to <b>{newParentName}</b>");
         }
     }
 }

@@ -10,16 +10,19 @@ namespace GarageControl.Core.Services
     {
         private readonly IRepository _repo;
         private readonly IWorkshopService _workshopService;
-
-        public MakeService(IRepository repo, IWorkshopService workshopService)
+        private readonly IActivityLogService _activityLogService;
+ 
+        public MakeService(IRepository repo, IWorkshopService workshopService, IActivityLogService activityLogService)
         {
             _repo = repo;
             _workshopService = workshopService;
+            _activityLogService = activityLogService;
         }
 
         public async Task<string> CreateMake(MakeVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var workshopId = await _workshopService.GetWorkshopId(userId);
             // If bossId is null (Admin or unassigned), we create a Global make (CreatorId = null)
             // Assumes caller has verified permissions if needed, or Admin uses this flow.
             
@@ -31,12 +34,19 @@ namespace GarageControl.Core.Services
 
             await _repo.AddAsync(make);
             await _repo.SaveChangesAsync();
+
+            if (workshopId != null)
+            {
+                await _activityLogService.LogActionAsync(userId, workshopId, $"created custom make <b>{make.Name}</b>");
+            }
+
             return make.Id;
         }
 
         public async Task DeleteMake(string id, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var workshopId = await _workshopService.GetWorkshopId(userId);
             var make = await _repo.GetByIdAsync<CarMake>(id);
             
             if (make == null) return;
@@ -48,8 +58,14 @@ namespace GarageControl.Core.Services
                 throw new UnauthorizedAccessException("Cannot delete global or other workshop's make.");
             }
 
+            string makeName = make.Name;
             await _repo.DeleteAsync<CarMake>(id);
             await _repo.SaveChangesAsync();
+
+            if (workshopId != null)
+            {
+                await _activityLogService.LogActionAsync(userId, workshopId, $"deleted make <b>{makeName}</b>");
+            }
         }
 
         public async Task<MakeVM?> GetMake(string id)
@@ -186,6 +202,7 @@ namespace GarageControl.Core.Services
         public async Task UpdateMake(MakeVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var workshopId = await _workshopService.GetWorkshopId(userId);
             var make = await _repo.GetByIdAsync<CarMake>(model.Id!);
             
             if (make != null)
@@ -194,9 +211,15 @@ namespace GarageControl.Core.Services
                 {
                      throw new UnauthorizedAccessException("Cannot edit global or other workshop's make.");
                 }
-
+ 
+                string oldName = make.Name;
                 make.Name = model.Name;
                 await _repo.SaveChangesAsync();
+
+                if (workshopId != null && oldName != model.Name)
+                {
+                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed make <b>{oldName}</b> to <b>{model.Name}</b>");
+                }
             }
         }
 
@@ -283,29 +306,33 @@ namespace GarageControl.Core.Services
         public async Task MergeMakeWithGlobal(string customMakeId, string globalMakeId, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var workshopId = await _workshopService.GetWorkshopId(userId);
             if (bossId == null)
             {
                 throw new UnauthorizedAccessException("Only workshop owners can merge makes.");
             }
-
+ 
             var customMake = await _repo.GetByIdAsync<CarMake>(customMakeId);
             if (customMake == null || customMake.CreatorId != bossId)
             {
                 throw new UnauthorizedAccessException("You can only merge your own custom makes.");
             }
-
+ 
             var globalMake = await _repo.GetByIdAsync<CarMake>(globalMakeId);
             if (globalMake == null || globalMake.CreatorId != null)
             {
                 throw new ArgumentException("Invalid global make.");
             }
+ 
+            string customMakeName = customMake.Name;
+            string globalMakeName = globalMake.Name;
 
             // Update all cars using custom make to use global make
             var cars = await _repo.GetAllAttachedAsync<Car>()
                 .Include(c => c.Model)
                 .Where(c => c.Model.CarMakeId == customMakeId)
                 .ToListAsync();
-
+ 
             // For each car, find matching global model or keep current
             foreach (var car in cars)
             {
@@ -313,18 +340,18 @@ namespace GarageControl.Core.Services
                     .FirstOrDefaultAsync(m => m.CarMakeId == globalMakeId 
                         && m.CreatorId == null 
                         && m.Name.ToUpper() == car.Model.Name.ToUpper());
-
+ 
                 if (globalModel != null)
                 {
                     car.ModelId = globalModel.Id;
                 }
             }
-
+ 
             // Move or Delete custom models under this make
             var customModels = await _repo.GetAllAttachedAsync<CarModel>()
                 .Where(m => m.CarMakeId == customMakeId)
                 .ToListAsync();
-
+ 
             foreach (var model in customModels)
             {
                 // Check if this specific model was merged (already handled in cars update)
@@ -342,22 +369,27 @@ namespace GarageControl.Core.Services
                     await _repo.DeleteAsync<CarModel>(model.Id);
                 }
             }
-
+ 
             // Delete custom make
             await _repo.DeleteAsync<CarMake>(customMakeId);
             await _repo.SaveChangesAsync();
-
+ 
             // Delete related notifications
             var notifications = await _repo.GetAllAttachedAsync<Notification>()
                 .Where(n => n.UserId == bossId && n.Link!.Contains($"customId={customMakeId}"))
                 .ToListAsync();
-
+ 
             foreach (var notification in notifications)
             {
                 await _repo.DeleteAsync<Notification>(notification.Id);
             }
-
+ 
             await _repo.SaveChangesAsync();
+
+            if (workshopId != null)
+            {
+                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom make <b>{customMakeName}</b> into <b>{globalMakeName}</b>");
+            }
         }
 
         private async Task<string?> GetBossId(string userId)

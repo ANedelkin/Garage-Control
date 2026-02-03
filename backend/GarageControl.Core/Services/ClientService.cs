@@ -59,10 +59,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "created",
-                client.Id,
-                client.Name,
-                "Client");
+                $"created client <a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>");
         }
 
         public async Task Delete(string id, string userId)
@@ -81,10 +78,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                "deleted",
-                null,
-                clientName,
-                "Client");
+                $"deleted client <b>{clientName}</b>");
         }
 
         public async Task<ClientVM?> Details(string id)
@@ -111,6 +105,32 @@ namespace GarageControl.Core.Services
             var client = await _repo.GetByIdAsync<Client>(model.Id!);
             if (client != null)
             {
+                var changes = new List<string>();
+                void TrackChange(string fieldName, string? oldValue, string? newValue)
+                {
+                    if (oldValue != newValue)
+                    {
+                        string oldDisp = string.IsNullOrEmpty(oldValue) ? "[empty]" : oldValue;
+                        string newDisp = string.IsNullOrEmpty(newValue) ? "[empty]" : newValue;
+                        
+                        if (oldDisp.Length > 100 || newDisp.Length > 100)
+                        {
+                            changes.Add(fieldName);
+                        }
+                        else
+                        {
+                            changes.Add($"{fieldName} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
+                        }
+                    }
+                }
+
+                string oldName = client.Name;
+                TrackChange("name", client.Name, model.Name);
+                TrackChange("phone number", client.PhoneNumber, model.PhoneNumber);
+                TrackChange("email", client.Email, model.Email);
+                TrackChange("address", client.Address, model.Address);
+                TrackChange("registration number", client.RegistrationNumber, model.RegistrationNumber);
+
                 client.Name = model.Name;
                 client.PhoneNumber = model.PhoneNumber;
                 client.Email = model.Email;
@@ -119,13 +139,26 @@ namespace GarageControl.Core.Services
                 
                 await _repo.SaveChangesAsync();
 
-                await _activityLogService.LogActionAsync(
-                    userId,
-                    workshopId,
-                    "updated",
-                    client.Id,
-                    client.Name,
-                    "Client");
+                if (changes.Count > 0)
+                {
+                    string clientLink = $"<a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>";
+                    string actionHtml;
+
+                    if (changes.Count == 1 && changes[0].Contains("from"))
+                    {
+                        actionHtml = $"changed {changes[0]} of client {clientLink}";
+                    }
+                    else if (changes.All(c => !c.Contains("from")))
+                    {
+                        actionHtml = $"updated details of client {clientLink}";
+                    }
+                    else
+                    {
+                        actionHtml = $"updated client {clientLink}: {string.Join(", ", changes)}";
+                    }
+
+                    await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+                }
             }
         }
     }

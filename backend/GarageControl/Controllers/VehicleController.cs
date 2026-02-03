@@ -62,14 +62,16 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit([FromBody] VehicleVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             await _vehicleService.Edit(model);
+             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             await _vehicleService.Edit(model, userId);
              return Ok(new { success = true });
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _vehicleService.Delete(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _vehicleService.Delete(id, userId);
             return Ok(new { success = true });
         }
     }

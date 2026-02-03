@@ -4,7 +4,7 @@ namespace GarageControl.Core.Services
 {
     public interface IActivityLogService
     {
-        Task LogActionAsync(string userId, string workshopId, string action, string? targetId, string? targetName, string? targetType);
+        Task LogActionAsync(string userId, string workshopId, string actionHtml);
         Task<IEnumerable<ActivityLog>> GetLogsAsync(string workshopId, int count = 100);
     }
 }

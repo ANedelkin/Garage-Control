@@ -48,16 +48,25 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
             // Check if it's a new item masquerading as edit (empty ID)
             if (string.IsNullOrEmpty(model.Id))
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 await _jobTypeService.Create(model, userId);
                 return Ok(new { message = "Job type created successfully" });
             }
 
-            await _jobTypeService.Edit(model);
+            await _jobTypeService.Edit(model, userId);
             return Ok(new { message = "Job type updated successfully" });
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            await _jobTypeService.Delete(id, userId);
+            return Ok(new { message = "Job type deleted successfully" });
         }
     }
 }
