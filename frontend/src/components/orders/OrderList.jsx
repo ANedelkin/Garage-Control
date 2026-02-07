@@ -275,10 +275,12 @@ const OrderList = ({ mode = 'active' }) => {
                                             <tr key={job.id} onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} className="clickable">
                                                 <td>
                                                     <span className={`job-status ${job.status}`}>
-                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
+                                                        <i className={`fa-solid ${job.status === 'awaitingparts' ? 'fa-clock' :
+                                                            job.status === 'pending' ? 'fa-hourglass-start' :
                                                             job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                             } job-status-${job.status} status-icon`}></i>
-                                                        {job.status === 'pending' ? 'Pending' :
+                                                        {job.status === 'awaitingparts' ? 'Awaiting Parts' :
+                                                            job.status === 'pending' ? 'Pending' :
                                                             job.status === 'inprogress' ? 'In Progress' : 'Done'
                                                         }
                                                     </span>

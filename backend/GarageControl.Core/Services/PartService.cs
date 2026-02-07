@@ -10,11 +10,13 @@ namespace GarageControl.Core.Services
     {
         private readonly GarageControlDbContext _context;
         private readonly IActivityLogService _activityLogService;
+        private readonly INotificationService _notificationService;
 
-        public PartService(GarageControlDbContext context, IActivityLogService activityLogService)
+        public PartService(GarageControlDbContext context, IActivityLogService activityLogService, INotificationService notificationService)
         {
             _context = context;
             _activityLogService = activityLogService;
+            _notificationService = notificationService;
         }
 
         public async Task<FolderContentViewModel> GetFolderContentAsync(string workshopId, string? folderId)
@@ -64,37 +66,56 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            result.Parts = await partsQuery
-                .Select(p => new PartViewModel
+            var parts = await partsQuery.ToListAsync();
+            var partViewModels = new List<PartViewModel>();
+            
+            foreach (var p in parts)
+            {
+                var partsReserved = await GetPartsReservedAsync(p.Id);
+                partViewModels.Add(new PartViewModel
                 {
                     Id = p.Id,
                     Name = p.Name,
                     PartNumber = p.PartNumber,
                     Price = p.Price,
                     Quantity = p.Quantity,
+                    AvailabilityBalance = p.AvailabilityBalance,
+                    PartsReserved = partsReserved,
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
-                })
-                .ToListAsync();
+                });
+            }
+            
+            result.Parts = partViewModels;
 
             return result;
         }
 
         public async Task<List<PartViewModel>> GetAllPartsAsync(string workshopId)
         {
-            return await _context.Parts
+            var parts = await _context.Parts
                 .Where(p => p.WorkshopId == workshopId)
-                .Select(p => new PartViewModel
+                .ToListAsync();
+            
+            var result = new List<PartViewModel>();
+            foreach (var p in parts)
+            {
+                var partsReserved = await GetPartsReservedAsync(p.Id);
+                result.Add(new PartViewModel
                 {
                     Id = p.Id,
                     Name = p.Name,
                     PartNumber = p.PartNumber,
                     Price = p.Price,
                     Quantity = p.Quantity,
+                    AvailabilityBalance = p.AvailabilityBalance,
+                    PartsReserved = partsReserved,
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
-                })
-                .ToListAsync();
+                });
+            }
+            
+            return result;
         }
 
         public async Task<PartViewModel> CreatePartAsync(string userId, string workshopId, CreatePartViewModel model)
@@ -107,11 +128,18 @@ namespace GarageControl.Core.Services
                 Quantity = model.Quantity,
                 MinimumQuantity = model.MinimumQuantity,
                 ParentId = model.ParentId,
-                WorkshopId = workshopId
+                WorkshopId = workshopId,
+                AvailabilityBalance = model.Quantity
             };
 
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
+
+            // If new part is already below minimum, send notification
+            if (part.AvailabilityBalance < part.MinimumQuantity)
+            {
+                await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
+            }
 
             await _activityLogService.LogActionAsync(
                 userId,
@@ -125,6 +153,8 @@ namespace GarageControl.Core.Services
                 PartNumber = part.PartNumber,
                 Price = part.Price,
                 Quantity = part.Quantity,
+                AvailabilityBalance = part.AvailabilityBalance,
+                PartsReserved = 0,
                 MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId
             };
@@ -137,6 +167,7 @@ namespace GarageControl.Core.Services
             
             if (part == null) return null;
 
+            var partsReserved = await GetPartsReservedAsync(part.Id);
             var result = new PartWithPathViewModel
             {
                 Id = part.Id,
@@ -144,6 +175,8 @@ namespace GarageControl.Core.Services
                 PartNumber = part.PartNumber,
                 Price = part.Price,
                 Quantity = part.Quantity,
+                AvailabilityBalance = part.AvailabilityBalance,
+                PartsReserved = partsReserved,
                 MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId,
                 Path = new List<string>()
@@ -215,6 +248,9 @@ namespace GarageControl.Core.Services
             part.MinimumQuantity = model.MinimumQuantity;
 
             await _context.SaveChangesAsync();
+
+            // Recalculate availability balance for this part and notify if needed
+            await RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
 
             if (changes.Count > 0)
             {
@@ -430,6 +466,40 @@ namespace GarageControl.Core.Services
                 userId,
                 workshopId,
                 $"moved group of parts <b>{folder.Name}</b> from <b>{oldParentName}</b> to <b>{newParentName}</b>");
+        }
+
+        public async Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null)
+        {
+            var partsQuery = _context.Parts.Where(p => p.WorkshopId == workshopId);
+            if (!string.IsNullOrEmpty(partId))
+            {
+                partsQuery = partsQuery.Where(p => p.Id == partId);
+            }
+
+            var parts = await partsQuery.ToListAsync();
+
+            foreach (var part in parts)
+            {
+                var awaitingQuantity = await _context.JobParts
+                    .Where(jp => jp.PartId == part.Id && jp.Job.Status == Shared.Enums.JobStatus.AwaitingParts)
+                    .SumAsync(jp => jp.Quantity);
+
+                part.AvailabilityBalance = part.Quantity - awaitingQuantity;
+
+                if (part.AvailabilityBalance < part.MinimumQuantity)
+                {
+                    await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<int> GetPartsReservedAsync(string partId)
+        {
+            return await _context.JobParts
+                .Where(jp => jp.PartId == partId && jp.Job.Status == Shared.Enums.JobStatus.AwaitingParts)
+                .SumAsync(jp => jp.Quantity);
         }
     }
 }

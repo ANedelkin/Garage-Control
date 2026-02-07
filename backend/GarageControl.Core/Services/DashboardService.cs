@@ -99,12 +99,12 @@ namespace GarageControl.Core.Services
         private async Task<List<LowStockPartViewModel>> GetLowStockPartsAsync(string workshopId)
         {
             return await _context.Parts
-                .Where(p => p.WorkshopId == workshopId && p.Quantity < p.MinimumQuantity)
+                .Where(p => p.WorkshopId == workshopId && p.AvailabilityBalance < p.MinimumQuantity)
                 .Select(p => new LowStockPartViewModel
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    CurrentQuantity = p.Quantity,
+                    CurrentQuantity = p.AvailabilityBalance, // Show available balance in the tile
                     MinimumQuantity = p.MinimumQuantity
                 })
                 .OrderBy(p => p.CurrentQuantity)

@@ -1,5 +1,6 @@
 using GarageControl.Core.ViewModels.Notifications;
 using GarageControl.Infrastructure.Data;
+using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GarageControl.Core.Services
@@ -53,6 +54,41 @@ namespace GarageControl.Core.Services
                 _context.Notifications.RemoveRange(oldNotifications);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task SendStockNotificationAsync(string workshopId, string partId, string partName, int currentBalance, int minQuantity)
+        {
+            // Find all users with access to "Parts Stockpile" for this workshop
+            var usersToNotify = await _context.Workers
+                .Where(w => w.WorkshopId == workshopId && w.Accesses.Any(a => a.Name == "Parts Stockpile"))
+                .Select(w => w.UserId)
+                .ToListAsync();
+
+            // Also notify the owner
+            var ownerId = await _context.Workshops
+                .Where(w => w.Id == workshopId)
+                .Select(w => w.BossId)
+                .FirstOrDefaultAsync();
+
+            if (ownerId != null && !usersToNotify.Contains(ownerId))
+            {
+                usersToNotify.Add(ownerId);
+            }
+
+            foreach (var userId in usersToNotify)
+            {
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    Message = $"Part '{partName}' is low on stock (Available: {currentBalance}, Minimum: {minQuantity}).",
+                    Link = $"/parts?partId={partId}",
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -103,6 +103,10 @@ namespace GarageControl.Controllers
             try
             {
                 var result = await _orderService.UpdateOrderAsync(GetUserId(), id, GetWorkshopId(), model);
+                if (result is Core.Models.MethodResponse resp && !resp.Success)
+                {
+                    return BadRequest(new { message = resp.Message });
+                }
                 return Ok(result);
             }
             catch (Exception ex)
@@ -147,7 +151,11 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _orderService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
+                var result = await _orderService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
                 return Ok(new { success = true });
             }
             catch (Exception ex)
@@ -161,7 +169,11 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _orderService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
+                var result = await _orderService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
                 return Ok(new { success = true });
             }
             catch (Exception ex)

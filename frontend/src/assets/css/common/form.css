@@ -9,6 +9,18 @@
     flex-direction: column;
 }
 
+.form-section-row {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-section-row .form-section {
+    flex: 1;
+    margin-bottom: 0;
+}
+
 .form-section .select-wrapper{
     width: 100%;
 }

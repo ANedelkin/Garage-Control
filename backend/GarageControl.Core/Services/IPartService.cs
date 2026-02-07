@@ -15,5 +15,6 @@ namespace GarageControl.Core.Services
         Task DeleteFolderAsync(string userId, string garageId, string folderId);
         Task MovePartAsync(string userId, string garageId, string partId, string? newParentId);
         Task MoveFolderAsync(string userId, string garageId, string folderId, string? newParentId);
+        Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null);
     }
 }

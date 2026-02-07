@@ -17,11 +17,13 @@ const ItemsTreeNode = ({
     renderIcon,
     renderActions,
     allowDrag,
-    parentId
+    parentId,
+    onStatusChange
 }) => {
     const [expanded, setExpanded] = useState(false);
     const [children, setChildren] = useState({ groups: [], items: [] });
     const [loaded, setLoaded] = useState(false);
+    const [childrenMaxStatus, setChildrenMaxStatus] = useState(''); // Track highest status from children
 
     const [showMenu, setShowMenu] = useState(false);
     const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
@@ -115,7 +117,56 @@ const ItemsTreeNode = ({
         setShowMenu(false);
     };
 
+    // Handle status updates from children
+    const handleChildStatusChange = (childId, childStatus) => {
+        // Recalculate max status from all children
+        // This is simplified - in practice, you'd track all children statuses
+        // For now, we'll use the highest status passed
+        const newPriority = getStatusPriority(childStatus);
+        const currentPriority = getStatusPriority(childrenMaxStatus);
+        if (newPriority > currentPriority) {
+            setChildrenMaxStatus(childStatus);
+        }
+    };
+
     const isActive = ((type === 'item' && node.id === selectedItemId) || (type === 'group' && selectedPath.includes(node.id) && !expanded));
+
+    // Determine status class for parts based on stock levels
+    const getStatusClass = () => {
+        if (type !== 'item' || !node.quantity !== undefined) return '';
+        
+        // For parts: check stockpile and availability balance
+        if (node.quantity < node.minimumQuantity) {
+            return 'status-low-stock';
+        }
+        
+        if (node.availabilityBalance !== undefined) {
+            if (node.availabilityBalance < 0) {
+                return 'status-negative-availability';
+            }
+            if (node.availabilityBalance < node.minimumQuantity) {
+                return 'status-low-availability';
+            }
+        }
+        
+        return '';
+    };
+
+    // Convert status string to priority number for comparison (higher = more severe)
+    const getStatusPriority = (status) => {
+        if (status === 'status-negative-availability') return 3;
+        if (status === 'status-low-stock') return 2;
+        if (status === 'status-low-availability') return 1;
+        return 0;
+    };
+
+    // Notify parent of status when it changes
+    useEffect(() => {
+        const myStatus = type === 'group' ? childrenMaxStatus : getStatusClass();
+        if (onStatusChange) {
+            onStatusChange(node.id, myStatus);
+        }
+    }, [childrenMaxStatus, node.id, type, onStatusChange]);
 
     // Default Icon Logic if not provided
     const getIcon = () => {
@@ -171,7 +222,7 @@ const ItemsTreeNode = ({
     return (
         <>
             <div
-                className={`list-item ${isActive ? 'active' : ''} ${node.className || ''}`}
+                className={`list-item ${isActive ? 'active' : ''} ${type === 'group' ? childrenMaxStatus : getStatusClass()} ${node.className || ''}`}
                 onClick={handleExpand}
                 onContextMenu={handleContextMenu}
                 draggable={allowDrag}
@@ -218,6 +269,7 @@ const ItemsTreeNode = ({
                         renderActions={renderActions}
                         allowDrag={allowDrag}
                         parentId={node.id}
+                        onStatusChange={handleChildStatusChange}
                     />
                 </div>
             )}

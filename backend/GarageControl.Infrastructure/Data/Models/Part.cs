@@ -21,6 +21,8 @@ namespace GarageControl.Infrastructure.Data.Models
         public int Quantity { get; set; }
         [Required]
         public int MinimumQuantity { get; set; }
+        [Required]
+        public int AvailabilityBalance { get; set; }
         public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
         public string? WorkshopId { get; set; } = null!;
         [ForeignKey(nameof(WorkshopId))]

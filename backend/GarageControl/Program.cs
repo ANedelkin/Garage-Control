@@ -35,6 +35,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 builder.Services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
+builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();
 
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)

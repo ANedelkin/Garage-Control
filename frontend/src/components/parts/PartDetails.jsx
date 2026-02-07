@@ -7,6 +7,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
         partNumber: '',
         price: '',
         quantity: '',
+        availabilityBalance: '',
+        partsReserved: '',
         minimumQuantity: ''
     });
     const [stockAdj, setStockAdj] = useState('');
@@ -19,6 +21,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 partNumber: part.partNumber,
                 price: part.price,
                 quantity: part.quantity,
+                availabilityBalance: part.availabilityBalance,
+                partsReserved: part.partsReserved || 0,
                 minimumQuantity: part.minimumQuantity
             });
             setStockAdj('');
@@ -125,15 +129,42 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                     {/* Right Column */}
                     <div className="form-column">
                         <div className={`form-section`}>
-                            <label>Current Quantity</label>
+                            <label>Stockpile</label>
                             <input
-                                className={formData.quantity === 0 ? 'out-of-stock' : (formData.quantity < formData.minimumQuantity ? 'low-stock' : '')}
+                                className={formData.quantity < formData.minimumQuantity ? 'low-stock' : ''}
                                 type="number"
                                 name="quantity"
                                 value={formData.quantity}
                                 onChange={handleChange}
                                 required
                             />
+                        </div>
+
+                        <div className="form-section-row">
+                            <div className={`form-section`}>
+                                <label>Availability Balance</label>
+                                <input
+                                    className={
+                                        formData.availabilityBalance < 0 
+                                            ? 'negative-stock' 
+                                            : (formData.availabilityBalance < formData.minimumQuantity ? 'low-stock-yellow' : '')
+                                    }
+                                    type="number"
+                                    name="availabilityBalance"
+                                    value={formData.availabilityBalance}
+                                    disabled
+                                />
+                            </div>
+
+                            <div className={`form-section`}>
+                                <label>Parts Requested</label>
+                                <input
+                                    type="number"
+                                    name="partsReserved"
+                                    value={formData.partsReserved}
+                                    disabled
+                                />
+                            </div>
                         </div>
 
                         <div className="form-section">

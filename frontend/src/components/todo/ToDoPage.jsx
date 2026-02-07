@@ -61,10 +61,11 @@ const ToDoPage = () => {
                             <tr key={job.id} onClick={() => navigate(`/orders/${job.orderId}`)}>
                                 <td>
                                     <span className={`job-status ${job.status}`}>
-                                        <i className={`fa-solid ${job.status === 0 ? 'fa-hourglass-start' :
-                                            job.status === 1 ? 'fa-screwdriver-wrench' : 'fa-check'
+                                        <i className={`fa-solid ${job.status === 0 ? 'fa-clock' :
+                                            job.status === 1 ? 'fa-hourglass-start' :
+                                            job.status === 2 ? 'fa-screwdriver-wrench' : 'fa-check'
                                             } job-status-${job.status} status-icon`}></i>
-                                        {job.status === 0 ? 'Pending' : job.status === 1 ? 'In Progress' : 'Done'}
+                                        {job.status === 0 ? 'Awaiting Parts' : job.status === 1 ? 'Pending' : job.status === 2 ? 'In Progress' : 'Done'}
                                     </span>
                                 </td>
                                 <td>{job.typeName}</td>

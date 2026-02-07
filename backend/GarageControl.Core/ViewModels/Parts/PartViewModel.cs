@@ -9,6 +9,8 @@ namespace GarageControl.Core.ViewModels.Parts
         public string PartNumber { get; set; } = null!;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public int AvailabilityBalance { get; set; }
+        public int PartsReserved { get; set; }
         public int MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }

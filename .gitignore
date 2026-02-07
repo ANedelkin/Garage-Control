@@ -3,6 +3,8 @@ obj/
 frontend-prototype/
 Documentation/
 
+counter.js
+
 # Logs
 logs
 *.log

@@ -27,6 +27,10 @@
     z-index: 2;
 }
 
+.job-status-awaiting {
+    background: var(--awaiting-orders, #6c757d) !important;
+}
+
 .job-status-pending {
     background: var(--pending-orders) !important;
 }
@@ -41,6 +45,10 @@
 
 .job-status-all {
     background: var(--all-orders) !important;
+}
+
+.job-status-awaiting.status-glow::before {
+    background: var(--awaiting-orders-hover, #5a6268);
 }
 
 .job-status-pending.status-glow::before {

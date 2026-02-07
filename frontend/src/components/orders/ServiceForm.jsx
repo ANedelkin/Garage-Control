@@ -13,7 +13,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
     const handleChange = (field, value) => {
         updateService(service.id, field, value);
 
-        if (field === 'status' && value === 2) { // 2 = Finished
+        if (field === 'status' && value === 3) { // 3 = Finished
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
@@ -101,13 +101,14 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                     <div className="form-section">
                         <label>Job Status</label>
                         <DropDown
-                            className={`status-glow job-status-${service.status === 0 ? 'pending' : service.status === 1 ? 'inprogress' : 'finished'}`}
+                            className={`status-glow job-status-${service.status === 0 ? 'awaiting' : service.status === 1 ? 'pending' : service.status === 2 ? 'inprogress' : 'finished'}`}
                             value={service.status}
                             onChange={e => handleChange('status', parseInt(e.target.value))}
                         >
-                            <option value={0}>Pending</option>
-                            <option value={1}>In Progress</option>
-                            <option value={2}>Finished</option>
+                            <option value={0}>Awaiting Parts</option>
+                            <option value={1}>Pending</option>
+                            <option value={2}>In Progress</option>
+                            <option value={3}>Finished</option>
                         </DropDown>
                     </div>
 

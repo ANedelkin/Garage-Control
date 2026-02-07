@@ -1,5 +1,6 @@
 using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Jobs;
+using GarageControl.Core.Models;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,19 +16,27 @@ namespace GarageControl.Core.Services
         Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model);
         Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId);
         Task<JobDetailsViewModel?> GetJobByIdAsync(string jobId, string workshopId);
-        Task CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model);
-        Task UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model);
+        Task<MethodResponse> CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model);
+        Task<MethodResponse> UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model);
     }
 
     public class OrderService : IOrderService
     {
         private readonly GarageControlDbContext _context;
         private readonly IActivityLogService _activityLogService;
+        private readonly INotificationService _notificationService;
+        private readonly IPartService _partService;
 
-        public OrderService(GarageControlDbContext context, IActivityLogService activityLogService)
+        public OrderService(
+            GarageControlDbContext context, 
+            IActivityLogService activityLogService, 
+            INotificationService notificationService,
+            IPartService partService)
         {
             _context = context;
             _activityLogService = activityLogService;
+            _notificationService = notificationService;
+            _partService = partService;
         }
 
         public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null)
@@ -80,7 +89,8 @@ namespace GarageControl.Core.Services
                     Id = j.Id,
                     Type = j.TypeName,
                     Description = j.Description,
-                    Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
+                    Status = j.Status == Shared.Enums.JobStatus.AwaitingParts ? "awaitingparts" :
+                             j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
                              j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
                     MechanicName = j.MechanicName,
                     StartTime = j.StartTime,
@@ -120,7 +130,7 @@ namespace GarageControl.Core.Services
                     JobTypeId = jobModel.JobTypeId,
                     Description = jobModel.Description,
                     WorkerId = jobModel.WorkerId,
-                    Status = jobModel.Status,
+                    Status = jobModel.Status, // Use the provided status
                     LaborCost = jobModel.LaborCost,
                     StartTime = jobModel.StartTime,
                     EndTime = jobModel.EndTime,
@@ -141,10 +151,29 @@ namespace GarageControl.Core.Services
                         };
                         _context.JobParts.Add(jobPart);
 
-                        if (part.Quantity >= partModel.Quantity)
+                        if (job.Status == Shared.Enums.JobStatus.AwaitingParts)
                         {
-                            part.Quantity -= partModel.Quantity;
-                        } 
+                            // When a job is created in AwaitingParts status, decrease AvailabilityBalance only
+                            part.AvailabilityBalance -= partModel.Quantity;
+                        }
+                        else
+                        {
+                            // When a job is created in Pending/InProgress/Done status, decrease Quantity
+                            if (part.Quantity >= partModel.Quantity)
+                            {
+                                part.Quantity -= partModel.Quantity;
+                                part.AvailabilityBalance -= partModel.Quantity;
+                            }
+                            else
+                            {
+                                return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                            }
+                        }
+
+                        if (part.AvailabilityBalance < part.MinimumQuantity)
+                        {
+                            await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
+                        }
                     }
                 }
             }
@@ -215,9 +244,7 @@ namespace GarageControl.Core.Services
             }
 
             var changes = new List<string>();
-            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
             string FormatQty(decimal q) => q.ToString("G29", CultureInfo.InvariantCulture);
-            bool NumbersEqual(decimal? n1, decimal? n2) => (n1 ?? 0) == (n2 ?? 0);
 
             if (order.CarId != model.CarId)
             {
@@ -255,7 +282,15 @@ namespace GarageControl.Core.Services
                 {
                     if (jp.Part != null)
                     {
-                        jp.Part.Quantity += jp.Quantity;
+                        if (job.Status == Shared.Enums.JobStatus.AwaitingParts)
+                        {
+                            jp.Part.AvailabilityBalance += jp.Quantity;
+                        }
+                        else
+                        {
+                            jp.Part.Quantity += jp.Quantity;
+                            jp.Part.AvailabilityBalance += jp.Quantity;
+                        }
                     }
                 }
                 _context.Jobs.Remove(job);
@@ -272,7 +307,8 @@ namespace GarageControl.Core.Services
                 }
                 else
                 {
-                    job = new Job { OrderId = order.Id };
+                    // New job - use the provided status
+                    job = new Job { OrderId = order.Id, Status = jobModel.Status };
                     _context.Jobs.Add(job);
                     var jt = await _context.JobTypes.FindAsync(jobModel.JobTypeId);
                     changes.Add($"added job '<b>{jt?.Name ?? "Job"}</b>'");
@@ -282,10 +318,13 @@ namespace GarageControl.Core.Services
                 // BUT the user specifically asked for job part changes and car changes.
                 // Car change is above. Parts are below.
                 
+                var oldStatus = job.Status;
+                var newStatus = jobModel.Status;
+
+                // Update basic properties first
                 job.JobTypeId = jobModel.JobTypeId;
                 job.WorkerId = jobModel.WorkerId;
                 job.Description = jobModel.Description;
-                job.Status = jobModel.Status;
                 job.LaborCost = jobModel.LaborCost;
                 job.StartTime = jobModel.StartTime;
                 job.EndTime = jobModel.EndTime;
@@ -296,7 +335,17 @@ namespace GarageControl.Core.Services
                 {
                     if (jp.Part != null)
                     {
-                        jp.Part.Quantity += jp.Quantity;
+                        if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
+                        {
+                            // Removing from AwaitingParts job: increase AvailabilityBalance
+                            jp.Part.AvailabilityBalance += jp.Quantity;
+                        }
+                        else
+                        {
+                            // Removing from non-AwaitingParts job: return to actual stock
+                            jp.Part.Quantity += jp.Quantity;
+                            jp.Part.AvailabilityBalance += jp.Quantity;
+                        }
                     }
                     changes.Add($"removed part '<b>{jp.Part?.Name}</b>' from job '<b>{job.JobType?.Name}</b>'");
                     _context.JobParts.Remove(jp);
@@ -314,11 +363,24 @@ namespace GarageControl.Core.Services
                         {
                             changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{FormatQty(existingJobPart.Quantity)}</b> to <b>{FormatQty(partModel.Quantity)}</b> in job '<b>{job.JobType?.Name}</b>'");
                             int diff = partModel.Quantity - existingJobPart.Quantity;
-                            if (part.Quantity >= diff)
+                            
+                            if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
                             {
-                                part.Quantity -= diff;
-                                existingJobPart.Quantity = partModel.Quantity;
+                                part.AvailabilityBalance -= diff;
                             }
+                            else
+                            {
+                                if (part.Quantity >= diff)
+                                {
+                                    part.Quantity -= diff;
+                                    part.AvailabilityBalance -= diff;
+                                }
+                                else
+                                {
+                                    return new MethodResponse(false, $"Insufficient stock for part '{part.Name}' in job '{job.JobType?.Name}'");
+                                }
+                            }
+                            existingJobPart.Quantity = partModel.Quantity;
                         }
                     }
                     else
@@ -332,12 +394,69 @@ namespace GarageControl.Core.Services
                         };
                         _context.JobParts.Add(newJobPart);
                         changes.Add($"added part '<b>{part.Name}</b>' to job '<b>{job.JobType?.Name}</b>'");
-                        if (part.Quantity >= partModel.Quantity)
+                        
+                        if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
                         {
-                            part.Quantity -= partModel.Quantity;
+                            part.AvailabilityBalance -= partModel.Quantity;
+                        }
+                        else
+                        {
+                            if (part.Quantity >= partModel.Quantity)
+                            {
+                                part.Quantity -= partModel.Quantity;
+                                part.AvailabilityBalance -= partModel.Quantity;
+                            }
+                            else
+                            {
+                                return new MethodResponse(false, $"Insufficient stock for part '{part.Name}' in job '{job.JobType?.Name}'");
+                            }
                         }
                     }
+
+                    if (part.AvailabilityBalance < part.MinimumQuantity)
+                    {
+                        await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
+                    }
                 }
+
+                // Handle status transition after all parts are processed
+                if (oldStatus == Shared.Enums.JobStatus.AwaitingParts && newStatus != Shared.Enums.JobStatus.AwaitingParts)
+                {
+                    // Moving AWAY from AwaitingParts -> first update quantities, then verify stock
+                    
+                    // Step 1: Update the quantities for all parts
+                    foreach (var jp in job.JobParts)
+                    {
+                        jp.Part.Quantity -= jp.Quantity;
+                    }
+                    
+                    // Step 2: Verify that all parts have sufficient stock (should not go negative)
+                    foreach (var jp in job.JobParts)
+                    {
+                        if (jp.Part.Quantity < 0)
+                        {
+                            // Revert the changes since we don't have enough stock
+                            foreach (var jpRevert in job.JobParts)
+                            {
+                                jpRevert.Part.Quantity += jpRevert.Quantity;
+                            }
+                            return new MethodResponse(false, $"Insufficient stock for part '{jp.Part.Name}' in job '{job.JobType?.Name}'. Cannot transition to this status.");
+                        }
+                    }
+                    // AvailabilityBalance stays the same because Quantity - (Awaiting-qty) = (Quantity-qty) - ((Awaiting-qty)-qty)
+                }
+                else if (oldStatus != Shared.Enums.JobStatus.AwaitingParts && newStatus == Shared.Enums.JobStatus.AwaitingParts)
+                {
+                    // Moving back TO AwaitingParts -> return quantity to stock
+                    foreach (var jp in job.JobParts)
+                    {
+                        jp.Part.Quantity += jp.Quantity;
+                        // AvailabilityBalance remains unchanged in the calculation
+                    }
+                }
+
+                // Apply status change
+                job.Status = newStatus;
             }
 
             await _context.SaveChangesAsync();
@@ -421,7 +540,7 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model)
+        public async Task<MethodResponse> CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model)
         {
             var order = await _context.Orders
                 .Include(o => o.Car)
@@ -440,7 +559,7 @@ namespace GarageControl.Core.Services
                 JobTypeId = model.JobTypeId,
                 Description = model.Description,
                 WorkerId = model.WorkerId,
-                Status = model.Status,
+                Status = model.Status, // Use the provided status
                 LaborCost = model.LaborCost,
                 StartTime = model.StartTime,
                 EndTime = model.EndTime
@@ -462,9 +581,28 @@ namespace GarageControl.Core.Services
                     };
                     _context.JobParts.Add(jobPart);
 
-                    if (part.Quantity >= partModel.Quantity)
+                    if (job.Status == Shared.Enums.JobStatus.AwaitingParts)
                     {
-                        part.Quantity -= partModel.Quantity;
+                        // When a job is created in AwaitingParts status, decrease AvailabilityBalance only
+                        part.AvailabilityBalance -= partModel.Quantity;
+                    }
+                    else
+                    {
+                        // When a job is created in Pending/InProgress/Done status, decrease Quantity
+                        if (part.Quantity >= partModel.Quantity)
+                        {
+                            part.Quantity -= partModel.Quantity;
+                            part.AvailabilityBalance -= partModel.Quantity;
+                        }
+                        else
+                        {
+                            return new MethodResponse(false, $"Insufficient stock for part '{part.Name}'");
+                        }
+                    }
+
+                    if (part.AvailabilityBalance < part.MinimumQuantity)
+                    {
+                        await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
                     }
                 }
             }
@@ -476,9 +614,11 @@ namespace GarageControl.Core.Services
                 userId,
                 workshopId,
                 $"added job '{jobTypeName}' to <a href='/orders' class='log-link target-link'>order for {carName}</a>");
+
+            return new MethodResponse(true, "Job added successfully");
         }
 
-        public async Task UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model)
+        public async Task<MethodResponse> UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model)
         {
             var job = await _context.Jobs
                 .Include(j => j.JobType)
@@ -530,6 +670,28 @@ namespace GarageControl.Core.Services
                 changes.Add("updated description");
             }
 
+            var oldStatus = job.Status;
+            var newStatus = model.Status;
+
+            if (oldStatus == Shared.Enums.JobStatus.AwaitingParts && newStatus != Shared.Enums.JobStatus.AwaitingParts)
+            {
+                foreach (var jp in job.JobParts)
+                {
+                    if (jp.Part.Quantity < jp.Quantity)
+                    {
+                        return new MethodResponse(false, $"Insufficient stock for part '{jp.Part.Name}'");
+                    }
+                    jp.Part.Quantity -= jp.Quantity;
+                }
+            }
+            else if (oldStatus != Shared.Enums.JobStatus.AwaitingParts && newStatus == Shared.Enums.JobStatus.AwaitingParts)
+            {
+                foreach (var jp in job.JobParts)
+                {
+                    jp.Part.Quantity += jp.Quantity;
+                }
+            }
+
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
             job.Description = model.Description;
@@ -538,7 +700,7 @@ namespace GarageControl.Core.Services
             job.StartTime = model.StartTime;
             job.EndTime = model.EndTime;
 
-            // Parts sync
+            // Parts sync - use oldStatus for part quantity calculations
             var partIdsInModel = model.Parts.Select(p => p.PartId).ToList();
             var partsToRemove = job.JobParts.Where(jp => !partIdsInModel.Contains(jp.PartId)).ToList();
             
@@ -546,7 +708,15 @@ namespace GarageControl.Core.Services
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += jp.Quantity;
+                    if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
+                    {
+                        jp.Part.AvailabilityBalance += jp.Quantity;
+                    }
+                    else
+                    {
+                        jp.Part.Quantity += jp.Quantity;
+                        jp.Part.AvailabilityBalance += jp.Quantity;
+                    }
                 }
                 changes.Add($"removed part '<b>{jp.Part?.Name}</b>'");
                 _context.JobParts.Remove(jp);
@@ -564,11 +734,24 @@ namespace GarageControl.Core.Services
                     {
                         changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{FormatQty(existingJobPart.Quantity)}</b> to <b>{FormatQty(partModel.Quantity)}</b>");
                         int diff = partModel.Quantity - existingJobPart.Quantity;
-                        if (part.Quantity >= diff)
+                        
+                        if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
                         {
-                            part.Quantity -= diff;
-                            existingJobPart.Quantity = partModel.Quantity;
+                            part.AvailabilityBalance -= diff;
                         }
+                        else
+                        {
+                            if (part.Quantity >= diff)
+                            {
+                                part.Quantity -= diff;
+                                part.AvailabilityBalance -= diff;
+                            }
+                            else
+                            {
+                                return new MethodResponse(false, $"Insufficient stock for part '{part.Name}'");
+                            }
+                        }
+                        existingJobPart.Quantity = partModel.Quantity;
                     }
                 }
                 else
@@ -582,10 +765,28 @@ namespace GarageControl.Core.Services
                     };
                     _context.JobParts.Add(newJobPart);
                     changes.Add($"added part '<b>{part.Name}</b>'");
-                    if (part.Quantity >= partModel.Quantity)
+                    
+                    if (oldStatus == Shared.Enums.JobStatus.AwaitingParts)
                     {
-                        part.Quantity -= partModel.Quantity;
+                        part.AvailabilityBalance -= partModel.Quantity;
                     }
+                    else
+                    {
+                        if (part.Quantity >= partModel.Quantity)
+                        {
+                            part.Quantity -= partModel.Quantity;
+                            part.AvailabilityBalance -= partModel.Quantity;
+                        }
+                        else
+                        {
+                            return new MethodResponse(false, $"Insufficient stock for part '{part.Name}'");
+                        }
+                    }
+                }
+
+                if (part.AvailabilityBalance < part.MinimumQuantity)
+                {
+                    await _notificationService.SendStockNotificationAsync(workshopId, part.Id, part.Name, part.AvailabilityBalance, part.MinimumQuantity);
                 }
             }
 
@@ -616,6 +817,8 @@ namespace GarageControl.Core.Services
 
                 await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
             }
+
+            return new MethodResponse(true, "Job updated successfully");
         }
     }
 }

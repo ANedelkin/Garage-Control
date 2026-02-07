@@ -7,5 +7,6 @@ namespace GarageControl.Core.Services
         Task<List<NotificationViewModel>> GetUserNotificationsAsync(string userId);
         Task MarkAsReadAsync(string notificationId, string userId);
         Task DeleteOldNotificationsAsync();
+        Task SendStockNotificationAsync(string workshopId, string partId, string partName, int currentBalance, int minQuantity);
     }
 }
