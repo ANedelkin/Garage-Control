@@ -1,6 +1,6 @@
 using GarageControl.Core.ViewModels.Parts;
 
-namespace GarageControl.Core.Services
+namespace GarageControl.Core.Contracts
 {
     public interface IPartService
     {

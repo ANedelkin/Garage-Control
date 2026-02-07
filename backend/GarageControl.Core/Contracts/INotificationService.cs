@@ -1,6 +1,6 @@
 using GarageControl.Core.ViewModels.Notifications;
 
-namespace GarageControl.Core.Services
+namespace GarageControl.Core.Contracts
 {
     public interface INotificationService
     {

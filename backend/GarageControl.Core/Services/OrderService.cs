@@ -1,6 +1,7 @@
 using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.Models;
+using GarageControl.Core.Contracts;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;

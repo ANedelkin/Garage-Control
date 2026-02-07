@@ -1,4 +1,4 @@
-using GarageControl.Core.Services;
+using GarageControl.Core.Contracts;
 using GarageControl.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

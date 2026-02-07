@@ -1,6 +1,6 @@
 using GarageControl.Infrastructure.Data.Models;
 
-namespace GarageControl.Core.Services
+namespace GarageControl.Core.Contracts
 {
     public interface IActivityLogService
     {

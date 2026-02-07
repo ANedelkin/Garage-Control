@@ -1,3 +1,4 @@
+using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

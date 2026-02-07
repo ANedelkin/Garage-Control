@@ -1,6 +1,7 @@
 using GarageControl.Core.ViewModels.Notifications;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace GarageControl.Core.Services

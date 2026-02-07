@@ -1,4 +1,4 @@
-using GarageControl.Core.Services;
+using GarageControl.Core.Contracts;
 
 namespace GarageControl.BackgroundServices
 {
