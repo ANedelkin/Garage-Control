@@ -1,4 +1,4 @@
-using GarageControl.Core.Services;
+using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +11,12 @@ namespace GarageControl.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IJobService _jobService;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, IJobService jobService)
         {
             _orderService = orderService;
+            _jobService = jobService;
         }
 
         private string GetWorkshopId()
@@ -122,7 +124,7 @@ namespace GarageControl.Controllers
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-                var jobs = await _orderService.GetMyJobsAsync(userId, GetWorkshopId());
+                var jobs = await _jobService.GetMyJobsAsync(userId, GetWorkshopId());
                 return Ok(jobs);
             }
             catch (Exception ex)
@@ -136,7 +138,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var job = await _orderService.GetJobByIdAsync(jobId, GetWorkshopId());
+                var job = await _jobService.GetJobByIdAsync(jobId, GetWorkshopId());
                 if (job == null) return NotFound();
                 return Ok(job);
             }
@@ -151,7 +153,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
+                var result = await _jobService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
                 if (!result.Success)
                 {
                     return BadRequest(new { message = result.Message });
@@ -169,7 +171,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
+                var result = await _jobService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
                 if (!result.Success)
                 {
                     return BadRequest(new { message = result.Message });

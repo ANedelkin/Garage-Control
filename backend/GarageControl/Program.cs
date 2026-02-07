@@ -9,6 +9,7 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using System.Text;
+using GarageControl.Core.Services.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,20 +20,32 @@ builder.Services.AddDbContext<GarageControlDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IRepository, Repository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+
 builder.Services.AddScoped<IWorkshopService, WorkshopService>();
 builder.Services.AddScoped<IJobTypeService, JobTypeService>();
-builder.Services.AddScoped<IWorkerService, WorkerService>();
+
 builder.Services.AddScoped<IMakeService, MakeService>();
 builder.Services.AddScoped<IModelService, ModelService>();
+
+builder.Services.AddScoped<IWorkerService, WorkerService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
-builder.Services.AddScoped<IPartService, PartService>();
+
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IJobService, JobService>();
+
+builder.Services.AddScoped<IPartService, PartService>();
+builder.Services.AddScoped<IFolderService, FolderService>();
+
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
 builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();

@@ -22,6 +22,6 @@ namespace GarageControl.Core.ViewModels.Parts
         public string? CurrentFolderName { get; set; }
         public string? ParentFolderId { get; set; }
         public IEnumerable<PartsFolderViewModel> SubFolders { get; set; } = new List<PartsFolderViewModel>();
-        public IEnumerable<PartViewModel> Parts { get; set; } = new List<PartViewModel>();
+        public List<PartViewModel> Parts { get; set; } = new List<PartViewModel>();
     }
 }

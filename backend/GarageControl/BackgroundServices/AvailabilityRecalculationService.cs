@@ -29,13 +29,13 @@ namespace GarageControl.BackgroundServices
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var db = scope.ServiceProvider.GetRequiredService<GarageControlDbContext>();
-                        var partService = scope.ServiceProvider.GetRequiredService<IPartService>();
+                        var inventoryService = scope.ServiceProvider.GetRequiredService<IInventoryService>();
 
                         var workshopIds = await db.Workshops.Select(w => w.Id).ToListAsync(stoppingToken);
 
                         foreach (var workshopId in workshopIds)
                         {
-                            await partService.RecalculateAvailabilityBalanceAsync(workshopId);
+                            await inventoryService.RecalculateAvailabilityBalanceAsync(workshopId);
                             _logger.LogInformation("Recalculated availability for workshop {WorkshopId}", workshopId);
                         }
 
@@ -50,5 +50,6 @@ namespace GarageControl.BackgroundServices
                 await Task.Delay(_interval, stoppingToken);
             }
         }
+
     }
 }
