@@ -22,7 +22,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 "Workers",
                 "Job Types",
                 "Clients",
-                "Service Details",
+                "Workshop Details",
                 "Makes and Models",
                 "Cars",
                 "Activity Log",
