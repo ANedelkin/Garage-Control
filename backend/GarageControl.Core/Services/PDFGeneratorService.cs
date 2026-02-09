@@ -29,6 +29,13 @@ public class PDFGeneratorService : IPDFGeneratorService
         section.AddParagraph($"Kilometers: {order.Kilometers}");
         section.AddParagraph().AddLineBreak();
 
+        section.AddParagraph($"Workshop: {order.WorkshopName}");
+        section.AddParagraph($"Address: {order.WorkshopAddress}");
+        section.AddParagraph($"Phone: {order.WorkshopPhone}");
+        section.AddParagraph($"Email: {order.WorkshopEmail}");
+        section.AddParagraph($"Registration Number: {order.WorkshopRegistrationNumber}");
+        section.AddParagraph().AddLineBreak();
+
         // Jobs title
         section.AddParagraph("Jobs:")
                .Format.Font.Bold = true;

@@ -54,6 +54,27 @@ const WorkshopDetailsForm = ({ handleSubmit, initialData = null }) => {
                         required
                     />
                 </div>
+                <div className="form-section">
+                    <label htmlFor="phoneNumber">Phone Number</label>
+                    <input
+                        type="tel"
+                        id="phoneNumber"
+                        placeholder="Enter phone number"
+                        value={workshopData ? workshopData.phoneNumber : ''}
+                        onChange={(e) => setWorkshopData({ ...workshopData, phoneNumber: e.target.value })}
+                        required
+                    />
+                </div>
+                <div className="form-section">
+                    <label htmlFor="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Enter email"
+                        value={workshopData ? workshopData.email : ''}
+                        onChange={(e) => setWorkshopData({ ...workshopData, email: e.target.value })}
+                    />
+                </div>
                 <div className="form-footer">
                     <button type="submit" className="btn">Done</button>
                 </div>

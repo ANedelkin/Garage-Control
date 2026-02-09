@@ -17,6 +17,11 @@ namespace GarageControl.Infrastructure.Data.Models
         [MaxLength(WorkshopConstants.registrationNumberMaxLength)]
         public string? RegistrationNumber { get; set; }
         [Required]
+        [MaxLength(GenericConstants.phoneMaxLength)]
+        public string PhoneNumber { get; set; } = null!;
+        [MaxLength(GenericConstants.emailMaxLength)]
+        public string? Email { get; set; }
+        [Required]
         public string BossId { get; set; } = null!;
         [ForeignKey(nameof(BossId))]
         public User Boss { get; set; } = null!;

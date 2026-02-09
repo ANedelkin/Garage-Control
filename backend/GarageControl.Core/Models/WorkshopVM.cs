@@ -17,5 +17,12 @@ namespace GarageControl.Core.Models
         [MinLength(WorkshopConstants.registrationNumberMinLength)]
         [MaxLength(WorkshopConstants.registrationNumberMaxLength)]
         public string RegistrationNumber { get; set; } = string.Empty;
+        [Required]
+        [Phone]
+        [MaxLength(GenericConstants.phoneMaxLength)]
+        public string PhoneNumber { get; set; } = string.Empty;
+        [EmailAddress]
+        [MaxLength(GenericConstants.emailMaxLength)]
+        public string? Email { get; set; }
     }
 }

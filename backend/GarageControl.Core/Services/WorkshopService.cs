@@ -20,6 +20,8 @@ namespace GarageControl.Core.Services
                 Name = model.Name,
                 Address = model.Address,
                 RegistrationNumber = model.RegistrationNumber,
+                PhoneNumber = model.PhoneNumber,
+                Email = model.Email,
                 BossId = userId
             });
 
@@ -33,7 +35,9 @@ namespace GarageControl.Core.Services
             {
                 Name = workshop.Name,
                 Address = workshop.Address,
-                RegistrationNumber = workshop.RegistrationNumber ?? string.Empty
+                RegistrationNumber = workshop.RegistrationNumber ?? string.Empty,
+                PhoneNumber = workshop.PhoneNumber,
+                Email = workshop.Email
             };
         }
 
@@ -50,7 +54,9 @@ namespace GarageControl.Core.Services
             {
                 Name = workshop.Name,
                 Address = workshop.Address,
-                RegistrationNumber = workshop.RegistrationNumber ?? string.Empty
+                RegistrationNumber = workshop.RegistrationNumber ?? string.Empty,
+                PhoneNumber = workshop.PhoneNumber,
+                Email = workshop.Email
             };
         }
 
@@ -65,6 +71,8 @@ namespace GarageControl.Core.Services
             workshop.Name = model.Name;
             workshop.Address = model.Address;
             workshop.RegistrationNumber = model.RegistrationNumber;
+            workshop.PhoneNumber = model.PhoneNumber;
+            workshop.Email = model.Email;
             await _repository.SaveChangesAsync();
         }
         public async Task<string?> GetWorkshopId(string userId)
