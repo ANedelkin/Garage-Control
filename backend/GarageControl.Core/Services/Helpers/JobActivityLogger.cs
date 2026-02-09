@@ -75,13 +75,8 @@ namespace GarageControl.Core.Services.Jobs
             {
                 if (jp.Part != null)
                 {
-                    if (oldStatus == JobStatus.AwaitingParts)
-                        jp.Part.AvailabilityBalance += jp.Quantity;
-                    else
-                    {
-                        jp.Part.Quantity += jp.Quantity;
-                        jp.Part.AvailabilityBalance += jp.Quantity;
-                    }
+                    jp.Part.Quantity += jp.Quantity;
+                    jp.Part.AvailabilityBalance += jp.Quantity;
                 }
                 changes.Add($"removed part '<b>{jp.Part?.Name}</b>'");
                 job.JobParts.Remove(jp);
@@ -99,13 +94,8 @@ namespace GarageControl.Core.Services.Jobs
                     if (existingJobPart.Quantity != partModel.Quantity)
                     {
                         int diff = partModel.Quantity - existingJobPart.Quantity;
-                        if (oldStatus == JobStatus.AwaitingParts)
-                            part.AvailabilityBalance -= diff;
-                        else
-                        {
-                            part.Quantity -= diff;
-                            part.AvailabilityBalance -= diff;
-                        }
+                        part.Quantity -= diff;
+                        part.AvailabilityBalance -= diff;
                         changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b>");
                         existingJobPart.Quantity = partModel.Quantity;
                     }
@@ -121,13 +111,8 @@ namespace GarageControl.Core.Services.Jobs
                     });
                     changes.Add($"added part '<b>{part.Name}</b>'");
 
-                    if (oldStatus == JobStatus.AwaitingParts)
-                        part.AvailabilityBalance -= partModel.Quantity;
-                    else
-                    {
-                        part.Quantity -= partModel.Quantity;
-                        part.AvailabilityBalance -= partModel.Quantity;
-                    }
+                    part.Quantity -= partModel.Quantity;
+                    part.AvailabilityBalance -= partModel.Quantity;
                 }
 
                 await inventoryService.CheckLowStockAsync(workshopId, part);

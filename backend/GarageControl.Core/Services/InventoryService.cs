@@ -20,52 +20,22 @@ namespace GarageControl.Core.Services
 
         public async Task ApplyPartChangeAsync(Part part, int quantity, JobStatus status)
         {
-            if (status == JobStatus.AwaitingParts)
-            {
-                part.AvailabilityBalance -= quantity;
-            }
-            else
-            {
-                if (part.Quantity < quantity)
-                    throw new Exception($"Insufficient stock for part '{part.Name}'");
+            if (part.Quantity < quantity)
+                throw new Exception($"Insufficient stock for part '{part.Name}'");
 
-                part.Quantity -= quantity;
-                part.AvailabilityBalance -= quantity;
-            }
+            part.Quantity -= quantity;
+            part.AvailabilityBalance -= quantity;
         }
 
         public async Task RevertPartChangeAsync(Part part, int quantity, JobStatus status)
         {
-            if (status == JobStatus.AwaitingParts)
-            {
-                part.AvailabilityBalance += quantity;
-            }
-            else
-            {
-                part.Quantity += quantity;
-                part.AvailabilityBalance += quantity;
-            }
+            part.Quantity += quantity;
+            part.AvailabilityBalance += quantity;
         }
 
         public async Task HandleStatusTransitionAsync(IEnumerable<JobPart> parts, JobStatus oldStatus, JobStatus newStatus)
         {
-            if (oldStatus == JobStatus.AwaitingParts && newStatus != JobStatus.AwaitingParts)
-            {
-                foreach (var jp in parts)
-                {
-                    if (jp.Part.Quantity < jp.Quantity)
-                        throw new Exception($"Insufficient stock for part '{jp.Part.Name}'");
-
-                    jp.Part.Quantity -= jp.Quantity;
-                }
-            }
-            else if (oldStatus != JobStatus.AwaitingParts && newStatus == JobStatus.AwaitingParts)
-            {
-                foreach (var jp in parts)
-                {
-                    jp.Part.Quantity += jp.Quantity;
-                }
-            }
+            // Parts are now immediately subtracted from stock, no status transition needed
         }
 
         public async Task CheckLowStockAsync(string workshopId, Part part)
@@ -82,9 +52,8 @@ namespace GarageControl.Core.Services
         }
         public async Task<int> GetPartsReservedAsync(string partId)
         {
-            return await _context.JobParts
-                .Where(jp => jp.PartId == partId && jp.Job.Status == JobStatus.AwaitingParts)
-                .SumAsync(jp => jp.Quantity);
+            // Parts are immediately deducted, so no parts are reserved
+            return 0;
         }
 
         public async Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null)

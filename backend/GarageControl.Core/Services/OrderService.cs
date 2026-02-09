@@ -76,8 +76,7 @@ namespace GarageControl.Core.Services
                     Id = j.Id,
                     Type = j.TypeName,
                     Description = j.Description,
-                    Status = j.Status == Shared.Enums.JobStatus.AwaitingParts ? "awaitingparts" :
-                             j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
+                    Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
                              j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
                     MechanicName = j.MechanicName,
                     StartTime = j.StartTime,
@@ -171,19 +170,14 @@ namespace GarageControl.Core.Services
                     };
                     _context.JobParts.Add(jobPart);
 
-                    if (job.Status == Shared.Enums.JobStatus.AwaitingParts)
+                    if (part.Quantity >= partModel.Quantity)
+                    {
+                        part.Quantity -= partModel.Quantity;
                         part.AvailabilityBalance -= partModel.Quantity;
+                    }
                     else
                     {
-                        if (part.Quantity >= partModel.Quantity)
-                        {
-                            part.Quantity -= partModel.Quantity;
-                            part.AvailabilityBalance -= partModel.Quantity;
-                        }
-                        else
-                        {
-                            return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
-                        }
+                        return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
                     }
 
                     if (part.AvailabilityBalance < part.MinimumQuantity)
