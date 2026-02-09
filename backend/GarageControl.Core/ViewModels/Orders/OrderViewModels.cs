@@ -94,7 +94,12 @@ namespace GarageControl.Core.ViewModels.Orders
     }
     public class OrderInvoiceViewModel
     {
-        public string Id { get; set; } = null!;
+        public string OrderId { get; set; } = null!;
+        public string WorkshopName { get; set; } = null!;
+        public string WorkshopAddress { get; set; } = null!;
+        public string WorkshopPhone { get; set; } = null!;
+        public string WorkshopEmail { get; set; } = null!;
+        public string WorkshopRegistrationNumber { get; set; } = null!;
         public string ClientName { get; set; } = null!;
         public string CarName { get; set; } = null!;
         public string CarRegistrationNumber { get; set; } = null!;

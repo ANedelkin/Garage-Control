@@ -1,5 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.Models;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +15,18 @@ namespace GarageControl.Core.Services
         private readonly GarageControlDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly OrderActivityLogger _activityLogger;
+        private readonly IWorkshopService _workshopService;
 
         public OrderService(
             GarageControlDbContext context, 
             INotificationService notificationService,
-            IActivityLogService activityLogService)
+            IActivityLogService activityLogService, 
+            IWorkshopService workshopService)
         {
             _context = context;
             _notificationService = notificationService;
             _activityLogger = new OrderActivityLogger(activityLogService);
+            _workshopService = workshopService;
         }
         public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null)
         {
@@ -273,7 +277,12 @@ namespace GarageControl.Core.Services
                 .Where(o => o.Id == id)
                 .Select(o => new OrderInvoiceViewModel
                 {
-                    Id = o.Id,
+                    OrderId = o.Id,
+                    WorkshopName = o.Car.Owner.Workshop.Name,
+                    WorkshopAddress = o.Car.Owner.Workshop.Address,
+                    WorkshopPhone = "",
+                    WorkshopEmail = "",
+                    WorkshopRegistrationNumber = o.Car.Owner.Workshop.RegistrationNumber??"N/A",
                     CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,

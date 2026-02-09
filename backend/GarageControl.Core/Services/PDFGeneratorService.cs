@@ -18,7 +18,7 @@ public class PDFGeneratorService : IPDFGeneratorService
         var section = document.AddSection();
 
         // Header
-        var header = section.AddParagraph($"Invoice for Order #{order.Id}");
+        var header = section.AddParagraph($"Invoice for Order #{order.OrderId}");
         header.Format.Font.Size = 16;
         header.Format.Font.Bold = true;
         header.Format.SpaceAfter = "1cm";
