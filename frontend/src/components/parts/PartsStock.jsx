@@ -21,10 +21,18 @@ const PartsStock = () => {
         setSelectedPath(path);
     };
 
-    const handleRefresh = () => {
+    const handleRefresh = async () => {
         setRefreshTree(prev => prev + 1);
         if (selectedPart) {
-            // TODO: Implement
+            try {
+                const updatedPart = await partApi.getPart(selectedPart.id);
+                if (updatedPart) {
+                    setSelectedPart(updatedPart);
+                    setSelectedPath(updatedPart.path || []);
+                }
+            } catch (error) {
+                console.error("Error refreshing selected part", error);
+            }
         }
     };
 

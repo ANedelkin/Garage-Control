@@ -126,7 +126,17 @@ namespace GarageControl.Core.Services.Jobs
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
             job.Description = model.Description;
+            var oldStatus = job.Status;
             job.Status = model.Status;
+
+            if (oldStatus != model.Status && (oldStatus == JobStatus.Done || model.Status == JobStatus.Done))
+            {
+                foreach (var jp in job.JobParts)
+                {
+                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, jp.PartId);
+                }
+            }
+
             job.LaborCost = model.LaborCost;
             job.StartTime = model.StartTime;
             job.EndTime = model.EndTime;
@@ -226,8 +236,10 @@ namespace GarageControl.Core.Services.Jobs
                 if (jp.Part != null)
                 {
                     jp.Part.Quantity += jp.SentQuantity;
-                    jp.Part.AvailabilityBalance += jp.PlannedQuantity;
                     changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
+                    
+                    await _context.SaveChangesAsync();
+                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, jp.PartId);
                 }
                 job.JobParts.Remove(jp);
             }
@@ -253,8 +265,6 @@ namespace GarageControl.Core.Services.Jobs
                     {
                         if (hasStockAccess)
                         {
-                            var diff = partModel.PlannedQuantity - existingJobPart.PlannedQuantity;
-                            part.AvailabilityBalance -= diff;
                             changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
                             existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
                         }
@@ -285,6 +295,9 @@ namespace GarageControl.Core.Services.Jobs
                             existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
                         }
                     }
+
+                    await _context.SaveChangesAsync();
+                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
                 }
                 else
                 {
@@ -305,8 +318,10 @@ namespace GarageControl.Core.Services.Jobs
                     });
                     changes.Add(_activityLogger.FormatPartAdded(part.Name));
 
-                    part.AvailabilityBalance -= effectivePlanned;
                     part.Quantity -= effectiveSent;
+                    
+                    await _context.SaveChangesAsync();
+                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
                 }
 
                 await _inventoryService.CheckLowStockAsync(workshopId, part);

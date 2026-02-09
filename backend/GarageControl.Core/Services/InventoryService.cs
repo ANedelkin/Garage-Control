@@ -50,10 +50,14 @@ namespace GarageControl.Core.Services
                     part.MinimumQuantity);
             }
         }
-        public async Task<int> GetPartsReservedAsync(string partId)
+        public async Task<double> GetPartsReservedAsync(string partId)
         {
-            // Parts are immediately deducted, so no parts are reserved
-            return 0;
+            // Reserved = Sum(Planned - Sent) for all non-Done jobs, only where Planned > Sent
+            return await _context.JobParts
+                .Where(jp => jp.PartId == partId && 
+                             jp.Job.Status != JobStatus.Done && 
+                             jp.PlannedQuantity > jp.SentQuantity)
+                .SumAsync(jp => jp.PlannedQuantity - jp.SentQuantity);
         }
 
         public async Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null)

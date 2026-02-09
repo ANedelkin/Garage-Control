@@ -13,11 +13,13 @@ namespace GarageControl.Core.Services
     public class FolderService : IFolderService
     {
         private readonly GarageControlDbContext _context;
+        private readonly IInventoryService _inventoryService;
         private readonly PartActivityLogger _activityLogger;
 
-        public FolderService(GarageControlDbContext context, IActivityLogService activityLogService)
+        public FolderService(GarageControlDbContext context, IActivityLogService activityLogService, IInventoryService inventoryService)
         {
             _context = context;
+            _inventoryService = inventoryService;
             _activityLogger = new PartActivityLogger(activityLogService);
         }
 
@@ -58,6 +60,7 @@ namespace GarageControl.Core.Services
             result.Parts = new List<PartViewModel>();
             foreach (var p in await partsQuery.ToListAsync())
             {
+                var reserved = await _inventoryService.GetPartsReservedAsync(p.Id);
                 result.Parts.Add(new PartViewModel
                 {
                     Id = p.Id,
@@ -66,6 +69,7 @@ namespace GarageControl.Core.Services
                     Price = p.Price,
                     Quantity = p.Quantity,
                     AvailabilityBalance = p.AvailabilityBalance,
+                    PartsReserved = reserved,
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
                 });

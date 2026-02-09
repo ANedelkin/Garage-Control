@@ -110,7 +110,10 @@ namespace GarageControl.Core.Services
             part.MinimumQuantity = model.MinimumQuantity;
 
             await _context.SaveChangesAsync();
-            await _inventoryService.CheckLowStockAsync(workshopId, part);
+            
+            // Recalculate availability in case Quantity (stockpile) was changed
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
+            
             await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part.Id, part.Name, changes);
         }
 
@@ -169,7 +172,7 @@ namespace GarageControl.Core.Services
 
         // ---------------- HELPERS ----------------
 
-        private PartViewModel ToPartViewModel(Part part, int partsReserved)
+        private PartViewModel ToPartViewModel(Part part, double partsReserved)
         {
             return new PartViewModel
             {

@@ -133,13 +133,13 @@ const ItemsTreeNode = ({
 
     // Determine status class for parts based on stock levels
     const getStatusClass = () => {
-        if (type !== 'item' || !node.quantity !== undefined) return '';
-        
+        if (type !== 'item' || node.quantity === undefined) return '';
+
         // For parts: check stockpile and availability balance
         if (node.quantity < node.minimumQuantity) {
             return 'status-low-stock';
         }
-        
+
         if (node.availabilityBalance !== undefined) {
             if (node.availabilityBalance < 0) {
                 return 'status-negative-availability';
@@ -148,7 +148,7 @@ const ItemsTreeNode = ({
                 return 'status-low-availability';
             }
         }
-        
+
         return '';
     };
 

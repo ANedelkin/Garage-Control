@@ -145,8 +145,8 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                 <label>Availability Balance</label>
                                 <input
                                     className={
-                                        formData.availabilityBalance < 0 
-                                            ? 'negative-stock' 
+                                        formData.availabilityBalance < 0
+                                            ? 'negative-stock'
                                             : (formData.availabilityBalance < formData.minimumQuantity ? 'low-stock-yellow' : '')
                                     }
                                     type="number"
@@ -157,7 +157,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                             </div>
 
                             <div className={`form-section`}>
-                                <label>Parts Requested</label>
+                                <label>Parts Reserved</label>
                                 <input
                                     type="number"
                                     name="partsReserved"
