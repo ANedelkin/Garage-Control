@@ -26,8 +26,8 @@ namespace GarageControl.Core.ViewModels.Dashboard
     {
         public string Id { get; set; } = null!;
         public string Name { get; set; } = null!;
-        public int CurrentQuantity { get; set; }
-        public int MinimumQuantity { get; set; }
+        public double CurrentQuantity { get; set; }
+        public double MinimumQuantity { get; set; }
     }
 
     public class JobTypeDistributionViewModel

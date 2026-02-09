@@ -53,7 +53,7 @@ public class PDFGeneratorService : IPDFGeneratorService
             AddIndentedParagraph(section, $"Mechanic: {job.MechanicName}", DetailIndent);
             AddIndentedParagraph(section, $"Labor cost: {job.LaborCost:C}", DetailIndent);
 
-            var partsTotal = job.Parts.Sum(p => p.Price * p.Quantity);
+            var partsTotal = job.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity);
             AddIndentedParagraph(section, $"Parts total: {partsTotal:C}", DetailIndent);
 
             // Parts
@@ -61,7 +61,7 @@ public class PDFGeneratorService : IPDFGeneratorService
             {
                 AddIndentedParagraph(
                     section,
-                    $"{part.PartName} x{part.Quantity} @ {part.Price:C} = {(part.Price * part.Quantity):C}",
+                    $"{part.PartName} x{part.UsedQuantity} @ {part.Price:C} = {(part.Price * (decimal)part.UsedQuantity):C}",
                     PartIndent
                 );
             }
@@ -69,7 +69,7 @@ public class PDFGeneratorService : IPDFGeneratorService
 
         // Total
         var total = order.Jobs.Sum(j =>
-            j.LaborCost + j.Parts.Sum(p => p.Price * p.Quantity)
+            j.LaborCost + j.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity)
         );
 
         var totalParagraph = section.AddParagraph($"Total: {total:C}");

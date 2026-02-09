@@ -65,7 +65,9 @@ namespace GarageControl.Core.Services.Jobs
             List<CreateJobPartViewModel> updatedParts,
             JobStatus oldStatus,
             IInventoryService inventoryService,
-            string workshopId)
+            string workshopId,
+            string userId,
+            List<string> userAccesses)
         {
             var changes = new List<string>();
             var partIdsInModel = updatedParts.Select(p => p.PartId).ToList();
@@ -75,8 +77,8 @@ namespace GarageControl.Core.Services.Jobs
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += jp.Quantity;
-                    jp.Part.AvailabilityBalance += jp.Quantity;
+                    jp.Part.Quantity += jp.SentQuantity;
+                    jp.Part.AvailabilityBalance += jp.PlannedQuantity;
                 }
                 changes.Add($"removed part '<b>{jp.Part?.Name}</b>'");
                 job.JobParts.Remove(jp);
@@ -87,32 +89,83 @@ namespace GarageControl.Core.Services.Jobs
                 var existingJobPart = job.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);
                 var part = job.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId)?.Part;
 
+                if (part == null)
+                {
+                    part = await inventoryService.GetPartByIdAsync(partModel.PartId);
+                }
+                
                 if (part == null) continue;
 
                 if (existingJobPart != null)
                 {
-                    if (existingJobPart.Quantity != partModel.Quantity)
+                    bool hasStockAccess = userAccesses.Contains("Parts Stock");
+                    bool isAssignedWorker = job.WorkerId == userId; // Basic check, could be more robust
+
+                    if (existingJobPart.PlannedQuantity != partModel.PlannedQuantity)
                     {
-                        int diff = partModel.Quantity - existingJobPart.Quantity;
-                        part.Quantity -= diff;
-                        part.AvailabilityBalance -= diff;
-                        changes.Add($"changed quantity of '<b>{part.Name}</b>' from <b>{existingJobPart.Quantity}</b> to <b>{partModel.Quantity}</b>");
-                        existingJobPart.Quantity = partModel.Quantity;
+                        if (hasStockAccess) 
+                        {
+                            var diff = partModel.PlannedQuantity - existingJobPart.PlannedQuantity;
+                            part.AvailabilityBalance -= diff;
+                            changes.Add($"changed planned qty of \'<b>{part.Name}</b>\' from <b>{existingJobPart.PlannedQuantity}</b> to <b>{partModel.PlannedQuantity}</b>");
+                            existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
+                        }
+                    }
+                    if (existingJobPart.SentQuantity != partModel.SentQuantity)
+                    {
+                        if (hasStockAccess)
+                        {
+                            var diff = partModel.SentQuantity - existingJobPart.SentQuantity;
+                            part.Quantity -= diff;
+                            changes.Add($"changed sent qty of \'<b>{part.Name}</b>\' from <b>{existingJobPart.SentQuantity}</b> to <b>{partModel.SentQuantity}</b>");
+                            existingJobPart.SentQuantity = partModel.SentQuantity;
+                        }
+                    }
+                    if (existingJobPart.UsedQuantity != partModel.UsedQuantity)
+                    {
+                        if (isAssignedWorker || hasStockAccess) // Allow stock access to fix/edit used too? Or strict? Let's allow stock access or worker.
+                        {
+                            changes.Add($"changed used qty of \'<b>{part.Name}</b>\' from <b>{existingJobPart.UsedQuantity}</b> to <b>{partModel.UsedQuantity}</b>");
+                            existingJobPart.UsedQuantity = partModel.UsedQuantity;
+                        }
+                    }
+                    if (existingJobPart.RequestedQuantity != partModel.RequestedQuantity)
+                    {
+                        if (isAssignedWorker || hasStockAccess)
+                        {
+                            changes.Add($"changed requested qty of \'<b>{part.Name}</b>\' from <b>{existingJobPart.RequestedQuantity}</b> to <b>{partModel.RequestedQuantity}</b>");
+                            existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
+                        }
                     }
                 }
                 else
                 {
+                    // Adding new part - requires Stock Access usually? Or can worker request part?
+                    // If worker adds part, they might be requesting it.
+                    // But CreateJobPartViewModel has all 4 fields.
+                    // If worker adds part, Planned/Sent should be 0? 
+                    // Let's enforce: Only Stock Access can set Planned/Sent > 0 on creation.
+                    // If worker adds, they set RequestedQuantity?
+                    
+                    bool hasStockAccess = userAccesses.Contains("Parts Stock");
+                    
+                    double effectivePlanned = hasStockAccess ? partModel.PlannedQuantity : 0;
+                    double effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
+                    
                     job.JobParts.Add(new JobPart
                     {
                         PartId = part.Id,
-                        Quantity = partModel.Quantity,
+                        PlannedQuantity = effectivePlanned,
+                        SentQuantity = effectiveSent,
+                        UsedQuantity = partModel.UsedQuantity, // Worker can say they used it?
+                        RequestedQuantity = partModel.RequestedQuantity,
                         Price = part.Price,
                         Part = part
                     });
-                    changes.Add($"added part '<b>{part.Name}</b>'");
+                    changes.Add($"added part \'<b>{part.Name}</b>\'");
 
-                    part.Quantity -= partModel.Quantity;
-                    part.AvailabilityBalance -= partModel.Quantity;
+                    part.AvailabilityBalance -= effectivePlanned;
+                    part.Quantity -= effectiveSent;
                 }
 
                 await inventoryService.CheckLowStockAsync(workshopId, part);

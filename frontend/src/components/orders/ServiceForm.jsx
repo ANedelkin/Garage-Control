@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { partApi } from '../../services/partApi';
 import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
@@ -9,6 +10,10 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
+
+    const { user, accesses } = useAuth();
+    const hasStockAccess = accesses.includes('Parts Stock');
+    const isAssignedWorker = user && service.workerId === user.id; // user.id needs verification from AuthContext
 
     const handleChange = (field, value) => {
         updateService(service.id, field, value);
@@ -25,7 +30,11 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
         const newPart = {
             partId: part.id,
             name: part.name,
-            quantity: 1,
+            name: part.name,
+            plannedQuantity: 1,
+            sentQuantity: 1,
+            usedQuantity: 0,
+            requestedQuantity: 0,
             price: part.price
         };
         // If we were searching for a specific row, update that row
@@ -70,7 +79,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
     };
 
     const addNewRow = () => {
-        updateService(service.id, 'parts', [...service.parts, { partId: '', name: '', quantity: 1, price: 0 }]);
+        updateService(service.id, 'parts', [...service.parts, { partId: '', name: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }]);
     };
 
     const updatePartRow = (partIndex, field, val) => {
@@ -153,57 +162,104 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                     <thead>
                         <tr>
                             <th>Part Name / Number</th>
-                            <th style={{ width: '150px' }}>Qty</th>
-                            <th style={{ width: '150px' }}>Unit Price</th>
-                            <th style={{ width: '150px' }}>Total</th>
-                            <th style={{ width: '100px' }}></th>
+                            <th style={{ width: '80px' }}>Planned</th>
+                            <th style={{ width: '80px' }}>Sent</th>
+                            <th style={{ width: '80px' }}>Used</th>
+                            <th style={{ width: '80px' }}>Req</th>
+                            <th style={{ width: '100px' }}>Unit Price</th>
+                            <th style={{ width: '100px' }}>Total</th>
+                            <th style={{ width: '50px' }}></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {service.parts.map((p, i) => (
-                            <tr key={i} style={{ position: 'relative' }}>
-                                <td>
-                                    <input
-                                        type="text"
-                                        value={p.name}
-                                        onChange={e => handlePartSearch(e.target.value, i)}
-                                        placeholder="Search Part..."
-                                        onFocus={() => setActivePartIndex(i)}
-                                    />
-                                    {activePartIndex === i && suggestions.length > 0 && (
-                                        <ul className="car-suggestions" style={{ top: '100%', left: 0, width: '100%' }}>
-                                            {suggestions.map(part => (
-                                                <li key={part.id} onClick={() => addPart(part)}>
-                                                    <b>{part.name}</b> ({part.partNumber}) - ${part.price}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        value={p.quantity}
-                                        onChange={e => updatePartRow(i, 'quantity', parseInt(e.target.value))}
-                                    />
-                                </td>
-                                <td>
-                                    {p.price.toFixed(2)}
-                                </td>
-                                <td>
-                                    {(p.quantity * p.price).toFixed(2)}
-                                </td>
-                                <td>
-                                    <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)}>
-                                        <i className="fa-solid fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {service.parts.map((p, i) => {
+                            // Validation/Error styling logic
+                            const planned = p.plannedQuantity || 0;
+                            const sent = p.sentQuantity || 0;
+                            const used = p.usedQuantity || 0;
+
+                            const sentError = sent > planned;
+                            const usedError = used > sent;
+
+                            return (
+                                <tr key={i} style={{ position: 'relative' }}>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            value={p.name}
+                                            onChange={e => handlePartSearch(e.target.value, i)}
+                                            placeholder="Search Part..."
+                                            onFocus={() => setActivePartIndex(i)}
+                                        />
+                                        {activePartIndex === i && suggestions.length > 0 && (
+                                            <ul className="car-suggestions" style={{ top: '100%', left: 0, width: '100%' }}>
+                                                {suggestions.map(part => (
+                                                    <li key={part.id} onClick={() => addPart(part)}>
+                                                        <b>{part.name}</b> ({part.partNumber}) - ${part.price}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            className={sentError ? 'input-error' : ''}
+                                            value={p.plannedQuantity}
+                                            onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
+                                            disabled={!hasStockAccess}
+                                            title={!hasStockAccess ? "Only Parts Stock access can edit this" : ""}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            className={usedError ? 'input-error' : ''}
+                                            value={p.sentQuantity}
+                                            onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
+                                            disabled={!hasStockAccess}
+                                            title={!hasStockAccess ? "Only Parts Stock access can edit this" : ""}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            value={p.usedQuantity}
+                                            onChange={e => updatePartRow(i, 'usedQuantity', parseFloat(e.target.value))}
+                                            disabled={!isAssignedWorker}
+                                            title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                        />
+                                    </td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            value={p.requestedQuantity}
+                                            onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
+                                            disabled={!isAssignedWorker}
+                                            title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                        />
+                                    </td>
+                                    <td>
+                                        {p.price.toFixed(2)}
+                                    </td>
+                                    <td>
+                                        {(p.usedQuantity * p.price).toFixed(2)}
+                                    </td>
+                                    <td>
+                                        <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)}>
+                                            <i className="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </table>
                 <div className="form-footer">
                     <button type="button" className="btn" onClick={addNewRow}>+ Add Part</button>
+                    <div style={{ fontSize: '0.8em', color: '#888', marginTop: '5px' }}>
+                        Planned/Sent: Stock Access Only. Used/Req: Assigned Worker Only.
+                    </div>
                 </div>
             </div>
         </div>

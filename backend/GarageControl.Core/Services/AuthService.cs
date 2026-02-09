@@ -259,7 +259,7 @@ namespace GarageControl.Core.Services
             return worker?.WorkshopId;
         }
 
-        private async Task<List<string>> GetUserAccess(string userId)
+        public async Task<List<string>> GetUserAccess(string userId)
         {
             // Check if Admin
             var user = await _userManager.FindByIdAsync(userId);

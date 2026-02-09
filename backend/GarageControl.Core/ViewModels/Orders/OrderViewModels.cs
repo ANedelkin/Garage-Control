@@ -54,7 +54,10 @@ namespace GarageControl.Core.ViewModels.Orders
     {
         [Required]
         public string PartId { get; set; } = null!;
-        public int Quantity { get; set; }
+        public double PlannedQuantity { get; set; }
+        public double SentQuantity { get; set; }
+        public double UsedQuantity { get; set; }
+        public double RequestedQuantity { get; set; }
     }
 
     public class UpdateOrderViewModel
@@ -132,7 +135,10 @@ namespace GarageControl.Core.ViewModels.Orders
     {
         public string PartId { get; set; } = null!;
         public string PartName { get; set; } = null!;
-        public int Quantity { get; set; }
+        public double PlannedQuantity { get; set; }
+        public double SentQuantity { get; set; }
+        public double UsedQuantity { get; set; }
+        public double RequestedQuantity { get; set; }
         public decimal Price { get; set; }
     }
 }

@@ -16,15 +16,18 @@ namespace GarageControl.Core.Services.Jobs
     {
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
+        private readonly IAuthService _authService;
         private readonly JobActivityLogger _activityLogger;
 
         public JobService(
             GarageControlDbContext context,
             IInventoryService inventoryService,
+            IAuthService authService,
             IActivityLogService activityLogService)
         {
             _context = context;
             _inventoryService = inventoryService;
+            _authService = authService;
             _activityLogger = new JobActivityLogger(activityLogService);
         }
 
@@ -77,7 +80,10 @@ namespace GarageControl.Core.Services.Jobs
                     {
                         PartId = jp.PartId,
                         PartName = jp.Part.Name,
-                        Quantity = jp.Quantity,
+                        PlannedQuantity = jp.PlannedQuantity,
+                        SentQuantity = jp.SentQuantity,
+                        UsedQuantity = jp.UsedQuantity,
+                        RequestedQuantity = jp.RequestedQuantity,
                         Price = jp.Price
                     }).ToList()
                 })
@@ -108,7 +114,8 @@ namespace GarageControl.Core.Services.Jobs
             if (jobType == null || worker == null) throw new Exception("Invalid job type or worker");
 
             // track parts changes (also updates stock)
-            var partsChanges = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, oldStatus, _inventoryService, workshopId);
+            var userAccesses = await _authService.GetUserAccess(userId);
+            var partsChanges = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, oldStatus, _inventoryService, workshopId, userId, userAccesses);
 
             // apply new values
             job.JobTypeId = model.JobTypeId;
@@ -140,6 +147,8 @@ namespace GarageControl.Core.Services.Jobs
             var order = await _context.Orders
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                .Include(o => o.Car.Model.CarMake)
+                .Include(o => o.Car.Model)
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null) return new MethodResponse(false, "Order not found or access denied.");
@@ -162,7 +171,8 @@ namespace GarageControl.Core.Services.Jobs
             };
 
             // --- Track parts and apply stock ---
-            var changes = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, model.Status, _inventoryService, workshopId);
+            var userAccesses = await _authService.GetUserAccess(userId);
+            var changes = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, model.Status, _inventoryService, workshopId, userId, userAccesses);
 
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();

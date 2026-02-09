@@ -57,7 +57,7 @@ namespace GarageControl.Core.Services
             }
         }
 
-        public async Task SendStockNotificationAsync(string workshopId, string partId, string partName, int currentBalance, int minQuantity)
+        public async Task SendStockNotificationAsync(string workshopId, string partId, string partName, double currentBalance, double minQuantity)
         {
             // Find all users with access to "Parts Stockpile" for this workshop
             var usersToNotify = await _context.Workers

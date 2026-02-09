@@ -11,5 +11,6 @@ namespace GarageControl.Core.Contracts
         Task<LoginResponse> RefreshToken(HttpRequest request, HttpResponse response);
         Task SetAuthCookies(HttpResponse response, LoginResponse body);
         Task<bool> UserExists(string email);
+        Task<List<string>> GetUserAccess(string userId);
     }
 }

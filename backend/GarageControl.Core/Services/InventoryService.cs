@@ -71,5 +71,10 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Part?> GetPartByIdAsync(string partId)
+        {
+            return await _context.Parts.FindAsync(partId);
+        }
     }
 }

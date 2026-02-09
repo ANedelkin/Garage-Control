@@ -88,7 +88,10 @@ const EditJobPage = () => {
                 status: job.status,
                 parts: job.parts.map(p => ({
                     partId: p.partId,
-                    quantity: p.quantity,
+                    plannedQuantity: p.plannedQuantity,
+                    sentQuantity: p.sentQuantity,
+                    usedQuantity: p.usedQuantity,
+                    requestedQuantity: p.requestedQuantity,
                     price: p.price
                 }))
             };

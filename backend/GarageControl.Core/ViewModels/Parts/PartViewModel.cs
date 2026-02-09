@@ -8,10 +8,10 @@ namespace GarageControl.Core.ViewModels.Parts
         public string Name { get; set; } = null!;
         public string PartNumber { get; set; } = null!;
         public decimal Price { get; set; }
-        public int Quantity { get; set; }
-        public int AvailabilityBalance { get; set; }
-        public int PartsReserved { get; set; }
-        public int MinimumQuantity { get; set; }
+        public double Quantity { get; set; }
+        public double AvailabilityBalance { get; set; }
+        public double PartsReserved { get; set; }
+        public double MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }
 
@@ -24,9 +24,9 @@ namespace GarageControl.Core.ViewModels.Parts
         [Required]
         public decimal Price { get; set; }
         [Required]
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
         [Required]
-        public int MinimumQuantity { get; set; }
+        public double MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }
 
@@ -41,9 +41,9 @@ namespace GarageControl.Core.ViewModels.Parts
         [Required]
         public decimal Price { get; set; }
         [Required]
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
         [Required]
-        public int MinimumQuantity { get; set; }
+        public double MinimumQuantity { get; set; }
     }
     public class PartWithPathViewModel : PartViewModel
     {

@@ -113,7 +113,10 @@ namespace GarageControl.Core.Services
                         {
                             PartId = jp.PartId,
                             PartName = jp.Part.Name,
-                            Quantity = jp.Quantity,
+                            PlannedQuantity = jp.PlannedQuantity,
+                            SentQuantity = jp.SentQuantity,
+                            UsedQuantity = jp.UsedQuantity,
+                            RequestedQuantity = jp.RequestedQuantity,
                             Price = jp.Price
                         }).ToList()
                     }).ToList()
@@ -165,19 +168,30 @@ namespace GarageControl.Core.Services
                     {
                         Job = job,
                         PartId = part.Id,
-                        Quantity = partModel.Quantity,
+                        PlannedQuantity = partModel.PlannedQuantity,
+                        SentQuantity = partModel.SentQuantity,
+                        UsedQuantity = partModel.UsedQuantity,
+                        RequestedQuantity = partModel.RequestedQuantity,
                         Price = part.Price
                     };
                     _context.JobParts.Add(jobPart);
 
-                    if (part.Quantity >= partModel.Quantity)
+                    if (part.AvailabilityBalance >= partModel.PlannedQuantity)
                     {
-                        part.Quantity -= partModel.Quantity;
-                        part.AvailabilityBalance -= partModel.Quantity;
+                        part.AvailabilityBalance -= partModel.PlannedQuantity;
                     }
                     else
                     {
-                        return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                        return new { orderId = order.Id, success = false, message = $"Insufficient availability for part '{part.Name}'" };
+                    }
+
+                    if (part.Quantity >= partModel.SentQuantity)
+                    {
+                        part.Quantity -= partModel.SentQuantity;
+                    }
+                    else
+                    {
+                         return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
                     }
 
                     if (part.AvailabilityBalance < part.MinimumQuantity)
@@ -223,18 +237,49 @@ namespace GarageControl.Core.Services
 
                     foreach (var partModel in jobModel.Parts)
                     {
+                        var part = await _context.Parts.FindAsync(partModel.PartId);
+                        if (part == null) continue;
+
                         var existingJobPart = existingJob.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);
                         if (existingJobPart != null)
                         {
-                            existingJobPart.Quantity = partModel.Quantity;
+                            var plannedDelta = partModel.PlannedQuantity - existingJobPart.PlannedQuantity;
+                            var sentDelta = partModel.SentQuantity - existingJobPart.SentQuantity;
+
+                            if (part.AvailabilityBalance < plannedDelta)
+                                return new { success = false, message = $"Insufficient availability for part '{part.Name}'" };
+                            
+                            if (part.Quantity < sentDelta)
+                                return new { success = false, message = $"Insufficient stock for part '{part.Name}'" };
+
+                            part.AvailabilityBalance -= plannedDelta;
+                            part.Quantity -= sentDelta;
+
+                            existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
+                            existingJobPart.SentQuantity = partModel.SentQuantity;
+                            existingJobPart.UsedQuantity = partModel.UsedQuantity;
+                            existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
                         }
                         else
                         {
+                            if (part.AvailabilityBalance < partModel.PlannedQuantity)
+                                return new { success = false, message = $"Insufficient availability for part '{part.Name}'" };
+                                
+                            if (part.Quantity < partModel.SentQuantity)
+                                return new { success = false, message = $"Insufficient stock for part '{part.Name}'" };
+
+                            part.AvailabilityBalance -= partModel.PlannedQuantity;
+                            part.Quantity -= partModel.SentQuantity;
+
                             _context.JobParts.Add(new JobPart
                             {
                                 JobId = existingJob.Id,
                                 PartId = partModel.PartId,
-                                Quantity = partModel.Quantity
+                                PlannedQuantity = partModel.PlannedQuantity,
+                                SentQuantity = partModel.SentQuantity,
+                                UsedQuantity = partModel.UsedQuantity,
+                                RequestedQuantity = partModel.RequestedQuantity,
+                                Price = part.Price
                             });
                         }
                     }
@@ -291,7 +336,10 @@ namespace GarageControl.Core.Services
                         {
                             PartId = jp.PartId,
                             PartName = jp.Part.Name,
-                            Quantity = jp.Quantity,
+                            PlannedQuantity = jp.PlannedQuantity,
+                            SentQuantity = jp.SentQuantity,
+                            UsedQuantity = jp.UsedQuantity,
+                            RequestedQuantity = jp.RequestedQuantity,
                             Price = jp.Price
                         }).ToList()
                     }).ToList()
