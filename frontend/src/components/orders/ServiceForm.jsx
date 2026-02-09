@@ -188,12 +188,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                                     />
                                 </td>
                                 <td>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={p.price}
-                                        onChange={e => updatePartRow(i, 'price', parseFloat(e.target.value))}
-                                    />
+                                    {p.price.toFixed(2)}
                                 </td>
                                 <td>
                                     {(p.quantity * p.price).toFixed(2)}
