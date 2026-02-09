@@ -265,5 +265,35 @@ namespace GarageControl.Core.Services
 
             return new { orderId = order.Id, message = "Order updated successfully" };
         }
+
+        public async Task<OrderInvoiceViewModel?> GetOrderInvoiceByIdAsync(string id)
+        {
+            return await _context.Orders
+                .AsNoTracking()
+                .Where(o => o.Id == id)
+                .Select(o => new OrderInvoiceViewModel
+                {
+                    Id = o.Id,
+                    CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
+                    CarRegistrationNumber = o.Car.RegistrationNumber,
+                    ClientName = o.Car.Owner.Name,
+                    Kilometers = o.Kilometers,
+                    Jobs = o.Jobs.Select(j => new JobInvoiceViewModel
+                    {
+                        JobTypeName = j.JobType.Name,
+                        Description = j.Description ?? "",
+                        MechanicName = j.Worker.Name,
+                        LaborCost = j.LaborCost,
+                        Parts = j.JobParts.Select(jp => new JobPartDetailsViewModel
+                        {
+                            PartId = jp.PartId,
+                            PartName = jp.Part.Name,
+                            Quantity = jp.Quantity,
+                            Price = jp.Price
+                        }).ToList()
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
     }
 }

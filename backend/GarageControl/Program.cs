@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
-using System.Text;
 using GarageControl.Core.Services.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +46,8 @@ builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+
+builder.Services.AddScoped<IPDFGeneratorService, PDFGeneratorService>();
 
 builder.Services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
 builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();
@@ -116,13 +118,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapFallbackToFile("index.html");
 

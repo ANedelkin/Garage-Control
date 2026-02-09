@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://localhost:5173/api';
 
-export async function request(method, url, body = null) {
-    let headers = {
+export async function request(method, url, body = null, options = {}) {
+    let headers = method=='get'?{}:{
         'Content-Type': 'application/json',
     };
 
@@ -10,6 +10,7 @@ export async function request(method, url, body = null) {
         headers: headers,
         credentials: 'include',
     }
+    Object.assign(request, options)
     if (body) {
         request.body = JSON.stringify(body);
     }

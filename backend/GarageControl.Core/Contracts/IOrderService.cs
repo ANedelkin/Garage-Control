@@ -9,6 +9,7 @@ namespace GarageControl.Core.Contracts
         Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null);
         Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderViewModel model);
         Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
+        Task<OrderInvoiceViewModel?> GetOrderInvoiceByIdAsync(string id);
         Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model);
     }
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { request } from '../../Utilities/request';
 import '../../assets/css/orders.css';
 
 const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
@@ -74,8 +75,33 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
                         <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
                             {isDone ? 'Mark as Not Done' : 'Mark as Done'}
                         </button>
-                        <button className="btn secondary" style={{ flex: 1 }} onClick={() => alert("Print Invoice (Placeholder)")}>
-                            Print Invoice (Placeholder)
+                        <button
+                            className="btn secondary"
+                            style={{ flex: 1 }}
+                            onClick={async () => {
+                                try {
+                                    const response = await request('get', 
+                                                                   `order/${order.id}/invoice`, 
+                                                                   null, 
+                                                                   {cache: 'no-store'});
+
+                                    if (!response.ok) throw new Error('Failed to fetch invoice');
+                                    const blob = await response.blob();
+                                    const blobUrl = URL.createObjectURL(blob);
+                                    const printWindow = window.open(blobUrl, '_blank');
+                                    if (printWindow) {
+                                        printWindow.addEventListener('load', () => {
+                                            printWindow.focus();
+                                            printWindow.print();
+                                        });
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Failed to load invoice for printing.');
+                                }
+                            }}
+                        >
+                            Print Invoice
                         </button>
                     </div>
                 </div>

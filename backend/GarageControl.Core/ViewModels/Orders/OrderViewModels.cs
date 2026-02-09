@@ -92,6 +92,15 @@ namespace GarageControl.Core.ViewModels.Orders
         public bool IsDone { get; set; }
         public List<JobDetailsViewModel> Jobs { get; set; } = new List<JobDetailsViewModel>();
     }
+    public class OrderInvoiceViewModel
+    {
+        public string Id { get; set; } = null!;
+        public string ClientName { get; set; } = null!;
+        public string CarName { get; set; } = null!;
+        public string CarRegistrationNumber { get; set; } = null!;
+        public int Kilometers { get; set; }
+        public List<JobInvoiceViewModel> Jobs { get; set; } = new List<JobInvoiceViewModel>();
+    }
 
     public class JobDetailsViewModel
     {
@@ -103,6 +112,14 @@ namespace GarageControl.Core.ViewModels.Orders
         public decimal LaborCost { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public List<JobPartDetailsViewModel> Parts { get; set; } = new List<JobPartDetailsViewModel>();
+    }
+    public class JobInvoiceViewModel
+    {
+        public string JobTypeName { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public string MechanicName { get; set; } = null!;
+        public decimal LaborCost { get; set; }
         public List<JobPartDetailsViewModel> Parts { get; set; } = new List<JobPartDetailsViewModel>();
     }
 

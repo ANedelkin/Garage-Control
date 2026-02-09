@@ -12,11 +12,13 @@ namespace GarageControl.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IJobService _jobService;
+        private readonly IPDFGeneratorService _pdfGeneratorService;
 
-        public OrderController(IOrderService orderService, IJobService jobService)
+        public OrderController(IOrderService orderService, IJobService jobService, IPDFGeneratorService pdfGeneratorService)
         {
             _orderService = orderService;
             _jobService = jobService;
+            _pdfGeneratorService = pdfGeneratorService;
         }
 
         private string GetWorkshopId()
@@ -84,6 +86,19 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{orderId}/invoice")]
+        public async Task<IActionResult> GetInvoicePdf(string orderId)
+        {
+            var order = await _orderService.GetOrderInvoiceByIdAsync(orderId);
+            if (order == null)
+                return NotFound("Order not found.");
+
+            var pdfBytes = await _pdfGeneratorService.GenerateInvoicePdfAsync(order);
+
+            return File(pdfBytes, "application/pdf", $"Invoice_{orderId}.pdf");
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(string id)
         {
