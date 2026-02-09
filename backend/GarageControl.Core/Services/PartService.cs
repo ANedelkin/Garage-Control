@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GarageControl.Core.Models;
 
 namespace GarageControl.Core.Services
 {
@@ -59,7 +60,7 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
 
             await _inventoryService.CheckLowStockAsync(workshopId, part);
-            await _activityLogger.LogPartCreatedAsync(userId, workshopId, part);
+            await _activityLogger.LogPartCreatedAsync(userId, workshopId, part.Id, part.Name);
 
             return ToPartViewModel(part, 0);
         }
@@ -100,7 +101,7 @@ namespace GarageControl.Core.Services
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == model.Id && p.WorkshopId == workshopId);
             if (part == null) throw new ArgumentException("Part not found");
 
-            var changes = _activityLogger.TrackChanges(part, model);
+            var changes = TrackPartChanges(part, model);
 
             part.Name = model.Name;
             part.PartNumber = model.PartNumber;
@@ -110,7 +111,23 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
             await _inventoryService.CheckLowStockAsync(workshopId, part);
-            await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part, changes);
+            await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part.Id, part.Name, changes);
+        }
+
+        private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartViewModel model)
+        {
+            var changes = new List<ActivityPropertyChange>();
+            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
+            bool NumbersEqual(double n1, double n2) => Math.Abs(n1 - n2) < 0.0001;
+            bool PricesEqual(decimal n1, decimal n2) => n1 == n2;
+
+            if (part.Name != model.Name) changes.Add(new ActivityPropertyChange("name", part.Name, model.Name));
+            if (part.PartNumber != model.PartNumber) changes.Add(new ActivityPropertyChange("part number", part.PartNumber, model.PartNumber));
+            if (!PricesEqual(part.Price, model.Price)) changes.Add(new ActivityPropertyChange("price", FormatPrice(part.Price), FormatPrice(model.Price)));
+            if (!NumbersEqual(part.Quantity, model.Quantity)) changes.Add(new ActivityPropertyChange("quantity", part.Quantity.ToString(), model.Quantity.ToString()));
+            if (!NumbersEqual(part.MinimumQuantity, model.MinimumQuantity)) changes.Add(new ActivityPropertyChange("minimum quantity", part.MinimumQuantity.ToString(), model.MinimumQuantity.ToString()));
+
+            return changes;
         }
 
         public async Task DeletePartAsync(string userId, string workshopId, string partId)
@@ -147,7 +164,7 @@ namespace GarageControl.Core.Services
             part.ParentId = newParentId;
             await _context.SaveChangesAsync();
 
-            await _activityLogger.LogPartMovedAsync(userId, workshopId, part, oldParentName, newParentName);
+            await _activityLogger.LogPartMovedAsync(userId, workshopId, part.Id, part.Name, oldParentName, newParentName);
         }
 
         // ---------------- HELPERS ----------------

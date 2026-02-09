@@ -204,7 +204,8 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---
-            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, order);
+            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
+            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, carInfo);
 
             return new { orderId = order.Id, message = "Order created successfully" };
         }
@@ -216,10 +217,18 @@ namespace GarageControl.Core.Services
                     .ThenInclude(j => j.JobParts)
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                .Include(o => o.Car.Model.CarMake)
+                .Include(o => o.Car.Model)
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null)
                 return new { success = false, message = "Order not found." };
+
+            var changes = new List<ActivityPropertyChange>();
+            if (order.Kilometers != model.Kilometers)
+                changes.Add(new ActivityPropertyChange("kilometers", order.Kilometers.ToString(), model.Kilometers.ToString()));
+            if (order.IsDone != model.IsDone)
+                changes.Add(new ActivityPropertyChange("status", order.IsDone ? "done" : "open", model.IsDone ? "done" : "open"));
 
             order.Kilometers = model.Kilometers;
             order.IsDone = model.IsDone;
@@ -304,7 +313,8 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---
-            await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, order);
+            string carInfo = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
+            await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, carInfo, changes);
 
             return new { orderId = order.Id, message = "Order updated successfully" };
         }

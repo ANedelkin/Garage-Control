@@ -100,23 +100,28 @@ namespace GarageControl.Core.Services.Jobs
                     .ThenInclude(o => o.Car)
                         .ThenInclude(c => c.Owner)
                 .Include(j => j.Order.Car.Model.CarMake)
+                .Include(j => j.Order.Car.Model)
                 .Include(j => j.JobParts)
                     .ThenInclude(jp => jp.Part)
                 .FirstOrDefaultAsync(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId);
 
             if (job == null) throw new Exception("Job not found or access denied.");
 
-            var oldStatus = job.Status;
+            var car = job.Order.Car;
+            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
 
             // resolve JobType and Worker names
             var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
             var worker = await _context.Workers.FindAsync(model.WorkerId);
             if (jobType == null || worker == null) throw new Exception("Invalid job type or worker");
 
-            // track parts changes (also updates stock)
-            var userAccesses = await _authService.GetUserAccess(userId);
-            var partsChanges = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, oldStatus, _inventoryService, workshopId, userId, userAccesses);
+            // Track property changes before applying
+            var propertyChanges = TrackPropertyChanges(job, model, jobType.Name, worker.Name);
 
+            // Apply parts changes and collect log strings
+            var userAccesses = await _authService.GetUserAccess(userId);
+            var partsChanges = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+            
             // apply new values
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
@@ -128,17 +133,36 @@ namespace GarageControl.Core.Services.Jobs
 
             await _context.SaveChangesAsync();
 
-            // track property changes
-            var propertyChanges = await _activityLogger.TrackJobPropertiesAsync(
-                userId,
-                workshopId,
-                job,
-                model,
-                jobType.Name,
-                worker.Name
-            );
+            // Log the changes
+            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
 
             return new MethodResponse(true, "Job updated successfully");
+        }
+
+        private List<ActivityPropertyChange> TrackPropertyChanges(Job job, UpdateJobViewModel model, string newJobTypeName, string newWorkerName)
+        {
+            var changes = new List<ActivityPropertyChange>();
+            string FormatPrice(decimal p) => p.ToString("0.00");
+
+            if (job.JobTypeId != model.JobTypeId)
+                changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName));
+
+            if (job.WorkerId != model.WorkerId)
+                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, newWorkerName));
+
+            if (job.Status != model.Status)
+                changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));
+
+            if (job.LaborCost != model.LaborCost)
+                changes.Add(new ActivityPropertyChange("labor cost", FormatPrice(job.LaborCost), FormatPrice(model.LaborCost)));
+
+            if (job.StartTime != model.StartTime || job.EndTime != model.EndTime)
+                changes.Add(new ActivityPropertyChange("interval", $"{job.StartTime:HH:mm}-{job.EndTime:HH:mm}", $"{model.StartTime:HH:mm}-{model.EndTime:HH:mm}"));
+
+            if (job.Description != model.Description)
+                changes.Add(new ActivityPropertyChange("description", "updated", ""));
+
+            return changes;
         }
 
         // --- JOB CREATION ---
@@ -152,6 +176,9 @@ namespace GarageControl.Core.Services.Jobs
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null) return new MethodResponse(false, "Order not found or access denied.");
+
+            var car = order.Car;
+            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
 
             var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
             var worker = await _context.Workers.FindAsync(model.WorkerId);
@@ -170,17 +197,122 @@ namespace GarageControl.Core.Services.Jobs
                 JobParts = new List<JobPart>()
             };
 
-            // --- Track parts and apply stock ---
+            // --- Apply parts changes and collect log strings ---
             var userAccesses = await _authService.GetUserAccess(userId);
-            var changes = await _activityLogger.TrackPartsChangesAsync(job, model.Parts, model.Status, _inventoryService, workshopId, userId, userAccesses);
-
+            var changes = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+            
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
 
             // --- Log creation ---
-            await _activityLogger.LogJobCreatedAsync(userId, workshopId, jobType.Name, order, changes);
+            await _activityLogger.LogJobCreatedAsync(userId, workshopId, jobType.Name, carInfo, changes);
 
             return new MethodResponse(true, "Job created successfully", job.Id);
+        }
+
+        private async Task<List<string>> ApplyPartsChangesAsync(
+            Job job,
+            List<CreateJobPartViewModel> updatedParts,
+            string workshopId,
+            string userId,
+            List<string> userAccesses)
+        {
+            var changes = new List<string>();
+            var partIdsInModel = updatedParts.Select(p => p.PartId).ToList();
+            var partsToRemove = job.JobParts.Where(jp => !partIdsInModel.Contains(jp.PartId)).ToList();
+
+            foreach (var jp in partsToRemove)
+            {
+                if (jp.Part != null)
+                {
+                    jp.Part.Quantity += jp.SentQuantity;
+                    jp.Part.AvailabilityBalance += jp.PlannedQuantity;
+                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
+                }
+                job.JobParts.Remove(jp);
+            }
+
+            foreach (var partModel in updatedParts)
+            {
+                var existingJobPart = job.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);
+                var part = existingJobPart?.Part;
+
+                if (part == null)
+                {
+                    part = await _inventoryService.GetPartByIdAsync(partModel.PartId);
+                }
+
+                if (part == null) continue;
+
+                if (existingJobPart != null)
+                {
+                    bool hasStockAccess = userAccesses.Contains("Parts Stock");
+                    bool isAssignedWorker = job.WorkerId == userId;
+
+                    if (existingJobPart.PlannedQuantity != partModel.PlannedQuantity)
+                    {
+                        if (hasStockAccess)
+                        {
+                            var diff = partModel.PlannedQuantity - existingJobPart.PlannedQuantity;
+                            part.AvailabilityBalance -= diff;
+                            changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
+                            existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
+                        }
+                    }
+                    if (existingJobPart.SentQuantity != partModel.SentQuantity)
+                    {
+                        if (hasStockAccess)
+                        {
+                            var diff = partModel.SentQuantity - existingJobPart.SentQuantity;
+                            part.Quantity -= diff;
+                            changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
+                            existingJobPart.SentQuantity = partModel.SentQuantity;
+                        }
+                    }
+                    if (existingJobPart.UsedQuantity != partModel.UsedQuantity)
+                    {
+                        if (isAssignedWorker || hasStockAccess)
+                        {
+                            changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "used", existingJobPart.UsedQuantity.ToString(), partModel.UsedQuantity.ToString()));
+                            existingJobPart.UsedQuantity = partModel.UsedQuantity;
+                        }
+                    }
+                    if (existingJobPart.RequestedQuantity != partModel.RequestedQuantity)
+                    {
+                        if (isAssignedWorker || hasStockAccess)
+                        {
+                            changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "requested", existingJobPart.RequestedQuantity.ToString(), partModel.RequestedQuantity.ToString()));
+                            existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
+                        }
+                    }
+                }
+                else
+                {
+                    bool hasStockAccess = userAccesses.Contains("Parts Stock");
+
+                    double effectivePlanned = hasStockAccess ? partModel.PlannedQuantity : 0;
+                    double effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
+
+                    job.JobParts.Add(new JobPart
+                    {
+                        PartId = part.Id,
+                        PlannedQuantity = effectivePlanned,
+                        SentQuantity = effectiveSent,
+                        UsedQuantity = partModel.UsedQuantity,
+                        RequestedQuantity = partModel.RequestedQuantity,
+                        Price = part.Price,
+                        Part = part
+                    });
+                    changes.Add(_activityLogger.FormatPartAdded(part.Name));
+
+                    part.AvailabilityBalance -= effectivePlanned;
+                    part.Quantity -= effectiveSent;
+                }
+
+                await _inventoryService.CheckLowStockAsync(workshopId, part);
+            }
+
+            return changes;
         }
     }
 }
