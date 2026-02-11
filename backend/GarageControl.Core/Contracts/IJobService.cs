@@ -1,26 +1,24 @@
-using GarageControl.Core.Models;
-using GarageControl.Core.ViewModels.Jobs;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 
 public interface IJobService
 {
-    Task<MethodResponse> CreateJobAsync(
+    Task<MethodResponseVM> CreateJobAsync(
         string userId,
         string orderId,
         string workshopId,
-        CreateJobViewModel model);
+        CreateJobVM model);
 
-    Task<MethodResponse> UpdateJobAsync(
+    Task<MethodResponseVM> UpdateJobAsync(
         string userId,
         string jobId,
         string workshopId,
-        UpdateJobViewModel model);
+        UpdateJobVM model);
 
-    Task<JobDetailsViewModel?> GetJobByIdAsync(
+    Task<JobDetailsVM?> GetJobByIdAsync(
         string jobId,
         string workshopId);
 
-    Task<List<JobToDoViewModel>> GetMyJobsAsync(
+    Task<List<JobToDoVM>> GetMyJobsAsync(
         string userId,
         string workshopId);
 }

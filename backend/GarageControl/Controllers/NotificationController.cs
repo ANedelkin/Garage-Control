@@ -1,4 +1,5 @@
 using GarageControl.Core.Contracts;
+using GarageControl.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

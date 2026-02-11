@@ -1,4 +1,4 @@
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 
 namespace GarageControl.Core.Contracts
 {

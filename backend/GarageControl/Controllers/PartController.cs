@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels.Parts;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +64,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var part = await _partService.GetPartAsync(GetWorkshopId(), id);
+                var part = await _partService.GetPartByIdAsync(id, GetWorkshopId());
                 if (part == null) return NotFound();
                 return Ok(part);
             }
@@ -75,7 +75,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreatePart([FromBody] CreatePartViewModel model)
+        public async Task<IActionResult> CreatePart([FromBody] CreatePartVM model)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdatePart(string id, [FromBody] UpdatePartViewModel model)
+        public async Task<IActionResult> UpdatePart(string id, [FromBody] UpdatePartVM model)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("folder/create")]
-        public async Task<IActionResult> CreateFolder([FromBody] CreateFolderViewModel model)
+        public async Task<IActionResult> CreateFolder([FromBody] CreateFolderVM model)
         {
             try
             {

@@ -1,12 +1,12 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels.Orders;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GarageControl.Core.Models;
 
 namespace GarageControl.Core.Services
 {
@@ -31,7 +31,7 @@ namespace GarageControl.Core.Services
             _workshopService = workshopService;
             _inventoryService = inventoryService;
         }
-        public async Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null)
+        public async Task<List<OrderListVM>> GetOrdersAsync(string workshopId, bool? isDone = null)
         {
             var query = _context.Orders
                 .AsNoTracking()
@@ -65,7 +65,7 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            return rawData.Select(o => new OrderListViewModel
+            return rawData.Select(o => new OrderListVM
             {
                 Id = o.Id,
                 CarId = o.CarId,
@@ -74,7 +74,7 @@ namespace GarageControl.Core.Services
                 ClientName = o.Name,
                 Kilometers = o.Kilometers,
                 IsDone = o.IsDone,
-                Jobs = o.Jobs.Select(j => new JobListViewModel
+                Jobs = o.Jobs.Select(j => new JobListVM
                 {
                     Id = j.Id,
                     Type = j.TypeName,
@@ -88,12 +88,12 @@ namespace GarageControl.Core.Services
                 }).ToList()
             }).ToList();
         }
-        public async Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId)
+        public async Task<OrderDetailsVM?> GetOrderByIdAsync(string id, string workshopId)
         {
             return await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId)
-                .Select(o => new OrderDetailsViewModel
+                .Select(o => new OrderDetailsVM
                 {
                     Id = o.Id,
                     CarId = o.CarId,
@@ -102,7 +102,7 @@ namespace GarageControl.Core.Services
                     ClientName = o.Car.Owner.Name,
                     Kilometers = o.Kilometers,
                     IsDone = o.IsDone,
-                    Jobs = o.Jobs.Select(j => new JobDetailsViewModel
+                    Jobs = o.Jobs.Select(j => new JobDetailsVM
                     {
                         Id = j.Id,
                         JobTypeId = j.JobTypeId,
@@ -112,7 +112,7 @@ namespace GarageControl.Core.Services
                         LaborCost = j.LaborCost,
                         StartTime = j.StartTime,
                         EndTime = j.EndTime,
-                        Parts = j.JobParts.Select(jp => new JobPartDetailsViewModel
+                        Parts = j.JobParts.Select(jp => new JobPartDetailsVM
                         {
                             PartId = jp.PartId,
                             PartName = jp.Part.Name,
@@ -127,7 +127,7 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderViewModel model)
+        public async Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderVM model)
         {
             var car = await _context.Cars
                 .Include(c => c.Owner)
@@ -217,7 +217,7 @@ namespace GarageControl.Core.Services
             return new { orderId = order.Id, message = "Order created successfully" };
         }
 
-        public async Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model)
+        public async Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model)
         {
             var order = await _context.Orders
                 .Include(o => o.Jobs)
@@ -332,12 +332,12 @@ namespace GarageControl.Core.Services
             return new { orderId = order.Id, message = "Order updated successfully" };
         }
 
-        public async Task<OrderInvoiceViewModel?> GetOrderInvoiceByIdAsync(string id)
+        public async Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id)
         {
             return await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Id == id)
-                .Select(o => new OrderInvoiceViewModel
+                .Select(o => new OrderInvoiceVM
                 {
                     OrderId = o.Id,
                     WorkshopName = o.Car.Owner.Workshop.Name,
@@ -349,13 +349,13 @@ namespace GarageControl.Core.Services
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,
                     Kilometers = o.Kilometers,
-                    Jobs = o.Jobs.Select(j => new JobInvoiceViewModel
+                    Jobs = o.Jobs.Select(j => new JobInvoiceVM
                     {
                         JobTypeName = j.JobType.Name,
                         Description = j.Description ?? "",
                         MechanicName = j.Worker.Name,
                         LaborCost = j.LaborCost,
-                        Parts = j.JobParts.Select(jp => new JobPartDetailsViewModel
+                        Parts = j.JobParts.Select(jp => new JobPartDetailsVM
                         {
                             PartId = jp.PartId,
                             PartName = jp.Part.Name,

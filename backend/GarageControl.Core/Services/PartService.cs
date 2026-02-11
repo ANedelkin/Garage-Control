@@ -1,7 +1,7 @@
 using System.Globalization;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services.Helpers;
-using GarageControl.Core.ViewModels.Parts;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -30,19 +30,43 @@ namespace GarageControl.Core.Services
         
         // ---------------- PART OPERATIONS ----------------
 
-        public async Task<List<PartViewModel>> GetAllPartsAsync(string workshopId)
+        public async Task<List<PartVM>> GetAllPartsAsync(string workshopId)
         {
             var parts = await _context.Parts.Where(p => p.WorkshopId == workshopId).ToListAsync();
-            var result = new List<PartViewModel>();
+            var result = new List<PartVM>();
             foreach (var p in parts)
             {
                 var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
-                result.Add(ToPartViewModel(p, toSend));
+                result.Add(ToPartVM(p, toSend));
             }
             return result;
         }
 
-        public async Task<PartViewModel> CreatePartAsync(string userId, string workshopId, CreatePartViewModel model)
+        public async Task<PartVM> GetPartByIdAsync(string partId, string workshopId)
+        {
+            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+            if (part == null) return null!;
+
+            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
+            return ToPartVM(part, toSend);
+        }
+
+        public async Task<List<PartVM>> GetPartsByFolderAsync(string? folderId, string workshopId)
+        {
+            var parts = await _context.Parts
+                .Where(p => p.WorkshopId == workshopId && p.ParentId == folderId)
+                .ToListAsync();
+
+            var result = new List<PartVM>();
+            foreach (var p in parts)
+            {
+                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
+                result.Add(ToPartVM(p, toSend));
+            }
+            return result;
+        }
+
+        public async Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM model)
         {
             var part = new Part
             {
@@ -62,16 +86,16 @@ namespace GarageControl.Core.Services
             await _inventoryService.CheckLowStockAsync(workshopId, part);
             await _activityLogger.LogPartCreatedAsync(userId, workshopId, part.Id, part.Name);
 
-            return ToPartViewModel(part, 0);
+            return ToPartVM(part, 0);
         }
 
-        public async Task<PartWithPathViewModel?> GetPartAsync(string workshopId, string partId)
+        public async Task<PartWithPathVM?> GetPartWithPathAsync(string partId, string workshopId)
         {
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) return null;
 
             var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
-            var result = new PartWithPathViewModel
+            var result = new PartWithPathVM
             {
                 Id = part.Id,
                 Name = part.Name,
@@ -96,7 +120,7 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task EditPartAsync(string userId, string workshopId, string partId, UpdatePartViewModel model)
+        public async Task<PartVM> EditPartAsync(string userId, string workshopId, string partId, UpdatePartVM model)
         {
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) throw new ArgumentException("Part not found");
@@ -115,9 +139,12 @@ namespace GarageControl.Core.Services
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
             
             await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part.Id, part.Name, changes);
+
+            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
+            return ToPartVM(part, toSend);
         }
 
-        private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartViewModel model)
+        private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartVM model)
         {
             var changes = new List<ActivityPropertyChange>();
             string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
@@ -172,9 +199,9 @@ namespace GarageControl.Core.Services
 
         // ---------------- HELPERS ----------------
 
-        private PartViewModel ToPartViewModel(Part part, double partsToSend)
+        private PartVM ToPartVM(Part part, double partsToSend)
         {
-            return new PartViewModel
+            return new PartVM
             {
                 Id = part.Id,
                 Name = part.Name,

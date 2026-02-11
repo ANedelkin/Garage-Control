@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 
 namespace GarageControl.Controllers
 {

@@ -1,9 +1,9 @@
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 
 namespace GarageControl.Core.Contracts
 {
     public interface IPDFGeneratorService
     {
-        Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceViewModel order);
+        Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceVM order);
     }
 }

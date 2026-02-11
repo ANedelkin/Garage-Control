@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Shared.Enums;

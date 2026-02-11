@@ -1,12 +1,12 @@
-using GarageControl.Core.Contracts;
-using GarageControl.Core.Services.Helpers;
-using GarageControl.Core.ViewModels.Parts;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GarageControl.Core.Contracts;
+using GarageControl.Core.Services.Helpers;
 
 namespace GarageControl.Core.Services
 {
@@ -23,9 +23,9 @@ namespace GarageControl.Core.Services
             _activityLogger = new PartActivityLogger(activityLogService);
         }
 
-        public async Task<FolderContentViewModel> GetFolderContentAsync(string workshopId, string? folderId)
+        public async Task<FolderContentVM> GetFolderContentAsync(string workshopId, string? folderId)
         {
-            var result = new FolderContentViewModel { CurrentFolderId = folderId };
+            var result = new FolderContentVM { CurrentFolderId = folderId };
 
             if (!string.IsNullOrEmpty(folderId))
             {
@@ -54,14 +54,14 @@ namespace GarageControl.Core.Services
             }
 
             result.SubFolders = await foldersQuery
-                .Select(f => new PartsFolderViewModel { Id = f.Id, Name = f.Name, ParentId = f.ParentId })
+                .Select(f => new PartsFolderVM { Id = f.Id, Name = f.Name, ParentId = f.ParentId })
                 .ToListAsync();
 
-            result.Parts = new List<PartViewModel>();
+            result.Parts = new List<PartVM>();
             foreach (var p in await partsQuery.ToListAsync())
             {
                 var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
-                result.Parts.Add(new PartViewModel
+                result.Parts.Add(new PartVM
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -78,7 +78,7 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task<PartsFolderViewModel> CreateFolderAsync(string userId, string workshopId, CreateFolderViewModel model)
+        public async Task<PartsFolderVM> CreateFolderAsync(string userId, string workshopId, CreateFolderVM model)
         {
             var folder = new PartsFolder
             {
@@ -92,7 +92,7 @@ namespace GarageControl.Core.Services
 
             await _activityLogger.LogFolderCreatedAsync(userId, workshopId, folder.Name);
 
-            return new PartsFolderViewModel { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
+            return new PartsFolderVM { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
         }
 
         public async Task RenameFolderAsync(string userId, string workshopId, string folderId, string newName)

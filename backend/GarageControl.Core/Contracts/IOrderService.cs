@@ -1,15 +1,13 @@
-using GarageControl.Core.Models;
-using GarageControl.Core.ViewModels.Jobs;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 
 namespace GarageControl.Core.Contracts
 {
         public interface IOrderService
     {
-        Task<List<OrderListViewModel>> GetOrdersAsync(string workshopId, bool? isDone = null);
-        Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderViewModel model);
-        Task<OrderDetailsViewModel?> GetOrderByIdAsync(string id, string workshopId);
-        Task<OrderInvoiceViewModel?> GetOrderInvoiceByIdAsync(string id);
-        Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderViewModel model);
+        Task<List<OrderListVM>> GetOrdersAsync(string workshopId, bool? isDone = null);
+        Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderVM model);
+        Task<OrderDetailsVM?> GetOrderByIdAsync(string id, string workshopId);
+        Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id);
+        Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model);
     }
 }

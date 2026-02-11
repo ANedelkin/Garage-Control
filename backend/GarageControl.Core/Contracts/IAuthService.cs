@@ -1,15 +1,15 @@
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using Microsoft.AspNetCore.Http;
 
 namespace GarageControl.Core.Contracts
 {
     public interface IAuthService
     {
-        Task<LoginResponse> SignUp(AuthVM model);
-        Task<LoginResponse> LogIn(AuthVM model);
+        Task<LoginResponseVM> SignUp(AuthVM model);
+        Task<LoginResponseVM> LogIn(AuthVM model);
         Task LogOut(HttpRequest request, HttpResponse response);
-        Task<LoginResponse> RefreshToken(HttpRequest request, HttpResponse response);
-        Task SetAuthCookies(HttpResponse response, LoginResponse body);
+        Task<LoginResponseVM> RefreshToken(HttpRequest request, HttpResponse response);
+        Task SetAuthCookies(HttpResponse response, LoginResponseVM body);
         Task<bool> UserExists(string email);
         Task<List<string>> GetUserAccess(string userId);
     }

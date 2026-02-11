@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 using MigraDocCore.DocumentObjectModel;
 using MigraDocCore.Rendering;
 using System.IO;
@@ -12,7 +12,7 @@ public class PDFGeneratorService : IPDFGeneratorService
     private const string DetailIndent = "1cm";
     private const string PartIndent = "1.5cm";
 
-    public Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceViewModel order)
+    public Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceVM order)
     {
         var document = new Document();
         var section = document.AddSection();

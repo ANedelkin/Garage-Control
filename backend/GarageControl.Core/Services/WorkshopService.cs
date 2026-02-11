@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;

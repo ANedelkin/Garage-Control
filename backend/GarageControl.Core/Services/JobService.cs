@@ -1,7 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
-using GarageControl.Core.ViewModels.Jobs;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Shared.Enums;
@@ -9,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GarageControl.Core.Models;
 
 namespace GarageControl.Core.Services.Jobs
 {
@@ -32,7 +31,7 @@ namespace GarageControl.Core.Services.Jobs
         }
 
         // --- QUERIES ---
-        public async Task<List<JobToDoViewModel>> GetMyJobsAsync(string userId, string workshopId)
+        public async Task<List<JobToDoVM>> GetMyJobsAsync(string userId, string workshopId)
         {
             return await _context.Jobs
                 .AsNoTracking()
@@ -45,7 +44,7 @@ namespace GarageControl.Core.Services.Jobs
                 .Include(j => j.Worker)
                 .Where(j => j.Worker.UserId == userId && j.Order.Car.Owner.WorkshopId == workshopId)
                 .OrderBy(j => j.StartTime)
-                .Select(j => new JobToDoViewModel
+                .Select(j => new JobToDoVM
                 {
                     Id = j.Id,
                     TypeName = j.JobType.Name,
@@ -61,12 +60,12 @@ namespace GarageControl.Core.Services.Jobs
                 .ToListAsync();
         }
 
-        public async Task<JobDetailsViewModel?> GetJobByIdAsync(string jobId, string workshopId)
+        public async Task<JobDetailsVM?> GetJobByIdAsync(string jobId, string workshopId)
         {
             return await _context.Jobs
                 .AsNoTracking()
                 .Where(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId)
-                .Select(j => new JobDetailsViewModel
+                .Select(j => new JobDetailsVM
                 {
                     Id = j.Id,
                     JobTypeId = j.JobTypeId,
@@ -76,7 +75,7 @@ namespace GarageControl.Core.Services.Jobs
                     LaborCost = j.LaborCost,
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
-                    Parts = j.JobParts.Select(jp => new JobPartDetailsViewModel
+                    Parts = j.JobParts.Select(jp => new JobPartDetailsVM
                     {
                         PartId = jp.PartId,
                         PartName = jp.Part.Name,
@@ -91,7 +90,7 @@ namespace GarageControl.Core.Services.Jobs
         }
 
         // --- JOB UPDATE ---
-        public async Task<MethodResponse> UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobViewModel model)
+        public async Task<MethodResponseVM> UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobVM model)
         {
             var job = await _context.Jobs
                 .Include(j => j.JobType)
@@ -152,10 +151,10 @@ namespace GarageControl.Core.Services.Jobs
             // Log the changes
             await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
 
-            return new MethodResponse(true, "Job updated successfully");
+            return new MethodResponseVM(true, "Job updated successfully");
         }
 
-        private List<ActivityPropertyChange> TrackPropertyChanges(Job job, UpdateJobViewModel model, string newJobTypeName, string newWorkerName)
+        private List<ActivityPropertyChange> TrackPropertyChanges(Job job, UpdateJobVM model, string newJobTypeName, string newWorkerName)
         {
             var changes = new List<ActivityPropertyChange>();
             string FormatPrice(decimal p) => p.ToString("0.00");
@@ -182,7 +181,7 @@ namespace GarageControl.Core.Services.Jobs
         }
 
         // --- JOB CREATION ---
-        public async Task<MethodResponse> CreateJobAsync(string userId, string orderId, string workshopId, CreateJobViewModel model)
+        public async Task<MethodResponseVM> CreateJobAsync(string userId, string orderId, string workshopId, CreateJobVM model)
         {
             var order = await _context.Orders
                 .Include(o => o.Car)
@@ -191,14 +190,14 @@ namespace GarageControl.Core.Services.Jobs
                 .Include(o => o.Car.Model)
                 .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
 
-            if (order == null) return new MethodResponse(false, "Order not found or access denied.");
+            if (order == null) return new MethodResponseVM(false, "Order not found or access denied.");
 
             var car = order.Car;
             string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
 
             var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
             var worker = await _context.Workers.FindAsync(model.WorkerId);
-            if (jobType == null || worker == null) return new MethodResponse(false, "Invalid job type or worker.");
+            if (jobType == null || worker == null) return new MethodResponseVM(false, "Invalid job type or worker.");
 
             var job = new Job
             {
@@ -229,12 +228,12 @@ namespace GarageControl.Core.Services.Jobs
             // --- Log creation ---
             await _activityLogger.LogJobCreatedAsync(userId, workshopId, jobType.Name, carInfo, changes);
 
-            return new MethodResponse(true, "Job created successfully", job.Id);
+            return new MethodResponseVM(true, "Job created successfully", job.Id);
         }
 
         private async Task<(List<string> changes, HashSet<string> affectedPartIds)> ApplyPartsChangesAsync(
             Job job,
-            List<CreateJobPartViewModel> updatedParts,
+            List<CreateJobPartVM> updatedParts,
             string workshopId,
             string userId,
             List<string> userAccesses)

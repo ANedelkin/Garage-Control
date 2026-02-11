@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -88,7 +88,7 @@ namespace GarageControl.Controllers
 
             var userExists = await _authService.UserExists(email);
 
-            LoginResponse response;
+            LoginResponseVM response;
             if (!userExists)
             {
                 response = await _authService.SignUp(new AuthVM

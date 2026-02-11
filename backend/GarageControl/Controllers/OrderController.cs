@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -74,7 +74,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderViewModel model)
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderVM model)
         {
             try
             {
@@ -115,12 +115,12 @@ namespace GarageControl.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrder(string id, [FromBody] UpdateOrderViewModel model)
+        public async Task<IActionResult> UpdateOrder(string id, [FromBody] UpdateOrderVM model)
         {
             try
             {
                 var result = await _orderService.UpdateOrderAsync(GetUserId(), id, GetWorkshopId(), model);
-                if (result is Core.Models.MethodResponse resp && !resp.Success)
+                if (result is MethodResponseVM resp && !resp.Success)
                 {
                     return BadRequest(new { message = resp.Message });
                 }
@@ -164,7 +164,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("{id}/job")]
-        public async Task<IActionResult> CreateJob(string id, [FromBody] CreateJobViewModel model)
+        public async Task<IActionResult> CreateJob(string id, [FromBody] CreateJobVM model)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPut("job/{jobId}")]
-        public async Task<IActionResult> UpdateJob(string jobId, [FromBody] UpdateJobViewModel model)
+        public async Task<IActionResult> UpdateJob(string jobId, [FromBody] UpdateJobVM model)
         {
             try
             {

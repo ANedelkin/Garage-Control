@@ -1,4 +1,4 @@
-using GarageControl.Core.ViewModels.Dashboard;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ namespace GarageControl.Core.Services
 {
     public interface IDashboardService
     {
-        Task<DashboardViewModel> GetDashboardDataAsync(string workshopId);
+        Task<DashboardVM> GetDashboardDataAsync(string workshopId);
     }
 
     public class DashboardService : IDashboardService
@@ -19,10 +19,10 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<DashboardViewModel> GetDashboardDataAsync(string workshopId)
+        public async Task<DashboardVM> GetDashboardDataAsync(string workshopId)
         {
 
-            var dashboard = new DashboardViewModel
+            var dashboard = new DashboardVM
             {
                 OrderStats = await GetOrderStatsAsync(workshopId),
                 JobsCompletedByDay = await GetJobsCompletedByDayAsync(workshopId),
@@ -34,7 +34,7 @@ namespace GarageControl.Core.Services
             return dashboard;
         }
 
-        private async Task<OrderStatsViewModel> GetOrderStatsAsync(string workshopId)
+        private async Task<OrderStatsVM> GetOrderStatsAsync(string workshopId)
         {
             var allOrders = await _context.Orders
                 .Where(o => o.Car.Owner.WorkshopId == workshopId)
@@ -48,7 +48,7 @@ namespace GarageControl.Core.Services
                 .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && j.Status == JobStatus.InProgress)
                 .CountAsync();
 
-            return new OrderStatsViewModel
+            return new OrderStatsVM
             {
                 AllOrders = allOrders,
                 PendingJobs = pendingJobs,
@@ -56,7 +56,7 @@ namespace GarageControl.Core.Services
             };
         }
 
-        private async Task<List<JobsCompletedByDayViewModel>> GetJobsCompletedByDayAsync(string workshopId)
+        private async Task<List<JobsCompletedByDayVM>> GetJobsCompletedByDayAsync(string workshopId)
         {
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30).Date;
 
@@ -74,7 +74,7 @@ namespace GarageControl.Core.Services
 
             var groupedByDay = completedJobs
                 .GroupBy(j => j.Date)
-                .Select(g => new JobsCompletedByDayViewModel
+                .Select(g => new JobsCompletedByDayVM
                 {
                     Date = g.Key,
                     JobTypesCounts = g.GroupBy(x => x.JobTypeName)
@@ -84,23 +84,23 @@ namespace GarageControl.Core.Services
                 .ToList();
 
             // Fill in missing days with empty data
-            var allDays = new List<JobsCompletedByDayViewModel>();
+            var allDays = new List<JobsCompletedByDayVM>();
             var today = DateTime.UtcNow.Date;
             for (int i = 0; i < 30; i++)
             {
                 var date = today.AddDays(-29 + i);
                 var existing = groupedByDay.FirstOrDefault(x => x.Date == date);
-                allDays.Add(existing ?? new JobsCompletedByDayViewModel { Date = date });
+                allDays.Add(existing ?? new JobsCompletedByDayVM { Date = date });
             }
 
             return allDays;
         }
 
-        private async Task<List<LowStockPartViewModel>> GetLowStockPartsAsync(string workshopId)
+        private async Task<List<LowStockPartVM>> GetLowStockPartsAsync(string workshopId)
         {
             return await _context.Parts
                 .Where(p => p.WorkshopId == workshopId && p.AvailabilityBalance < p.MinimumQuantity)
-                .Select(p => new LowStockPartViewModel
+                .Select(p => new LowStockPartVM
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -111,7 +111,7 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
         }
 
-        private async Task<List<JobTypeDistributionViewModel>> GetJobTypeDistributionAsync(string workshopId)
+        private async Task<List<JobTypeDistributionVM>> GetJobTypeDistributionAsync(string workshopId)
         {
             var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
 
@@ -126,14 +126,14 @@ namespace GarageControl.Core.Services
                 .OrderByDescending(x => x.Count)
                 .ToListAsync();
 
-            return distribution.Select(x => new JobTypeDistributionViewModel
+            return distribution.Select(x => new JobTypeDistributionVM
             {
                 JobTypeName = x.JobTypeName,
                 Count = x.Count,
             }).ToList();
         }
 
-        private async Task<List<WorkerPerformanceViewModel>> GetWorkerPerformanceAsync(string workshopId)
+        private async Task<List<WorkerPerformanceVM>> GetWorkerPerformanceAsync(string workshopId)
         {
             var workers = await _context.Workers
                 .Where(w => w.WorkshopId == workshopId)
@@ -151,7 +151,7 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            return workers.Select(w => new WorkerPerformanceViewModel
+            return workers.Select(w => new WorkerPerformanceVM
             {
                 WorkerId = w.Id,
                 WorkerName = w.Name,

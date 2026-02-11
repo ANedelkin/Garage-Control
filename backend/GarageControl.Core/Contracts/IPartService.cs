@@ -1,14 +1,16 @@
-using GarageControl.Core.ViewModels.Parts;
+using GarageControl.Core.ViewModels;
 
 namespace GarageControl.Core.Contracts
 {
     public interface IPartService
     {
-        Task<List<PartViewModel>> GetAllPartsAsync(string garageId);
-        Task<PartViewModel> CreatePartAsync(string userId, string garageId, CreatePartViewModel model);
-        Task<PartWithPathViewModel?> GetPartAsync(string garageId, string partId);
-        Task EditPartAsync(string userId, string garageId, string partId, UpdatePartViewModel model);
-        Task DeletePartAsync(string userId, string garageId, string partId);
+        Task<List<PartVM>> GetAllPartsAsync(string workshopId);
+        Task<PartVM> GetPartByIdAsync(string partId, string workshopId);
+        Task<List<PartVM>> GetPartsByFolderAsync(string? folderId, string workshopId);
+        Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM model);
+        Task<PartVM> EditPartAsync(string userId, string workshopId, string partId, UpdatePartVM model);
+        Task<PartWithPathVM?> GetPartWithPathAsync(string partId, string workshopId);
         Task MovePartAsync(string userId, string garageId, string partId, string? newParentId);
+        Task DeletePartAsync(string userId, string workshopId, string partId);
     }
 }

@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Infrastructure.Data.Common;
 using Microsoft.AspNetCore.Http;
@@ -43,10 +43,10 @@ namespace GarageControl.Core.Services
             _accessTokenExpiryMinutes = 30;
         }
 
-        public async Task<LoginResponse> SignUp(AuthVM model)
+        public async Task<LoginResponseVM> SignUp(AuthVM model)
         {
             if (await UserExists(model.Email))
-                return new LoginResponse(false, "User already exists");
+                return new LoginResponseVM(false, "User already exists");
 
             var user = new User
             {
@@ -63,27 +63,27 @@ namespace GarageControl.Core.Services
             if (!result.Succeeded)
             {
                 string errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return new LoginResponse(false, errors);
+                return new LoginResponseVM(false, errors);
             }
 
             return await DoLogin(user);
         }
 
-        public async Task<LoginResponse> LogIn(AuthVM model)
+        public async Task<LoginResponseVM> LogIn(AuthVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return new LoginResponse(false, "Invalid credentials");
+                return new LoginResponseVM(false, "Invalid credentials");
             bool passwordMatch;
             if (model.Password == null)
                 passwordMatch = true;
             else
                 passwordMatch = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!passwordMatch)
-                return new LoginResponse(false, "Invalid credentials");
+                return new LoginResponseVM(false, "Invalid credentials");
 
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
-                return new LoginResponse(false, "Your account has been blocked. Please contact the administrator.");
+                return new LoginResponseVM(false, "Your account has been blocked. Please contact the administrator.");
 
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -95,7 +95,7 @@ namespace GarageControl.Core.Services
                     var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
                     if (workshop != null && workshop.IsBlocked)
                     {
-                        return new LoginResponse(false, "This workshop has been blocked by an administrator.");
+                        return new LoginResponseVM(false, "This workshop has been blocked by an administrator.");
                     }
                 }
             }
@@ -123,20 +123,20 @@ namespace GarageControl.Core.Services
             response.Cookies.Delete("RefreshToken");
         }
 
-        public async Task<LoginResponse> RefreshToken(HttpRequest request, HttpResponse response)
+        public async Task<LoginResponseVM> RefreshToken(HttpRequest request, HttpResponse response)
         {
             string refreshToken = request.Cookies["RefreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
-                return new LoginResponse(false, "No refresh token");
+                return new LoginResponseVM(false, "No refresh token");
 
             var user = await FindByToken(refreshToken);
             if (user == null)
-                return new LoginResponse(false, "Invalid refresh token");
+                return new LoginResponseVM(false, "Invalid refresh token");
             if (user.RefreshTokenExpiry < DateTime.UtcNow)
-                return new LoginResponse(false, "Refresh token expired");
+                return new LoginResponseVM(false, "Refresh token expired");
 
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
-                return new LoginResponse(false, "Your account has been blocked.");
+                return new LoginResponseVM(false, "Your account has been blocked.");
 
             var roles = await _userManager.GetRolesAsync(user);
             var workshopId = await GetUserWorkshopId(user.Id);
@@ -146,7 +146,7 @@ namespace GarageControl.Core.Services
                 var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
                 if (workshop != null && workshop.IsBlocked)
                 {
-                    return new LoginResponse(false, "This workshop has been blocked by an administrator.");
+                    return new LoginResponseVM(false, "This workshop has been blocked by an administrator.");
                 }
             }
 
@@ -155,10 +155,10 @@ namespace GarageControl.Core.Services
             bool hasWorkshop = await UserHasWorkshop(user.Id);
             var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop, user.Id, workerId);
+            return new LoginResponseVM(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
 
-        public Task SetAuthCookies(HttpResponse response, LoginResponse body)
+        public Task SetAuthCookies(HttpResponse response, LoginResponseVM body)
         {
             response.Cookies.Append("AccessToken", body.Token, new CookieOptions
             {
@@ -179,7 +179,7 @@ namespace GarageControl.Core.Services
             return Task.CompletedTask;
         }
 
-        private async Task<LoginResponse> DoLogin(User user)
+        private async Task<LoginResponseVM> DoLogin(User user)
         {
             user.RefreshToken = GenerateRefreshToken();
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(14);
@@ -192,7 +192,7 @@ namespace GarageControl.Core.Services
             bool hasWorkshop = await UserHasWorkshop(user.Id);
             var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
+            return new LoginResponseVM(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
 
         private async Task<bool> UserHasWorkshop(string userId)

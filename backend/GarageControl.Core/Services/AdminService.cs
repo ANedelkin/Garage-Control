@@ -1,5 +1,5 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -74,44 +74,32 @@ namespace GarageControl.Core.Services
 
             return userList;
         }
-
-
-        public async Task<MethodResponse> ToggleUserBlockAsync(string userId)
+        public async Task<MethodResponseVM> ToggleUserBlockAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new MethodResponse(false, "User not found");
+                return new MethodResponseVM(false, "User not found");
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("Admin"))
+            if (user.LockoutEnd == null || user.LockoutEnd < DateTimeOffset.UtcNow)
             {
-                return new MethodResponse(false, "Cannot block an admin user");
-            }
-
-            bool isCurrentlyBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow;
-
-            if (isCurrentlyBlocked)
-            {
-                // Unblock
-                await _userManager.SetLockoutEndDateAsync(user, null);
+                // Block for 100 years
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+                return new MethodResponseVM(true, "User blocked successfully");
             }
             else
             {
-                // Block for a long time (e.g., 100 years)
-                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+                // Unblock
+                await _userManager.SetLockoutEndDateAsync(user, null);
+                return new MethodResponseVM(true, "User unblocked successfully");
             }
-
-            return new MethodResponse(true, isCurrentlyBlocked ? "User unblocked successfully" : "User blocked successfully");
         }
 
         public async Task<List<WorkshopAdminVM>> GetWorkshopsAsync()
         {
-            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>()
-                .Include(w => w.Boss)
-                .Include(w => w.Workers)
-                .ToListAsync();
+            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
 
             return workshops.Select(w => new WorkshopAdminVM
             {
@@ -119,26 +107,23 @@ namespace GarageControl.Core.Services
                 Name = w.Name,
                 Address = w.Address,
                 RegistrationNumber = w.RegistrationNumber,
-                BossEmail = w.Boss?.Email ?? "",
-                WorkerCount = w.Workers.Count,
+                OwnerEmail = users.FirstOrDefault(u => u.Id == w.BossId)?.Email ?? "N/A",
                 IsBlocked = w.IsBlocked
             }).ToList();
         }
 
-        public async Task<MethodResponse> ToggleWorkshopBlockAsync(string workshopId)
+        public async Task<MethodResponseVM> ToggleWorkshopBlockAsync(string workshopId)
         {
-            var workshop = await _repo.GetAllAttachedAsync<Workshop>()
-                .FirstOrDefaultAsync(w => w.Id == workshopId);
-
+            var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
             if (workshop == null)
             {
-                return new MethodResponse(false, "Workshop not found");
+                return new MethodResponseVM(false, "Workshop not found");
             }
 
             workshop.IsBlocked = !workshop.IsBlocked;
             await _repo.SaveChangesAsync();
 
-            return new MethodResponse(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");
+            return new MethodResponseVM(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");
         }
 
         public async Task<DashboardStatsVM> GetDashboardStatsAsync()

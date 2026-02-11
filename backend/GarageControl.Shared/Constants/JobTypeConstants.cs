@@ -3,5 +3,6 @@ namespace GarageControl.Shared.Constants
     public static class JobTypeConstants
     {
         public const int nameMaxLength = 100;
+        public const int nameMinLength = 1;
     }
 }

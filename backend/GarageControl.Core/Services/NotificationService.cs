@@ -1,4 +1,4 @@
-using GarageControl.Core.ViewModels.Notifications;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Core.Contracts;
@@ -15,12 +15,12 @@ namespace GarageControl.Core.Services
             _context = context;
         }
 
-        public async Task<List<NotificationViewModel>> GetUserNotificationsAsync(string userId)
+        public async Task<List<NotificationVM>> GetUserNotificationsAsync(string userId)
         {
             return await _context.Notifications
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
-                .Select(n => new NotificationViewModel
+                .Select(n => new NotificationVM
                 {
                     Id = n.Id,
                     Message = n.Message,
