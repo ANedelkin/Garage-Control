@@ -60,7 +60,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet("suggestions")]
-        // [Authorize(Roles = "Admin")] // Uncomment if Role-based auth is fully set up
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSuggestions()
         {
             var suggestions = await _makeService.GetSuggestions();
@@ -68,7 +68,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet("suggestions/{makeName}/models")]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSuggestedModels(string makeName)
         {
             var models = await _makeService.GetSuggestedModels(makeName);
@@ -76,7 +76,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("promote")]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PromoteSource([FromBody] PromoteRequest request)
         {
              await _makeService.PromoteSuggestion(request.Name, request.NewName);
@@ -99,7 +99,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("promote-model")]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PromoteModel([FromBody] PromoteModelRequest request)
         {
             await _makeService.PromoteModelSuggestion(request.MakeName, request.ModelName, request.NewModelName, request.NewMakeName);
