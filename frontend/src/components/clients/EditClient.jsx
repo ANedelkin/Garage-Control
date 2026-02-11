@@ -72,13 +72,13 @@ const EditClient = () => {
             if (isNew) {
                 await clientApi.create(client);
             } else {
-                await clientApi.edit(client);
+                await clientApi.edit(id, client);
             }
             navigate('/clients');
         } catch (error) {
-            console.error("Error saving client", error);
-            alert("Failed to save client.");
-        }
+            console.error('Error saving client info:', error);
+            alert(error.message || 'Error occurred while saving client details.');
+        } finally { }
     };
 
     const handleSaveCar = async (carData) => {
@@ -89,7 +89,7 @@ const EditClient = () => {
             };
 
             if (carData.id) {
-                await vehicleApi.edit(carDto);
+                await vehicleApi.edit(carData.id, carDto);
             } else {
                 await vehicleApi.create(carDto);
             }

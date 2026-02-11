@@ -5,6 +5,7 @@ namespace GarageControl.Core.Models
     public class WorkerVM
     {
         public string? Id { get; set; }
+
         [Required]
         public string Name { get; set; } = null!;
         [Required]

@@ -2,15 +2,15 @@ import { request } from "../Utilities/request";
 
 export const workshopApi = {
     hasWorkshop: async () => {
-        return (await (await request('GET', 'workshop/has-workshop')).json()).hasWorkshop;
+        return (await request('GET', 'workshop/has-workshop')).hasWorkshop;
     },
     getDetails: async () => {
-        return await (await request('GET', 'workshop/details')).json();
+        return await request('GET', 'workshop/details');
     },
     create: async (workshopData) => {
-        return await (await request('POST', 'workshop/create', workshopData)).json();
+        return await request('POST', 'workshop/create', workshopData);
     },
     edit: async (workshopData) => {
-        return await (await request('PUT', 'workshop/edit', workshopData)).json();
+        return await request('PUT', 'workshop/edit', workshopData);
     }
 }

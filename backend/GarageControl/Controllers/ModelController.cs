@@ -43,14 +43,14 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] ModelVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] ModelVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
              var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
              try
              {
-                 await _modelService.UpdateModel(model, userId);
+                 await _modelService.UpdateModel(id, model, userId!);
                  return Ok(new { success = true });
              }
              catch(UnauthorizedAccessException)

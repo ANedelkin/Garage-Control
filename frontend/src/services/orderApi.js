@@ -2,34 +2,34 @@ import { request } from "../Utilities/request";
 
 const orderApi = {
     getOrders: async () => {
-        return (await request('GET', 'order')).json();
+        return await request('GET', 'order');
     },
     getActiveOrders: async () => {
-        return (await request('GET', 'order/active')).json();
+        return await request('GET', 'order/active');
     },
     getCompletedOrders: async () => {
-        return (await request('GET', 'order/completed')).json();
+        return await request('GET', 'order/completed');
     },
     createOrder: async (data) => {
-        return (await request('POST', 'order/create', data)).json();
+        return await request('POST', 'order/create', data);
     },
     getOrder: async (id) => {
-        return (await request('GET', `order/${id}`)).json();
+        return await request('GET', `order/${id}`);
     },
     updateOrder: async (id, data) => {
-        return (await request('PUT', `order/${id}`, data)).json();
+        return await request('PUT', `order/${id}`, data);
     },
     getMyJobs: async () => {
-        return (await request('GET', 'order/my-jobs')).json();
+        return await request('GET', 'order/my-jobs');
     },
     getJob: async (jobId) => {
-        return (await request('GET', `order/job/${jobId}`)).json();
+        return await request('GET', `order/job/${jobId}`);
     },
     createJob: async (orderId, data) => {
-        return (await request('POST', `order/${orderId}/job`, data)).json();
+        return await request('POST', `order/${orderId}/job`, data);
     },
     updateJob: async (jobId, data) => {
-        return (await request('PUT', `order/job/${jobId}`, data)).json();
+        return await request('PUT', `order/job/${jobId}`, data);
     }
 };
 

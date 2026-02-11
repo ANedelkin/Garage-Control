@@ -43,20 +43,20 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] MakeVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] MakeVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
              var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
              try 
-             {
-                await _makeService.UpdateMake(model, userId);
-                return Ok(new { success = true });
-             } 
+              {
+                 await _makeService.UpdateMake(id, model, userId!);
+                 return Ok(new { success = true });
+              } 
              catch(UnauthorizedAccessException) 
-             {
+              {
                  return Forbid();
-             }
+              }
         }
 
         [HttpGet("suggestions")]

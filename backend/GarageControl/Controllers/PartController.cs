@@ -88,12 +88,12 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdatePart([FromBody] UpdatePartViewModel model)
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdatePart(string id, [FromBody] UpdatePartViewModel model)
         {
             try
             {
-                await _partService.EditPartAsync(GetUserId(), GetWorkshopId(), model);
+                await _partService.EditPartAsync(GetUserId(), GetWorkshopId(), id, model);
                 return Ok();
             }
             catch (Exception ex)

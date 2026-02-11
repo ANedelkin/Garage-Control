@@ -127,11 +127,11 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task UpdateModel(ModelVM model, string userId)
+        public async Task UpdateModel(string id, ModelVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            var carModel = await _repo.GetAllAttachedAsync<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == model.Id);
+            var carModel = await _repo.GetAllAttachedAsync<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == id);
             
             if (carModel != null)
             {

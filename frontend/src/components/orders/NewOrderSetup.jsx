@@ -16,7 +16,7 @@ const NewOrderSetup = () => {
     useEffect(() => {
         const loadCars = async () => {
             try {
-                const carsData = await (await request('GET', 'vehicle/all')).json();
+                const carsData = await request('GET', 'vehicle/all');
                 setCars(carsData);
             } catch (e) {
                 console.error("Failed to load cars", e);

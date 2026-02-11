@@ -73,12 +73,12 @@ const EditWorker = () => {
     e.preventDefault();
     try {
       console.log(worker);
-      await workerApi.editWorker(worker);
+      await workerApi.edit(id, worker);
       navigate('/workers');
     } catch (error) {
       console.error("Error saving worker", error);
-      alert("Failed to save worker");
-    }
+      alert(error.message || "Failed to save worker");
+    } finally { };
   };
 
   const hours = Array.from({ length: 24 }, (_, i) => i);

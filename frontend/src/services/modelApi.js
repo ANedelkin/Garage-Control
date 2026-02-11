@@ -2,18 +2,18 @@ import { request } from "../Utilities/request";
 
 export const modelApi = {
     getAll: async (makeId) => {
-        return (await request('GET', `model/all/${makeId}`)).json();
+        return await request('GET', `model/all/${makeId}`);
     },
     createModel: async (modelData) => {
-        return (await request('POST', 'model/create', modelData)).json();
+        return await request('POST', 'model/create', modelData);
     },
-    editModel: async (modelData) => {
-        return (await request('PUT', 'model/edit', modelData)).json();
+    editModel: async (id, modelData) => {
+        await request('PUT', `model/edit/${id}`, modelData);
     },
     deleteModel: async (id) => {
-        return (await request('DELETE', `model/${id}`)).json();
+        await request('DELETE', `model/${id}`);
     },
     mergeModelWithGlobal: async (customModelId, globalModelId) => {
-        return (await request('POST', 'model/merge-with-global', { customModelId, globalModelId })).json();
+        return await request('POST', 'model/merge-with-global', { customModelId, globalModelId });
     }
 }

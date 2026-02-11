@@ -31,7 +31,12 @@ const EditJobType = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    jobTypeApi.editJobType(jobTypeData);
+    jobTypeApi.editJobType(id, jobTypeData)
+      .then(() => navigate('/job-types'))
+      .catch(error => {
+        console.error("Error saving job type", error);
+        alert(error.message || "Failed to save job type");
+      });
   };
 
 

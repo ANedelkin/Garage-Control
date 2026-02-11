@@ -88,12 +88,12 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task Edit(JobTypeVM model, string userId)
+        public async Task Edit(string id, JobTypeVM model, string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
-            var jobType = await _repo.GetByIdAsync<JobType>(model.Id);
+            var jobType = await _repo.GetByIdAsync<JobType>(id);
             if (jobType != null)
             {
                 var changes = new List<string>();

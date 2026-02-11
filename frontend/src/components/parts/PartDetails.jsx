@@ -50,8 +50,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            await partApi.updatePart({
-                id: part.id,
+            await partApi.updatePart(part.id, {
                 ...formData,
                 price: parseFloat(formData.price),
                 quantity: parseInt(formData.quantity),
@@ -63,7 +62,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             // alert("Saved successfully");
         } catch (error) {
             console.error("Error saving part", error);
-            alert("Failed to save part");
+            alert(error.message || "Failed to save part");
         }
     };
 

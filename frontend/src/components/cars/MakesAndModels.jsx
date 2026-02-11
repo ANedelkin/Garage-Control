@@ -123,14 +123,14 @@ const MakesAndModels = () => {
         try {
             if (modalType === 'make') {
                 if (editingItem) {
-                    await makeApi.editMake({ id: editingItem.id, name: itemName });
+                    await makeApi.editMake(editingItem.id, { name: itemName });
                 } else {
                     await makeApi.createMake({ name: itemName });
                 }
                 fetchMakes();
             } else {
                 if (editingItem) {
-                    await modelApi.editModel({ id: editingItem.id, name: itemName, makeId: selectedMake.id });
+                    await modelApi.editModel(editingItem.id, { name: itemName, makeId: selectedMake.id });
                 } else {
                     await modelApi.createModel({ name: itemName, makeId: selectedMake.id });
                 }
@@ -138,8 +138,8 @@ const MakesAndModels = () => {
             }
             setShowModal(false);
         } catch (error) {
-            console.error("Error saving", error);
-            alert("Failed to save. check console.");
+            console.error("Error saving item", error);
+            alert(error.message || "An error occurred");
         }
     };
 

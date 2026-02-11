@@ -58,12 +58,12 @@ namespace GarageControl.Controllers
             return Ok(result);
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] VehicleVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] VehicleVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
              var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-             await _vehicleService.Edit(model, userId);
+             await _vehicleService.Edit(id, model, userId!);
              return Ok(new { success = true });
         }
 

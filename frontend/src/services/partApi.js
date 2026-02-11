@@ -2,25 +2,25 @@ import { request } from "../Utilities/request";
 
 const partApi = {
     getFolderContent: async (folderId) => {
-        return (await request('GET', `part/folder-content?folderId=${folderId || ''}`)).json();
+        return await request('GET', `part/folder-content?folderId=${folderId || ''}`);
     },
     getAllParts: async () => {
-        return (await request('GET', 'part/all')).json();
+        return await request('GET', 'part/all');
     },
     getPart: async (id) => {
-        return (await request('GET', `part/${id}`)).json();
+        return await request('GET', `part/${id}`);
     },
     createPart: async (data) => {
-        return (await request('POST', 'part/create', data)).json();
+        return await request('POST', 'part/create', data);
     },
-    updatePart: async (data) => {
-        await request('PUT', 'part/update', data);
+    updatePart: async (id, partData) => {
+        await request('PUT', `part/update/${id}`, partData);
     },
     deletePart: async (id) => {
         await request('DELETE', `part/delete/${id}`);
     },
     createFolder: async (data) => {
-        return (await request('POST', 'part/folder/create', data)).json();
+        return await request('POST', 'part/folder/create', data);
     },
     renameFolder: async (id, newName) => {
         await request('PUT', `part/folder/rename/${id}`, newName);

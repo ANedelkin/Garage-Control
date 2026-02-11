@@ -2,18 +2,18 @@ import { request } from "../Utilities/request";
 
 export const clientApi = {
     getAll: async () => {
-        return await (await request('GET', 'client/all')).json();
+        return await request('GET', 'client/all');
     },
     getDetails: async (id) => {
-        return await (await request('GET', `client/${id}`)).json();
+        return await request('GET', `client/${id}`);
     },
     create: async (clientData) => {
-        return await (await request('POST', 'client/create', clientData)).json();
+        return await request('POST', 'client/create', clientData);
     },
-    edit: async (clientData) => {
-        return await (await request('PUT', 'client/edit', clientData)).json();
+    edit: async (id, clientData) => {
+        await request('PUT', `client/edit/${id}`, clientData);
     },
     delete: async (id) => {
-        return await (await request('DELETE', `client/${id}`)).json();
+        await request('DELETE', `client/${id}`);
     }
 };

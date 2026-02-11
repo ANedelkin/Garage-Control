@@ -83,7 +83,7 @@ const Cars = () => {
 
     const handleSaveCar = async (carData) => {
         try {
-            await vehicleApi.edit(carData);
+            await vehicleApi.edit(carData.id, carData);
 
             // update local list
             const updatedCars = cars.map(c => c.id === carData.id ? { ...c, ...carData } : c);

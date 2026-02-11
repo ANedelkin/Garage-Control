@@ -50,29 +50,15 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] WorkerVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] WorkerVM model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            if (string.IsNullOrEmpty(model.Id))
-            {
-                 var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                 try
-                 {
-                    await _workerService.Create(model, actingUserId!);
-                    return Ok(new { message = "Worker created successfully" });
-                 }
-                 catch (Exception ex)
-                 {
-                    return BadRequest(new { message = ex.Message });
-                 }
-            }
 
             try
             {
                 var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                await _workerService.Edit(model, actingUserId!);
+                await _workerService.Edit(id, model, actingUserId!);
                 return Ok(new { message = "Worker updated successfully" });
             }
             catch (Exception ex)

@@ -3,11 +3,7 @@ import { request } from '../Utilities/request.js';
 export const authApi = {
     register: async (email, password) => {
         try {
-            const response = await request('POST', 'auth/signup', { email, password });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
-            }
+            const data = await request('POST', 'auth/signup', { email, password });
 
             if (data.success) {
                 localStorage.setItem('LoggedIn', 'true');
@@ -24,11 +20,7 @@ export const authApi = {
 
     login: async (email, password) => {
         try {
-            const response = await request('POST', 'auth/login', { email, password });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
+            const data = await request('POST', 'auth/login', { email, password });
 
             if (data.success) {
                 localStorage.setItem('LoggedIn', 'true');
@@ -59,10 +51,9 @@ export const authApi = {
 
     refreshToken: async () => {
         try {
-            const response = await request('POST', 'auth/refresh');
-            const data = await response.json();
+            const data = await request('POST', 'auth/refresh');
 
-            if (!response.ok || !data.success) {
+            if (!data.success) {
                 localStorage.removeItem('LoggedIn');
                 localStorage.removeItem('accesses');
                 localStorage.removeItem('HasWorkshop');

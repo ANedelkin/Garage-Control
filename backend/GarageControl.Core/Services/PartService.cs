@@ -96,9 +96,9 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task EditPartAsync(string userId, string workshopId, UpdatePartViewModel model)
+        public async Task EditPartAsync(string userId, string workshopId, string partId, UpdatePartViewModel model)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == model.Id && p.WorkshopId == workshopId);
+            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) throw new ArgumentException("Part not found");
 
             var changes = TrackPartChanges(part, model);

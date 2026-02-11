@@ -37,7 +37,7 @@ const OrderList = ({ mode = 'active' }) => {
 
     const fetchCars = async () => {
         try {
-            const data = await (await request('GET', 'vehicle/all')).json();
+            const data = await request('GET', 'vehicle/all');
             setCars(data);
         } catch (error) {
             console.error(error);

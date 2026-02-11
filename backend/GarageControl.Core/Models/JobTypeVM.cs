@@ -5,6 +5,7 @@ namespace GarageControl.Core.Models
     public class JobTypeVM
     {
         public string? Id { get; set; }
+
         [Required]
         public string Name { get; set; } = null!;
         public string? Description { get; set; }

@@ -93,9 +93,9 @@ const AdminMakesModels = () => {
             if (!newName) return;
             try {
                 if (type === 'group') {
-                    await makeApi.editMake({ id: node.id, name: newName });
+                    await makeApi.editMake(node.id, { name: newName });
                 } else {
-                    await modelApi.editModel({ id: node.id, name: newName, makeId: node.makeId /* Need makeId? */ });
+                    await modelApi.editModel(node.id, { name: newName, makeId: node.carMakeId });
                     // Helper: ModelVM needs MakeId? ItemsTreeNode doesn't hold parent ID explicitly unless passed.
                     // fetchModels returns models. Do they have makeId?
                     // I need to ensure fetchModels result includes everything needed for update.

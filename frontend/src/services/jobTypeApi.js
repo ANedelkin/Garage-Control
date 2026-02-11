@@ -2,12 +2,12 @@ import { request } from "../Utilities/request";
 
 export const jobTypeApi = {
     getJobTypes: async () => {
-        return await (await request('GET', 'jobtype/all')).json();
+        return await request('GET', 'jobtype/all');
     },
     getJobType: async (id) => {
-        return await (await request('GET', `jobtype/${id}`)).json();
+        return await request('GET', `jobtype/${id}`);
     },
-    editJobType: async (jobTypeData) => {
-        return await (await request('PUT', 'jobtype/edit', jobTypeData)).json();
+    editJobType: async (id, jobTypeData) => {
+        await request('PUT', `jobtype/edit/${id}`, jobTypeData);
     }
 }

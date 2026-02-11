@@ -2,21 +2,21 @@ import { request } from "../Utilities/request";
 
 export const vehicleApi = {
     getAll: async () => {
-        return await (await request('GET', 'vehicle/all')).json();
+        return await request('GET', 'vehicle/all');
     },
     getByClient: async (clientId) => {
-        return await (await request('GET', `vehicle/by-client/${clientId}`)).json();
+        return await request('GET', `vehicle/by-client/${clientId}`);
     },
     create: async (vehicleData) => {
-        return await (await request('POST', 'vehicle/create', vehicleData)).json();
+        return await request('POST', 'vehicle/create', vehicleData);
     },
-    edit: async (vehicleData) => {
-        return await (await request('PUT', 'vehicle/edit', vehicleData)).json();
+    edit: async (id, vehicleData) => {
+        await request('PUT', `vehicle/edit/${id}`, vehicleData);
     },
     delete: async (id) => {
-        return await (await request('DELETE', `vehicle/${id}`)).json();
+        await request('DELETE', `vehicle/${id}`);
     },
     getDetails: async (id) => {
-        return await (await request('GET', `vehicle/${id}`)).json();
+        return await request('GET', `vehicle/${id}`);
     }
 };

@@ -23,8 +23,8 @@ const EditJobPage = () => {
         const loadData = async () => {
             try {
                 const [jtData, workerData, partsData, orderData] = await Promise.all([
-                    (await request('GET', 'jobtype/all')).json(),
-                    (await request('GET', 'worker/all')).json(),
+                    request('GET', 'jobtype/all'),
+                    request('GET', 'worker/all'),
                     partApi.getAllParts(),
                     orderApi.getOrder(orderId)
                 ]);

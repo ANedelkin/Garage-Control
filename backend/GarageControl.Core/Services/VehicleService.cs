@@ -41,12 +41,10 @@ namespace GarageControl.Core.Services
                     Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
-                        Id = c.Model.Id,
                         Name = c.Model.Name,
                         MakeId = c.Model.CarMakeId,
                         Make = new MakeVM
                         {
-                            Id = c.Model.CarMake.Id,
                             Name = c.Model.CarMake.Name
                         }
                     }
@@ -73,12 +71,10 @@ namespace GarageControl.Core.Services
                     Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
-                        Id = c.Model.Id,
                         Name = c.Model.Name,
                         MakeId = c.Model.CarMakeId,
                         Make = new MakeVM
                         {
-                            Id = c.Model.CarMake.Id,
                             Name = c.Model.CarMake.Name
                         }
                     }
@@ -122,7 +118,7 @@ namespace GarageControl.Core.Services
                 $"added car <b>{carDisplayName}</b> to client <a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>");
         }
 
-        public async Task Edit(VehicleVM model, string userId)
+        public async Task Edit(string id, VehicleVM model, string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return;
@@ -131,7 +127,7 @@ namespace GarageControl.Core.Services
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
                 .Include(c => c.Owner)
-                .FirstOrDefaultAsync(c => c.Id == model.Id);
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (car != null)
             {
@@ -219,12 +215,10 @@ namespace GarageControl.Core.Services
                     Kilometers = c.Kilometers,
                     Model = new ModelVM
                     {
-                        Id = c.Model.Id,
                         Name = c.Model.Name,
                         MakeId = c.Model.CarMakeId,
                         Make = new MakeVM
                         {
-                            Id = c.Model.CarMake.Id,
                             Name = c.Model.CarMake.Name
                         }
                     }

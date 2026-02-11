@@ -199,11 +199,11 @@ namespace GarageControl.Core.Services
             await _repo.SaveChangesAsync();
         }
 
-        public async Task UpdateMake(MakeVM model, string userId)
+        public async Task UpdateMake(string id, MakeVM model, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            var make = await _repo.GetByIdAsync<CarMake>(model.Id!);
+            var make = await _repo.GetByIdAsync<CarMake>(id);
             
             if (make != null)
             {

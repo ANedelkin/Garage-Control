@@ -51,12 +51,12 @@ namespace GarageControl.Controllers
             return Ok(client);
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] ClientVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] ClientVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
              var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-             await _clientService.Edit(model, userId!);
+             await _clientService.Edit(id, model, userId!);
              return Ok(new { success = true });
         }
 

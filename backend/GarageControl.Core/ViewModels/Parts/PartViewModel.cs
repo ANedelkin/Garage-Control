@@ -32,8 +32,7 @@ namespace GarageControl.Core.ViewModels.Parts
 
     public class UpdatePartViewModel
     {
-        [Required]
-        public string Id { get; set; } = null!;
+
         [Required]
         public string Name { get; set; } = null!;
         [Required]

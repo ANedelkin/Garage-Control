@@ -2,28 +2,23 @@ import { request } from '../Utilities/request';
 
 export const adminApi = {
     getUsers: async () => {
-        const response = await request('GET', 'admin/users');
-        return response.json();
+        return await request('GET', 'admin/users');
     },
 
     toggleUserBlock: async (userId) => {
-        const response = await request('POST', `admin/users/${userId}/toggle-block`);
-        return response.json();
+        return await request('POST', `admin/users/${userId}/toggle-block`);
     },
 
     getWorkshops: async () => {
-        const response = await request('GET', 'admin/workshops');
-        return response.json();
+        return await request('GET', 'admin/workshops');
     },
 
     toggleWorkshopBlock: async (workshopId) => {
-        const response = await request('POST', `admin/workshops/${workshopId}/toggle-block`);
-        return response.json();
+        return await request('POST', `admin/workshops/${workshopId}/toggle-block`);
     },
 
     getStats: async () => {
-        const response = await request('GET', 'admin/stats');
-        return response.json();
+        return await request('GET', 'admin/stats');
     }
 };
 

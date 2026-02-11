@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://localhost:5173/api';
 
 export async function request(method, url, body = null, options = {}) {
-    let headers = method=='get'?{}:{
+    let headers = method == 'get' ? {} : {
         'Content-Type': 'application/json',
     };
 
@@ -16,5 +16,23 @@ export async function request(method, url, body = null, options = {}) {
     }
     const response = await fetch(`${API_BASE_URL}/${url}`, request);
 
-    return response;
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        try {
+            data = await response.json();
+        } catch (e) {
+            // Not valid JSON or empty body
+        }
+    }
+
+    if (!response.ok) {
+        const errorMessage = data?.message || data?.error || response.statusText || 'Request failed';
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.data = data;
+        throw error;
+    }
+
+    return data || response;
 }

@@ -2,30 +2,30 @@ import { request } from "../Utilities/request";
 
 export const makeApi = {
     getAll: async () => {
-        return await (await request('GET', 'make/all')).json();
+        return await request('GET', 'make/all');
     },
     createMake: async (makeData) => {
-        return await (await request('POST', 'make/create', makeData)).json();
+        return await request('POST', 'make/create', makeData);
     },
-    editMake: async (makeData) => {
-        return await (await request('PUT', 'make/edit', makeData)).json();
+    editMake: async (id, makeData) => {
+        await request('PUT', `make/edit/${id}`, makeData);
     },
     deleteMake: async (id) => {
-        return await (await request('DELETE', `make/${id}`)).json();
+        await request('DELETE', `make/${id}`);
     },
     getSuggestions: async () => {
-        return await (await request('GET', 'make/suggestions')).json();
+        return await request('GET', 'make/suggestions');
     },
     promote: async (data) => {
-        return await (await request('POST', 'make/promote', data)).json();
+        return await request('POST', 'make/promote', data);
     },
     promoteModel: async (data) => {
-        return await (await request('POST', 'make/promote-model', data)).json();
+        return await request('POST', 'make/promote-model', data);
     },
     getSuggestedModels: async (makeName) => {
-        return await (await request('GET', `make/suggestions/${makeName}/models`)).json();
+        return await request('GET', `make/suggestions/${makeName}/models`);
     },
     mergeMakeWithGlobal: async (customMakeId, globalMakeId) => {
-        return await (await request('POST', 'make/merge-with-global', { customMakeId, globalMakeId })).json();
+        return await request('POST', 'make/merge-with-global', { customMakeId, globalMakeId });
     }
 }

@@ -26,10 +26,10 @@ namespace GarageControl.Core.Services
         public async Task<IEnumerable<AccessVM>> AllAccesses()
         {
              return await _repo.GetAllAsNoTrackingAsync<Access>()
-                .Select(r => new AccessVM
+                .Select(w => new AccessVM
                 {
-                    Id = r.Id,
-                    Name = r.Name,
+                    Id = w.Id,
+                    Name = w.Name,
                     IsSelected = false
                 })
                 .ToListAsync();
@@ -233,12 +233,12 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task Edit(WorkerVM model, string userId)
+        public async Task Edit(string id, WorkerVM model, string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
-            var worker = await _repo.GetByIdAsync<Worker>(model.Id!);
+            var worker = await _repo.GetByIdAsync<Worker>(id);
             if (worker == null) return;
             
             var user = await _userManager.FindByIdAsync(worker.UserId);

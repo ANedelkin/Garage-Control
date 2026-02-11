@@ -2,18 +2,18 @@ import { request } from "../Utilities/request";
 
 export const workerApi = {
     getWorkers: async () => {
-        return await (await request('GET', 'worker/all')).json();
+        return await request('GET', 'worker/all');
     },
     getWorker: async (id) => {
-        return await (await request('GET', `worker/${id}`)).json();
+        return await request('GET', `worker/${id}`);
     },
-    editWorker: async (workerData) => {
-        return await (await request('PUT', 'worker/edit', workerData)).json();
+    edit: async (id, workerData) => {
+        await request('PUT', `worker/edit/${id}`, workerData);
     },
     getAccesses: async () => {
-        return await (await request('GET', 'worker/accesses')).json();
+        return await request('GET', 'worker/accesses');
     },
     deleteWorker: async (id) => {
-        return await (await request('DELETE', `worker/${id}`)).json();
+        await request('DELETE', `worker/${id}`);
     }
 }

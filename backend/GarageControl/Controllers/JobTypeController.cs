@@ -43,21 +43,14 @@ namespace GarageControl.Controllers
             return Ok(new { message = "Job type created successfully" });
         }
 
-        [HttpPut("edit")]
-        public async Task<IActionResult> Edit([FromBody] JobTypeVM model)
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> Edit(string id, [FromBody] JobTypeVM model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-            // Check if it's a new item masquerading as edit (empty ID)
-            if (string.IsNullOrEmpty(model.Id))
-            {
-                await _jobTypeService.Create(model, userId);
-                return Ok(new { message = "Job type created successfully" });
-            }
-
-            await _jobTypeService.Edit(model, userId);
+            await _jobTypeService.Edit(id, model, userId);
             return Ok(new { message = "Job type updated successfully" });
         }
 
