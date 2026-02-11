@@ -11,7 +11,7 @@ namespace GarageControl.Core.Contracts
         Task HandleStatusTransitionAsync(IEnumerable<JobPart> jobParts, JobStatus oldStatus, JobStatus newStatus);
         Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null);
         Task CheckLowStockAsync(string workshopId, Part part);
-        Task<double> GetPartsReservedAsync(string partId);
+        Task<double> GetPartsToSendAsync(string partId);
         Task<Part?> GetPartByIdAsync(string partId);
     }
 }

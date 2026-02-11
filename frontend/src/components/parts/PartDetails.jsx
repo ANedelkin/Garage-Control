@@ -8,7 +8,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
         price: '',
         quantity: '',
         availabilityBalance: '',
-        partsReserved: '',
+        partsToSend: '',
         minimumQuantity: ''
     });
     const [stockAdj, setStockAdj] = useState('');
@@ -22,7 +22,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 price: part.price,
                 quantity: part.quantity,
                 availabilityBalance: part.availabilityBalance,
-                partsReserved: part.partsReserved || 0,
+                partsToSend: part.partsToSend || 0, // Renamed from part.partsToBeSent
                 minimumQuantity: part.minimumQuantity
             });
             setStockAdj('');
@@ -157,11 +157,11 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                             </div>
 
                             <div className={`form-section`}>
-                                <label>Parts Reserved</label>
+                                <label>Parts to send</label>
                                 <input
                                     type="number"
-                                    name="partsReserved"
-                                    value={formData.partsReserved}
+                                    name="partsToSend"
+                                    value={formData.partsToSend}
                                     disabled
                                 />
                             </div>

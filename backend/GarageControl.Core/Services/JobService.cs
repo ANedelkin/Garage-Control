@@ -120,7 +120,7 @@ namespace GarageControl.Core.Services.Jobs
 
             // Apply parts changes and collect log strings
             var userAccesses = await _authService.GetUserAccess(userId);
-            var partsChanges = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+            var (partsChanges, affectedPartIds) = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
             
             // apply new values
             job.JobTypeId = model.JobTypeId;
@@ -133,7 +133,7 @@ namespace GarageControl.Core.Services.Jobs
             {
                 foreach (var jp in job.JobParts)
                 {
-                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, jp.PartId);
+                    affectedPartIds.Add(jp.PartId);
                 }
             }
 
@@ -142,6 +142,12 @@ namespace GarageControl.Core.Services.Jobs
             job.EndTime = model.EndTime;
 
             await _context.SaveChangesAsync();
+
+            // Recalculate balances after save
+            foreach (var partId in affectedPartIds)
+            {
+                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
+            }
 
             // Log the changes
             await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
@@ -209,10 +215,16 @@ namespace GarageControl.Core.Services.Jobs
 
             // --- Apply parts changes and collect log strings ---
             var userAccesses = await _authService.GetUserAccess(userId);
-            var changes = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+            var (changes, affectedPartIds) = await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
             
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
+
+            // Recalculate balances after save
+            foreach (var partId in affectedPartIds)
+            {
+                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
+            }
 
             // --- Log creation ---
             await _activityLogger.LogJobCreatedAsync(userId, workshopId, jobType.Name, carInfo, changes);
@@ -220,7 +232,7 @@ namespace GarageControl.Core.Services.Jobs
             return new MethodResponse(true, "Job created successfully", job.Id);
         }
 
-        private async Task<List<string>> ApplyPartsChangesAsync(
+        private async Task<(List<string> changes, HashSet<string> affectedPartIds)> ApplyPartsChangesAsync(
             Job job,
             List<CreateJobPartViewModel> updatedParts,
             string workshopId,
@@ -228,6 +240,7 @@ namespace GarageControl.Core.Services.Jobs
             List<string> userAccesses)
         {
             var changes = new List<string>();
+            var affectedPartIds = new HashSet<string>();
             var partIdsInModel = updatedParts.Select(p => p.PartId).ToList();
             var partsToRemove = job.JobParts.Where(jp => !partIdsInModel.Contains(jp.PartId)).ToList();
 
@@ -237,9 +250,7 @@ namespace GarageControl.Core.Services.Jobs
                 {
                     jp.Part.Quantity += jp.SentQuantity;
                     changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
-                    
-                    await _context.SaveChangesAsync();
-                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, jp.PartId);
+                    affectedPartIds.Add(jp.PartId);
                 }
                 job.JobParts.Remove(jp);
             }
@@ -259,11 +270,11 @@ namespace GarageControl.Core.Services.Jobs
                 if (existingJobPart != null)
                 {
                     bool hasStockAccess = userAccesses.Contains("Parts Stock");
-                    bool isAssignedWorker = job.WorkerId == userId;
+                    bool isAssignedWorker = job.Worker?.UserId == userId;
 
                     if (existingJobPart.PlannedQuantity != partModel.PlannedQuantity)
                     {
-                        if (hasStockAccess)
+                        if (hasStockAccess || isAssignedWorker)
                         {
                             changes.Add(_activityLogger.FormatPartQuantityChanged(part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
                             existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
@@ -296,14 +307,14 @@ namespace GarageControl.Core.Services.Jobs
                         }
                     }
 
-                    await _context.SaveChangesAsync();
-                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
+                    affectedPartIds.Add(part.Id);
                 }
                 else
                 {
                     bool hasStockAccess = userAccesses.Contains("Parts Stock");
+                    bool isAssignedWorker = job.Worker?.UserId == userId;
 
-                    double effectivePlanned = hasStockAccess ? partModel.PlannedQuantity : 0;
+                    double effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity : 0;
                     double effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
 
                     job.JobParts.Add(new JobPart
@@ -319,15 +330,13 @@ namespace GarageControl.Core.Services.Jobs
                     changes.Add(_activityLogger.FormatPartAdded(part.Name));
 
                     part.Quantity -= effectiveSent;
-                    
-                    await _context.SaveChangesAsync();
-                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
+                    affectedPartIds.Add(part.Id);
                 }
 
                 await _inventoryService.CheckLowStockAsync(workshopId, part);
             }
 
-            return changes;
+            return (changes, affectedPartIds);
         }
     }
 }

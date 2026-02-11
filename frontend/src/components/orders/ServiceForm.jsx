@@ -13,7 +13,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
 
     const { user, accesses } = useAuth();
     const hasStockAccess = accesses.includes('Parts Stock');
-    const isAssignedWorker = user && service.workerId === user.id; // user.id needs verification from AuthContext
+    const isAssignedWorker = user && service.workerId === user.workerId;
 
     const handleChange = (field, value) => {
         updateService(service.id, field, value);
@@ -207,8 +207,8 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                                             className={sentError ? 'input-error' : ''}
                                             value={p.plannedQuantity}
                                             onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
-                                            disabled={!hasStockAccess}
-                                            title={!hasStockAccess ? "Only Parts Stock access can edit this" : ""}
+                                            disabled={!hasStockAccess && !isAssignedWorker}
+                                            title={(!hasStockAccess && !isAssignedWorker) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                         />
                                     </td>
                                     <td>
@@ -258,7 +258,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                 <div className="form-footer">
                     <button type="button" className="btn" onClick={addNewRow}>+ Add Part</button>
                     <div style={{ fontSize: '0.8em', color: '#888', marginTop: '5px' }}>
-                        Planned/Sent: Stock Access Only. Used/Req: Assigned Worker Only.
+                        Planned: Stock or Worker. Sent: Stock only. Used/Req: Worker favored.
                     </div>
                 </div>
             </div>

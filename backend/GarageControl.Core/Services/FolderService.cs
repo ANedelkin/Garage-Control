@@ -60,7 +60,7 @@ namespace GarageControl.Core.Services
             result.Parts = new List<PartViewModel>();
             foreach (var p in await partsQuery.ToListAsync())
             {
-                var reserved = await _inventoryService.GetPartsReservedAsync(p.Id);
+                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
                 result.Parts.Add(new PartViewModel
                 {
                     Id = p.Id,
@@ -69,7 +69,7 @@ namespace GarageControl.Core.Services
                     Price = p.Price,
                     Quantity = p.Quantity,
                     AvailabilityBalance = p.AvailabilityBalance,
-                    PartsReserved = reserved,
+                    PartsToSend = toSend,
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId
                 });

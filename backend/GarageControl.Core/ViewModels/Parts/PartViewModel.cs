@@ -10,7 +10,7 @@ namespace GarageControl.Core.ViewModels.Parts
         public decimal Price { get; set; }
         public double Quantity { get; set; }
         public double AvailabilityBalance { get; set; }
-        public double PartsReserved { get; set; }
+        public double PartsToSend { get; set; }
         public double MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
     }

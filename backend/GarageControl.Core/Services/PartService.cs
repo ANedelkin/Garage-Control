@@ -36,8 +36,8 @@ namespace GarageControl.Core.Services
             var result = new List<PartViewModel>();
             foreach (var p in parts)
             {
-                var reserved = await _inventoryService.GetPartsReservedAsync(p.Id);
-                result.Add(ToPartViewModel(p, reserved));
+                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
+                result.Add(ToPartViewModel(p, toSend));
             }
             return result;
         }
@@ -70,7 +70,7 @@ namespace GarageControl.Core.Services
             var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
             if (part == null) return null;
 
-            var reserved = await _inventoryService.GetPartsReservedAsync(part.Id);
+            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
             var result = new PartWithPathViewModel
             {
                 Id = part.Id,
@@ -79,7 +79,7 @@ namespace GarageControl.Core.Services
                 Price = part.Price,
                 Quantity = part.Quantity,
                 AvailabilityBalance = part.AvailabilityBalance,
-                PartsReserved = reserved,
+                PartsToSend = toSend,
                 MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId,
                 Path = new List<string>()
@@ -172,7 +172,7 @@ namespace GarageControl.Core.Services
 
         // ---------------- HELPERS ----------------
 
-        private PartViewModel ToPartViewModel(Part part, double partsReserved)
+        private PartViewModel ToPartViewModel(Part part, double partsToSend)
         {
             return new PartViewModel
             {
@@ -182,7 +182,7 @@ namespace GarageControl.Core.Services
                 Price = part.Price,
                 Quantity = part.Quantity,
                 AvailabilityBalance = part.AvailabilityBalance,
-                PartsReserved = partsReserved,
+                PartsToSend = partsToSend,
                 MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId
             };

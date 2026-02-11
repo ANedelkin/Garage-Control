@@ -153,8 +153,9 @@ namespace GarageControl.Core.Services
             string newAccess = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
+            var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop);
+            return new LoginResponse(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
 
         public Task SetAuthCookies(HttpResponse response, LoginResponse body)
@@ -189,8 +190,9 @@ namespace GarageControl.Core.Services
             string token = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
+            var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop);
+            return new LoginResponse(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
 
         private async Task<bool> UserHasWorkshop(string userId)

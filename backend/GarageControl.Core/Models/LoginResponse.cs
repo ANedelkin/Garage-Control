@@ -2,7 +2,7 @@ namespace GarageControl.Core.Models
 {
     public class LoginResponse
     {
-        public LoginResponse(bool success, string message = "", string token = "", string refreshToken = "", List<string>? accesses = null, bool hasWorkshop = false)
+        public LoginResponse(bool success, string message = "", string token = "", string refreshToken = "", List<string>? accesses = null, bool hasWorkshop = false, string? userId = null, string? workerId = null)
         {
             Token = token;
             RefreshToken = refreshToken;
@@ -10,6 +10,8 @@ namespace GarageControl.Core.Models
             Success = success;
             Accesses = accesses;
             HasWorkshop = hasWorkshop;
+            UserId = userId;
+            WorkerId = workerId;
         }
         public object ToResponse()
         {
@@ -18,7 +20,9 @@ namespace GarageControl.Core.Models
                 Success,
                 Message,
                 Accesses,
-                HasWorkshop
+                HasWorkshop,
+                UserId,
+                WorkerId
             };
         }
     
@@ -28,5 +32,7 @@ namespace GarageControl.Core.Models
         public string Message { get; set; } = string.Empty;
         public List<string>? Accesses { get; set; }
         public bool HasWorkshop { get; set; }
+        public string? UserId { get; set; }
+        public string? WorkerId { get; set; }
     }
 }

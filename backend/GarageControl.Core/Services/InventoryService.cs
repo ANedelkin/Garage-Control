@@ -50,12 +50,12 @@ namespace GarageControl.Core.Services
                     part.MinimumQuantity);
             }
         }
-        public async Task<double> GetPartsReservedAsync(string partId)
+        public async Task<double> GetPartsToSendAsync(string partId)
         {
-            // Reserved = Sum(Planned - Sent) for all non-Done jobs, only where Planned > Sent
+            // The user wants "sum of (planned - sent)" for the "Parts to send" field
             return await _context.JobParts
                 .Where(jp => jp.PartId == partId && 
-                             jp.Job.Status != JobStatus.Done && 
+                             jp.Job.Status != JobStatus.Done &&
                              jp.PlannedQuantity > jp.SentQuantity)
                 .SumAsync(jp => jp.PlannedQuantity - jp.SentQuantity);
         }
@@ -68,8 +68,8 @@ namespace GarageControl.Core.Services
             var parts = await partsQuery.ToListAsync();
             foreach (var part in parts)
             {
-                var reservedQty = await GetPartsReservedAsync(part.Id);
-                part.AvailabilityBalance = part.Quantity - reservedQty;
+                var outstandingQty = await GetPartsToSendAsync(part.Id);
+                part.AvailabilityBalance = part.Quantity - outstandingQty;
                 await CheckLowStockAsync(workshopId, part);
             }
 
