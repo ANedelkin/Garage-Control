@@ -31,7 +31,7 @@ namespace GarageControl.Tests.Services
             
             _mockRepo = new Mock<IRepository>();
 
-            _service = new AdminService(_mockUserManager.Object, _mockRoleManager.Object, _mockRepo.Object);
+            _service = new AdminService(_mockUserManager.Object, _mockRepo.Object);
         }
 
         [Fact]
