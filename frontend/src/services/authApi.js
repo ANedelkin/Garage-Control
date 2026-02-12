@@ -5,14 +5,17 @@ export const authApi = {
         try {
             const data = await request('POST', 'auth/signup', { email, password });
 
-            if (data.success) {
-                localStorage.setItem('LoggedIn', 'true');
-                localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
-                localStorage.setItem('HasWorkshop', data.hasWorkshop);
-            }
+            // Only update localStorage if the request succeeded (2xx)
+            localStorage.setItem('LoggedIn', 'true');
+            localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
+            localStorage.setItem('HasWorkshop', data.hasWorkshop);
 
             return data;
         } catch (error) {
+            // For 4xx/5xx, request() throws
+            localStorage.removeItem('LoggedIn');
+            localStorage.removeItem('accesses');
+            localStorage.removeItem('HasWorkshop');
             console.error('Registration error:', error);
             throw error;
         }
@@ -22,14 +25,15 @@ export const authApi = {
         try {
             const data = await request('POST', 'auth/login', { email, password });
 
-            if (data.success) {
-                localStorage.setItem('LoggedIn', 'true');
-                localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
-                localStorage.setItem('HasWorkshop', data.hasWorkshop);
-            }
+            localStorage.setItem('LoggedIn', 'true');
+            localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
+            localStorage.setItem('HasWorkshop', data.hasWorkshop);
 
             return data;
         } catch (error) {
+            localStorage.removeItem('LoggedIn');
+            localStorage.removeItem('accesses');
+            localStorage.removeItem('HasWorkshop');
             console.error('Login error:', error);
             throw error;
         }
@@ -41,31 +45,27 @@ export const authApi = {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            // Always clear localStorage
             localStorage.removeItem('LoggedIn');
             localStorage.removeItem('accesses');
             localStorage.removeItem('HasWorkshop');
         }
-        return { success: true };
+        return {};
     },
 
     refreshToken: async () => {
         try {
             const data = await request('POST', 'auth/refresh');
 
-            if (!data.success) {
-                localStorage.removeItem('LoggedIn');
-                localStorage.removeItem('accesses');
-                localStorage.removeItem('HasWorkshop');
-                throw new Error('Token refresh failed');
-            }
+            // Only update localStorage if request succeeded (2xx)
             localStorage.setItem('LoggedIn', 'true');
-            if (data.accesses) {
-                localStorage.setItem('accesses', JSON.stringify(data.accesses));
-            }
+            localStorage.setItem('accesses', JSON.stringify(data.accesses || []));
             localStorage.setItem('HasWorkshop', data.hasWorkshop);
+
             return data;
         } catch (error) {
+            localStorage.removeItem('LoggedIn');
+            localStorage.removeItem('accesses');
+            localStorage.removeItem('HasWorkshop');
             console.error('Token refresh error:', error);
             throw error;
         }
