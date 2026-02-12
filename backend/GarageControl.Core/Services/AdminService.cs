@@ -3,10 +3,6 @@ using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GarageControl.Infrastructure.Data.Common;
 
 namespace GarageControl.Core.Services
@@ -14,66 +10,68 @@ namespace GarageControl.Core.Services
     public class AdminService : IAdminService
     {
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IRepository _repo;
 
-        public AdminService(
-            UserManager<User> userManager,
-            RoleManager<IdentityRole> roleManager,
-            IRepository repo)
+        public AdminService(UserManager<User> userManager, IRepository repo)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _repo = repo;
         }
 
         public async Task<List<UserAdminVM>> GetUsersAsync()
         {
-            var users = await _userManager.Users.ToListAsync();
-            var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
-            var workers = await _repo.GetAllAsNoTracking<Worker>().Include(w => w.Workshop).ToListAsync();
-            
-            var userList = new List<UserAdminVM>();
+            var users = await _userManager.Users
+                .Select(u => new { u.Id, u.Email, u.LockoutEnd })
+                .ToListAsync();
+
+            var adminUser = await _userManager.GetUsersInRoleAsync("Admin");
+            string? adminId = adminUser.FirstOrDefault()?.Id;
+
+            var workshops = await _repo.GetAllAsNoTracking<Workshop>()
+                .Select(w => new { w.Id, w.Name, w.BossId })
+                .ToListAsync();
+
+            var workers = await _repo.GetAllAsNoTracking<Worker>()
+                .Include(w => w.Workshop)
+                .Select(w => new { w.UserId, w.Name, WorkshopName = w.Workshop!.Name })
+                .ToListAsync();
+
+            var result = new List<UserAdminVM>();
 
             foreach (var user in users)
             {
-                var roles = await _userManager.GetRolesAsync(user);
-                string role = "Worker"; // Default to Worker if not Admin or Owner
-                string? workshopName = null;
-
-                if (roles.Contains("Admin"))
+                var userVM = new UserAdminVM
                 {
-                    role = "Admin";
+                    Id = user.Id,
+                    Email = user.Email ?? string.Empty,
+                    IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow
+                };
+
+                if (user.Id == adminId)
+                {
+                    userVM.Role = "Admin";
                 }
                 else
                 {
                     var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
                     if (worker != null)
                     {
-                        role = "Worker";
-                        workshopName = worker.Workshop?.Name;
+                        userVM.Role = "Worker";
+                        userVM.WorkshopName = worker.WorkshopName;
                     }
                     else
                     {
-                        role = "Owner";
-                        var ownerWorkshop = workshops.FirstOrDefault(w => w.BossId == user.Id);
-                        workshopName = ownerWorkshop?.Name;
+                        userVM.Role = "Owner";
+                        userVM.WorkshopName = workshops.FirstOrDefault(w => w.BossId == user.Id)?.Name ?? "Unknown";
                     }
                 }
 
-
-                userList.Add(new UserAdminVM
-                {
-                    Id = user.Id,
-                    Email = user.Email ?? "",
-                    IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
-                    Role = role,
-                    WorkshopName = workshopName
-                });
+                result.Add(userVM);
             }
 
-            return userList;
+            return result;
         }
+
         public async Task<MethodResponseVM> ToggleUserBlockAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -106,7 +104,7 @@ namespace GarageControl.Core.Services
                 Id = w.Id,
                 Name = w.Name,
                 Address = w.Address,
-                RegistrationNumber = w.RegistrationNumber,
+                RegistrationNumber = w.RegistrationNumber ?? "N/A",
                 OwnerEmail = users.FirstOrDefault(u => u.Id == w.BossId)?.Email ?? "N/A",
                 IsBlocked = w.IsBlocked
             }).ToList();
@@ -133,8 +131,8 @@ namespace GarageControl.Core.Services
             var totalOrders = await _repo.GetAllAsNoTracking<Order>().CountAsync();
 
             var recentUsersList = await _userManager.Users
-                .OrderByDescending(u => u.Id) // Assuming Id is vaguely time ordered or just taking any
-                .Take(5)
+                .OrderByDescending(u => u.Id)
+                .Take(10)
                 .ToListAsync();
 
             var recentUsersVM = new List<UserAdminVM>();
