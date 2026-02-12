@@ -30,7 +30,7 @@ namespace GarageControl.Core.Services
 
         public async Task<WorkshopVM> GetWorkshopDetails(string workshopId)
         {
-            Workshop workshop =  await _repository.GetByIdAsync<Workshop>(workshopId);
+            Workshop workshop = await _repository.GetByIdAsync<Workshop>(workshopId);
             return new WorkshopVM
             {
                 Name = workshop.Name,
@@ -46,8 +46,8 @@ namespace GarageControl.Core.Services
             var workshopId = await GetWorkshopId(userId);
             if (workshopId == null) return null;
 
-            Workshop workshop =  await _repository.GetByIdAsync<Workshop>(workshopId);
-            
+            Workshop workshop = await _repository.GetByIdAsync<Workshop>(workshopId);
+
             if (workshop == null) return null;
 
             return new WorkshopVM
@@ -78,20 +78,20 @@ namespace GarageControl.Core.Services
         public async Task<string?> GetWorkshopId(string userId)
         {
             // 1. Check if user is an Owner (Boss)
-            var workshopId = _repository.GetAllAsNoTracking<Workshop>()
+            var ownerWorkshopId = await _repository.GetAllAsNoTracking<Workshop>()
                 .Where(s => s.BossId == userId)
                 .Select(s => s.Id)
                 .FirstOrDefaultAsync();
 
-            if (workshopId != null) return await workshopId;
+            if (ownerWorkshopId != null) return ownerWorkshopId;
 
             // 2. Check if user is a Worker
-            workshopId = _repository.GetAllAsNoTracking<Worker>()
+            var workerWorkshopId = await _repository.GetAllAsNoTracking<Worker>()
                 .Where(w => w.UserId == userId)
                 .Select(w => w.WorkshopId)
                 .FirstOrDefaultAsync();
 
-            return await workshopId;
+            return workerWorkshopId; // may be null if not a worker
         }
 
         public async Task<string?> GetWorkshopBossId(string userId)
