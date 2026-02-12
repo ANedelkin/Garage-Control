@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return new List<JobTypeVM>();
 
-            return await _repo.GetAllAsNoTrackingAsync<JobType>()
+            return await _repo.GetAllAsNoTracking<JobType>()
                 .Where(j => j.WorkshopId == workshopId)
                 .Include(j => j.Workers)
                 .ThenInclude(w => w.User)
@@ -74,7 +74,7 @@ namespace GarageControl.Core.Services
 
         public async Task<JobTypeVM?> Details(string id)
         {
-            return await _repo.GetAllAsNoTrackingAsync<JobType>()
+            return await _repo.GetAllAsNoTracking<JobType>()
                 .Where(j => j.Id == id)
                 .Include(j => j.Workers)
                 .ThenInclude(w => w.User)

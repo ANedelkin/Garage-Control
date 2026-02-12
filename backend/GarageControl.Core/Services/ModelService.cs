@@ -46,7 +46,7 @@ namespace GarageControl.Core.Services
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            var carModel = await _repo.GetAllAsNoTrackingAsync<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == id);
+            var carModel = await _repo.GetAllAsNoTracking<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == id);
 
             if (carModel == null) return;
 
@@ -68,7 +68,7 @@ namespace GarageControl.Core.Services
 
         public async Task<ModelVM?> GetModel(string id)
         {
-            return await _repo.GetAllAsNoTrackingAsync<CarModel>()
+            return await _repo.GetAllAsNoTracking<CarModel>()
                 .Where(m => m.Id == id)
                 .Select(m => new ModelVM
                 {
@@ -84,7 +84,7 @@ namespace GarageControl.Core.Services
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             var make = await _repo.GetByIdAsync<CarMake>(makeId);
 
-            var models = await _repo.GetAllAsNoTrackingAsync<CarModel>()
+            var models = await _repo.GetAllAsNoTracking<CarModel>()
                 .Where(m => m.CarMakeId == makeId && (m.CreatorId == null || (bossId != null && m.CreatorId == bossId)))
                 .ToListAsync();
 
@@ -94,7 +94,7 @@ namespace GarageControl.Core.Services
             string? globalMakeId = null;
             if (make?.CreatorId != null)
             {
-                var globalMake = await _repo.GetAllAsNoTrackingAsync<CarMake>()
+                var globalMake = await _repo.GetAllAsNoTracking<CarMake>()
                     .FirstOrDefaultAsync(m => m.CreatorId == null && m.Name.ToUpper() == make.Name.ToUpper());
                 globalMakeId = globalMake?.Id;
             }
@@ -113,7 +113,7 @@ namespace GarageControl.Core.Services
                 {
                     // Match by name within the same make, OR under the global version of this make
                     var targetMakeId = globalMakeId ?? makeId;
-                    var globalMatch = await _repo.GetAllAsNoTrackingAsync<CarModel>()
+                    var globalMatch = await _repo.GetAllAsNoTracking<CarModel>()
                         .FirstOrDefaultAsync(gm => gm.CreatorId == null 
                             && gm.CarMakeId == targetMakeId 
                             && gm.Name.ToUpper() == m.Name.ToUpper());
@@ -131,7 +131,7 @@ namespace GarageControl.Core.Services
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            var carModel = await _repo.GetAllAttachedAsync<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == id);
+            var carModel = await _repo.GetAllAttached<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == id);
             
             if (carModel != null)
             {
@@ -176,7 +176,7 @@ namespace GarageControl.Core.Services
             string globalModelName = globalModel.Name;
  
             // Update all cars using custom model to use global model
-            var cars = await _repo.GetAllAttachedAsync<Car>()
+            var cars = await _repo.GetAllAttached<Car>()
                 .Where (c => c.ModelId == customModelId)
                 .ToListAsync();
  
@@ -190,7 +190,7 @@ namespace GarageControl.Core.Services
             await _repo.SaveChangesAsync();
  
             // Delete related notifications
-            var notifications = await _repo.GetAllAttachedAsync<Notification>()
+            var notifications = await _repo.GetAllAttached<Notification>()
                 .Where(n => n.UserId == bossId && n.Link!.Contains($"customId={customModelId}"))
                 .ToListAsync();
  

@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return new List<VehicleVM>();
 
-            return await _repo.GetAllAsNoTrackingAsync<Car>()
+            return await _repo.GetAllAsNoTracking<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
@@ -54,7 +54,7 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<VehicleVM>> GetByClient(string clientId)
         {
-            return await _repo.GetAllAsNoTrackingAsync<Car>()
+            return await _repo.GetAllAsNoTracking<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
                 .ThenInclude(m => m.CarMake)
@@ -105,7 +105,7 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(car);
             await _repo.SaveChangesAsync();
 
-            var carWithNames = await _repo.GetAllAsNoTrackingAsync<Car>()
+            var carWithNames = await _repo.GetAllAsNoTracking<Car>()
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
                 .FirstOrDefaultAsync(c => c.Id == car.Id);
@@ -123,7 +123,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return;
 
-            var car = await _repo.GetAllAttachedAsync<Car>()
+            var car = await _repo.GetAllAttached<Car>()
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
                 .Include(c => c.Owner)
@@ -145,7 +145,7 @@ namespace GarageControl.Core.Services
                 if (car.ModelId != model.ModelId)
                 {
                     var oldModel = car.Model;
-                    var newModel = await _repo.GetAllAsNoTrackingAsync<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == model.ModelId);
+                    var newModel = await _repo.GetAllAsNoTracking<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == model.ModelId);
                     changes.Add($"model from <b>{oldModel.CarMake.Name} {oldModel.Name}</b> to <b>{newModel?.CarMake.Name} {newModel?.Name}</b>");
                 }
 
@@ -181,7 +181,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return;
 
-            var car = await _repo.GetAllAsNoTrackingAsync<Car>()
+            var car = await _repo.GetAllAsNoTracking<Car>()
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -198,7 +198,7 @@ namespace GarageControl.Core.Services
 
         public async Task<VehicleVM?> Details(string id)
         {
-            return await _repo.GetAllAsNoTrackingAsync<Car>()
+            return await _repo.GetAllAsNoTracking<Car>()
                 .Include(c => c.Owner)
                 .Include(c => c.Model)
                     .ThenInclude(m => m.CarMake)

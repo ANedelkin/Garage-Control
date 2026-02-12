@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return new List<ClientVM>();
 
-            return await _repo.GetAllAsNoTrackingAsync<Client>()
+            return await _repo.GetAllAsNoTracking<Client>()
                 .Where(c => c.WorkshopId == workshopId)
                 .Select(c => new ClientVM
                 {
@@ -83,7 +83,7 @@ namespace GarageControl.Core.Services
 
         public async Task<ClientVM?> Details(string id)
         {
-            return await _repo.GetAllAsNoTrackingAsync<Client>()
+            return await _repo.GetAllAsNoTracking<Client>()
                 .Where(c => c.Id == id)
                 .Select(c => new ClientVM
                 {

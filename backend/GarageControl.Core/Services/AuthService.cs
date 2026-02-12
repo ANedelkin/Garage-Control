@@ -153,7 +153,7 @@ namespace GarageControl.Core.Services
             string newAccess = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
-            var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
+            var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
             return new LoginResponseVM(true, "Token refreshed", newAccess, refreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
@@ -190,7 +190,7 @@ namespace GarageControl.Core.Services
             string token = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
-            var workerId = (await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
+            var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
             return new LoginResponseVM(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
         }
@@ -203,10 +203,10 @@ namespace GarageControl.Core.Services
                 return true;
             }
 
-            var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
+            var isOwner = await _repo.GetAllAsNoTracking<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner) return true;
 
-            var isWorker = await _repo.GetAllAsNoTrackingAsync<Worker>().AnyAsync(w => w.UserId == userId);
+            var isWorker = await _repo.GetAllAsNoTracking<Worker>().AnyAsync(w => w.UserId == userId);
             return isWorker;
         }
         private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null)
@@ -254,10 +254,10 @@ namespace GarageControl.Core.Services
 
         private async Task<string?> GetUserWorkshopId(string userId)
         {
-            var workshop = await _repo.GetAllAsNoTrackingAsync<Workshop>().FirstOrDefaultAsync(s => s.BossId == userId);
+            var workshop = await _repo.GetAllAsNoTracking<Workshop>().FirstOrDefaultAsync(s => s.BossId == userId);
             if (workshop != null) return workshop.Id;
 
-            var worker = await _repo.GetAllAsNoTrackingAsync<Worker>().FirstOrDefaultAsync(w => w.UserId == userId);
+            var worker = await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == userId);
             return worker?.WorkshopId;
         }
 
@@ -277,15 +277,15 @@ namespace GarageControl.Core.Services
             }
 
             // Check if Owner
-            var isOwner = await _repo.GetAllAsNoTrackingAsync<Workshop>().AnyAsync(s => s.BossId == userId);
+            var isOwner = await _repo.GetAllAsNoTracking<Workshop>().AnyAsync(s => s.BossId == userId);
             if (isOwner)
             {
-                var ownerAccesses = await _repo.GetAllAsNoTrackingAsync<Access>().Select(a => a.Name).ToListAsync();
+                var ownerAccesses = await _repo.GetAllAsNoTracking<Access>().Select(a => a.Name).ToListAsync();
                 return ownerAccesses;
             }
 
             // Check if Worker
-            var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
+            var worker = await _repo.GetAllAsNoTracking<Worker>()
                 .Include(w => w.Accesses)
                 .Include(w => w.Activities)
                 .FirstOrDefaultAsync(w => w.UserId == userId);

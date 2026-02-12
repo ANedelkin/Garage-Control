@@ -1,4 +1,4 @@
-using GarageControl.Infrastructure.Data;
+using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Core.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -7,59 +7,67 @@ namespace GarageControl.Core.Services
 {
     public class ActivityLogService : IActivityLogService
     {
-        private readonly GarageControlDbContext _context;
+        private readonly IRepository _repository;
 
-        public ActivityLogService(GarageControlDbContext context)
+        public ActivityLogService(IRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task LogActionAsync(string userId, string workshopId, string actionHtml)
         {
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return;
+            var query = from u in _repository.GetAllAsNoTracking<User>()
+                        where u.Id == userId
+                        let worker = _repository.GetAllAsNoTracking<Worker>()
+                                        .Where(w => w.UserId == u.Id)
+                                        .Select(w => new { w.Id, w.Name })
+                                        .FirstOrDefault()
+                        let workshop = _repository.GetAllAsNoTracking<Workshop>()
+                                        .Where(ws => ws.Id == workshopId)
+                                        .Select(ws => new { ws.BossId })
+                                        .FirstOrDefault()
+                        select new
+                        {
+                            UserName = worker.Name,
+                            Worker = worker,
+                            Workshop = workshop
+                        };
 
-            string actorDisplayName;
-            string? actorLink = null;
+            var result = await query.FirstOrDefaultAsync();
+            if (result == null) return;
 
-            var worker = await _context.Workers.AsNoTracking().FirstOrDefaultAsync(w => w.UserId == userId);
-            var workshop = await _context.Workshops.AsNoTracking().FirstOrDefaultAsync(w => w.Id == workshopId);
+            string actorDisplayName = result.Workshop?.BossId == userId ? "Owner" : 
+                                                                          result.Worker?.Name ?? 
+                                                                          "Unknown User";
 
-            if (workshop != null && workshop.BossId == userId)
-            {
-                actorDisplayName = "Owner";
-            }
-            else if (worker != null)
-            {
-                actorDisplayName = worker.Name;
-                actorLink = $"/workers/{worker.Id}";
-            }
-            else
-            {
-                actorDisplayName = user.UserName ?? "Unknown";
-            }
+            string? actorLink = result.Worker != null ? $"/workers/{result.Worker.Id}" : null;
 
-            string actorHtml = actorLink != null 
-                ? $"<a href='{actorLink}' class='log-link actor-link'>{actorDisplayName}</a>" 
+            string actorHtml = actorLink != null
+                ? $"<a href='{actorLink}' class='log-link actor-link'>{actorDisplayName}</a>"
                 : $"<span class='actor-name'>{actorDisplayName}</span>";
 
-            var log = new ActivityLog
+            await _repository.AddAsync(new ActivityLog
             {
                 MessageHtml = $"{actorHtml} {actionHtml}",
                 WorkshopId = workshopId,
-                Timestamp = DateTime.UtcNow
-            };
+            });
 
-            _context.ActivityLogs.Add(log);
-            await _context.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ActivityLog>> GetLogsAsync(string workshopId, int count = 100)
         {
-            return await _context.ActivityLogs
+            return await _repository.GetAllAsNoTracking<ActivityLog>()
                 .Where(l => l.WorkshopId == workshopId)
                 .OrderByDescending(l => l.Timestamp)
                 .Take(count)
+                .Select(l => new ActivityLog
+                {
+                    Id = l.Id,
+                    Timestamp = l.Timestamp,
+                    WorkshopId = l.WorkshopId,
+                    MessageHtml = l.MessageHtml
+                })
                 .ToListAsync();
         }
     }

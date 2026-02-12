@@ -30,8 +30,8 @@ namespace GarageControl.Core.Services
         public async Task<List<UserAdminVM>> GetUsersAsync()
         {
             var users = await _userManager.Users.ToListAsync();
-            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().ToListAsync();
-            var workers = await _repo.GetAllAsNoTrackingAsync<Worker>().Include(w => w.Workshop).ToListAsync();
+            var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
+            var workers = await _repo.GetAllAsNoTracking<Worker>().Include(w => w.Workshop).ToListAsync();
             
             var userList = new List<UserAdminVM>();
 
@@ -98,7 +98,7 @@ namespace GarageControl.Core.Services
 
         public async Task<List<WorkshopAdminVM>> GetWorkshopsAsync()
         {
-            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().ToListAsync();
+            var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
             var users = await _userManager.Users.ToListAsync();
 
             return workshops.Select(w => new WorkshopAdminVM
@@ -129,8 +129,8 @@ namespace GarageControl.Core.Services
         public async Task<DashboardStatsVM> GetDashboardStatsAsync()
         {
             var totalUsers = await _userManager.Users.CountAsync();
-            var totalWorkshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().CountAsync();
-            var totalOrders = await _repo.GetAllAsNoTrackingAsync<Order>().CountAsync();
+            var totalWorkshops = await _repo.GetAllAsNoTracking<Workshop>().CountAsync();
+            var totalOrders = await _repo.GetAllAsNoTracking<Order>().CountAsync();
 
             var recentUsersList = await _userManager.Users
                 .OrderByDescending(u => u.Id) // Assuming Id is vaguely time ordered or just taking any
@@ -138,8 +138,8 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
 
             var recentUsersVM = new List<UserAdminVM>();
-            var workshops = await _repo.GetAllAsNoTrackingAsync<Workshop>().ToListAsync();
-            var workers = await _repo.GetAllAsNoTrackingAsync<Worker>().Include(w => w.Workshop).ToListAsync();
+            var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
+            var workers = await _repo.GetAllAsNoTracking<Worker>().Include(w => w.Workshop).ToListAsync();
 
             foreach (var user in recentUsersList)
             {

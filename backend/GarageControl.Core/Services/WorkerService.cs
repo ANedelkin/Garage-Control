@@ -25,7 +25,7 @@ namespace GarageControl.Core.Services
 
         public async Task<IEnumerable<AccessVM>> AllAccesses()
         {
-             return await _repo.GetAllAsNoTrackingAsync<Access>()
+             return await _repo.GetAllAsNoTracking<Access>()
                 .Select(w => new AccessVM
                 {
                     Id = w.Id,
@@ -40,7 +40,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) return new List<WorkerVM>();
 
-            var workers = await _repo.GetAllAsNoTrackingAsync<Worker>()
+            var workers = await _repo.GetAllAsNoTracking<Worker>()
                 .Where(w => w.WorkshopId == workshopId)
                 .Include(w => w.User)
                 .Include(w => w.Accesses)
@@ -50,7 +50,7 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
 
             // Fetch leaves efficiently if not auto-included (or just ensure navigation property works)
-            var allLeaves = await _repo.GetAllAsNoTrackingAsync<WorkerLeave>()
+            var allLeaves = await _repo.GetAllAsNoTracking<WorkerLeave>()
                 .Where(l => workers.Select(w => w.Id).Contains(l.WorkerId))
                 .ToListAsync();
 
@@ -122,7 +122,7 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
-            var worker = await _repo.GetAllAttachedAsync<Worker>()
+            var worker = await _repo.GetAllAttached<Worker>()
                 .Where(w => w.Id == id)
                 .Include(w => w.Schedules)
                 .Include(w => w.Leaves) // Assuming navigation property exists or we manually delete
@@ -146,7 +146,7 @@ namespace GarageControl.Core.Services
 
             // 2. Delete Leaves
             // Fetch if not included (if navigation prop missing in previous context, assumed manual fetch in original code)
-            var leaves = await _repo.GetAllAttachedAsync<WorkerLeave>()
+            var leaves = await _repo.GetAllAttached<WorkerLeave>()
                 .Where(l => l.WorkerId == id)
                 .ToListAsync();
             
@@ -181,7 +181,7 @@ namespace GarageControl.Core.Services
 
         public async Task<WorkerVM?> Details(string id)
         {
-            var worker = await _repo.GetAllAsNoTrackingAsync<Worker>()
+            var worker = await _repo.GetAllAsNoTracking<Worker>()
                 .Where(w => w.Id == id)
                 .Include(w => w.User)
                 .Include(w => w.Accesses)
@@ -192,7 +192,7 @@ namespace GarageControl.Core.Services
             if (worker == null) return null;
 
             // Fetch leaves separately if not navigable or lazy loading issue
-            var leaves = await _repo.GetAllAsNoTrackingAsync<WorkerLeave>()
+            var leaves = await _repo.GetAllAsNoTracking<WorkerLeave>()
                 .Where(l => l.WorkerId == id)
                 .ToListAsync();
 
@@ -328,7 +328,7 @@ namespace GarageControl.Core.Services
         private async Task<List<string>> UpdateWorkerRelations(string workerId, WorkerVM model)
         {
             var changes = new List<string>();
-            var worker = await _repo.GetAllAttachedAsync<Worker>()
+            var worker = await _repo.GetAllAttached<Worker>()
                 .Where(w => w.Id == workerId)
                 .Include(w => w.Accesses)
                 .Include(w => w.Activities) // JobTypes
@@ -349,14 +349,14 @@ namespace GarageControl.Core.Services
             foreach (var a in removedAccesses) changes.Add($"removed access <b>{a}</b>");
 
             worker.Accesses.Clear();
-            var accessesToAdd = await _repo.GetAllAttachedAsync<Access>().Where(r => newAccessIds.Contains(r.Id)).ToListAsync();
+            var accessesToAdd = await _repo.GetAllAttached<Access>().Where(r => newAccessIds.Contains(r.Id)).ToListAsync();
             foreach (var r in accessesToAdd) worker.Accesses.Add(r);
 
             // JobTypes (Activities)
             var oldJobTypeIds = worker.Activities.Select(j => j.Id).ToList();
             var newJobTypeIds = model.JobTypeIds ?? new List<string>();
             
-            var addedJobTypes = await _repo.GetAllAsNoTrackingAsync<JobType>()
+            var addedJobTypes = await _repo.GetAllAsNoTracking<JobType>()
                 .Where(j => newJobTypeIds.Contains(j.Id) && !oldJobTypeIds.Contains(j.Id))
                 .Select(j => j.Name)
                 .ToListAsync();
@@ -366,7 +366,7 @@ namespace GarageControl.Core.Services
             foreach (var j in removedJobTypes) changes.Add($"removed job type <b>{j}</b>");
 
             worker.Activities.Clear();
-            var jobTypesToAdd = await _repo.GetAllAttachedAsync<JobType>().Where(j => newJobTypeIds.Contains(j.Id)).ToListAsync();
+            var jobTypesToAdd = await _repo.GetAllAttached<JobType>().Where(j => newJobTypeIds.Contains(j.Id)).ToListAsync();
             foreach (var j in jobTypesToAdd) worker.Activities.Add(j);
 
             // Schedules
