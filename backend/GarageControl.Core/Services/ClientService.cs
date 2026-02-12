@@ -12,36 +12,50 @@ namespace GarageControl.Core.Services
         private readonly IWorkshopService _workshopService;
         private readonly IActivityLogService _activityLogService;
 
-        public ClientService(IRepository repo, IWorkshopService workshopService, IActivityLogService activityLogService)
+        public ClientService(
+            IRepository repo,
+            IWorkshopService workshopService,
+            IActivityLogService activityLogService)
         {
             _repo = repo;
             _workshopService = workshopService;
             _activityLogService = activityLogService;
         }
 
+        private async Task<string> RequireWorkshopId(string userId)
+        {
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null)
+                throw new ArgumentException("User does not have a workshop");
+
+            return workshopId;
+        }
+
+        private static ClientVM MapClient(Client c) => new ClientVM
+        {
+            Id = c.Id,
+            Name = c.Name,
+            PhoneNumber = c.PhoneNumber,
+            Email = c.Email,
+            Address = c.Address,
+            RegistrationNumber = c.RegistrationNumber
+        };
+
         public async Task<IEnumerable<ClientVM>> All(string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) return new List<ClientVM>();
+            if (workshopId == null)
+                return Enumerable.Empty<ClientVM>();
 
             return await _repo.GetAllAsNoTracking<Client>()
                 .Where(c => c.WorkshopId == workshopId)
-                .Select(c => new ClientVM
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    PhoneNumber = c.PhoneNumber,
-                    Email = c.Email,
-                    Address = c.Address,
-                    RegistrationNumber = c.RegistrationNumber
-                })
+                .Select(c => MapClient(c))
                 .ToListAsync();
         }
 
         public async Task Create(ClientVM model, string userId)
         {
-            var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+            var workshopId = await RequireWorkshopId(userId);
 
             var client = new Client
             {
@@ -64,13 +78,9 @@ namespace GarageControl.Core.Services
 
         public async Task Delete(string id, string userId)
         {
-            var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+            var workshopId = await RequireWorkshopId(userId);
 
             var client = await _repo.GetByIdAsync<Client>(id);
-            if (client == null) return;
-
-            string clientName = client.Name;
 
             await _repo.DeleteAsync<Client>(id);
             await _repo.SaveChangesAsync();
@@ -78,88 +88,82 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                $"deleted client <b>{clientName}</b>");
+                $"deleted client <b>{client.Name}</b>");
         }
 
         public async Task<ClientVM?> Details(string id)
         {
             return await _repo.GetAllAsNoTracking<Client>()
                 .Where(c => c.Id == id)
-                .Select(c => new ClientVM
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    PhoneNumber = c.PhoneNumber,
-                    Email = c.Email,
-                    Address = c.Address,
-                    RegistrationNumber = c.RegistrationNumber
-                })
+                .Select(c => MapClient(c))
                 .FirstOrDefaultAsync();
         }
 
         public async Task Edit(string id, ClientVM model, string userId)
         {
-            var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
+            var workshopId = await RequireWorkshopId(userId);
 
             var client = await _repo.GetByIdAsync<Client>(id);
-            if (client != null)
+
+            var changes = GetChanges(client, model);
+
+            client.Name = model.Name;
+            client.PhoneNumber = model.PhoneNumber;
+            client.Email = model.Email;
+            client.Address = model.Address;
+            client.RegistrationNumber = model.RegistrationNumber;
+
+            await _repo.SaveChangesAsync();
+
+            if (changes.Count > 0)
             {
-                var changes = new List<string>();
-                void TrackChange(string fieldName, string? oldValue, string? newValue)
-                {
-                    if (oldValue != newValue)
-                    {
-                        string oldDisp = string.IsNullOrEmpty(oldValue) ? "[empty]" : oldValue;
-                        string newDisp = string.IsNullOrEmpty(newValue) ? "[empty]" : newValue;
-                        
-                        if (oldDisp.Length > 100 || newDisp.Length > 100)
-                        {
-                            changes.Add(fieldName);
-                        }
-                        else
-                        {
-                            changes.Add($"{fieldName} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
-                        }
-                    }
-                }
+                var actionHtml = BuildChangeLog(client, changes);
 
-                string oldName = client.Name;
-                TrackChange("name", client.Name, model.Name);
-                TrackChange("phone number", client.PhoneNumber, model.PhoneNumber);
-                TrackChange("email", client.Email, model.Email);
-                TrackChange("address", client.Address, model.Address);
-                TrackChange("registration number", client.RegistrationNumber, model.RegistrationNumber);
-
-                client.Name = model.Name;
-                client.PhoneNumber = model.PhoneNumber;
-                client.Email = model.Email;
-                client.Address = model.Address;
-                client.RegistrationNumber = model.RegistrationNumber;
-                
-                await _repo.SaveChangesAsync();
-
-                if (changes.Count > 0)
-                {
-                    string clientLink = $"<a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>";
-                    string actionHtml;
-
-                    if (changes.Count == 1 && changes[0].Contains("from"))
-                    {
-                        actionHtml = $"changed {changes[0]} of client {clientLink}";
-                    }
-                    else if (changes.All(c => !c.Contains("from")))
-                    {
-                        actionHtml = $"updated details of client {clientLink}";
-                    }
-                    else
-                    {
-                        actionHtml = $"updated client {clientLink}: {string.Join(", ", changes)}";
-                    }
-
-                    await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
-                }
+                await _activityLogService.LogActionAsync(
+                    userId,
+                    workshopId,
+                    actionHtml);
             }
         }
+
+        private static List<string> GetChanges(Client client, ClientVM model)
+        {
+            var changes = new List<string>();
+
+            void Track(string field, string? oldVal, string? newVal)
+            {
+                if (oldVal == newVal) return;
+
+                string oldDisp = string.IsNullOrEmpty(oldVal) ? "[empty]" : oldVal;
+                string newDisp = string.IsNullOrEmpty(newVal) ? "[empty]" : newVal;
+
+                if (oldDisp.Length > 100 || newDisp.Length > 100)
+                    changes.Add(field);
+                else
+                    changes.Add($"{field} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
+            }
+
+            Track("name", client.Name, model.Name);
+            Track("phone number", client.PhoneNumber, model.PhoneNumber);
+            Track("email", client.Email, model.Email);
+            Track("address", client.Address, model.Address);
+            Track("registration number", client.RegistrationNumber, model.RegistrationNumber);
+
+            return changes;
+        }
+
+        private static string BuildChangeLog(Client client, List<string> changes)
+        {
+            string link = $"<a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>";
+
+            if (changes.Count == 1 && changes[0].Contains("from"))
+                return $"changed {changes[0]} of client {link}";
+
+            if (changes.All(c => !c.Contains("from")))
+                return $"updated details of client {link}";
+
+            return $"updated client {link}: {string.Join(", ", changes)}";
+        }
     }
+
 }

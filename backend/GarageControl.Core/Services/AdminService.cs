@@ -171,7 +171,7 @@ namespace GarageControl.Core.Services
                     Email = user.Email ?? "",
                     IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
                     Role = role,
-                    WorkshopName = workshopName
+                    WorkshopName = workshopName ?? "-"
                 });
             }
 
