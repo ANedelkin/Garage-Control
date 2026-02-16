@@ -3,6 +3,51 @@ import ItemsTree from '../common/tree/ItemsTree';
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
 
+// Custom label renderer for parts tree with deficit status visualization
+const PartItemLabel = ({ node, type, expanded }) => {
+    // Calculate deficit status class based on node data
+    const getDeficitStatusClass = () => {
+        if (type === 'group') {
+            // For folders: check aggregate deficit counts
+            const higherDeficitCount = node.higherDeficitSeverityCount || 0;
+            const lowerDeficitCount = node.lowerDeficitSeverityCount || 0;
+
+            if (higherDeficitCount > 0) {
+                return 'status-higher-deficit'; // Red
+            } else if (lowerDeficitCount > 0) {
+                return 'status-lower-deficit'; // Yellow
+            }
+            return '';
+        } else {
+            // For parts: check individual deficit status
+            // DeficitStatus enum: 0=NoDeficit, 1=LowerSeverity, 2=HigherSeverity
+            if (node.deficitStatus === 2) {
+                return 'status-higher-deficit'; // Red
+            } else if (node.deficitStatus === 1) {
+                return 'status-lower-deficit'; // Yellow
+            }
+            return '';
+        }
+    };
+
+    const statusClass = getDeficitStatusClass();
+
+    // Get the appropriate icon
+    const getIcon = () => {
+        if (type === 'group') {
+            return <i className={`fa-solid ${expanded ? 'fa-folder-open' : 'fa-folder'}`}></i>;
+        }
+        return <i className="fa-solid fa-gear"></i>;
+    };
+
+    return (
+        <div className={`item-label ${statusClass}`}>
+            {getIcon()}
+            <span>{node.name} {node.count !== undefined && <span className='text-muted'>({node.count})</span>}</span>
+        </div>
+    );
+};
+
 const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
 
     // Define Actions for the Parts Tree
@@ -90,7 +135,8 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                 currentPath={currentPath}
                 actions={actions}
                 labels={labels}
-                allowDrag={true} // Enable Drag and Drop
+                renderItemLabel={(node, type, expanded) => <PartItemLabel node={node} type={type} expanded={expanded} />}
+                allowDrag={true}
                 parentId={null}
             />
         </div>

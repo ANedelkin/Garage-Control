@@ -189,7 +189,7 @@
     flex: 1;
 }
 
-/* Tree item status coloring */
+/* Tree item status coloring - Old selectors (keeping for backward compatibility if used elsewhere) */
 .list-item.status-low-stock .item-label {
     color: #e74c3c;
     font-weight: 600;
@@ -207,15 +207,15 @@
     border-radius: 2px;
 }
 
-/* Deficit status indicators for parts and folders */
-.list-item.status-lower-deficit .item-label {
-    color: #f39c12;
+/* Deficit status indicators - applied directly to item-label */
+.item-label.status-lower-deficit {
+    color: #f39c12 !important;
     font-weight: 600;
 }
 
-.list-item.status-higher-deficit .item-label {
-    color: #fff;
-    background-color: #e74c3c;
+.item-label.status-higher-deficit {
+    color: #fff !important;
+    background-color: #e74c3c !important;
     padding: 0.2rem 0.4rem;
     border-radius: 2px;
 }

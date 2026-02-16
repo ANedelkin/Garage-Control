@@ -14,10 +14,10 @@ const ItemsTree = ({
     actions,
     labels,
     renderIcon,
+    renderItemLabel,
     renderActions,
     allowDrag,
-    parentId,
-    onStatusChange
+    parentId
 }) => {
     return (
         <>
@@ -25,7 +25,7 @@ const ItemsTree = ({
                 <ItemsTreeNode
                     key={group.id}
                     node={group}
-                    type="group" // 'group' equivalent to 'folder'
+                    type="group"
                     onSelectItem={onSelectItem}
                     fetchChildren={fetchChildren}
                     onRefresh={onRefresh}
@@ -36,17 +36,17 @@ const ItemsTree = ({
                     actions={actions}
                     labels={labels}
                     renderIcon={renderIcon}
+                    renderItemLabel={renderItemLabel}
                     renderActions={renderActions}
                     allowDrag={allowDrag}
                     parentId={parentId}
-                    onStatusChange={onStatusChange}
                 />
             ))}
             {items && items.map(item => (
                 <ItemsTreeNode
                     key={item.id}
                     node={item}
-                    type="item" // 'item' equivalent to 'part'
+                    type="item"
                     onSelectItem={onSelectItem}
                     fetchChildren={fetchChildren}
                     onRefresh={onRefresh}
@@ -57,10 +57,10 @@ const ItemsTree = ({
                     actions={actions}
                     labels={labels}
                     renderIcon={renderIcon}
+                    renderItemLabel={renderItemLabel}
                     renderActions={renderActions}
                     allowDrag={allowDrag}
                     parentId={parentId}
-                    onStatusChange={onStatusChange}
                 />
             ))}
         </>
