@@ -33,6 +33,17 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', access: 'Admin Workshops' },
   ];
 
+  const isPathActive = (itemPath) => {
+    // Exact match for root path
+    if (itemPath === '/') {
+      return location.pathname === '/';
+    }
+    // For other paths, check if current path starts with item path
+    // and is followed by either nothing or a slash
+    return location.pathname === itemPath || 
+           location.pathname.startsWith(itemPath + '/');
+  };
+
   console.log(accesses);
   const filteredNavItems = navItems.filter(item => {
     if (!item.access) return true;
@@ -48,7 +59,7 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
             <Link
               key={index}
               to={item.path}
-              className={`nav-item list-item ${location.pathname === item.path ? 'active' : ''}`}
+              className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
               onClick={onClose}
             >
               <div className="horizontal">
