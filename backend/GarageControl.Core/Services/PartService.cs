@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services.Helpers;
@@ -31,43 +32,73 @@ namespace GarageControl.Core.Services
             _inventoryService = inventoryService;
             _deficitService = deficitService;
         }
-        
+
         // ---------------- PART OPERATIONS ----------------
 
         public async Task<List<PartVM>> GetAllPartsAsync(string workshopId)
         {
-            var parts = await _context.Parts.Where(p => p.WorkshopId == workshopId).ToListAsync();
-            var result = new List<PartVM>();
-            foreach (var p in parts)
-            {
-                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
-                result.Add(ToPartVM(p, toSend));
-            }
-            return result;
+            return await _context.Parts
+                .Where(p => p.WorkshopId == workshopId)
+                .Select(p => new PartVM
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PartNumber = p.PartNumber,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    AvailabilityBalance = p.AvailabilityBalance,
+                    PartsToSend = p.JobParts
+                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
+                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
+                    MinimumQuantity = p.MinimumQuantity,
+                    ParentId = p.ParentId,
+                    DeficitStatus = (int)p.DeficitStatus
+                })
+                .ToListAsync();
         }
 
-        public async Task<PartVM> GetPartByIdAsync(string partId, string workshopId)
+        public async Task<PartVM?> GetPartByIdAsync(string partId, string workshopId)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
-            if (part == null) return null!;
-
-            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
-            return ToPartVM(part, toSend);
+            return await _context.Parts
+                .Where(p => p.Id == partId && p.WorkshopId == workshopId)
+                .Select(p => new PartVM
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PartNumber = p.PartNumber,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    AvailabilityBalance = p.AvailabilityBalance,
+                    PartsToSend = p.JobParts
+                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
+                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
+                    MinimumQuantity = p.MinimumQuantity,
+                    ParentId = p.ParentId,
+                    DeficitStatus = (int)p.DeficitStatus
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<List<PartVM>> GetPartsByFolderAsync(string? folderId, string workshopId)
         {
-            var parts = await _context.Parts
+            return await _context.Parts
                 .Where(p => p.WorkshopId == workshopId && p.ParentId == folderId)
+                .Select(p => new PartVM
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PartNumber = p.PartNumber,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    AvailabilityBalance = p.AvailabilityBalance,
+                    PartsToSend = p.JobParts
+                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
+                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
+                    MinimumQuantity = p.MinimumQuantity,
+                    ParentId = p.ParentId,
+                    DeficitStatus = (int)p.DeficitStatus
+                })
                 .ToListAsync();
-
-            var result = new List<PartVM>();
-            foreach (var p in parts)
-            {
-                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
-                result.Add(ToPartVM(p, toSend));
-            }
-            return result;
         }
 
         public async Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM model)
@@ -84,30 +115,32 @@ namespace GarageControl.Core.Services
                 AvailabilityBalance = model.Quantity
             };
 
-            // Calculate initial deficit status
             part.DeficitStatus = _deficitService.CalculatePartDeficitStatus(part);
 
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
-            await _inventoryService.CheckLowStockAsync(workshopId, part);
-            await _activityLogger.LogPartCreatedAsync(userId, workshopId, part.Id, part.Name);
-            
-            // Propagate deficit status to parent folder
-            if (!string.IsNullOrEmpty(part.ParentId))
-            {
-                await _deficitService.RecalculateFolderDeficitCountsAsync(part.ParentId);
-            }
+            await _activityLogger.LogPartCreatedAsync(
+                userId,
+                workshopId,
+                part.Id,
+                part.Name);
 
-            return ToPartVM(part, 0);
+            if (!string.IsNullOrEmpty(part.ParentId))
+                await _deficitService.RecalculateFolderDeficitCountsAsync(part.ParentId);
+
+            return await GetPartByIdAsync(part.Id, workshopId)
+                ?? throw new Exception("Created part not found");
         }
 
         public async Task<PartWithPathVM?> GetPartWithPathAsync(string partId, string workshopId)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
-            if (part == null) return null;
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
 
-            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
+            if (part == null)
+                return null;
+
             var result = new PartWithPathVM
             {
                 Id = part.Id,
@@ -116,17 +149,21 @@ namespace GarageControl.Core.Services
                 Price = part.Price,
                 Quantity = part.Quantity,
                 AvailabilityBalance = part.AvailabilityBalance,
-                PartsToSend = toSend,
+                PartsToSend = await _inventoryService.GetPartsToSendAsync(part.Id),
                 MinimumQuantity = part.MinimumQuantity,
                 ParentId = part.ParentId,
                 Path = new List<string>()
             };
 
             var currentParentId = part.ParentId;
+
             while (!string.IsNullOrEmpty(currentParentId))
             {
                 result.Path.Insert(0, currentParentId);
-                var parent = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == currentParentId);
+
+                var parent = await _context.PartsFolders
+                    .FirstOrDefaultAsync(f => f.Id == currentParentId);
+
                 currentParentId = parent?.ParentId;
             }
 
@@ -135,8 +172,11 @@ namespace GarageControl.Core.Services
 
         public async Task<PartVM> EditPartAsync(string userId, string workshopId, string partId, UpdatePartVM model)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
-            if (part == null) throw new ArgumentException("Part not found");
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+
+            if (part == null)
+                throw new ArgumentException("Part not found");
 
             var changes = TrackPartChanges(part, model);
 
@@ -147,114 +187,120 @@ namespace GarageControl.Core.Services
             part.MinimumQuantity = model.MinimumQuantity;
 
             await _context.SaveChangesAsync();
-            
-            // Recalculate availability in case Quantity (stockpile) was changed
-            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-            
-            // Update deficit status and propagate changes
-            await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
-            
-            await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part.Id, part.Name, changes);
 
-            var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
-            return ToPartVM(part, toSend);
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
+            await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
+
+            await _activityLogger.LogPartUpdatedAsync(
+                userId,
+                workshopId,
+                part.Id,
+                part.Name,
+                changes);
+
+            return await GetPartByIdAsync(part.Id, workshopId)
+                ?? throw new Exception("Part not found after update");
         }
 
         private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartVM model)
         {
             var changes = new List<ActivityPropertyChange>();
-            string FormatPrice(decimal p) => p.ToString("0.00", CultureInfo.InvariantCulture);
-            bool NumbersEqual(double n1, double n2) => Math.Abs(n1 - n2) < 0.0001;
-            bool PricesEqual(decimal n1, decimal n2) => n1 == n2;
 
-            if (part.Name != model.Name) changes.Add(new ActivityPropertyChange("name", part.Name, model.Name));
-            if (part.PartNumber != model.PartNumber) changes.Add(new ActivityPropertyChange("part number", part.PartNumber, model.PartNumber));
-            if (!PricesEqual(part.Price, model.Price)) changes.Add(new ActivityPropertyChange("price", FormatPrice(part.Price), FormatPrice(model.Price)));
-            if (!NumbersEqual(part.Quantity, model.Quantity)) changes.Add(new ActivityPropertyChange("quantity", part.Quantity.ToString(), model.Quantity.ToString()));
-            if (!NumbersEqual(part.MinimumQuantity, model.MinimumQuantity)) changes.Add(new ActivityPropertyChange("minimum quantity", part.MinimumQuantity.ToString(), model.MinimumQuantity.ToString()));
+            string FormatPrice(decimal p) =>
+                p.ToString("0.00", CultureInfo.InvariantCulture);
+
+            bool NumbersEqual(double n1, double n2) =>
+                Math.Abs(n1 - n2) < 0.0001;
+
+            if (part.Name != model.Name)
+                changes.Add(new ActivityPropertyChange("name", part.Name, model.Name));
+
+            if (part.PartNumber != model.PartNumber)
+                changes.Add(new ActivityPropertyChange("part number", part.PartNumber, model.PartNumber));
+
+            if (part.Price != model.Price)
+                changes.Add(new ActivityPropertyChange("price", FormatPrice(part.Price), FormatPrice(model.Price)));
+
+            if (!NumbersEqual(part.Quantity, model.Quantity))
+                changes.Add(new ActivityPropertyChange("quantity", part.Quantity.ToString(), model.Quantity.ToString()));
+
+            if (!NumbersEqual(part.MinimumQuantity, model.MinimumQuantity))
+                changes.Add(new ActivityPropertyChange("minimum quantity", part.MinimumQuantity.ToString(), model.MinimumQuantity.ToString()));
 
             return changes;
         }
 
         public async Task DeletePartAsync(string userId, string workshopId, string partId)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
-            if (part == null) return;
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+
+            if (part == null)
+                return;
 
             string partName = part.Name;
             string? parentId = part.ParentId;
-            var oldDeficitStatus = part.DeficitStatus;
-            
+
             _context.Parts.Remove(part);
             await _context.SaveChangesAsync();
 
-            // Recalculate parent folder's deficit counts
             if (!string.IsNullOrEmpty(parentId))
-            {
                 await _deficitService.RecalculateFolderDeficitCountsAsync(parentId);
-            }
 
             await _activityLogger.LogPartDeletedAsync(userId, workshopId, partName);
         }
 
-        // ---------------- MOVE OPERATIONS ----------------
-
         public async Task MovePartAsync(string userId, string workshopId, string partId, string? newParentId)
         {
-            var part = await _context.Parts.FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
-            if (part == null) throw new ArgumentException("Part not found");
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+
+            if (part == null)
+                throw new ArgumentException("Part not found");
 
             var oldParentId = part.ParentId;
-            if (oldParentId == newParentId) return;
+
+            if (oldParentId == newParentId)
+                return;
 
             if (newParentId != null)
             {
-                var parent = await _context.PartsFolders.FirstOrDefaultAsync(f => f.Id == newParentId && f.WorkshopId == workshopId);
-                if (parent == null) throw new ArgumentException("Target folder not found");
+                var parent = await _context.PartsFolders
+                    .FirstOrDefaultAsync(f => f.Id == newParentId && f.WorkshopId == workshopId);
+
+                if (parent == null)
+                    throw new ArgumentException("Target folder not found");
             }
 
             string oldParentName = await GetFolderNameOrBaseAsync(oldParentId);
             string newParentName = await GetFolderNameOrBaseAsync(newParentId);
 
             part.ParentId = newParentId;
+
             await _context.SaveChangesAsync();
 
-            // Recalculate deficit counts for old and new parents
             if (!string.IsNullOrEmpty(oldParentId))
-            {
                 await _deficitService.RecalculateFolderDeficitCountsAsync(oldParentId);
-            }
+
             if (!string.IsNullOrEmpty(newParentId))
-            {
                 await _deficitService.RecalculateFolderDeficitCountsAsync(newParentId);
-            }
 
-            await _activityLogger.LogPartMovedAsync(userId, workshopId, part.Id, part.Name, oldParentName, newParentName);
-        }
-
-        // ---------------- HELPERS ----------------
-
-        private PartVM ToPartVM(Part part, double partsToSend)
-        {
-            return new PartVM
-            {
-                Id = part.Id,
-                Name = part.Name,
-                PartNumber = part.PartNumber,
-                Price = part.Price,
-                Quantity = part.Quantity,
-                AvailabilityBalance = part.AvailabilityBalance,
-                PartsToSend = partsToSend,
-                MinimumQuantity = part.MinimumQuantity,
-                ParentId = part.ParentId,
-                DeficitStatus = (int)part.DeficitStatus
-            };
+            await _activityLogger.LogPartMovedAsync(
+                userId,
+                workshopId,
+                part.Id,
+                part.Name,
+                oldParentName,
+                newParentName);
         }
 
         private async Task<string> GetFolderNameOrBaseAsync(string? folderId)
         {
-            if (folderId == null) return "base";
+            if (folderId == null)
+                return "base";
+
             var folder = await _context.PartsFolders.FindAsync(folderId);
+
             return folder?.Name ?? "base";
         }
     }

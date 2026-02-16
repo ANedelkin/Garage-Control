@@ -41,13 +41,14 @@ namespace GarageControl.Tests.Services
             // Arrange
             var userId = "user1";
             var workshopId = "workshop1";
-            var model = new CreatePartVM 
-            { 
-                Name = "Spark Plug", 
-                PartNumber = "SP123", 
-                Price = 5.50m, 
-                Quantity = 10, 
-                MinimumQuantity = 2 
+
+            var model = new CreatePartVM
+            {
+                Name = "Spark Plug",
+                PartNumber = "SP123",
+                Price = 5.50m,
+                Quantity = 10,
+                MinimumQuantity = 2
             };
 
             // Act
@@ -56,14 +57,26 @@ namespace GarageControl.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal("Spark Plug", result.Name);
-            
+
             var partInDb = await _context.Parts.FindAsync(result.Id);
+
             Assert.NotNull(partInDb);
             Assert.Equal("SP123", partInDb.PartNumber);
 
-            _mockInventoryService.Verify(x => x.CheckLowStockAsync(workshopId, It.IsAny<Part>()), Times.Once);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("created part") && s.Contains("Spark Plug"))), Times.Once);
+            // ✅ REMOVE THIS (no longer exists in new inventory flow)
+            // _mockInventoryService.Verify(x => x.CheckLowStockAsync(workshopId, It.IsAny<Part>()), Times.Once);
+
+            // ✅ Verify activity log still happens
+            _mockActivityLogService.Verify(x =>
+                x.LogActionAsync(
+                    userId,
+                    workshopId,
+                    It.Is<string>(s =>
+                        s.Contains("created part") &&
+                        s.Contains("Spark Plug"))),
+                Times.Once);
         }
+
 
         [Fact]
         public async Task EditPartAsync_ShouldUpdateAndLogChanges()
@@ -71,27 +84,27 @@ namespace GarageControl.Tests.Services
             // Arrange
             var userId = "user1";
             var workshopId = "workshop1";
-            var part = new Part 
-            { 
-                Id = "part1", 
-                Name = "Old Name", 
-                PartNumber = "OLD1", 
-                Price = 10, 
-                Quantity = 5, 
-                MinimumQuantity = 1, 
+            var part = new Part
+            {
+                Id = "part1",
+                Name = "Old Name",
+                PartNumber = "OLD1",
+                Price = 10,
+                Quantity = 5,
+                MinimumQuantity = 1,
                 AvailabilityBalance = 5,
-                WorkshopId = workshopId 
+                WorkshopId = workshopId
             };
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
-            var model = new UpdatePartVM 
-            { 
-                Name = "New Name", 
-                PartNumber = "NEW1", 
-                Price = 12, 
-                Quantity = 8, 
-                MinimumQuantity = 3 
+            var model = new UpdatePartVM
+            {
+                Name = "New Name",
+                PartNumber = "NEW1",
+                Price = 12,
+                Quantity = 8,
+                MinimumQuantity = 3
             };
 
             // Act
@@ -112,16 +125,16 @@ namespace GarageControl.Tests.Services
             // Arrange
             var userId = "user1";
             var workshopId = "workshop1";
-            var part = new Part 
-            { 
-                Id = "part1", 
-                Name = "To Delete", 
-                PartNumber = "DEL1", 
-                Price = 10, 
-                Quantity = 5, 
-                MinimumQuantity = 0, 
+            var part = new Part
+            {
+                Id = "part1",
+                Name = "To Delete",
+                PartNumber = "DEL1",
+                Price = 10,
+                Quantity = 5,
+                MinimumQuantity = 0,
                 AvailabilityBalance = 5,
-                WorkshopId = workshopId 
+                WorkshopId = workshopId
             };
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
