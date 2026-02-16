@@ -17,6 +17,7 @@ namespace GarageControl.Tests.Services
     {
         private readonly Mock<IActivityLogService> _mockActivityLogService;
         private readonly Mock<IInventoryService> _mockInventoryService;
+        private readonly Mock<IDeficitService> _mockDeficitService;
         private readonly GarageControlDbContext _context;
         private readonly FolderService _service;
 
@@ -29,8 +30,9 @@ namespace GarageControl.Tests.Services
             _context = new GarageControlDbContext(options);
             _mockActivityLogService = new Mock<IActivityLogService>();
             _mockInventoryService = new Mock<IInventoryService>();
+            _mockDeficitService = new Mock<IDeficitService>();
 
-            _service = new FolderService(_context, _mockActivityLogService.Object, _mockInventoryService.Object);
+            _service = new FolderService(_context, _mockActivityLogService.Object, _mockInventoryService.Object, _mockDeficitService.Object);
         }
 
         [Fact]

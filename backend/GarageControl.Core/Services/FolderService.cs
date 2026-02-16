@@ -15,12 +15,14 @@ namespace GarageControl.Core.Services
     {
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
+        private readonly IDeficitService _deficitService;
         private readonly PartActivityLogger _activityLogger;
 
-        public FolderService(GarageControlDbContext context, IActivityLogService activityLogService, IInventoryService inventoryService)
+        public FolderService(GarageControlDbContext context, IActivityLogService activityLogService, IInventoryService inventoryService, IDeficitService deficitService)
         {
             _context = context;
             _inventoryService = inventoryService;
+            _deficitService = deficitService;
             _activityLogger = new PartActivityLogger(activityLogService);
         }
 
@@ -55,7 +57,14 @@ namespace GarageControl.Core.Services
             }
 
             result.SubFolders = await foldersQuery
-                .Select(f => new PartsFolderVM { Id = f.Id, Name = f.Name, ParentId = f.ParentId })
+                .Select(f => new PartsFolderVM 
+                { 
+                    Id = f.Id, 
+                    Name = f.Name, 
+                    ParentId = f.ParentId,
+                    LowerDeficitSeverityCount = f.LowerDeficitSeverityCount,
+                    HigherDeficitSeverityCount = f.HigherDeficitSeverityCount
+                })
                 .ToListAsync();
 
             result.Parts = new List<PartVM>();
@@ -72,7 +81,8 @@ namespace GarageControl.Core.Services
                     AvailabilityBalance = p.AvailabilityBalance,
                     PartsToSend = toSend,
                     MinimumQuantity = p.MinimumQuantity,
-                    ParentId = p.ParentId
+                    ParentId = p.ParentId,
+                    DeficitStatus = (int)p.DeficitStatus
                 });
             }
 
@@ -120,8 +130,16 @@ namespace GarageControl.Core.Services
             if (folder == null) return;
 
             string folderName = folder.Name;
+            string? parentId = folder.ParentId;
+            
             await DeleteFolderRecursive(folder);
             await _context.SaveChangesAsync();
+            
+            // Recalculate parent folder's deficit counts
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(parentId);
+            }
 
             await _activityLogger.LogFolderDeletedAsync(userId, workshopId, folderName);
         }
@@ -159,6 +177,16 @@ namespace GarageControl.Core.Services
 
             folder.ParentId = newParentId;
             await _context.SaveChangesAsync();
+            
+            // Recalculate deficit counts for old and new parents
+            if (!string.IsNullOrEmpty(oldParentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(oldParentId);
+            }
+            if (!string.IsNullOrEmpty(newParentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(newParentId);
+            }
 
             await _activityLogger.LogFolderMovedAsync(userId, workshopId, folder.Name, oldParentName, newParentName);
         }

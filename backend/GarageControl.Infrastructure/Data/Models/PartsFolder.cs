@@ -19,5 +19,9 @@ namespace GarageControl.Infrastructure.Data.Models
         public PartsFolder? Parent { get; set; }
         public ICollection<PartsFolder> FolderChildren { get; set; } = new HashSet<PartsFolder>();
         public ICollection<Part> PartsChildren { get; set; } = new HashSet<Part>();
+        
+        // Deficit severity tracking
+        public int LowerDeficitSeverityCount { get; set; } = 0;
+        public int HigherDeficitSeverityCount { get; set; } = 0;
     }
 }

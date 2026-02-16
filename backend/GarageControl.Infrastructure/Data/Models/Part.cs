@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using GarageControl.Shared.Constants;
+using GarageControl.Shared.Enums;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
@@ -30,5 +31,8 @@ namespace GarageControl.Infrastructure.Data.Models
         public string? ParentId { get; set; } = null!;
         [ForeignKey(nameof(ParentId))]
         public PartsFolder? Parent { get; set; }
+        
+        // Deficit tracking
+        public DeficitStatus DeficitStatus { get; set; } = DeficitStatus.NoDeficit;
     }
 }

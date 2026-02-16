@@ -17,16 +17,19 @@ namespace GarageControl.Core.Services
     {
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
+        private readonly IDeficitService _deficitService;
         private readonly PartActivityLogger _activityLogger;
 
         public PartService(
             GarageControlDbContext context,
             IActivityLogService activityLogService,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            IDeficitService deficitService)
         {
             _context = context;
             _activityLogger = new PartActivityLogger(activityLogService);
             _inventoryService = inventoryService;
+            _deficitService = deficitService;
         }
         
         // ---------------- PART OPERATIONS ----------------
@@ -81,11 +84,20 @@ namespace GarageControl.Core.Services
                 AvailabilityBalance = model.Quantity
             };
 
+            // Calculate initial deficit status
+            part.DeficitStatus = _deficitService.CalculatePartDeficitStatus(part);
+
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
             await _inventoryService.CheckLowStockAsync(workshopId, part);
             await _activityLogger.LogPartCreatedAsync(userId, workshopId, part.Id, part.Name);
+            
+            // Propagate deficit status to parent folder
+            if (!string.IsNullOrEmpty(part.ParentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(part.ParentId);
+            }
 
             return ToPartVM(part, 0);
         }
@@ -139,6 +151,9 @@ namespace GarageControl.Core.Services
             // Recalculate availability in case Quantity (stockpile) was changed
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
             
+            // Update deficit status and propagate changes
+            await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
+            
             await _activityLogger.LogPartUpdatedAsync(userId, workshopId, part.Id, part.Name, changes);
 
             var toSend = await _inventoryService.GetPartsToSendAsync(part.Id);
@@ -167,8 +182,17 @@ namespace GarageControl.Core.Services
             if (part == null) return;
 
             string partName = part.Name;
+            string? parentId = part.ParentId;
+            var oldDeficitStatus = part.DeficitStatus;
+            
             _context.Parts.Remove(part);
             await _context.SaveChangesAsync();
+
+            // Recalculate parent folder's deficit counts
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(parentId);
+            }
 
             await _activityLogger.LogPartDeletedAsync(userId, workshopId, partName);
         }
@@ -195,6 +219,16 @@ namespace GarageControl.Core.Services
             part.ParentId = newParentId;
             await _context.SaveChangesAsync();
 
+            // Recalculate deficit counts for old and new parents
+            if (!string.IsNullOrEmpty(oldParentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(oldParentId);
+            }
+            if (!string.IsNullOrEmpty(newParentId))
+            {
+                await _deficitService.RecalculateFolderDeficitCountsAsync(newParentId);
+            }
+
             await _activityLogger.LogPartMovedAsync(userId, workshopId, part.Id, part.Name, oldParentName, newParentName);
         }
 
@@ -212,7 +246,8 @@ namespace GarageControl.Core.Services
                 AvailabilityBalance = part.AvailabilityBalance,
                 PartsToSend = partsToSend,
                 MinimumQuantity = part.MinimumQuantity,
-                ParentId = part.ParentId
+                ParentId = part.ParentId,
+                DeficitStatus = (int)part.DeficitStatus
             };
         }
 

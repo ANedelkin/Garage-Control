@@ -42,6 +42,7 @@ builder.Services.AddScoped<IJobService, JobService>();
 
 builder.Services.AddScoped<IPartService, PartService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
+builder.Services.AddScoped<IDeficitService, DeficitService>();
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();

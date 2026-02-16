@@ -131,25 +131,42 @@ const ItemsTreeNode = ({
 
     const isActive = ((type === 'item' && node.id === selectedItemId) || (type === 'group' && selectedPath.includes(node.id) && !expanded));
 
-    // Determine status class for parts based on stock levels
-    const getStatusClass = () => {
-        if (type !== 'item' || node.quantity === undefined) return '';
+    // Determine status class for folders based on deficit severity
+    const getFolderDeficitStatus = () => {
+        if (type !== 'group') return '';
+        
+        // DeficitStatus enum: 0=NoDeficit, 1=LowerSeverity, 2=HigherSeverity
+        const higherDeficitCount = node.higherDeficitSeverityCount || 0;
+        const lowerDeficitCount = node.lowerDeficitSeverityCount || 0;
 
-        // For parts: check stockpile and availability balance
-        if (node.quantity < node.minimumQuantity) {
-            return 'status-low-stock';
+        if (higherDeficitCount > 0) {
+            return 'status-higher-deficit'; // Red
+        } else if (lowerDeficitCount > 0) {
+            return 'status-lower-deficit'; // Yellow
         }
-
-        if (node.availabilityBalance !== undefined) {
-            if (node.availabilityBalance < 0) {
-                return 'status-negative-availability';
-            }
-            if (node.availabilityBalance < node.minimumQuantity) {
-                return 'status-low-availability';
-            }
-        }
-
         return '';
+    };
+
+    // Determine status class for parts based on stock levels and deficit status
+    const getPartDeficitStatus = () => {
+        if (type !== 'item' || node.deficitStatus === undefined) return '';
+
+        // DeficitStatus enum: 0=NoDeficit, 1=LowerSeverity, 2=HigherSeverity
+        if (node.deficitStatus === 2) {
+            return 'status-higher-deficit'; // Red
+        } else if (node.deficitStatus === 1) {
+            return 'status-lower-deficit'; // Yellow
+        }
+        return '';
+    };
+
+    // Determine status class (parts or folders)
+    const getStatusClass = () => {
+        if (type === 'group') {
+            return getFolderDeficitStatus();
+        } else {
+            return getPartDeficitStatus();
+        }
     };
 
     // Convert status string to priority number for comparison (higher = more severe)
@@ -222,7 +239,7 @@ const ItemsTreeNode = ({
     return (
         <>
             <div
-                className={`list-item ${isActive ? 'active' : ''} ${type === 'group' ? childrenMaxStatus : getStatusClass()} ${node.className || ''}`}
+                className={`list-item ${isActive ? 'active' : ''} ${getStatusClass()} ${node.className || ''}`}
                 onClick={handleExpand}
                 onContextMenu={handleContextMenu}
                 draggable={allowDrag}

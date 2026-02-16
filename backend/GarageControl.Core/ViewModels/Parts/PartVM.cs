@@ -11,5 +11,6 @@ namespace GarageControl.Core.ViewModels.Parts
         public double PartsToSend { get; set; }
         public double MinimumQuantity { get; set; }
         public string? ParentId { get; set; }
+        public int DeficitStatus { get; set; } = 0; // DeficitStatus enum: 0=NoDeficit, 1=LowerSeverity, 2=HigherSeverity
     }
 }
