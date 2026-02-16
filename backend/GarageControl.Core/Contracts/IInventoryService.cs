@@ -7,8 +7,8 @@ namespace GarageControl.Core.Contracts
 {
     public interface IInventoryService
     {
-        void ApplyPartChange(Part part, int quantity, JobStatus status);
-        void RevertPartChange(Part part, int quantity, JobStatus status);
+        void SendParts(Part part, int quantity);
+        void ReturnParts(Part part, int quantity);
         Task RecalculateAvailabilityBalanceAsync(string workshopId, string? partId = null);
         // Task CheckLowStockAsync(string workshopId, Part part);
         Task<double> GetPartsToSendAsync(string partId);

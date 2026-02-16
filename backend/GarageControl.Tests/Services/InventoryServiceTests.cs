@@ -37,7 +37,7 @@ namespace GarageControl.Tests.Services
             var part = new Part { Quantity = 10, AvailabilityBalance = 10, Name = "Test" };
 
             // Act
-            _service.ApplyPartChange(part, 3, JobStatus.InProgress);
+            _service.SendParts(part, 3, JobStatus.InProgress);
 
             // Assert
             Assert.Equal(7, part.Quantity);
@@ -51,7 +51,7 @@ namespace GarageControl.Tests.Services
             var part = new Part { Quantity = 2, AvailabilityBalance = 2, Name = "Test" };
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => _service.ApplyPartChange(part, 3, JobStatus.InProgress));
+            Assert.Throws<InvalidOperationException>(() => _service.SendParts(part, 3, JobStatus.InProgress));
         }
 
         [Fact]

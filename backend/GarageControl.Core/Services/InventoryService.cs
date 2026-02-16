@@ -21,7 +21,7 @@ namespace GarageControl.Core.Services
         }
 
         // No async needed because no awaits
-        public void ApplyPartChange(Part part, int quantity, JobStatus status)
+        public void SendParts(Part part, int quantity)
         {
             if (part.Quantity < quantity)
                 throw new InvalidOperationException(
@@ -32,7 +32,7 @@ namespace GarageControl.Core.Services
         }
 
         // No async needed because no awaits
-        public void RevertPartChange(Part part, int quantity, JobStatus status)
+        public void ReturnParts(Part part, int quantity)
         {
             part.Quantity += quantity;
             part.AvailabilityBalance += quantity;
