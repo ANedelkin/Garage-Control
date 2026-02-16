@@ -22,9 +22,9 @@ namespace GarageControl.Core.Services
         private readonly IInventoryService _inventoryService;
 
         public OrderService(
-            GarageControlDbContext context, 
+            GarageControlDbContext context,
             INotificationService notificationService,
-            IActivityLogService activityLogService, 
+            IActivityLogService activityLogService,
             IWorkshopService workshopService,
             IInventoryService inventoryService)
         {
@@ -197,12 +197,12 @@ namespace GarageControl.Core.Services
                     }
                     else
                     {
-                         return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                        return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
                     }
 
                     await _context.SaveChangesAsync();
                     await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-                    
+
                     var updatedPart = await _context.Parts.FindAsync(part.Id);
                     if (updatedPart != null && updatedPart.AvailabilityBalance < updatedPart.MinimumQuantity)
                     {
@@ -273,7 +273,7 @@ namespace GarageControl.Core.Services
                             existingJobPart.SentQuantity = partModel.SentQuantity;
                             existingJobPart.UsedQuantity = partModel.UsedQuantity;
                             existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
-                            
+
                             await _context.SaveChangesAsync();
                             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
                         }
@@ -346,8 +346,8 @@ namespace GarageControl.Core.Services
                     WorkshopName = o.Car.Owner.Workshop.Name,
                     WorkshopAddress = o.Car.Owner.Workshop.Address,
                     WorkshopPhone = o.Car.Owner.Workshop.PhoneNumber,
-                    WorkshopEmail = o.Car.Owner.Workshop.Email?? "Not provided.",
-                    WorkshopRegistrationNumber = o.Car.Owner.Workshop.RegistrationNumber??"Not rovided",
+                    WorkshopEmail = o.Car.Owner.Workshop.Email ?? "Not provided.",
+                    WorkshopRegistrationNumber = o.Car.Owner.Workshop.RegistrationNumber ?? "Not rovided",
                     CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,

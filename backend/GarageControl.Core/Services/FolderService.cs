@@ -82,7 +82,7 @@ namespace GarageControl.Core.Services
                     PartsToSend = toSend,
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId,
-                    DeficitStatus = (int)p.DeficitStatus
+                    DeficitStatus = p.DeficitStatus
                 });
             }
 

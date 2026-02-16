@@ -14,13 +14,13 @@ namespace GarageControl.Infrastructure.Data.Models
         [ForeignKey(nameof(PartId))]
         public Part Part { get; set; } = null!;
         [Required]
-        public double PlannedQuantity { get; set; }
+        public int PlannedQuantity { get; set; }
         [Required]
-        public double SentQuantity { get; set; }
+        public int SentQuantity { get; set; }
         [Required]
-        public double UsedQuantity { get; set; }
+        public int UsedQuantity { get; set; }
         [Required]
-        public double RequestedQuantity { get; set; }
+        public int RequestedQuantity { get; set; }
         [Required]
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Price { get; set; }

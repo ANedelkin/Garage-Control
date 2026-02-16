@@ -4,7 +4,7 @@ namespace GarageControl.Core.ViewModels.Parts
     {
         public string Id { get; set; } = null!;
         public string Name { get; set; } = null!;
-        public double CurrentQuantity { get; set; }
-        public double MinimumQuantity { get; set; }
+        public int CurrentQuantity { get; set; }
+        public int MinimumQuantity { get; set; }
     }
 }

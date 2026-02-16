@@ -6,13 +6,13 @@ namespace GarageControl.Core.ViewModels.Jobs
     {
         [Required]
         public string PartId { get; set; } = null!;
-        [Range(0, double.MaxValue)]
-        public double PlannedQuantity { get; set; }
-        [Range(0, double.MaxValue)]
-        public double SentQuantity { get; set; }
-        [Range(0, double.MaxValue)]
-        public double UsedQuantity { get; set; }
-        [Range(0, double.MaxValue)]
-        public double RequestedQuantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int PlannedQuantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int SentQuantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int UsedQuantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int RequestedQuantity { get; set; }
     }
 }

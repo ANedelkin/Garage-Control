@@ -278,8 +278,8 @@ namespace GarageControl.Core.Services.Jobs
                 }
                 else
                 {
-                    double effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity : 0;
-                    double effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
+                    int effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity : 0;
+                    int effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
 
                     job.JobParts.Add(new JobPart
                     {

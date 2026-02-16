@@ -52,7 +52,7 @@ namespace GarageControl.Core.Services
                         .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId,
-                    DeficitStatus = (int)p.DeficitStatus
+                    DeficitStatus = p.DeficitStatus
                 })
                 .ToListAsync();
         }
@@ -74,7 +74,7 @@ namespace GarageControl.Core.Services
                         .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId,
-                    DeficitStatus = (int)p.DeficitStatus
+                    DeficitStatus = p.DeficitStatus
                 })
                 .FirstOrDefaultAsync();
         }
@@ -96,7 +96,7 @@ namespace GarageControl.Core.Services
                         .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
                     MinimumQuantity = p.MinimumQuantity,
                     ParentId = p.ParentId,
-                    DeficitStatus = (int)p.DeficitStatus
+                    DeficitStatus = p.DeficitStatus
                 })
                 .ToListAsync();
         }

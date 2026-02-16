@@ -19,11 +19,11 @@ namespace GarageControl.Infrastructure.Data.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
         [Required]
-        public double Quantity { get; set; }
+        public int Quantity { get; set; }
         [Required]
-        public double MinimumQuantity { get; set; }
+        public int MinimumQuantity { get; set; }
         [Required]
-        public double AvailabilityBalance { get; set; }
+        public int AvailabilityBalance { get; set; }
         public ICollection<JobPart> JobParts { get; set; } = new HashSet<JobPart>();
         public string? WorkshopId { get; set; } = null!;
         [ForeignKey(nameof(WorkshopId))]

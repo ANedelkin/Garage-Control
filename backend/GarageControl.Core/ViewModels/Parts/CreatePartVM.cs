@@ -18,12 +18,12 @@ namespace GarageControl.Core.ViewModels.Parts
         public decimal Price { get; set; }
 
         [Required]
-        [Range(0, double.MaxValue)]
-        public double Quantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int Quantity { get; set; }
 
         [Required]
-        [Range(0, double.MaxValue)]
-        public double MinimumQuantity { get; set; }
+        [Range(0, int.MaxValue)]
+        public int MinimumQuantity { get; set; }
 
         public string? ParentId { get; set; }
     }
