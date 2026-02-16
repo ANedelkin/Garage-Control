@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Collections.Generic;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Parts;
 
 namespace GarageControl.Tests.Services
 {

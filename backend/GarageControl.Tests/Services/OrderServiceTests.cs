@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels.Jobs;
 
 namespace GarageControl.Tests.Services
 {

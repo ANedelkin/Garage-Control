@@ -1,4 +1,7 @@
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Dashboard;
+using GarageControl.Core.ViewModels.Shared;
+using GarageControl.Core.ViewModels.Workshop;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

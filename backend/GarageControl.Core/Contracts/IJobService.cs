@@ -1,4 +1,6 @@
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Jobs;
+using GarageControl.Core.ViewModels.Shared;
 
 public interface IJobService
 {

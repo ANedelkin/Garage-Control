@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;

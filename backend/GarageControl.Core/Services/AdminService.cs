@@ -1,5 +1,8 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Dashboard;
+using GarageControl.Core.ViewModels.Shared;
+using GarageControl.Core.ViewModels.Workshop;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

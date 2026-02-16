@@ -8,6 +8,8 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using System.Collections.Generic;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
+using GarageControl.Core.ViewModels.Workers;
 using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

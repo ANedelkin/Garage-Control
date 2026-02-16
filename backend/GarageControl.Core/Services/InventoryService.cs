@@ -33,11 +33,6 @@ namespace GarageControl.Core.Services
             part.AvailabilityBalance += quantity;
         }
 
-        public async Task HandleStatusTransitionAsync(IEnumerable<JobPart> parts, JobStatus oldStatus, JobStatus newStatus)
-        {
-            // Parts are now immediately subtracted from stock, no status transition needed
-        }
-
         public async Task CheckLowStockAsync(string workshopId, Part part)
         {
             if (part.AvailabilityBalance < part.MinimumQuantity)

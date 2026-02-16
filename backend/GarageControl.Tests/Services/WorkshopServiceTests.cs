@@ -7,6 +7,7 @@ using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Workshop;
 
 namespace GarageControl.Tests.Services
 {

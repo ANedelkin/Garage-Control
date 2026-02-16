@@ -1,4 +1,6 @@
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
+using GarageControl.Core.ViewModels.Workers;
 
 namespace GarageControl.Core.Contracts
 {

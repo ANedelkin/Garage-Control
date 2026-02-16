@@ -1,4 +1,5 @@
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
 using Microsoft.AspNetCore.Http;
 
 namespace GarageControl.Core.Contracts

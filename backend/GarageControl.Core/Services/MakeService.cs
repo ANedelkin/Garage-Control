@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Vehicles;
+using GarageControl.Core.ViewModels.Shared;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 

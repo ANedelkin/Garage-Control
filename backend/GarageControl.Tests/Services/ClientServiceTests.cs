@@ -9,6 +9,7 @@ using GarageControl.Infrastructure.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Clients;
 using Microsoft.EntityFrameworkCore;
 using System;
 

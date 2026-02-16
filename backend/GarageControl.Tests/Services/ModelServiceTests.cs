@@ -7,8 +7,7 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
-using GarageControl.Core.ViewModels;
-using System;
+using GarageControl.Core.ViewModels;using GarageControl.Core.ViewModels.Vehicles;using System;
 using Microsoft.EntityFrameworkCore;
 
 namespace GarageControl.Tests.Services

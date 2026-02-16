@@ -8,6 +8,7 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using System.Linq;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Jobs;
 using Microsoft.EntityFrameworkCore;
 using System;
 

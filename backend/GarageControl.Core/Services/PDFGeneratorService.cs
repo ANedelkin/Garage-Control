@@ -1,5 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Orders;
 using MigraDocCore.DocumentObjectModel;
 using MigraDocCore.Rendering;
 using System.IO;

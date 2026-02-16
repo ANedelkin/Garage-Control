@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Vehicles;
 using Moq;
 using GarageControl.Core.Contracts;
 

@@ -1,5 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Infrastructure.Data.Common;
 using Microsoft.AspNetCore.Http;

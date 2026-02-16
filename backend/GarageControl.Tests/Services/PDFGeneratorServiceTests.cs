@@ -1,6 +1,8 @@
 using Xunit;
 using System.Threading.Tasks;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels.Jobs;
 using System.Collections.Generic;
 
 namespace GarageControl.Tests.Services
