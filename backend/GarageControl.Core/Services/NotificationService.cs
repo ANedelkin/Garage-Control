@@ -62,7 +62,7 @@ namespace GarageControl.Core.Services
         {
             // Find all users with access to "Parts Stockpile" for this workshop
             var usersToNotify = await _context.Workers
-                .Where(w => w.WorkshopId == workshopId && w.Accesses.Any(a => a.Name == "Parts Stockpile"))
+                .Where(w => w.WorkshopId == workshopId && w.Accesses.Any(a => a.Name == "Parts Stock"))
                 .Select(w => w.UserId)
                 .ToListAsync();
 
