@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { partApi } from '../../services/partApi';
 import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 import '../../assets/css/common/status.css';
 
-const ServiceForm = ({ service, index, updateService, removeService, jobTypes, workers, allParts = [], mechanicView = false }) => {
-    // For part search
+const ServiceForm = ({
+    service,
+    index,
+    updateService,
+    removeService,
+    jobTypes,
+    workers,
+    allParts = [],
+    mechanicView = false
+}) => {
+
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
@@ -18,7 +27,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
     const handleChange = (field, value) => {
         updateService(service.id, field, value);
 
-        if (field === 'status' && value === 3) { // 3 = Finished
+        if (field === 'status' && value === 3) {
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
@@ -30,22 +39,22 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
         const newPart = {
             partId: part.id,
             name: part.name,
-            plannedQuantity: 1, // Default to 1, but mechanic can't change it if mechanicView is true
+            plannedQuantity: 1,
             sentQuantity: 1,
             usedQuantity: 0,
             requestedQuantity: 0,
             price: part.price
         };
-        // If we were searching for a specific row, update that row
+
         if (activePartIndex !== null) {
             const newParts = [...service.parts];
             newParts[activePartIndex] = newPart;
             updateService(service.id, 'parts', newParts);
             setActivePartIndex(null);
         } else {
-            // Otherwise add new
             updateService(service.id, 'parts', [...service.parts, newPart]);
         }
+
         setPartSearch('');
         setSuggestions([]);
     };
@@ -58,7 +67,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
 
     const handlePartSearch = (val, rowIndex) => {
         setPartSearch(val);
-        // Update the row's name field instantly for typing feeling
+
         const newParts = [...service.parts];
         newParts[rowIndex] = { ...newParts[rowIndex], name: val };
         updateService(service.id, 'parts', newParts);
@@ -74,11 +83,15 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
             p.name.toLowerCase().includes(val.toLowerCase()) ||
             p.partNumber.toLowerCase().includes(val.toLowerCase())
         );
+
         setSuggestions(filtered);
     };
 
     const addNewRow = () => {
-        updateService(service.id, 'parts', [...service.parts, { partId: '', name: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }]);
+        updateService(service.id, 'parts', [
+            ...service.parts,
+            { partId: '', name: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }
+        ]);
     };
 
     const updatePartRow = (partIndex, field, val) => {
@@ -89,81 +102,188 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
 
     return (
         <div className="tile">
+
             <div className="tile-header">
                 <div className="header">
                     <label>Job Type</label>
-                    <DropDown value={service.jobTypeId} onChange={e => handleChange('jobTypeId', e.target.value)} disabled={mechanicView}>
+                    <DropDown
+                        value={service.jobTypeId}
+                        onChange={e => handleChange('jobTypeId', e.target.value)}
+                        disabled={mechanicView}
+                    >
                         <option value="">Select Type</option>
-                        {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.name}</option>)}
+                        {jobTypes.map(jt =>
+                            <option key={jt.id} value={jt.id}>{jt.name}</option>
+                        )}
                     </DropDown>
                 </div>
+
                 {removeService && !mechanicView && (
-                    <button type="button" className="btn delete" onClick={() => removeService(service.id)}>
+                    <button
+                        type="button"
+                        className="btn delete"
+                        onClick={() => removeService(service.id)}
+                    >
                         <i className="fa-solid fa-trash"></i>
                     </button>
                 )}
             </div>
 
-            <div className="service-form">
-                <div className="form-row-4">
-                    <div className="form-section">
-                        <label>Job Status</label>
-                        <DropDown
-                            className={`status-glow job-status-${service.status === 0 ? 'pending' : service.status === 1 ? 'inprogress' : 'finished'}`}
-                            value={service.status}
-                            onChange={e => handleChange('status', parseInt(e.target.value))}
-                        >
-                            <option value={0}>Pending</option>
-                            <option value={1}>In Progress</option>
-                            <option value={2}>Finished</option>
-                        </DropDown>
+            {/* ======================= */}
+            {/* FORM SECTION */}
+            {/* ======================= */}
+
+            <div className={`service-form ${mechanicView ? 'mechanic-layout' : ''}`}>
+
+                {mechanicView ? (
+
+                    <div className="mechanic-grid">
+
+                        {/* LEFT COLUMN */}
+                        <div className="mechanic-left">
+
+                            <div className="form-section">
+                                <label>Job Type</label>
+                                <DropDown
+                                    value={service.jobTypeId}
+                                    onChange={() => { }}
+                                    disabled={true}   // fully readonly
+                                >
+                                    {jobTypes.map(jt =>
+                                        <option key={jt.id} value={jt.id}>{jt.name}</option>
+                                    )}
+                                </DropDown>
+                            </div>
+
+                            <div className="form-section">
+                                <label>Job Status</label>
+                                <DropDown
+                                    className={`status-glow job-status-${service.status === 0
+                                        ? 'pending'
+                                        : service.status === 1
+                                            ? 'inprogress'
+                                            : 'finished'
+                                        }`}
+                                    value={service.status}
+                                    onChange={e => handleChange('status', parseInt(e.target.value))}
+                                >
+                                    <option value={0}>Pending</option>
+                                    <option value={1}>In Progress</option>
+                                    <option value={2}>Finished</option>
+                                </DropDown>
+                            </div>
+
+                            <div className="form-section">
+                                <label>Time Slot</label>
+                                <TimeSlotPicker
+                                    worker={workers.find(w => w.id === service.workerId)}
+                                    initialStart={service.startTime}
+                                    initialEnd={service.endTime}
+                                    readonly={true}      // prevents opening or changing
+                                    onTimeSelect={null}   // ensure user cannot change
+                                />
+                            </div>
+
+                        </div>
+
+                        {/* RIGHT COLUMN */}
+                        <div className="mechanic-right">
+                            <div className="form-section">
+                                <label>Description</label>
+                                <textarea
+                                    className="description"
+                                    value={service.description}
+                                    readOnly
+                                />
+                            </div>
+                        </div>
+
                     </div>
 
-                    {!mechanicView && (
-                        <div className="form-section">
-                            <label>Mechanic</label>
-                            <DropDown value={service.workerId} onChange={e => handleChange('workerId', e.target.value)}>
-                                <option value="">Select Mechanic</option>
-                                {workers
-                                    .filter(w => !service.jobTypeId || (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId)))
-                                    .map(w => <option key={w.id} value={w.id}>{w.name}</option>)
-                                }
-                            </DropDown>
+                ) : (
+
+                    <>
+                        <div className="form-row-4">
+
+                            <div className="form-section">
+                                <label>Job Status</label>
+                                <DropDown
+                                    className={`status-glow job-status-${service.status === 0
+                                        ? 'pending'
+                                        : service.status === 1
+                                            ? 'inprogress'
+                                            : 'finished'
+                                        }`}
+                                    value={service.status}
+                                    onChange={e => handleChange('status', parseInt(e.target.value))}
+                                >
+                                    <option value={0}>Pending</option>
+                                    <option value={1}>In Progress</option>
+                                    <option value={2}>Finished</option>
+                                </DropDown>
+                            </div>
+
+                            {!mechanicView && (
+                                <div className="form-section">
+                                    <label>Mechanic</label>
+                                    <DropDown
+                                        value={service.workerId}
+                                        onChange={e => handleChange('workerId', e.target.value)}
+                                    >
+                                        <option value="">Select Mechanic</option>
+                                        {workers
+                                            .filter(w =>
+                                                !service.jobTypeId ||
+                                                (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId))
+                                            )
+                                            .map(w =>
+                                                <option key={w.id} value={w.id}>{w.name}</option>
+                                            )
+                                        }
+                                    </DropDown>
+                                </div>
+                            )}
+
+                            {!mechanicView && (
+                                <div className="form-section">
+                                    <label>Labor Cost</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={service.laborCost}
+                                        onChange={e => handleChange('laborCost', parseFloat(e.target.value))}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="form-section" style={{ display: 'flex', flexDirection: 'column' }}>
+                                <label>Time Slot</label>
+                                <TimeSlotPicker
+                                    worker={workers.find(w => w.id === service.workerId)}
+                                    initialStart={service.startTime}
+                                    initialEnd={service.endTime}
+                                    onTimeSelect={(start, end) => {
+                                        handleChange('startTime', start);
+                                        handleChange('endTime', end);
+                                    }}
+                                />
+                            </div>
+
                         </div>
-                    )}
 
-                    {!mechanicView && (
                         <div className="form-section">
-                            <label>Labor Cost</label>
-                            <input type="number" step="0.01" value={service.laborCost} onChange={e => handleChange('laborCost', parseFloat(e.target.value))} />
+                            <label>Description</label>
+                            <textarea
+                                className="description"
+                                value={service.description}
+                                onChange={e => handleChange('description', e.target.value)}
+                                placeholder="Describe..."
+                            />
                         </div>
-                    )}
+                    </>
 
-                    <div className="form-section" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Time Slot</label>
-                        <TimeSlotPicker
-                            worker={workers.find(w => w.id === service.workerId)}
-                            initialStart={service.startTime}
-                            initialEnd={service.endTime}
-                            onTimeSelect={(start, end) => {
-                                handleChange('startTime', start);
-                                handleChange('endTime', end);
-                            }}
-                            readonly={mechanicView}
-                        />
-                    </div>
-                </div>
+                )}
 
-                <div className="form-section">
-                    <label>Description</label>
-                    <textarea
-                        className="description"
-                        value={service.description}
-                        onChange={e => handleChange('description', e.target.value)}
-                        placeholder="Describe..."
-                        disabled={mechanicView}
-                    />
-                </div>
             </div>
 
             <div className="parts-table-wrapper">
@@ -272,6 +392,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                     </div>
                 </div>
             </div>
+
         </div>
     );
 };

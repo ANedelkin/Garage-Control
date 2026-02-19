@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../../assets/css/common/dropdown.css';
 
-const Dropdown = ({ children, value, onChange, title, className = "" }) => {
+const Dropdown = ({ children, value, onChange, title, className = "", disabled = false }) => {
     return (
         <div className={`select-wrapper ${className}`}>
-            <select value={value} onChange={onChange} title={title}>
+            <select value={value} onChange={onChange} title={title} disabled={disabled}>
                 {children}
             </select>
             <i className="fa-solid fa-chevron-down" />
