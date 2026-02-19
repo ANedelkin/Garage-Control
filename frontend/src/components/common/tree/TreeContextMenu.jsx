@@ -11,32 +11,42 @@ const TreeContextMenu = ({ handleRename, handleAddGroup, handleAddItem, handleDe
             {type === 'group' && (
                 <>
                     {handleRename && (
-                        <div className="context-menu-item" onClick={handleRename}>
-                            <i className="fa-solid fa-pen"></i> {labels.rename || 'Rename'}
+                        <div className="list-item" onClick={handleRename}>
+                            <div className="item-label">
+                                <i className="fa-solid fa-pen"></i> {labels.rename || 'Rename'}
+                            </div>
                         </div>
                     )}
                     {handleAddGroup && (
-                        <div className="context-menu-item" onClick={handleAddGroup}>
-                            <i className="fa-solid fa-folder-plus"></i> {labels.addGroup || 'Add Group'}
+                        <div className="list-item" onClick={handleAddGroup}>
+                            <div className="item-label">
+                                <i className="fa-solid fa-folder-plus"></i> {labels.addGroup || 'Add Group'}
+                            </div>
                         </div>
                     )}
                     {handleAddItem && (
-                        <div className="context-menu-item" onClick={handleAddItem}>
-                            <i className="fa-solid fa-plus"></i> {labels.addItem || 'Add Item'}
+                        <div className="list-item" onClick={handleAddItem}>
+                            <div className="item-label">
+                                <i className="fa-solid fa-plus"></i> {labels.addItem || 'Add Item'}
+                            </div>
                         </div>
                     )}
                 </>
             )}
 
             {type === 'item' && handleRename && (
-                <div className="context-menu-item" onClick={handleRename}>
-                    <i className="fa-solid fa-pen"></i> {labels.rename || 'Rename'}
+                <div className="list-item" onClick={handleRename}>
+                    <div className="item-label">
+                        <i className="fa-solid fa-pen"></i> {labels.rename || 'Rename'}
+                    </div>
                 </div>
             )}
 
             {handleDelete && (
-                <div className="context-menu-item" onClick={handleDelete}>
-                    <i className="fa-solid fa-trash"></i> {labels.delete || 'Delete'}
+                <div className="list-item" onClick={handleDelete}>
+                    <div className="item-label">
+                        <i className="fa-solid fa-trash"></i> {labels.delete || 'Delete'}
+                    </div>
                 </div>
             )}
         </div>

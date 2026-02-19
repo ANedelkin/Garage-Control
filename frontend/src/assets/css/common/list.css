@@ -25,6 +25,7 @@
     padding-left: 8px;
     border-radius: 8px;
     cursor: pointer;
+    height: 40px;
 }
 
 .list-item:hover {

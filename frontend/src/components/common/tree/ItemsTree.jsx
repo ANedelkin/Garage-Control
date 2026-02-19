@@ -1,6 +1,8 @@
 import React from 'react';
 import ItemsTreeNode from './ItemsTreeNode';
 
+import '../../../assets/css/context-menu.css';
+
 const ItemsTree = ({
     groups,
     items,
