@@ -5,7 +5,7 @@ import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 import '../../assets/css/common/status.css';
 
-const ServiceForm = ({ service, index, updateService, removeService, jobTypes, workers, allParts = [] }) => {
+const ServiceForm = ({ service, index, updateService, removeService, jobTypes, workers, allParts = [], mechanicView = false }) => {
     // For part search
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
@@ -30,8 +30,7 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
         const newPart = {
             partId: part.id,
             name: part.name,
-            name: part.name,
-            plannedQuantity: 1,
+            plannedQuantity: 1, // Default to 1, but mechanic can't change it if mechanicView is true
             sentQuantity: 1,
             usedQuantity: 0,
             requestedQuantity: 0,
@@ -93,12 +92,12 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
             <div className="tile-header">
                 <div className="header">
                     <label>Job Type</label>
-                    <DropDown value={service.jobTypeId} onChange={e => handleChange('jobTypeId', e.target.value)}>
+                    <DropDown value={service.jobTypeId} onChange={e => handleChange('jobTypeId', e.target.value)} disabled={mechanicView}>
                         <option value="">Select Type</option>
                         {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.name}</option>)}
                     </DropDown>
                 </div>
-                {removeService && (
+                {removeService && !mechanicView && (
                     <button type="button" className="btn delete" onClick={() => removeService(service.id)}>
                         <i className="fa-solid fa-trash"></i>
                     </button>
@@ -120,21 +119,25 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                         </DropDown>
                     </div>
 
-                    <div className="form-section">
-                        <label>Mechanic</label>
-                        <DropDown value={service.workerId} onChange={e => handleChange('workerId', e.target.value)}>
-                            <option value="">Select Mechanic</option>
-                            {workers
-                                .filter(w => !service.jobTypeId || (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId)))
-                                .map(w => <option key={w.id} value={w.id}>{w.name}</option>)
-                            }
-                        </DropDown>
-                    </div>
+                    {!mechanicView && (
+                        <div className="form-section">
+                            <label>Mechanic</label>
+                            <DropDown value={service.workerId} onChange={e => handleChange('workerId', e.target.value)}>
+                                <option value="">Select Mechanic</option>
+                                {workers
+                                    .filter(w => !service.jobTypeId || (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId)))
+                                    .map(w => <option key={w.id} value={w.id}>{w.name}</option>)
+                                }
+                            </DropDown>
+                        </div>
+                    )}
 
-                    <div className="form-section">
-                        <label>Labor Cost</label>
-                        <input type="number" step="0.01" value={service.laborCost} onChange={e => handleChange('laborCost', parseFloat(e.target.value))} />
-                    </div>
+                    {!mechanicView && (
+                        <div className="form-section">
+                            <label>Labor Cost</label>
+                            <input type="number" step="0.01" value={service.laborCost} onChange={e => handleChange('laborCost', parseFloat(e.target.value))} />
+                        </div>
+                    )}
 
                     <div className="form-section" style={{ display: 'flex', flexDirection: 'column' }}>
                         <label>Time Slot</label>
@@ -146,13 +149,20 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                                 handleChange('startTime', start);
                                 handleChange('endTime', end);
                             }}
+                            readonly={mechanicView}
                         />
                     </div>
                 </div>
 
                 <div className="form-section">
                     <label>Description</label>
-                    <textarea className="description" value={service.description} onChange={e => handleChange('description', e.target.value)} placeholder="Describe..." />
+                    <textarea
+                        className="description"
+                        value={service.description}
+                        onChange={e => handleChange('description', e.target.value)}
+                        placeholder="Describe..."
+                        disabled={mechanicView}
+                    />
                 </div>
             </div>
 
@@ -207,8 +217,8 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                                             className={sentError ? 'input-error' : ''}
                                             value={p.plannedQuantity}
                                             onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
-                                            disabled={!hasStockAccess && !isAssignedWorker}
-                                            title={(!hasStockAccess && !isAssignedWorker) ? "Only Parts Stock access or assigned worker can edit this" : ""}
+                                            disabled={mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                            title={(mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                         />
                                     </td>
                                     <td>
@@ -217,8 +227,8 @@ const ServiceForm = ({ service, index, updateService, removeService, jobTypes, w
                                             className={usedError ? 'input-error' : ''}
                                             value={p.sentQuantity}
                                             onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
-                                            disabled={!hasStockAccess}
-                                            title={!hasStockAccess ? "Only Parts Stock access can edit this" : ""}
+                                            disabled={mechanicView || !hasStockAccess}
+                                            title={(mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                         />
                                     </td>
                                     <td>

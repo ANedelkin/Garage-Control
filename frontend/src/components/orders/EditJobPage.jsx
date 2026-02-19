@@ -7,8 +7,8 @@ import ServiceForm from './ServiceForm';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 
-const EditJobPage = () => {
-    const { orderId, jobId } = useParams();
+const EditJobPage = ({ mechanicView = false }) => {
+    const { orderId: paramOrderId, jobId } = useParams();
     const navigate = useNavigate();
     const isEdit = !!jobId;
 
@@ -19,31 +19,37 @@ const EditJobPage = () => {
     const [allParts, setAllParts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Derived orderId (either from params or fetched job)
+    const [fetchedOrderId, setFetchedOrderId] = useState(null);
+    const orderId = paramOrderId || fetchedOrderId;
+
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [jtData, workerData, partsData, orderData] = await Promise.all([
-                    request('GET', 'jobtype/all'),
-                    request('GET', 'worker/all'),
-                    partApi.getAllParts(),
-                    orderApi.getOrder(orderId)
-                ]);
-
-                setJobTypes(jtData);
-                setWorkers(workerData);
-                setAllParts(partsData);
-                setOrder(orderData);
+                // If we don't have orderId in params, we must be in mechanic view /todo/:jobId
+                // We need to fetch the job first to get the orderId
+                let currentOrderId = paramOrderId;
+                let jobData = null;
 
                 if (isEdit) {
-                    const jobData = await orderApi.getJob(jobId);
+                    jobData = await orderApi.getJob(jobId);
                     if (jobData.parts) {
                         jobData.parts = jobData.parts.map(p => ({
                             ...p,
                             name: p.partName
                         }));
                     }
+                    if (!currentOrderId) {
+                        currentOrderId = jobData.orderId;
+                        setFetchedOrderId(currentOrderId);
+                    }
                     setJob(jobData);
                 } else {
+                    // logic for new job, which won't happen in mechanic view usually, but good to keep robust
+                    if (!currentOrderId) {
+                        // This shouldn't happen based on routes, but if it does, we can't load order
+                        console.error("No orderId provided for new job");
+                    }
                     setJob({
                         id: 'temp-' + Date.now(),
                         jobTypeId: '',
@@ -56,6 +62,24 @@ const EditJobPage = () => {
                         status: 0
                     });
                 }
+
+                const promises = [
+                    request('GET', 'jobtype/all'),
+                    request('GET', 'worker/all'),
+                    partApi.getAllParts()
+                ];
+
+                if (currentOrderId) {
+                    promises.push(orderApi.getOrder(currentOrderId));
+                }
+
+                const [jtData, workerData, partsData, orderData] = await Promise.all(promises);
+
+                setJobTypes(jtData);
+                setWorkers(workerData);
+                setAllParts(partsData);
+                if (orderData) setOrder(orderData);
+
             } catch (e) {
                 console.error("Failed to load data", e);
                 alert("Error loading job details");
@@ -64,7 +88,7 @@ const EditJobPage = () => {
             }
         };
         loadData();
-    }, [orderId, jobId, isEdit]);
+    }, [paramOrderId, jobId, isEdit]);
 
     const updateJob = (sid, field, value) => {
         setJob(prev => ({ ...prev, [field]: value }));
@@ -101,7 +125,11 @@ const EditJobPage = () => {
             } else {
                 await orderApi.createJob(orderId, payload);
             }
-            navigate('/orders');
+            if (mechanicView) {
+                navigate('/todo');
+            } else {
+                navigate('/orders');
+            }
         } catch (e) {
             console.error(e);
             alert("Failed to save job");
@@ -119,7 +147,7 @@ const EditJobPage = () => {
                     <p>{order?.clientName} • {order?.carName} ({order?.carRegistrationNumber})</p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="btn secondary" onClick={() => navigate('/orders')}>
+                    <button className="btn secondary" onClick={() => navigate(mechanicView ? '/todo' : '/orders')}>
                         Cancel
                     </button>
                     <button className="btn primary" onClick={handleSave}>
@@ -136,6 +164,7 @@ const EditJobPage = () => {
                 jobTypes={jobTypes}
                 workers={workers}
                 allParts={allParts}
+                mechanicView={mechanicView}
             />
         </main>
     );

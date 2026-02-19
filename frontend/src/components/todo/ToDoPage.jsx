@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
+import { useAuth } from '../../context/AuthContext';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/status.css';
 import '../../assets/css/common/tile.css';
@@ -42,48 +43,64 @@ const ToDoPage = () => {
         return `${day}/${month} ${hours}:${minutes}`;
     };
 
-    const renderList = () => (
-        <div className="tile" style={{ marginTop: '20px' }}>
-            <div className="table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Type</th>
-                            <th>Car</th>
-                            <th>Description</th>
-                            <th>Start Time</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {jobs.map(job => (
-                            <tr key={job.id} onClick={() => navigate(`/orders/${job.orderId}`)}>
-                                <td>
-                                    <span className={`job-status ${job.status}`}>
-                                        <i className={`fa-solid ${job.status === 1 ? 'fa-hourglass-start' :
-                                            job.status === 2 ? 'fa-screwdriver-wrench' : 'fa-check'
-                                            } job-status-${job.status} status-icon`}></i>
-                                        {job.status === 1 ? 'Pending' : job.status === 2 ? 'In Progress' : 'Done'}
-                                    </span>
-                                </td>
-                                <td>{job.typeName}</td>
-                                <td>
-                                    <div>{job.carName}</div>
-                                    <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>{job.carRegistrationNumber}</div>
-                                </td>
-                                <td>{job.description}</td>
-                                <td>{formatDate(job.startTime)}</td>
-                                <td><i className="fa-solid fa-chevron-right"></i></td>
+    const renderList = () => {
+        const { accesses } = useAuth();
+        const hasOrdersAccess = accesses.includes('Orders');
+
+        const handleRowClick = (job) => {
+            if (hasOrdersAccess) {
+                navigate(`/orders/${job.orderId}/jobs/${job.id}`);
+            } else {
+                navigate(`/todo/${job.id}`);
+            }
+        };
+
+        return (
+            <div className="tile" style={{ marginTop: '20px' }}>
+                <div className="table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>Car</th>
+                                <th>Description</th>
+                                <th>Start Time</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {jobs.map(job => (
+                                <tr key={job.id} onClick={() => handleRowClick(job)}>
+                                    <td>
+                                        <span className={`job-status ${job.status}`}>
+                                            <i className={`fa-solid ${job.status === 1 ? 'fa-hourglass-start' :
+                                                job.status === 2 ? 'fa-screwdriver-wrench' : 'fa-check'
+                                                } job-status-${job.status} status-icon`}></i>
+                                            {job.status === 1 ? 'Pending' : job.status === 2 ? 'In Progress' : 'Done'}
+                                        </span>
+                                    </td>
+                                    <td>{job.typeName}</td>
+                                    <td>
+                                        <div>{job.carName}</div>
+                                        <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>{job.carRegistrationNumber}</div>
+                                    </td>
+                                    <td>{job.description}</td>
+                                    <td>{formatDate(job.startTime)}</td>
+                                    <td><i className="fa-solid fa-chevron-right"></i></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderCalendar = () => {
+        const { accesses } = useAuth();
+        const hasOrdersAccess = accesses.includes('Orders');
+
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); // 0 is Sunday
 
@@ -97,6 +114,14 @@ const ToDoPage = () => {
             days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
         }
 
+        const handleEventClick = (job) => {
+            if (hasOrdersAccess) {
+                navigate(`/orders/${job.orderId}/jobs/${job.id}`);
+            } else {
+                navigate(`/todo/${job.id}`);
+            }
+        };
+
         for (let day = 1; day <= daysInMonth; day++) {
             const dayJobs = jobs.filter(j => {
                 const jDate = new Date(j.startTime);
@@ -108,7 +133,7 @@ const ToDoPage = () => {
                     <div className="day-number">{day}</div>
                     <div className="day-events">
                         {dayJobs.map(j => (
-                            <div key={j.id} className={`event-dot status-${j.status}`} title={`${j.typeName}`} onClick={() => navigate(`/orders/${j.orderId}`)}>
+                            <div key={j.id} className={`event-dot status-${j.status}`} title={`${j.typeName}`} onClick={() => handleEventClick(j)}>
                                 {j.typeName}
                             </div>
                         ))}

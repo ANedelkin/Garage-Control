@@ -80,7 +80,11 @@ function App() {
 
   const routes = [
     { path: '/', element: <Dashboard />, children: [] },
-    { path: '/todo', element: <ToDoPage />, access: 'To Do', children: [] },
+    {
+      path: '/todo', element: <ToDoPage />, access: 'To Do', children: [
+        { path: '/:jobId', element: <EditJobPage mechanicView={true} /> }
+      ]
+    },
     {
       path: '/orders', element: <OrdersPage mode="active" />, access: 'Orders', children: [
         { path: '/new', element: <NewOrderSetup /> },
