@@ -190,21 +190,17 @@
 }
 
 .list-item.status-negative-availability .item-label {
-    color: #fff;
-    background-color: #e74c3c;
-    padding: 0.2rem 0.4rem;
-    border-radius: 2px;
+    color: #e74c3c;
+    /* font-weight: 600; */
 }
 
 /* Deficit status indicators - applied directly to item-label */
 .item-label.status-lower-deficit {
     color: #f39c12 !important;
-    font-weight: 600;
+    /* font-weight: 600; */
 }
 
 .item-label.status-higher-deficit {
-    color: #fff !important;
-    background-color: #e74c3c !important;
-    padding: 0.2rem 0.4rem;
-    border-radius: 2px;
+    color: #e74c3c !important;
+    /* font-weight: 600; */
 }
