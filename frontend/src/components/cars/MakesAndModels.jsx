@@ -211,7 +211,7 @@ const MakesAndModels = () => {
                                     className={`list-item ${selectedMake?.id === make.id ? 'active' : ''}`}
                                     onClick={() => setSelectedMake(make)}
                                 >
-                                    <span>{make.name}</span>
+                                    <span className="item-label">{make.name}</span>
                                     <div>
                                         {make.globalId && (
                                             <button
@@ -255,7 +255,7 @@ const MakesAndModels = () => {
                             ) : (
                                 models.map(model => (
                                     <div key={model.id} className="list-item">
-                                        <span>{model.name}</span>
+                                        <span className="item-label">{model.name}</span>
                                         <div>
                                             {model.globalId && (
                                                 <button
