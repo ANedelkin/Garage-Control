@@ -215,14 +215,14 @@ const MakesAndModels = () => {
                                     <div>
                                         {make.globalId && (
                                             <button
-                                                className="btn icon-btn merge"
+                                                className="btn icon-btn"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleOpenMerge('make', make, { id: make.globalId, name: make.name });
                                                 }}
                                                 title="Merge with global"
                                             >
-                                                <i className="fa-solid fa-code-merge"></i>
+                                                <i className="fa-solid fa-arrows-to-circle"></i>
                                             </button>
                                         )}
                                         <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
@@ -259,11 +259,11 @@ const MakesAndModels = () => {
                                         <div>
                                             {model.globalId && (
                                                 <button
-                                                    className="btn icon-btn merge"
+                                                    className="btn icon-btn"
                                                     onClick={() => handleOpenMerge('model', model, { id: model.globalId, name: model.name })}
                                                     title="Merge with global"
                                                 >
-                                                    <i className="fa-solid fa-code-merge"></i>
+                                                    <i className="fa-solid fa-arrows-to-circle"></i>
                                                 </button>
                                             )}
                                             <button className="btn icon-btn" onClick={() => handleOpenModal('model', model)}>
