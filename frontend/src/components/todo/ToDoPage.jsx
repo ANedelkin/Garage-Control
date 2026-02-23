@@ -66,7 +66,6 @@ const ToDoPage = () => {
                                 <th>Car</th>
                                 <th>Description</th>
                                 <th>Start Time</th>
-                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -74,10 +73,10 @@ const ToDoPage = () => {
                                 <tr key={job.id} onClick={() => handleRowClick(job)}>
                                     <td>
                                         <span className={`job-status ${job.status}`}>
-                                            <i className={`fa-solid ${job.status === 1 ? 'fa-hourglass-start' :
-                                                job.status === 2 ? 'fa-screwdriver-wrench' : 'fa-check'
+                                            <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
+                                                job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                 } job-status-${job.status} status-icon`}></i>
-                                            {job.status === 1 ? 'Pending' : job.status === 2 ? 'In Progress' : 'Done'}
+                                            {job.status === 'pending' ? 'Pending' : job.status === 'inprogress' ? 'In Progress' : 'Done'}
                                         </span>
                                     </td>
                                     <td>{job.typeName}</td>
@@ -87,7 +86,6 @@ const ToDoPage = () => {
                                     </td>
                                     <td>{job.description}</td>
                                     <td>{formatDate(job.startTime)}</td>
-                                    <td><i className="fa-solid fa-chevron-right"></i></td>
                                 </tr>
                             ))}
                         </tbody>

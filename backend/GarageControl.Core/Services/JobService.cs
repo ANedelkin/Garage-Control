@@ -100,32 +100,22 @@ namespace GarageControl.Core.Services.Jobs
 
         public async Task<List<JobToDoVM>> GetMyJobsAsync(string userId, string workshopId)
         {
-            return await _context.Jobs
-                .AsNoTracking()
-                .Include(j => j.JobType)
-                .Include(j => j.Order)
-                    .ThenInclude(o => o.Car)
-                        .ThenInclude(c => c.Owner)
-                .Include(j => j.Order.Car.Model.CarMake)
-                .Include(j => j.Order.Car.Model)
-                .Include(j => j.Worker)
-                .Where(j => j.Worker.UserId == userId && j.Order.Car.Owner.WorkshopId == workshopId)
-                .OrderBy(j => j.StartTime)
-                .Select(j => new JobToDoVM
-                {
-                    Id = j.Id,
-                    TypeName = j.JobType.Name,
-                    Description = j.Description ?? "",
-                    Status = j.Status,
-                    StartTime = j.StartTime,
-                    EndTime = j.EndTime,
-                    OrderId = j.OrderId,
-                    CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
-                    CarRegistrationNumber = j.Order.Car.RegistrationNumber,
-                    ClientName = j.Order.Car.Owner.Name
-                })
-                .ToListAsync();
+            return await _context.Jobs.Where(j => j.Worker.UserId == userId)
+                                      .Select(j => new JobToDoVM
+                                             {
+                                                Id = j.Id,
+                                                TypeName = j.JobType.Name,
+                                                Description = j.Description ?? "",
+                                                Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
+                                                         j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
+                                                StartTime = j.StartTime,
+                                                CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
+                                                CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                                             })
+                                      .OrderBy(j => j.StartTime)
+                                      .ToListAsync();
         }
+
 
         public async Task<JobDetailsVM?> GetJobByIdAsync(string jobId, string workshopId)
         {

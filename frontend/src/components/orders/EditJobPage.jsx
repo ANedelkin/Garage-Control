@@ -26,28 +26,30 @@ const EditJobPage = ({ mechanicView = false }) => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                // If we don't have orderId in params, we must be in mechanic view /todo/:jobId
-                // We need to fetch the job first to get the orderId
-                let currentOrderId = paramOrderId;
+                let currentOrderId = paramOrderId;  // Get the orderId from URL params
                 let jobData = null;
 
                 if (isEdit) {
+                    // If it's editing, fetch the job data
                     jobData = await orderApi.getJob(jobId);
+
+                    // Map parts if available
                     if (jobData.parts) {
                         jobData.parts = jobData.parts.map(p => ({
                             ...p,
                             name: p.partName
                         }));
                     }
-                    if (!currentOrderId) {
-                        currentOrderId = jobData.orderId;
-                        setFetchedOrderId(currentOrderId);
+
+                    // If no orderId is provided via URL params, try fetching from jobData
+                    if (!currentOrderId && jobData.orderId) {
+                        currentOrderId = jobData.orderId;  // Use jobData's orderId
+                        setFetchedOrderId(currentOrderId); // Store it in state for later use
                     }
-                    setJob(jobData);
+
+                    setJob(jobData);  // Set the job data
                 } else {
-                    // logic for new job, which won't happen in mechanic view usually, but good to keep robust
                     if (!currentOrderId) {
-                        // This shouldn't happen based on routes, but if it does, we can't load order
                         console.error("No orderId provided for new job");
                     }
                     setJob({
@@ -63,21 +65,26 @@ const EditJobPage = ({ mechanicView = false }) => {
                     });
                 }
 
+                // Fetch other necessary data (job types, workers, parts)
                 const promises = [
                     request('GET', 'jobtype/all'),
                     request('GET', 'worker/all'),
                     partApi.getAllParts()
                 ];
 
+                // If we have a valid orderId (whether from params or jobData), fetch the order details
                 if (currentOrderId) {
-                    promises.push(orderApi.getOrder(currentOrderId));
+                    promises.push(orderApi.getOrder(currentOrderId));  // Only fetch order if orderId is available
                 }
 
                 const [jtData, workerData, partsData, orderData] = await Promise.all(promises);
 
+                // Set the fetched data to the state
                 setJobTypes(jtData);
                 setWorkers(workerData);
                 setAllParts(partsData);
+
+                // If order data exists, set it
                 if (orderData) setOrder(orderData);
 
             } catch (e) {
@@ -87,9 +94,9 @@ const EditJobPage = ({ mechanicView = false }) => {
                 setLoading(false);
             }
         };
+
         loadData();
     }, [paramOrderId, jobId, isEdit]);
-
     const updateJob = (sid, field, value) => {
         setJob(prev => ({ ...prev, [field]: value }));
     };

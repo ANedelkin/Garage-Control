@@ -175,24 +175,43 @@
     align-items: start;
 }
 
-.mechanic-layout .mechanic-left {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.mechanic-layout .description {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    box-sizing: border-box;
 }
 
 .mechanic-layout .mechanic-right {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
-.mechanic-layout .description {
-    height: 160px;
-    /* taller for reading description */
-    resize: none;
+.mechanic-layout .mechanic-left {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
 }
 
 .mechanic-layout select:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+/* .parts-table-wrapper table th,
+.parts-table-wrapper table td {
+    width: 120px;
+} */
+
+.mechanic-layout .mechanic-left select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.description {
+    height: 100%;
+    width: 100%;
+    resize: none;
+    box-sizing: border-box;
 }

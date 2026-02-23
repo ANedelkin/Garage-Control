@@ -105,17 +105,22 @@ const ServiceForm = ({
 
             <div className="tile-header">
                 <div className="header">
-                    <label>Job Type</label>
-                    <DropDown
-                        value={service.jobTypeId}
-                        onChange={e => handleChange('jobTypeId', e.target.value)}
-                        disabled={mechanicView}
-                    >
-                        <option value="">Select Type</option>
-                        {jobTypes.map(jt =>
-                            <option key={jt.id} value={jt.id}>{jt.name}</option>
-                        )}
-                    </DropDown>
+                    {/* Only render Job Type field if mechanicView is false */}
+                    {!mechanicView && (
+                        <div>
+                            <label>Job Type</label>
+                            <DropDown
+                                value={service.jobTypeId}
+                                onChange={e => handleChange('jobTypeId', e.target.value)}
+                                disabled={mechanicView}
+                            >
+                                <option value="">Select Type</option>
+                                {jobTypes.map(jt =>
+                                    <option key={jt.id} value={jt.id}>{jt.name}</option>
+                                )}
+                            </DropDown>
+                        </div>
+                    )}
                 </div>
 
                 {removeService && !mechanicView && (
@@ -129,9 +134,6 @@ const ServiceForm = ({
                 )}
             </div>
 
-            {/* ======================= */}
-            {/* FORM SECTION */}
-            {/* ======================= */}
 
             <div className={`service-form ${mechanicView ? 'mechanic-layout' : ''}`}>
 
@@ -188,7 +190,7 @@ const ServiceForm = ({
 
                         {/* RIGHT COLUMN */}
                         <div className="mechanic-right">
-                            <div className="form-section">
+                            <div className="form-section grow">
                                 <label>Description</label>
                                 <textarea
                                     className="description"
@@ -292,12 +294,12 @@ const ServiceForm = ({
                     <thead>
                         <tr>
                             <th>Part Name / Number</th>
-                            <th style={{ width: '80px' }}>Planned</th>
-                            <th style={{ width: '80px' }}>Sent</th>
-                            <th style={{ width: '80px' }}>Used</th>
-                            <th style={{ width: '80px' }}>Req</th>
+                            <th style={{ width: '100px' }}>Planned</th>
+                            <th style={{ width: '100px' }}>Sent</th>
+                            <th style={{ width: '100px' }}>Used</th>
+                            <th style={{ width: '100px' }}>Req</th>
                             <th style={{ width: '100px' }}>Unit Price</th>
-                            <th style={{ width: '100px' }}>Total</th>
+                            <th style={{ width: '150px' }}>Total</th>
                             <th style={{ width: '50px' }}></th>
                         </tr>
                     </thead>
@@ -387,9 +389,6 @@ const ServiceForm = ({
                 </table>
                 <div className="form-footer">
                     <button type="button" className="btn" onClick={addNewRow}>+ Add Part</button>
-                    <div style={{ fontSize: '0.8em', color: '#888', marginTop: '5px' }}>
-                        Planned: Stock or Worker. Sent: Stock only. Used/Req: Worker favored.
-                    </div>
                 </div>
             </div>
 
