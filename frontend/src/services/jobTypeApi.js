@@ -12,5 +12,8 @@ export const jobTypeApi = {
     },
     editJobType: async (id, jobTypeData) => {
         await request('PUT', `jobtype/edit/${id}`, jobTypeData);
+    },
+    deleteJobType: async (id) => {
+        await request('DELETE', `jobtype/${id}`);
     }
 }

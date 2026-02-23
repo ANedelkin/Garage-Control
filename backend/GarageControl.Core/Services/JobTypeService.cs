@@ -28,13 +28,12 @@ namespace GarageControl.Core.Services
             return await _repo.GetAllAsNoTracking<JobType>()
                 .Where(j => j.WorkshopId == workshopId)
                 .Include(j => j.Workers)
-                .ThenInclude(w => w.User)
                 .Select(j => new JobTypeVM
                 {
                     Id = j.Id,
                     Name = j.Name,
                     Description = j.Description,
-                    Mechanics = j.Workers.Select(w => w.User.UserName!).ToList()
+                    Mechanics = j.Workers.Select(w => w.Name).ToList()
                 })
                 .ToListAsync();
         }
@@ -51,11 +50,24 @@ namespace GarageControl.Core.Services
                 WorkshopId = workshopId
             };
 
+            if (model.Mechanics.Any())
+            {
+                var workers = await _repo.GetAll<Worker>()  // Remove AsNoTracking()
+                    .Where(w => w.WorkshopId == workshopId && model.Mechanics.Contains(w.Name))
+                    .ToListAsync();
+
+                foreach (var worker in workers)
+                {
+                    jobType.Workers.Add(worker);  // EF will track the workers properly now
+                }
+            }
+
             await _repo.AddAsync(jobType);
             await _repo.SaveChangesAsync();
 
             await _activityLogService.LogActionAsync(userId, workshopId, $"created Job Type <b>{jobType.Name}</b>");
         }
+
 
         public async Task Delete(string id, string userId)
         {
@@ -94,7 +106,10 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) throw new ArgumentException("User does not have a workshop");
 
-            var jobType = await _repo.GetByIdAsync<JobType>(id);
+            var jobType = await _repo.GetAll<JobType>()
+                .Include(j => j.Workers)
+                .FirstOrDefaultAsync(j => j.Id == id);
+
             if (jobType != null)
             {
                 var changes = new List<string>();
@@ -109,7 +124,18 @@ namespace GarageControl.Core.Services
 
                 jobType.Name = model.Name;
                 jobType.Description = model.Description;
-                
+
+                // Update workers
+                jobType.Workers.Clear();
+                var workers = await _repo.GetAll<Worker>()  // Remove AsNoTracking()
+                    .Where(w => w.WorkshopId == workshopId && model.Mechanics.Contains(w.Name))
+                    .ToListAsync();
+
+                foreach (var worker in workers)
+                {
+                    jobType.Workers.Add(worker);  // EF will track the workers properly now
+                }
+
                 await _repo.SaveChangesAsync();
 
                 if (changes.Count > 0)

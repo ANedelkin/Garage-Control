@@ -6,9 +6,9 @@ import { workerApi } from '../../services/workerApi.js';
 
 const EditJobType = () => {
   const { id } = useParams();
+  const isNew = !id || id === 'new';
   const navigate = useNavigate();
   const [jobTypeData, setJobTypeData] = useState(null);
-  const [isNew, setIsNew] = useState(id === '');
   const [newMechanic, setNewMechanic] = useState('');
   const [workers, setWorkers] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -46,7 +46,7 @@ const EditJobType = () => {
         mechanics: [],
       });
     }
-  }, []);
+  }, [id, isNew]);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
