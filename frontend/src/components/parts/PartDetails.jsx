@@ -59,6 +59,10 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             onUpdate();
             setIsDirty(false);
             setStockAdj('');
+
+            // Trigger notification refresh in header
+            window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
             // alert("Saved successfully");
         } catch (error) {
             console.error("Error saving part", error);

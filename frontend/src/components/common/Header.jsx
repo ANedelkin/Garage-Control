@@ -26,9 +26,20 @@ const Header = ({ onToggleSidebar }) => {
 
   useEffect(() => {
     fetchNotifications();
+
+    const handleRefresh = () => {
+      fetchNotifications();
+    };
+
+    window.addEventListener('refresh-notifications', handleRefresh);
+
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+
+    return () => {
+      window.removeEventListener('refresh-notifications', handleRefresh);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = async () => {

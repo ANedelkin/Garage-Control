@@ -132,6 +132,10 @@ const EditJobPage = ({ mechanicView = false }) => {
             } else {
                 await orderApi.createJob(orderId, payload);
             }
+
+            // Trigger notification refresh in header
+            window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
             if (mechanicView) {
                 navigate('/todo');
             } else {
