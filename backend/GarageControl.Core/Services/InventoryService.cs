@@ -113,6 +113,19 @@ namespace GarageControl.Core.Services
                         newBalance,
                         part.MinimumQuantity);
                 }
+                else if (wasLow && isLow && oldBalance != newBalance)
+                {
+                    await _notification.SendStockNotificationAsync(
+                        workshopId,
+                        part.Id,
+                        part.Name,
+                        newBalance,
+                        part.MinimumQuantity);
+                }
+                else if (wasLow && !isLow)
+                {
+                    await _notification.RemoveStockNotificationAsync(workshopId, part.Id);
+                }
             }
 
             await _context.SaveChangesAsync();

@@ -60,7 +60,7 @@ namespace GarageControl.Core.Services
 
         public async Task SendStockNotificationAsync(string workshopId, string partId, string partName, double currentBalance, double minQuantity)
         {
-            // Find all users with access to "Parts Stockpile" for this workshop
+            // Find all users with access to "Parts Stock" for this workshop
             var usersToNotify = await _context.Workers
                 .Where(w => w.WorkshopId == workshopId && w.Accesses.Any(a => a.Name == "Parts Stock"))
                 .Select(w => w.UserId)
@@ -77,20 +77,56 @@ namespace GarageControl.Core.Services
                 usersToNotify.Add(ownerId);
             }
 
+            var link = $"/parts?partId={partId}";
+            var existingNotifications = await _context.Notifications
+                .Where(n => usersToNotify.Contains(n.UserId) && n.Link == link)
+                .ToListAsync();
+
             foreach (var userId in usersToNotify)
             {
-                var notification = new Notification
+                var existing = existingNotifications
+                    .Where(n => n.UserId == userId)
+                    .OrderByDescending(n => n.CreatedAt)
+                    .FirstOrDefault();
+
+                var message = $"Part '{partName}' is low on stock (Available: {currentBalance}, Minimum: {minQuantity}).";
+
+                if (existing != null)
                 {
-                    UserId = userId,
-                    Message = $"Part '{partName}' is low on stock (Available: {currentBalance}, Minimum: {minQuantity}).",
-                    Link = $"/parts?partId={partId}",
-                    CreatedAt = DateTime.UtcNow,
-                    IsRead = false
-                };
-                _context.Notifications.Add(notification);
+                    existing.Message = message;
+                    existing.CreatedAt = DateTime.UtcNow;
+                    existing.IsRead = false;
+                }
+                else
+                {
+                    var notification = new Notification
+                    {
+                        UserId = userId,
+                        Message = message,
+                        Link = link,
+                        CreatedAt = DateTime.UtcNow,
+                        IsRead = false
+                    };
+                    _context.Notifications.Add(notification);
+                }
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveStockNotificationAsync(string workshopId, string partId)
+        {
+            var link = $"/parts?partId={partId}";
+            
+            var notificationsToDelete = await _context.Notifications
+                .Where(n => n.Link == link && n.Message.Contains("low on stock"))
+                .ToListAsync();
+
+            if (notificationsToDelete.Any())
+            {
+                _context.Notifications.RemoveRange(notificationsToDelete);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

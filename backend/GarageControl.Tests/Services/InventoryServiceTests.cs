@@ -37,7 +37,7 @@ namespace GarageControl.Tests.Services
             var part = new Part { Quantity = 10, AvailabilityBalance = 10, Name = "Test" };
 
             // Act
-            _service.SendParts(part, 3, JobStatus.InProgress);
+            _service.SendParts(part, 3);
 
             // Assert
             Assert.Equal(7, part.Quantity);
@@ -51,7 +51,7 @@ namespace GarageControl.Tests.Services
             var part = new Part { Quantity = 2, AvailabilityBalance = 2, Name = "Test" };
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => _service.SendParts(part, 3, JobStatus.InProgress));
+            Assert.Throws<InvalidOperationException>(() => _service.SendParts(part, 3));
         }
 
         [Fact]
@@ -66,6 +66,45 @@ namespace GarageControl.Tests.Services
 
             // Assert
             _mockNotification.Verify(x => x.SendStockNotificationAsync(workshopId, "p1", "Part", 1, 2), Times.Once);
+        }
+
+        [Fact]
+        public async Task RecalculateAvailabilityBalanceAsync_ShouldRemoveNotificationIfRecovered()
+        {
+            // Arrange
+            var workshopId = "w1";
+            var part = new Part { Id = "p1", Name = "Part", PartNumber = "PN1", Quantity = 10, AvailabilityBalance = 1, MinimumQuantity = 5, WorkshopId = workshopId };
+            _context.Parts.Add(part);
+            await _context.SaveChangesAsync();
+
+            // Initially Balance = 1 (<5), Quantity = 10. Outstanding must be 9 for Balance=1... wait, the logic uses Quantity - Outstanding.
+            // If there's no outstanding, newBalance = Quantity = 10.
+            // So oldBalance = 1 (wasLow), newBalance = 10 (!isLow).
+
+            // Act
+            await _service.RecalculateAvailabilityBalanceAsync(workshopId, "p1");
+
+            // Assert
+            _mockNotification.Verify(x => x.RemoveStockNotificationAsync(workshopId, "p1"), Times.Once);
+        }
+
+        [Fact]
+        public async Task RecalculateAvailabilityBalanceAsync_ShouldUpdateNotificationIfStillLowButChanged()
+        {
+            // Arrange
+            var workshopId = "w1";
+            var part = new Part { Id = "p1", Name = "Part", PartNumber = "PN1", Quantity = 4, AvailabilityBalance = 2, MinimumQuantity = 5, WorkshopId = workshopId };
+            _context.Parts.Add(part);
+            await _context.SaveChangesAsync();
+
+            // No outstanding, newBalance = Quantity = 4.
+            // oldBalance = 2, newBalance = 4, both < 5 and oldBalance != newBalance.
+
+            // Act
+            await _service.RecalculateAvailabilityBalanceAsync(workshopId, "p1");
+
+            // Assert
+            _mockNotification.Verify(x => x.SendStockNotificationAsync(workshopId, "p1", "Part", 4, 5), Times.Once);
         }
 
         [Fact]

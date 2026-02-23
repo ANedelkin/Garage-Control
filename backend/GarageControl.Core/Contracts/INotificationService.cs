@@ -9,5 +9,6 @@ namespace GarageControl.Core.Contracts
         Task MarkAsReadAsync(string notificationId, string userId);
         Task DeleteOldNotificationsAsync();
         Task SendStockNotificationAsync(string workshopId, string partId, string partName, double currentBalance, double minQuantity);
+        Task RemoveStockNotificationAsync(string workshopId, string partId);
     }
 }

@@ -64,7 +64,7 @@ namespace GarageControl.Tests.Services
         }
 
         [Fact]
-        public async Task SendStockNotificationAsync_ShouldNotifyWorkersAndOwner()
+        public async Task SendStockNotificationAsync_ShouldNotifyWorkersAndOwner_AndUpdatesExisting()
         {
             // Arrange
             var workshopId = "w1";
@@ -74,7 +74,7 @@ namespace GarageControl.Tests.Services
             var workshop = new Workshop { Id = workshopId, BossId = ownerId, Name = "W", Address = "123 Main St", PhoneNumber = "555-1234" };
             _context.Workshops.Add(workshop);
             
-            var access = new Access { Id = "a1", Name = "Parts Stockpile" };
+            var access = new Access { Id = "a1", Name = "Parts Stock" };
             _context.Accesses.Add(access);
             await _context.SaveChangesAsync();
             
@@ -86,14 +86,44 @@ namespace GarageControl.Tests.Services
             worker.Accesses.Add(access);
             await _context.SaveChangesAsync();
 
-            // Act
+            // Act 1: Initial creation
             await _service.SendStockNotificationAsync(workshopId, "p1", "Part A", 5, 10);
 
-            // Assert
+            // Assert 1
             var notifications = _context.Notifications.ToList();
             Assert.Equal(2, notifications.Count);
-            Assert.Contains(notifications, n => n.UserId == ownerId);
-            Assert.Contains(notifications, n => n.UserId == workerId);
+            Assert.Contains(notifications, n => n.UserId == ownerId && n.Message.Contains("5"));
+            Assert.Contains(notifications, n => n.UserId == workerId && n.Message.Contains("5"));
+
+            // Act 2: Update existing
+            await _service.SendStockNotificationAsync(workshopId, "p1", "Part A", 4, 10);
+
+            // Assert 2
+            notifications = _context.Notifications.ToList();
+            Assert.Equal(2, notifications.Count); // Count should still be 2
+            Assert.Contains(notifications, n => n.UserId == ownerId && n.Message.Contains("4"));
+            Assert.Contains(notifications, n => n.UserId == workerId && n.Message.Contains("4"));
+        }
+
+        [Fact]
+        public async Task RemoveStockNotificationAsync_ShouldDeleteMatchingNotifications()
+        {
+            // Arrange
+            _context.Notifications.AddRange(new List<Notification>
+            {
+                new Notification { Id = "n1", UserId = "u1", Message = "Part 'A' is low on stock (Available: 5, Minimum: 10).", Link = "/parts?partId=p1", CreatedAt = DateTime.UtcNow },
+                new Notification { Id = "n2", UserId = "u2", Message = "Part 'A' is low on stock (Available: 5, Minimum: 10).", Link = "/parts?partId=p1", CreatedAt = DateTime.UtcNow },
+                new Notification { Id = "n3", UserId = "u1", Message = "Other msg", Link = "/parts?partId=p2", CreatedAt = DateTime.UtcNow }
+            });
+            await _context.SaveChangesAsync();
+
+            // Act
+            await _service.RemoveStockNotificationAsync("w1", "p1");
+
+            // Assert
+            var remaining = _context.Notifications.ToList();
+            Assert.Single(remaining);
+            Assert.Equal("n3", remaining[0].Id);
         }
     }
 }
