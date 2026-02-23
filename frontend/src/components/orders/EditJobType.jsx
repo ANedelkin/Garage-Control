@@ -95,7 +95,7 @@ const EditJobType = () => {
             </div>
 
             <div className="form-right">
-              <div className="form-section max-height max-width">
+              <div className="form-section">
                 <label>Mechanics</label>
 
                 <div className="header">
@@ -121,33 +121,33 @@ const EditJobType = () => {
                   </button>
                 </div>
 
-                <div className="list-container max-height">
-                  {jobTypeData.mechanics.length === 0 ? (
-                    <div className="list-empty">
-                      No mechanics assigned
-                    </div>
-                  ) : (
-                    jobTypeData.mechanics.map((m, i) => {
-                      return (
-                        <div key={i} className="list-item">
-                          {m}
-                          <button
-                            type="button"
-                            className="btn delete icon-btn"
-                            onClick={() => {
-                              const updated = jobTypeData.mechanics.filter(
-                                (_, idx) => idx !== i
-                              );
-                              setJobTypeData({ ...jobTypeData, mechanics: updated });
-                            }}
-                          >
-                            <i className="fa-solid fa-trash"></i>
-                          </button>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
+              </div>
+              <div className="list-container max-height form-section">
+                {jobTypeData.mechanics.length === 0 ? (
+                  <div className="list-empty">
+                    No mechanics assigned
+                  </div>
+                ) : (
+                  jobTypeData.mechanics.map((m, i) => {
+                    return (
+                      <div key={i} className="list-item">
+                        {m}
+                        <button
+                          type="button"
+                          className="btn delete icon-btn"
+                          onClick={() => {
+                            const updated = jobTypeData.mechanics.filter(
+                              (_, idx) => idx !== i
+                            );
+                            setJobTypeData({ ...jobTypeData, mechanics: updated });
+                          }}
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
