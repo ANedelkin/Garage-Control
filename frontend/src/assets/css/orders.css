@@ -115,14 +115,8 @@
     z-index: 2000;
 }
 
-.popup-content {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    width: 90%;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    overflow: hidden;
-    animation: popupFadeIn 0.3s ease-out;
+.popup {
+    width: 350px;
 }
 
 @keyframes popupFadeIn {

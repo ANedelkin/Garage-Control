@@ -38,75 +38,74 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
 
     return (
         <div className="popup-overlay">
-            <div className="popup-content" style={{ maxWidth: '450px' }}>
-                <div className="popup-header">
+            <div className="popup tile">
+                <div className="section-header">
                     <h3>Order Details</h3>
-                    <button className="btn-close" onClick={onClose}>&times;</button>
+                    {/* <button className="btn icon-btn" onClick={onClose}>&times;</button> */}
                 </div>
-                <div className="popup-body">
-                    <div className="form-group" style={{ position: 'relative' }}>
-                        <label>Car:</label>
-                        <input
-                            type="text"
-                            placeholder="Search car..."
-                            value={carSearch}
-                            onChange={(e) => handleCarSearch(e.target.value)}
-                        />
-                        {suggestions.length > 0 && (
-                            <ul className="car-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', maxHeight: '150px', overflowY: 'auto' }}>
-                                {suggestions.map(c => (
-                                    <li key={c.id} onClick={() => selectCar(c)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}>
-                                        {c.registrationNumber} - {c.model.make.name} {c.model.name}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                    <div className="form-group">
-                        <label>Kilometers:</label>
-                        <input
-                            type="number"
-                            value={kilometers}
-                            onChange={(e) => setKilometers(e.target.value)}
-                        />
-                    </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                        <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
-                            {isDone ? 'Mark as Not Done' : 'Mark as Done'}
-                        </button>
-                        <button
-                            className="btn secondary"
-                            style={{ flex: 1 }}
-                            onClick={async () => {
-                                try {
-                                    const response = await request('get', 
-                                                                   `order/${order.id}/invoice`, 
-                                                                   null, 
-                                                                   {cache: 'no-store'});
+                <div className="form-section">
+                    <label>Car:</label>
+                    <input
+                        type="text"
+                        placeholder="Search car..."
+                        value={carSearch}
+                        onChange={(e) => handleCarSearch(e.target.value)}
+                    />
+                    {suggestions.length > 0 && (
+                        <ul className="car-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', maxHeight: '150px', overflowY: 'auto' }}>
+                            {suggestions.map(c => (
+                                <li key={c.id} onClick={() => selectCar(c)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}>
+                                    {c.registrationNumber} - {c.model.make.name} {c.model.name}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                <div className="form-section">
+                    <label>Kilometers:</label>
+                    <input
+                        type="number"
+                        value={kilometers}
+                        onChange={(e) => setKilometers(e.target.value)}
+                    />
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                    <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
+                        {isDone ? 'Mark as Not Done' : 'Mark as Done'}
+                    </button>
+                    <button
+                        className="btn secondary"
+                        style={{ flex: 1 }}
+                        onClick={async () => {
+                            try {
+                                const response = await request('get',
+                                    `order/${order.id}/invoice`,
+                                    null,
+                                    { cache: 'no-store' });
 
-                                    if (!response.ok) throw new Error('Failed to fetch invoice');
-                                    const blob = await response.blob();
-                                    const blobUrl = URL.createObjectURL(blob);
-                                    const printWindow = window.open(blobUrl, '_blank');
-                                    if (printWindow) {
-                                        printWindow.addEventListener('load', () => {
-                                            printWindow.focus();
-                                            printWindow.print();
-                                        });
-                                    }
-                                } catch (err) {
-                                    console.error(err);
-                                    alert('Failed to load invoice for printing.');
+                                if (!response.ok) throw new Error('Failed to fetch invoice');
+                                const blob = await response.blob();
+                                const blobUrl = URL.createObjectURL(blob);
+                                const printWindow = window.open(blobUrl, '_blank');
+                                if (printWindow) {
+                                    printWindow.addEventListener('load', () => {
+                                        printWindow.focus();
+                                        printWindow.print();
+                                    });
                                 }
-                            }}
-                        >
-                            Print Invoice
-                        </button>
-                    </div>
+                            } catch (err) {
+                                console.error(err);
+                                alert('Failed to load invoice for printing.');
+                            }
+                        }}
+                    >
+                        Print Invoice
+                    </button>
                 </div>
-                <div className="popup-footer">
-                    <button className="btn primary" onClick={handleSave}>Save Changes</button>
+                <div className="divider"></div>
+                <div className="form-footer">
+                    <button className="btn" onClick={handleSave}>Save Changes</button>
                     <button className="btn" onClick={onClose}>Cancel</button>
                 </div>
             </div>
