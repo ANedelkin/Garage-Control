@@ -46,44 +46,41 @@ const NotificationPopup = ({ notifications, onClose, onRefresh }) => {
 
     return (
         <div className="popup-overlay">
-            <div className="popup notification-popup" ref={popupRef}>
-                <div className="popup-header">
-                    <h2>Notifications</h2>
+            <div className="popup notification-popup tile" ref={popupRef}>
+                <div className="section-header">
+                    <h3>Notifications</h3>
                     <button className="icon-btn btn" onClick={onClose}>
                         <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <div className="popup-content">
-                    <div className="list-container">
-                        {notifications.length === 0 ? (
-                            <div className="empty-state">
-                                <i className="fa-solid fa-bell-slash"></i>
-                                <p>No notifications</p>
-                            </div>
-                        ) : (
-                            notifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    className={`list-item ${notification.isRead ? 'read' : 'unread'}`}
-                                    onClick={() => handleNotificationClick(notification)}
-                                    style={{ cursor: notification.link ? 'pointer' : 'default' }}
-                                >
-                                    <div className="notification-content">
-                                        <div className="notification-message">
-                                            {!notification.isRead && <span className="unread-dot"></span>}
-                                            {notification.message}
-                                        </div>
-                                        <div className="notification-time">
-                                            {formatDate(notification.createdAt)}
-                                        </div>
+                <div className="list-container">
+                    {notifications.length === 0 ? (
+                        <div className="empty-state">
+                            <i className="fa-solid fa-bell-slash"></i>
+                            <p>No notifications</p>
+                        </div>
+                    ) : (
+                        notifications.map((notification) => (
+                            <div
+                                key={notification.id}
+                                className={`list-item ${notification.isRead ? 'read' : 'unread'}`}
+                                onClick={() => handleNotificationClick(notification)}
+                            >
+                                <div className="notification-content">
+                                    <div className="">
+                                        {!notification.isRead && <span className="unread-dot"></span>}
+                                        {notification.message}
                                     </div>
-                                    {notification.link && (
-                                        <i className="fa-solid fa-chevron-right"></i>
-                                    )}
+                                    <div className="notification-time">
+                                        {formatDate(notification.createdAt)}
+                                    </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                                {notification.link && (
+                                    <i className="fa-solid fa-chevron-right"></i>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

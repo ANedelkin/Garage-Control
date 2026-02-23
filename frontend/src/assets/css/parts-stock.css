@@ -33,7 +33,7 @@
 }
 
 .list-container {
-    overflow: hidden;
+    /* overflow: hidden; */
     /* Hide overflow on container */
     display: flex;
     flex-direction: column;
