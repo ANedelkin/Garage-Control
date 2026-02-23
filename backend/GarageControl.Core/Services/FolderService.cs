@@ -67,24 +67,23 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            result.Parts = new List<PartVM>();
-            foreach (var p in await partsQuery.ToListAsync())
+            var parts = await partsQuery.ToListAsync();
+            var partIds = parts.Select(p => p.Id).ToList();
+            var partsToSendDict = await _inventoryService.GetPartsToSendAsync(workshopId, partIds);
+
+            result.Parts = parts.Select(p => new PartVM
             {
-                var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
-                result.Parts.Add(new PartVM
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PartNumber = p.PartNumber,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    AvailabilityBalance = p.AvailabilityBalance,
-                    PartsToSend = toSend,
-                    MinimumQuantity = p.MinimumQuantity,
-                    ParentId = p.ParentId,
-                    DeficitStatus = p.DeficitStatus
-                });
-            }
+                Id = p.Id,
+                Name = p.Name,
+                PartNumber = p.PartNumber,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                AvailabilityBalance = p.AvailabilityBalance,
+                PartsToSend = partsToSendDict.GetValueOrDefault(p.Id),
+                MinimumQuantity = p.MinimumQuantity,
+                ParentId = p.ParentId,
+                DeficitStatus = p.DeficitStatus
+            }).ToList();
 
             return result;
         }

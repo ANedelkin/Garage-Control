@@ -37,68 +37,77 @@ namespace GarageControl.Core.Services
 
         public async Task<List<PartVM>> GetAllPartsAsync(string workshopId)
         {
-            return await _context.Parts
+            var parts = await _context.Parts
+                .AsNoTracking()
                 .Where(p => p.WorkshopId == workshopId)
-                .Select(p => new PartVM
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PartNumber = p.PartNumber,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    AvailabilityBalance = p.AvailabilityBalance,
-                    PartsToSend = p.JobParts
-                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
-                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
-                    MinimumQuantity = p.MinimumQuantity,
-                    ParentId = p.ParentId,
-                    DeficitStatus = p.DeficitStatus
-                })
                 .ToListAsync();
+
+            var partIds = parts.Select(p => p.Id).ToList();
+            var partsToSendDict = await _inventoryService.GetPartsToSendAsync(workshopId, partIds);
+
+            return parts.Select(p => new PartVM
+            {
+                Id = p.Id,
+                Name = p.Name,
+                PartNumber = p.PartNumber,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                AvailabilityBalance = p.AvailabilityBalance,
+                PartsToSend = partsToSendDict.GetValueOrDefault(p.Id),
+                MinimumQuantity = p.MinimumQuantity,
+                ParentId = p.ParentId,
+                DeficitStatus = p.DeficitStatus
+            }).ToList();
         }
 
         public async Task<PartVM?> GetPartByIdAsync(string partId, string workshopId)
         {
-            return await _context.Parts
-                .Where(p => p.Id == partId && p.WorkshopId == workshopId)
-                .Select(p => new PartVM
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PartNumber = p.PartNumber,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    AvailabilityBalance = p.AvailabilityBalance,
-                    PartsToSend = p.JobParts
-                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
-                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
-                    MinimumQuantity = p.MinimumQuantity,
-                    ParentId = p.ParentId,
-                    DeficitStatus = p.DeficitStatus
-                })
-                .FirstOrDefaultAsync();
+            var p = await _context.Parts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+
+            if (p == null) return null;
+
+            var toSend = await _inventoryService.GetPartsToSendAsync(p.Id);
+
+            return new PartVM
+            {
+                Id = p.Id,
+                Name = p.Name,
+                PartNumber = p.PartNumber,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                AvailabilityBalance = p.AvailabilityBalance,
+                PartsToSend = toSend,
+                MinimumQuantity = p.MinimumQuantity,
+                ParentId = p.ParentId,
+                DeficitStatus = p.DeficitStatus
+            };
         }
 
         public async Task<List<PartVM>> GetPartsByFolderAsync(string? folderId, string workshopId)
         {
-            return await _context.Parts
+            var parts = await _context.Parts
+                .AsNoTracking()
                 .Where(p => p.WorkshopId == workshopId && p.ParentId == folderId)
-                .Select(p => new PartVM
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PartNumber = p.PartNumber,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    AvailabilityBalance = p.AvailabilityBalance,
-                    PartsToSend = p.JobParts
-                        .Where(jp => jp.SentQuantity < jp.PlannedQuantity)
-                        .Sum(jp => jp.PlannedQuantity - jp.SentQuantity),
-                    MinimumQuantity = p.MinimumQuantity,
-                    ParentId = p.ParentId,
-                    DeficitStatus = p.DeficitStatus
-                })
                 .ToListAsync();
+
+            var partIds = parts.Select(p => p.Id).ToList();
+            var partsToSendDict = await _inventoryService.GetPartsToSendAsync(workshopId, partIds);
+
+            return parts.Select(p => new PartVM
+            {
+                Id = p.Id,
+                Name = p.Name,
+                PartNumber = p.PartNumber,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                AvailabilityBalance = p.AvailabilityBalance,
+                PartsToSend = partsToSendDict.GetValueOrDefault(p.Id),
+                MinimumQuantity = p.MinimumQuantity,
+                ParentId = p.ParentId,
+                DeficitStatus = p.DeficitStatus
+            }).ToList();
         }
 
         public async Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM model)

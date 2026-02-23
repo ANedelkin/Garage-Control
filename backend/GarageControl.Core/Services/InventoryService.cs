@@ -38,15 +38,35 @@ namespace GarageControl.Core.Services
             part.AvailabilityBalance += quantity;
         }
 
-        public async Task<double> GetPartsToSendAsync(string partId)
+        public async Task<int> GetPartsToSendAsync(string partId)
         {
-            // Sum of (planned - sent)
+            // Sum of (planned - sent) for a single part, excluding Done jobs
             return await _context.JobParts
                 .Where(jp =>
                     jp.PartId == partId &&
                     jp.Job.Status != JobStatus.Done &&
                     jp.PlannedQuantity > jp.SentQuantity)
                 .SumAsync(jp => jp.PlannedQuantity - jp.SentQuantity);
+        }
+
+        public async Task<Dictionary<string, int>> GetPartsToSendAsync(string workshopId, IEnumerable<string> partIds)
+        {
+            if (partIds == null || !partIds.Any())
+                return new Dictionary<string, int>();
+
+            return await _context.JobParts
+                .Where(jp =>
+                    partIds.Contains(jp.PartId) &&
+                    jp.Job.JobType.WorkshopId == workshopId &&
+                    jp.Job.Status != JobStatus.Done &&
+                    jp.PlannedQuantity > jp.SentQuantity)
+                .GroupBy(jp => jp.PartId)
+                .Select(g => new
+                {
+                    PartId = g.Key,
+                    Outstanding = g.Sum(x => x.PlannedQuantity - x.SentQuantity)
+                })
+                .ToDictionaryAsync(x => x.PartId, x => x.Outstanding);
         }
         public async Task CheckLowStockAsync(string workshopId, Part part)
         {
@@ -78,7 +98,7 @@ namespace GarageControl.Core.Services
             // Prevent N+1 queries by fetching all outstanding quantities at once
             var outstandingDict = await _context.JobParts
                 .Where(jp =>
-                    jp.Job.Order.Car.Owner.WorkshopId == workshopId &&
+                    jp.Job.JobType.WorkshopId == workshopId &&
                     jp.Job.Status != JobStatus.Done &&
                     jp.PlannedQuantity > jp.SentQuantity)
                 .GroupBy(jp => jp.PartId)
