@@ -84,7 +84,7 @@ namespace GarageControl.Core.Services
                     Id = j.Id,
                     Name = j.Name,
                     Description = j.Description,
-                    Mechanics = j.Workers.Select(w => w.User.UserName!).ToList()
+                    Mechanics = j.Workers.Select(w => w.Name).ToList()
                 })
                 .FirstOrDefaultAsync();
         }

@@ -1,13 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
+import { workerApi } from '../../services/workerApi.js';
 
 const EditJobType = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [jobTypeData, setJobTypeData] = useState(null);
   const [isNew, setIsNew] = useState(id === '');
   const [newMechanic, setNewMechanic] = useState('');
+  const [workers, setWorkers] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef(null);
+
+  useEffect(() => {
+    workerApi.getWorkers()
+      .then(res => setWorkers(res))
+      .catch(err => console.error("Error fetching workers:", err));
+
+    const handleClickOutside = (event) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!isNew) {
@@ -31,22 +50,33 @@ const EditJobType = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    jobTypeApi.editJobType(id, jobTypeData)
+    const action = isNew ? jobTypeApi.addJobType(jobTypeData) : jobTypeApi.editJobType(id, jobTypeData);
+
+    action
       .then(() => navigate('/job-types'))
       .catch(error => {
-        console.error("Error saving job type", error);
+        console.error("Error saving job type:", error);
         alert(error.message || "Failed to save job type");
       });
   };
 
+  const handleAddMechanic = (mechanicName) => {
+    const name = mechanicName || newMechanic;
+    if (!name.trim()) return;
 
-  const handleAddMechanic = () => {
-    if (newMechanic.trim() === '') return;
+    // Prevent duplicates
+    if (jobTypeData.mechanics.includes(name.trim())) {
+      setNewMechanic('');
+      setShowSuggestions(false);
+      return;
+    }
+
     setJobTypeData({
       ...jobTypeData,
-      mechanics: [...jobTypeData.mechanics, newMechanic.trim()],
+      mechanics: [...jobTypeData.mechanics, name.trim()],
     });
     setNewMechanic('');
+    setShowSuggestions(false);
   };
 
   const handleDeleteMechanic = (index) => {
@@ -98,24 +128,46 @@ const EditJobType = () => {
               <div className="form-section">
                 <label>Mechanics</label>
 
-                <div className="header">
+                <div className="header suggestion-wrapper">
                   <input
                     type="text"
                     placeholder="Enter mechanic name"
                     value={newMechanic}
-                    onChange={(e) => setNewMechanic(e.target.value)}
+                    onChange={(e) => {
+                      setNewMechanic(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddMechanic();
+                      }
+                    }}
                   />
+                  {showSuggestions && newMechanic.trim() !== '' && (
+                    <div className="suggestions-list" ref={suggestionsRef}>
+                      {workers
+                        .filter(w =>
+                          w.name.toLowerCase().includes(newMechanic.toLowerCase()) &&
+                          !jobTypeData.mechanics.includes(w.name)
+                        )
+                        .map(worker => (
+                          <div
+                            key={worker.id}
+                            className="suggestion-item"
+                            onClick={() => handleAddMechanic(worker.name)}
+                          >
+                            {worker.name}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )}
                   <button
                     type="button"
                     className="btn"
-                    onClick={() => {
-                      if (!newMechanic.trim()) return;
-                      setJobTypeData({
-                        ...jobTypeData,
-                        mechanics: [...jobTypeData.mechanics, newMechanic.trim()],
-                      });
-                      setNewMechanic('');
-                    }}
+                    onClick={() => handleAddMechanic()}
                   >
                     Add
                   </button>
@@ -131,7 +183,7 @@ const EditJobType = () => {
                   jobTypeData.mechanics.map((m, i) => {
                     return (
                       <div key={i} className="list-item">
-                        {m}
+                        <span className="item-label">{m}</span>
                         <button
                           type="button"
                           className="btn delete icon-btn"
