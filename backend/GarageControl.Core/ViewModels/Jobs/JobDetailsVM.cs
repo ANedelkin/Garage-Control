@@ -12,6 +12,10 @@ namespace GarageControl.Core.ViewModels.Jobs
         public decimal LaborCost { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public string OrderId { get; set; } = null!;
+        public string ClientName { get; set; } = null!;
+        public string CarName { get; set; } = null!;
+        public string CarRegistrationNumber { get; set; } = null!;
         public List<JobPartDetailsVM> Parts { get; set; } = new List<JobPartDetailsVM>();
     }
 }

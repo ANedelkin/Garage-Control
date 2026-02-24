@@ -132,6 +132,10 @@ namespace GarageControl.Core.Services.Jobs
                     LaborCost = j.LaborCost,
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
+                    OrderId = j.OrderId,
+                    ClientName = j.Order.Car.Owner.Name,
+                    CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
+                    CarRegistrationNumber = j.Order.Car.RegistrationNumber,
                     Parts = j.JobParts.Select(jp => new JobPartDetailsVM
                     {
                         PartId = jp.PartId,

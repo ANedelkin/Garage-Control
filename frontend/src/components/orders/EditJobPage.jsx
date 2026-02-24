@@ -41,13 +41,20 @@ const EditJobPage = ({ mechanicView = false }) => {
                         }));
                     }
 
-                    // If no orderId is provided via URL params, try fetching from jobData
+                    // Set the fetched order details from jobData
+                    setOrder({
+                        clientName: jobData.clientName,
+                        carName: jobData.carName,
+                        carRegistrationNumber: jobData.carRegistrationNumber
+                    });
+
+                    // If no orderId is provided via URL params, use jobData's orderId
                     if (!currentOrderId && jobData.orderId) {
-                        currentOrderId = jobData.orderId;  // Use jobData's orderId
-                        setFetchedOrderId(currentOrderId); // Store it in state for later use
+                        currentOrderId = jobData.orderId;
+                        setFetchedOrderId(currentOrderId);
                     }
 
-                    setJob(jobData);  // Set the job data
+                    setJob(jobData);
                 } else {
                     if (!currentOrderId) {
                         console.error("No orderId provided for new job");
@@ -72,9 +79,9 @@ const EditJobPage = ({ mechanicView = false }) => {
                     partApi.getAllParts()
                 ];
 
-                // If we have a valid orderId (whether from params or jobData), fetch the order details
-                if (currentOrderId) {
-                    promises.push(orderApi.getOrder(currentOrderId));  // Only fetch order if orderId is available
+                // If it's a NEW job, fetch the order details separately
+                if (!isEdit && currentOrderId) {
+                    promises.push(orderApi.getOrder(currentOrderId));
                 }
 
                 const [jtData, workerData, partsData, orderData] = await Promise.all(promises);
@@ -84,7 +91,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 setWorkers(workerData);
                 setAllParts(partsData);
 
-                // If order data exists, set it
+                // If order data was fetched (for new jobs), set it
                 if (orderData) setOrder(orderData);
 
             } catch (e) {
