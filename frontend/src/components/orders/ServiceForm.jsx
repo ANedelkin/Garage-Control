@@ -97,7 +97,18 @@ const ServiceForm = ({
 
     const updatePartRow = (partIndex, field, val) => {
         const newParts = [...service.parts];
-        newParts[partIndex] = { ...newParts[partIndex], [field]: val };
+        let clampedVal = val;
+
+        const p = newParts[partIndex];
+        if (field === 'plannedQuantity') {
+            clampedVal = Math.max(val, p.sentQuantity || 0);
+        } else if (field === 'sentQuantity') {
+            clampedVal = Math.max(Math.min(val, p.plannedQuantity || 0), p.usedQuantity || 0);
+        } else if (field === 'usedQuantity') {
+            clampedVal = Math.min(val, p.sentQuantity || 0);
+        }
+
+        newParts[partIndex] = { ...p, [field]: clampedVal };
         updateService(service.id, 'parts', newParts);
     };
 
@@ -352,7 +363,7 @@ const ServiceForm = ({
                                             type="number"
                                             className={sentError ? 'input-error' : ''}
                                             value={p.plannedQuantity}
-                                            min={0}
+                                            min={p.sentQuantity || 0}
                                             onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
                                             disabled={mechanicView || (!hasStockAccess && !isAssignedWorker)}
                                             title={(mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
@@ -363,7 +374,8 @@ const ServiceForm = ({
                                             type="number"
                                             className={usedError ? 'input-error' : ''}
                                             value={p.sentQuantity}
-                                            min={0}
+                                            min={p.usedQuantity || 0}
+                                            max={p.plannedQuantity || 0}
                                             onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
                                             disabled={mechanicView || !hasStockAccess}
                                             title={(mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
@@ -374,6 +386,7 @@ const ServiceForm = ({
                                             type="number"
                                             value={p.usedQuantity}
                                             min={0}
+                                            max={p.sentQuantity || 0}
                                             onChange={e => updatePartRow(i, 'usedQuantity', parseFloat(e.target.value))}
                                             disabled={!isAssignedWorker}
                                             title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
