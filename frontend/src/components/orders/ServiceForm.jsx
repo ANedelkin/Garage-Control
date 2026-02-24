@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { partApi } from '../../services/partApi';
-import DropDown from '../common/Dropdown';
+import PartTransferPopup from './PartTransferPopup';
+import DropDown from '../common/DropDown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 import '../../assets/css/common/status.css';
 
@@ -19,6 +19,7 @@ const ServiceForm = ({
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
+    const [transferInfo, setTransferInfo] = useState({ isOpen: false, partIndex: null });
 
     const { user, accesses } = useAuth();
     const hasStockAccess = accesses.includes('Parts Stock');
@@ -97,6 +98,18 @@ const ServiceForm = ({
     const updatePartRow = (partIndex, field, val) => {
         const newParts = [...service.parts];
         newParts[partIndex] = { ...newParts[partIndex], [field]: val };
+        updateService(service.id, 'parts', newParts);
+    };
+
+    const handleTransfer = (partIndex, transferQty) => {
+        const newParts = [...service.parts];
+        const p = newParts[partIndex];
+        const updatedPart = {
+            ...p,
+            plannedQuantity: (p.plannedQuantity || 0) + transferQty,
+            requestedQuantity: (p.requestedQuantity || 0) - transferQty
+        };
+        newParts[partIndex] = updatedPart;
         updateService(service.id, 'parts', newParts);
     };
 
@@ -297,7 +310,7 @@ const ServiceForm = ({
                             <th style={{ width: '100px' }}>Planned</th>
                             <th style={{ width: '100px' }}>Sent</th>
                             <th style={{ width: '100px' }}>Used</th>
-                            <th style={{ width: '100px' }}>Req</th>
+                            <th style={{ width: '140px' }}>Req</th>
                             <th style={{ width: '100px' }}>Unit Price</th>
                             <th style={{ width: '150px' }}>Total</th>
                             <th style={{ width: '50px' }}></th>
@@ -363,13 +376,26 @@ const ServiceForm = ({
                                         />
                                     </td>
                                     <td>
-                                        <input
-                                            type="number"
-                                            value={p.requestedQuantity}
-                                            onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
-                                            disabled={!isAssignedWorker}
-                                            title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                        />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <input
+                                                type="number"
+                                                value={p.requestedQuantity}
+                                                onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
+                                                disabled={!isAssignedWorker}
+                                                title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                style={{ flex: 1 }}
+                                            />
+                                            {p.requestedQuantity > 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="btn icon-btn"
+                                                    onClick={() => setTransferInfo({ isOpen: true, partIndex: i })}
+                                                    title="Transfer to Planned"
+                                                >
+                                                    <i className="fa-solid fa-plus"></i>
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                     <td>
                                         {p.price.toFixed(2)}
@@ -392,6 +418,13 @@ const ServiceForm = ({
                 </div>
             </div>
 
+            <PartTransferPopup
+                isOpen={transferInfo.isOpen}
+                onClose={() => setTransferInfo({ isOpen: false, partIndex: null })}
+                onConfirm={(qty) => handleTransfer(transferInfo.partIndex, qty)}
+                maxQuantity={transferInfo.partIndex !== null ? service.parts[transferInfo.partIndex].requestedQuantity : 0}
+                partName={transferInfo.partIndex !== null ? service.parts[transferInfo.partIndex].name : ''}
+            />
         </div>
     );
 };
