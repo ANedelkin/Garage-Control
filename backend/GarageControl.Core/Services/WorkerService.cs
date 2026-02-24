@@ -73,8 +73,8 @@ namespace GarageControl.Core.Services
                 Leaves = allLeaves.Where(l => l.WorkerId == w.Id).Select(l => new WorkerLeaveVM
                 {
                     Id = l.Id,
-                    StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue),
-                    EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue)
+                    StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                    EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
                 }).ToList()
             });
         }
@@ -229,8 +229,8 @@ namespace GarageControl.Core.Services
                 Leaves = leaves.Select(l => new WorkerLeaveVM
                 {
                     Id = l.Id,
-                    StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue),
-                    EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue)
+                    StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                    EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
                 }).ToList()
             };
         }
@@ -413,8 +413,8 @@ namespace GarageControl.Core.Services
             
             foreach(var l in model.Leaves)
             {
-                var startDate = DateOnly.FromDateTime(l.StartDate);
-                var endDate = DateOnly.FromDateTime(l.EndDate);
+                var startDate = DateOnly.FromDateTime(l.StartDate.AddHours(12));
+                var endDate = DateOnly.FromDateTime(l.EndDate.AddHours(12));
                 
                 var existing = oldLeaves.FirstOrDefault(ol => ol.StartDate == startDate && ol.EndDate == endDate);
                 if (existing != null)
