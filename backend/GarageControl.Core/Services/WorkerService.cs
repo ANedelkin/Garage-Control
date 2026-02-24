@@ -293,8 +293,18 @@ namespace GarageControl.Core.Services
                 
                 if (!string.IsNullOrEmpty(model.Password))
                 {
-                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                    await _userManager.ResetPasswordAsync(user, token, model.Password);
+                    var removeResult = await _userManager.RemovePasswordAsync(user);
+                    if (!removeResult.Succeeded)
+                    {
+                        throw new Exception(string.Join(", ", removeResult.Errors.Select(e => e.Description)));
+                    }
+
+                    var addResult = await _userManager.AddPasswordAsync(user, model.Password);
+                    if (!addResult.Succeeded)
+                    {
+                        throw new Exception(string.Join(", ", addResult.Errors.Select(e => e.Description)));
+                    }
+                    
                     changes.Add("password");
                 }
 
