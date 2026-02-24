@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PartTransferPopup from './PartTransferPopup';
-import DropDown from '../common/DropDown';
+import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 import '../../assets/css/common/status.css';
 
@@ -307,12 +307,13 @@ const ServiceForm = ({
                     <thead>
                         <tr>
                             <th>Part Name / Number</th>
-                            <th style={{ width: '100px' }}>Planned</th>
-                            <th style={{ width: '100px' }}>Sent</th>
-                            <th style={{ width: '100px' }}>Used</th>
+                            <th style={{ width: '90px' }}>Planned</th>
+                            <th style={{ width: '90px' }}>Sent</th>
+                            <th style={{ width: '90px' }}>Used</th>
                             <th style={{ width: '140px' }}>Req</th>
                             <th style={{ width: '100px' }}>Unit Price</th>
-                            <th style={{ width: '150px' }}>Total</th>
+                            <th style={{ width: '130px' }}>Total Projected</th>
+                            <th style={{ width: '130px' }}>Total Spent</th>
                             <th style={{ width: '50px' }}></th>
                         </tr>
                     </thead>
@@ -351,6 +352,7 @@ const ServiceForm = ({
                                             type="number"
                                             className={sentError ? 'input-error' : ''}
                                             value={p.plannedQuantity}
+                                            min={0}
                                             onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
                                             disabled={mechanicView || (!hasStockAccess && !isAssignedWorker)}
                                             title={(mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
@@ -361,6 +363,7 @@ const ServiceForm = ({
                                             type="number"
                                             className={usedError ? 'input-error' : ''}
                                             value={p.sentQuantity}
+                                            min={0}
                                             onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
                                             disabled={mechanicView || !hasStockAccess}
                                             title={(mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
@@ -370,6 +373,7 @@ const ServiceForm = ({
                                         <input
                                             type="number"
                                             value={p.usedQuantity}
+                                            min={0}
                                             onChange={e => updatePartRow(i, 'usedQuantity', parseFloat(e.target.value))}
                                             disabled={!isAssignedWorker}
                                             title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
@@ -380,25 +384,28 @@ const ServiceForm = ({
                                             <input
                                                 type="number"
                                                 value={p.requestedQuantity}
+                                                min={0}
                                                 onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
                                                 disabled={!isAssignedWorker}
                                                 title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                 style={{ flex: 1 }}
                                             />
-                                            {p.requestedQuantity > 0 && (
-                                                <button
-                                                    type="button"
-                                                    className="btn icon-btn"
-                                                    onClick={() => setTransferInfo({ isOpen: true, partIndex: i })}
-                                                    title="Transfer to Planned"
-                                                >
-                                                    <i className="fa-solid fa-plus"></i>
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                className="btn icon-btn"
+                                                disabled={!p.requestedQuantity}
+                                                onClick={() => setTransferInfo({ isOpen: true, partIndex: i })}
+                                                title="Transfer to Planned"
+                                            >
+                                                <i className="fa-solid fa-plus"></i>
+                                            </button>
                                         </div>
                                     </td>
                                     <td>
                                         {p.price.toFixed(2)}
+                                    </td>
+                                    <td>
+                                        {(p.plannedQuantity * p.price).toFixed(2)}
                                     </td>
                                     <td>
                                         {(p.usedQuantity * p.price).toFixed(2)}

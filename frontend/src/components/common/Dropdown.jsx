@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../assets/css/common/dropdown.css';
 
-const Dropdown = ({ children, value, onChange, title, className = "", disabled = false }) => {
+const DropDown = ({ children, value, onChange, title, className = "", disabled = false }) => {
     return (
         <div className={`select-wrapper ${className}`}>
             <select value={value} onChange={onChange} title={title} disabled={disabled}>
@@ -12,4 +12,4 @@ const Dropdown = ({ children, value, onChange, title, className = "", disabled =
     );
 };
 
-export default Dropdown;
+export default DropDown;

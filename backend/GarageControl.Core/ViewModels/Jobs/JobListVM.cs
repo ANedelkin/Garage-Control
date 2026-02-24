@@ -10,5 +10,6 @@ namespace GarageControl.Core.ViewModels.Jobs
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public decimal LaborCost { get; set; }
+        public decimal PartsCost { get; set; }
     }
 }

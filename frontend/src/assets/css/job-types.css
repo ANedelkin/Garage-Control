@@ -27,9 +27,13 @@
   opacity: 0.85;
 }
 
+.job-type-edit .form-left {
+  width: 480px;
+}
+
 .job-type-edit .form-left,
 .job-type-edit .form-right {
-  flex: 1;
+  /* flex: 1; */
   display: flex;
   flex-direction: column;
 }

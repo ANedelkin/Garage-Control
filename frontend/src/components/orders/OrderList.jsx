@@ -200,7 +200,7 @@ const OrderList = ({ mode = 'active' }) => {
                                                 <td>{formatDate(job.startTime)}</td>
                                                 <td>{job.type}</td>
                                                 <td>{job.mechanicName}</td>
-                                                <td>&euro; {(parseFloat(job.laborCost || 0)).toFixed(2)}</td>
+                                                <td>&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
                                                 <td onClick={e => e.stopPropagation()}>
                                                     <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
                                                         <i className="fa-solid fa-trash"></i>

@@ -32,26 +32,20 @@ const PartTransferPopup = ({ isOpen, onClose, onConfirm, maxQuantity, partName }
                     <h3>Transfer to Planned</h3>
                 </div>
                 <div className="form-section">
-                    <p style={{ marginBottom: '10px', color: 'var(--text-secondary)' }}>
-                        How many units of <b>{partName}</b> would you like to transfer from Requested to Planned?
-                    </p>
-                    <div className="form-group">
-                        <label>Quantity (Max: {maxQuantity})</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
-                            max={maxQuantity}
-                            min={1}
-                            step="any"
-                            autoFocus
-                        />
-                    </div>
+                    <label>Quantity</label>
+                    <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        max={maxQuantity}
+                        min={1}
+                        step="any"
+                        autoFocus
+                    />
                 </div>
                 <div className="form-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                    <button className="btn primary" onClick={handleConfirm} style={{ flex: 1 }}>Transfer</button>
-                    <button className="btn secondary" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
+                    <button className="btn" onClick={handleConfirm}>Transfer</button>
+                    <button className="btn" onClick={onClose}>Cancel</button>
                 </div>
             </div>
         </div>

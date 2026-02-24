@@ -64,6 +64,7 @@ namespace GarageControl.Core.Services
                         j.StartTime,
                         j.EndTime,
                         j.LaborCost,
+                        PartsCost = j.JobParts.Sum(jp => (decimal)jp.UsedQuantity * jp.Price)
                     }).ToList()
                 })
                 .ToListAsync();
@@ -88,6 +89,7 @@ namespace GarageControl.Core.Services
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
                     LaborCost = j.LaborCost,
+                    PartsCost = j.PartsCost,
                 }).ToList()
             }).ToList();
         }
