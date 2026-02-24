@@ -198,7 +198,6 @@ namespace GarageControl.Core.Services
             await _context.SaveChangesAsync();
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-            await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
 
             await _activityLogger.LogPartUpdatedAsync(
                 userId,

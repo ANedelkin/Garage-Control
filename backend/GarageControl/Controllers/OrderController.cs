@@ -81,8 +81,12 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var order = await _orderService.CreateOrderAsync(GetUserId(), GetWorkshopId(), model);
-                return Ok(order);
+                var result = await _orderService.CreateOrderAsync(GetUserId(), GetWorkshopId(), model);
+                if (result is MethodResponseVM resp && !resp.Success)
+                {
+                    return BadRequest(new { message = resp.Message });
+                }
+                return Ok(result);
             }
             catch (Exception ex)
             {

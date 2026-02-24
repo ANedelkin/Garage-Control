@@ -190,7 +190,7 @@ namespace GarageControl.Core.Services
                     }
                     else
                     {
-                        return new { orderId = order.Id, success = false, message = $"Insufficient availability for part '{part.Name}'" };
+                        return new MethodResponseVM(false, $"Insufficient availability for part '{part.Name}'");
                     }
 
                     if (part.Quantity >= partModel.SentQuantity)
@@ -199,7 +199,7 @@ namespace GarageControl.Core.Services
                     }
                     else
                     {
-                        return new { orderId = order.Id, success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                        return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
                     }
 
                     await _context.SaveChangesAsync();
@@ -219,7 +219,7 @@ namespace GarageControl.Core.Services
             string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
             await _activityLogger.LogOrderCreatedAsync(userId, workshopId, carInfo);
 
-            return new { orderId = order.Id, message = "Order created successfully" };
+            return new MethodResponseVM(true, "Order created successfully", new { orderId = order.Id });
         }
 
         public async Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model)
@@ -234,7 +234,7 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null)
-                return new { success = false, message = "Order not found." };
+                return new MethodResponseVM(false, "Order not found.");
 
             var changes = new List<ActivityPropertyChange>();
             if (order.Kilometers != model.Kilometers)
@@ -267,7 +267,7 @@ namespace GarageControl.Core.Services
                             var sentDelta = partModel.SentQuantity - existingJobPart.SentQuantity;
 
                             if (part.Quantity < sentDelta)
-                                return new { success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                                return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
 
                             part.Quantity -= sentDelta;
 
@@ -282,7 +282,7 @@ namespace GarageControl.Core.Services
                         else
                         {
                             if (part.Quantity < partModel.SentQuantity)
-                                return new { success = false, message = $"Insufficient stock for part '{part.Name}'" };
+                                return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
 
                             part.Quantity -= partModel.SentQuantity;
 
@@ -334,7 +334,7 @@ namespace GarageControl.Core.Services
             string carInfo = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
             await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, carInfo, changes);
 
-            return new { orderId = order.Id, message = "Order updated successfully" };
+            return new MethodResponseVM(true, "Order updated successfully", new { orderId = order.Id });
         }
 
         public async Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id)

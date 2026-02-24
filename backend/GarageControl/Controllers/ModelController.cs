@@ -52,7 +52,7 @@ namespace GarageControl.Controllers
              try
              {
                  await _modelService.UpdateModel(id, model, userId!);
-                 return Ok(new { success = true });
+                 return Ok();
              }
              catch(UnauthorizedAccessException)
              {

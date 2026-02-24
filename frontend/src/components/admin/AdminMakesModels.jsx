@@ -113,11 +113,9 @@ const AdminMakesModels = () => {
             if (!window.confirm(`Delete coverage for ${node.name}?`)) return;
             try {
                 if (type === 'group') {
-                    const res = await makeApi.deleteMake(node.id);
-                    if (!res.success) throw new Error("Failed");
+                    await makeApi.deleteMake(node.id);
                 } else {
-                    const res = await modelApi.deleteModel(node.id);
-                    if (!res.success) throw new Error("Failed");
+                    await modelApi.deleteModel(node.id);
                 }
                 onSuccess();
             } catch (e) {

@@ -11,13 +11,16 @@ namespace GarageControl.Core.Services
     {
         private readonly GarageControlDbContext _context;
         private readonly INotificationService _notification;
+        private readonly IDeficitService _deficitService;
 
         public InventoryService(
             GarageControlDbContext context,
-            INotificationService notification)
+            INotificationService notification,
+            IDeficitService deficitService)
         {
             _context = context;
             _notification = notification;
+            _deficitService = deficitService;
         }
 
         // No async needed because no awaits
@@ -146,6 +149,8 @@ namespace GarageControl.Core.Services
                 {
                     await _notification.RemoveStockNotificationAsync(workshopId, part.Id);
                 }
+
+                await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
             }
 
             await _context.SaveChangesAsync();
