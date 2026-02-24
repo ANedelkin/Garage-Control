@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _modelService.CreateModel(model, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _modelService.DeleteModel(id, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (UnauthorizedAccessException)
             {
@@ -82,7 +82,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _modelService.MergeModelWithGlobal(request.CustomModelId, request.GlobalModelId, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (UnauthorizedAccessException ex)
             {

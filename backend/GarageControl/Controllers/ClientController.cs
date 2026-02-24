@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _clientService.Create(model, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace GarageControl.Controllers
              if (!ModelState.IsValid) return BadRequest(ModelState);
              var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
              await _clientService.Edit(id, model, userId!);
-             return Ok(new { success = true });
+             return Ok();
         }
 
         [HttpDelete("{id}")]
@@ -66,7 +66,7 @@ namespace GarageControl.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _clientService.Delete(id, userId!);
-            return Ok(new { success = true });
+            return Ok();
         }
     }
 }

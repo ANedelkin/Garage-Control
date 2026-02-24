@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
             try
             {
                 var id = await _makeService.CreateMake(model, userId);
-                return Ok(new { success = true, id });
+                return Ok(new { id });
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> PromoteSource([FromBody] PromoteRequest request)
         {
              await _makeService.PromoteSuggestion(request.Name, request.NewName);
-             return Ok(new { success = true });
+             return Ok();
         }
 
         [HttpDelete("{id}")]
@@ -91,7 +91,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _makeService.DeleteMake(id, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (UnauthorizedAccessException)
             {
@@ -104,7 +104,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> PromoteModel([FromBody] PromoteModelRequest request)
         {
             await _makeService.PromoteModelSuggestion(request.MakeName, request.ModelName, request.NewModelName, request.NewMakeName);
-            return Ok(new { success = true });
+            return Ok();
         }
 
         [HttpPost("merge-with-global")]
@@ -114,7 +114,7 @@ namespace GarageControl.Controllers
             try
             {
                 await _makeService.MergeMakeWithGlobal(request.CustomMakeId, request.GlobalMakeId, userId);
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (UnauthorizedAccessException ex)
             {

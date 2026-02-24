@@ -176,7 +176,7 @@ namespace GarageControl.Controllers
                 {
                     return BadRequest(new { message = result.Message });
                 }
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -194,7 +194,7 @@ namespace GarageControl.Controllers
                 {
                     return BadRequest(new { message = result.Message });
                 }
-                return Ok(new { success = true });
+                return Ok();
             }
             catch (Exception ex)
             {

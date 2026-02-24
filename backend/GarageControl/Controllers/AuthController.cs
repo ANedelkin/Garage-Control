@@ -30,7 +30,7 @@ namespace GarageControl.Controllers
             }
 
             var result = await _authService.SignUp(model);
-            return Ok(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost("login")]
@@ -46,9 +46,10 @@ namespace GarageControl.Controllers
             if (result.Success)
             {
                 await _authService.SetAuthCookies(Response, result);
+                return Ok(result);
             }
 
-            return Ok(result);
+            return Unauthorized(result);
         }
 
         [HttpPost("logout")]
@@ -56,14 +57,14 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Logout()
         {
             await _authService.LogOut(Request, Response);
-            return Ok(new { Success = true, Message = "Logged out successfully" });
+            return Ok(new { Message = "Logged out successfully" });
         }
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken()
         {
             var result = await _authService.RefreshToken(Request, Response);
-            return Ok(result);
+            return result.Success ? Ok(result) : Unauthorized(result);
         }
         [HttpGet("google")]
         public async Task<IActionResult> Google()
@@ -80,12 +81,12 @@ namespace GarageControl.Controllers
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
             if (!result.Succeeded)
-                return BadRequest(new { Success = false, Message = "Google authentication failed" });
+                return BadRequest(new { Message = "Google authentication failed" });
 
             var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
 
             if (email == null)
-                return BadRequest(new { Success = false, Message = "Email not provided by Google" });
+                return BadRequest(new { Message = "Email not provided by Google" });
 
             var userExists = await _authService.UserExists(email);
 
@@ -116,7 +117,7 @@ namespace GarageControl.Controllers
                 return Redirect(frontendRedirectUri);
             }
 
-            return BadRequest(new { Success = false, Message = response.Message });
+            return BadRequest(new { Message = response.Message });
         }
     }
 }

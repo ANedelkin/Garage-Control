@@ -44,14 +44,12 @@ const AdminWorkshops = () => {
 
     const performToggleBlock = async (workshopId, reason = null) => {
         try {
-            const result = await adminApi.toggleWorkshopBlock(workshopId, reason);
-            if (result.success) {
-                setWorkshops(workshops.map(w =>
-                    w.id === workshopId
-                        ? { ...w, isBlocked: !w.isBlocked }
-                        : w
-                ));
-            }
+            await adminApi.toggleWorkshopBlock(workshopId, reason);
+            setWorkshops(workshops.map(w =>
+                w.id === workshopId
+                    ? { ...w, isBlocked: !w.isBlocked }
+                    : w
+            ));
             setIsJustifyOpen(false);
             setSelectedWorkshopId(null);
         } catch (err) {

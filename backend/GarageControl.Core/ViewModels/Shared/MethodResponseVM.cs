@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GarageControl.Core.ViewModels.Shared
 {
     public class MethodResponseVM
@@ -11,6 +13,7 @@ namespace GarageControl.Core.ViewModels.Shared
             Token = token;
             RefreshToken = refreshToken;
         }
+        [JsonIgnore]
         public bool Success { get; set; }
         public string? Message { get; set; }
         public object? Data { get; set; }

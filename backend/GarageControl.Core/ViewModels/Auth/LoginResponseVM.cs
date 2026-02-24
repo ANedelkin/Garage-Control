@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GarageControl.Core.ViewModels.Auth
 {
     public class LoginResponseVM
@@ -17,7 +19,6 @@ namespace GarageControl.Core.ViewModels.Auth
         {
             return new
             {
-                Success,
                 Message,
                 Accesses,
                 HasWorkshop,
@@ -26,6 +27,7 @@ namespace GarageControl.Core.ViewModels.Auth
             };
         }
     
+        [JsonIgnore]
         public bool Success { get; set; }
         public string Token { get; set; }
         public string RefreshToken { get; set; }

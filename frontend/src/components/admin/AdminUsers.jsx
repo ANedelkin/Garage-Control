@@ -45,14 +45,12 @@ const AdminUsers = () => {
 
     const performToggleBlock = async (userId, reason = null) => {
         try {
-            const result = await adminApi.toggleUserBlock(userId, reason);
-            if (result.success) {
-                setUsers(users.map(u =>
-                    u.id === userId
-                        ? { ...u, isBlocked: !u.isBlocked }
-                        : u
-                ));
-            }
+            await adminApi.toggleUserBlock(userId, reason);
+            setUsers(users.map(u =>
+                u.id === userId
+                    ? { ...u, isBlocked: !u.isBlocked }
+                    : u
+            ));
             setIsJustifyOpen(false);
             setSelectedUserId(null);
         } catch (err) {

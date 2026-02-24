@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 try {
                     const data = await authApi.refreshToken();
-                    if (data && data.success) {
+                    if (data) {
                         setLoggedIn(true);
                         localStorage.setItem('LoggedIn', 'true');
                         if (data.accesses) {
