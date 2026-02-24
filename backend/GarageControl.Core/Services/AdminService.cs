@@ -75,7 +75,7 @@ namespace GarageControl.Core.Services
             return result;
         }
 
-        public async Task<MethodResponseVM> ToggleUserBlockAsync(string userId)
+        public async Task<MethodResponseVM> ToggleUserBlockAsync(string userId, string? reason = null)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
@@ -87,12 +87,16 @@ namespace GarageControl.Core.Services
             {
                 // Block for 100 years
                 await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+                user.BlockReason = reason;
+                await _userManager.UpdateAsync(user);
                 return new MethodResponseVM(true, "User blocked successfully");
             }
             else
             {
                 // Unblock
                 await _userManager.SetLockoutEndDateAsync(user, null);
+                user.BlockReason = null;
+                await _userManager.UpdateAsync(user);
                 return new MethodResponseVM(true, "User unblocked successfully");
             }
         }
@@ -113,7 +117,7 @@ namespace GarageControl.Core.Services
             }).ToList();
         }
 
-        public async Task<MethodResponseVM> ToggleWorkshopBlockAsync(string workshopId)
+        public async Task<MethodResponseVM> ToggleWorkshopBlockAsync(string workshopId, string? reason = null)
         {
             var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
             if (workshop == null)
@@ -122,6 +126,7 @@ namespace GarageControl.Core.Services
             }
 
             workshop.IsBlocked = !workshop.IsBlocked;
+            workshop.BlockReason = workshop.IsBlocked ? reason : null;
             await _repo.SaveChangesAsync();
 
             return new MethodResponseVM(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");

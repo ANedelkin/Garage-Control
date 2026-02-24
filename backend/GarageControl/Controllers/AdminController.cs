@@ -26,9 +26,9 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("users/{userId}/toggle-block")]
-        public async Task<IActionResult> ToggleUserBlock(string userId)
+        public async Task<IActionResult> ToggleUserBlock(string userId, [FromQuery] string? reason)
         {
-            var result = await _adminService.ToggleUserBlockAsync(userId);
+            var result = await _adminService.ToggleUserBlockAsync(userId, reason);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -40,9 +40,9 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("workshops/{workshopId}/toggle-block")]
-        public async Task<IActionResult> ToggleWorkshopBlock(string workshopId)
+        public async Task<IActionResult> ToggleWorkshopBlock(string workshopId, [FromQuery] string? reason)
         {
-            var result = await _adminService.ToggleWorkshopBlockAsync(workshopId);
+            var result = await _adminService.ToggleWorkshopBlockAsync(workshopId, reason);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

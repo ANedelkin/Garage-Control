@@ -84,7 +84,14 @@ namespace GarageControl.Core.Services
                 return new LoginResponseVM(false, "Invalid credentials");
 
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
-                return new LoginResponseVM(false, "Your account has been blocked. Please contact the administrator.");
+            {
+                string message = "Your account has been blocked. Please contact the administrator.";
+                if (!string.IsNullOrEmpty(user.BlockReason))
+                {
+                    message += $" Justification: {user.BlockReason}";
+                }
+                return new LoginResponseVM(false, message);
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -96,7 +103,12 @@ namespace GarageControl.Core.Services
                     var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
                     if (workshop != null && workshop.IsBlocked)
                     {
-                        return new LoginResponseVM(false, "This workshop has been blocked by an administrator.");
+                        string message = "This workshop has been blocked by an administrator.";
+                        if (!string.IsNullOrEmpty(workshop.BlockReason))
+                        {
+                            message += $" Justification: {workshop.BlockReason}";
+                        }
+                        return new LoginResponseVM(false, message);
                     }
                 }
             }
@@ -137,7 +149,14 @@ namespace GarageControl.Core.Services
                 return new LoginResponseVM(false, "Refresh token expired");
 
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
-                return new LoginResponseVM(false, "Your account has been blocked.");
+            {
+                string message = "Your account has been blocked.";
+                if (!string.IsNullOrEmpty(user.BlockReason))
+                {
+                    message += $" Justification: {user.BlockReason}";
+                }
+                return new LoginResponseVM(false, message);
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             var workshopId = await GetUserWorkshopId(user.Id);
@@ -147,7 +166,12 @@ namespace GarageControl.Core.Services
                 var workshop = await _repo.GetByIdAsync<Workshop>(workshopId);
                 if (workshop != null && workshop.IsBlocked)
                 {
-                    return new LoginResponseVM(false, "This workshop has been blocked by an administrator.");
+                    string message = "This workshop has been blocked by an administrator.";
+                    if (!string.IsNullOrEmpty(workshop.BlockReason))
+                    {
+                        message += $" Justification: {workshop.BlockReason}";
+                    }
+                    return new LoginResponseVM(false, message);
                 }
             }
 

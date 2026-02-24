@@ -11,5 +11,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public Worker? Worker { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpiry { get; set; }
+        public string? BlockReason { get; set; }
     }
 }

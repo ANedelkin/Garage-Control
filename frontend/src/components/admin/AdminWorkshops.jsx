@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
+import JustificationPopup from '../common/JustificationPopup';
 import '../../assets/css/admin-users.css'; // Reuse scoped styles
 
 const AdminWorkshops = () => {
@@ -9,6 +10,8 @@ const AdminWorkshops = () => {
     const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [isJustifyOpen, setIsJustifyOpen] = useState(false);
+    const [selectedWorkshopId, setSelectedWorkshopId] = useState(null);
 
     useEffect(() => {
         fetchWorkshops();
@@ -28,9 +31,20 @@ const AdminWorkshops = () => {
         }
     };
 
-    const handleToggleBlock = async (workshopId) => {
+    const handleToggleBlock = async (workshop) => {
+        if (!workshop.isBlocked) {
+            // Opening block popup
+            setSelectedWorkshopId(workshop.id);
+            setIsJustifyOpen(true);
+        } else {
+            // Direct unblock
+            await performToggleBlock(workshop.id);
+        }
+    };
+
+    const performToggleBlock = async (workshopId, reason = null) => {
         try {
-            const result = await adminApi.toggleWorkshopBlock(workshopId);
+            const result = await adminApi.toggleWorkshopBlock(workshopId, reason);
             if (result.success) {
                 setWorkshops(workshops.map(w =>
                     w.id === workshopId
@@ -38,6 +52,8 @@ const AdminWorkshops = () => {
                         : w
                 ));
             }
+            setIsJustifyOpen(false);
+            setSelectedWorkshopId(null);
         } catch (err) {
             console.error('Error toggling workshop block status:', err);
             alert(err.message || 'Failed to update workshop status');
@@ -115,7 +131,7 @@ const AdminWorkshops = () => {
                                     <td style={{ textAlign: 'center', height: '61px' }}>
                                         <button
                                             className={`status-btn btn ${w.isBlocked ? 'admin-blocked' : 'admin-active'}`}
-                                            onClick={() => handleToggleBlock(w.id)}
+                                            onClick={() => handleToggleBlock(w)}
                                         >
                                             {w.isBlocked ? 'Blocked' : 'Active'}
                                         </button>
@@ -128,6 +144,14 @@ const AdminWorkshops = () => {
             </div>
 
             <footer>GarageFlow — Workshops Management</footer>
+
+            <JustificationPopup
+                isOpen={isJustifyOpen}
+                onClose={() => setIsJustifyOpen(false)}
+                onConfirm={(reason) => performToggleBlock(selectedWorkshopId, reason)}
+                title="Block Workshop"
+                message="Please provide a reason for blocking this workshop."
+            />
         </main>
     );
 };

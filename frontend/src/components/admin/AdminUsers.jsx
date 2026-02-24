@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
+import JustificationPopup from '../common/JustificationPopup';
 import '../../assets/css/admin-users.css';
 
 const AdminUsers = () => {
@@ -10,6 +11,8 @@ const AdminUsers = () => {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [isJustifyOpen, setIsJustifyOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -29,16 +32,29 @@ const AdminUsers = () => {
         }
     };
 
-    const handleToggleBlock = async (userId) => {
+    const handleToggleBlock = async (user) => {
+        if (!user.isBlocked) {
+            // Opening block popup
+            setSelectedUserId(user.id);
+            setIsJustifyOpen(true);
+        } else {
+            // Direct unblock
+            await performToggleBlock(user.id);
+        }
+    };
+
+    const performToggleBlock = async (userId, reason = null) => {
         try {
-            const result = await adminApi.toggleUserBlock(userId);
+            const result = await adminApi.toggleUserBlock(userId, reason);
             if (result.success) {
-                setUsers(users.map(user =>
-                    user.id === userId
-                        ? { ...user, isBlocked: !user.isBlocked }
-                        : user
+                setUsers(users.map(u =>
+                    u.id === userId
+                        ? { ...u, isBlocked: !u.isBlocked }
+                        : u
                 ));
             }
+            setIsJustifyOpen(false);
+            setSelectedUserId(null);
         } catch (err) {
             console.error('Error toggling block status:', err);
             alert(err.message || 'Failed to update user status');
@@ -125,7 +141,7 @@ const AdminUsers = () => {
                                         {user.role !== 'Admin' && (
                                             <button
                                                 className={`status-btn btn ${user.isBlocked ? 'admin-blocked' : 'admin-active'}`}
-                                                onClick={() => handleToggleBlock(user.id)}
+                                                onClick={() => handleToggleBlock(user)}
                                             >
                                                 {user.isBlocked ? 'Blocked' : 'Active'}
                                             </button>
@@ -139,6 +155,14 @@ const AdminUsers = () => {
             </div>
 
             <footer>GarageFlow — Users Management</footer>
+
+            <JustificationPopup
+                isOpen={isJustifyOpen}
+                onClose={() => setIsJustifyOpen(false)}
+                onConfirm={(reason) => performToggleBlock(selectedUserId, reason)}
+                title="Block User"
+                message="Please provide a reason for blocking this user."
+            />
         </main>
     );
 };
