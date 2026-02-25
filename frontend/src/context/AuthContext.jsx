@@ -97,8 +97,25 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('HasWorkshop');
     };
 
+    const refreshAuth = async () => {
+        try {
+            const data = await authApi.refreshToken();
+            if (data) {
+                if (data.accesses) {
+                    setAccesses(data.accesses);
+                }
+                if (data.userId || data.workerId) {
+                    setUser({ id: data.userId, workerId: data.workerId });
+                }
+                return data;
+            }
+        } catch (e) {
+            console.error("Manual auth refresh failed", e);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ accesses, user, loggedIn, loading, login, logout }}>
+        <AuthContext.Provider value={{ accesses, user, loggedIn, loading, login, logout, refreshAuth }}>
             {children}
         </AuthContext.Provider>
     );

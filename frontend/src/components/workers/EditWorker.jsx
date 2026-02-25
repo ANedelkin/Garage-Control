@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "../../assets/css/common/popup.css";
 import "../../assets/css/common/layout.css";
 import "../../assets/css/common/colors.css";
@@ -13,6 +14,7 @@ import ScheduleSelector from "./ScheduleSelector";
 const EditWorker = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, refreshAuth } = useAuth();
   const isNew = !id || id === 'new';
 
   const [worker, setWorker] = useState({
@@ -74,6 +76,11 @@ const EditWorker = () => {
     try {
       console.log(worker);
       await workerApi.edit(id, worker);
+
+      if (user && user.workerId === id) {
+        await refreshAuth();
+      }
+
       navigate('/workers');
     } catch (error) {
       console.error("Error saving worker", error);
