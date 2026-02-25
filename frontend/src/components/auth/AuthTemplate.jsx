@@ -22,6 +22,10 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
         e.preventDefault();
         window.location.href = 'https://localhost:5173/api/auth/google';
     };
+    const handleMicrosoft = async (e) => {
+        e.preventDefault();
+        window.location.href = 'https://localhost:5173/api/auth/microsoft';
+    }
 
     return (
         <main className="background">
@@ -63,7 +67,7 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
                                 <img src={GoogleIcon} alt="Google" />
                                 Continue with Google
                             </button>
-                            <button type="button" className="btn" onClick={handlers?.handleMicrosoft}>
+                            <button type="button" className="btn" onClick={handleMicrosoft}>
                                 <img src={MicrosoftIcon} alt="Microsoft" />
                                 Continue with Microsoft
                             </button>

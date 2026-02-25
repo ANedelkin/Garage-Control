@@ -10,6 +10,7 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using GarageControl.Core.Services.Jobs;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +66,23 @@ builder.Services.AddAuthentication(o =>
     o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
 })
+.AddOpenIdConnect("Microsoft", options =>
+{
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+
+    options.ClientId = builder.Configuration["Microsoft:ClientId"];
+    options.ClientSecret = builder.Configuration["Microsoft:ClientSecret"];
+    options.CallbackPath = builder.Configuration["Microsoft:CallbackPath"];
+
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+
+    var tenantId = builder.Configuration["Microsoft:TenantId"];
+    options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
+
+    options.ResponseType = "code";
+})
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["Google:ClientId"];
@@ -84,7 +102,7 @@ builder.Services.AddAuthentication(o =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
-    
+
     o.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
