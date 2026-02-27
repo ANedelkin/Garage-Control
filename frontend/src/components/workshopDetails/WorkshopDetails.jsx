@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import WorkshopDetailsForm from './WorkshopDetailsForm.jsx';
 import { workshopApi } from '../../services/workshopApi.js';
 
-const WorkshopDetails = () => {
+const WorkshopDetails = ({ onClose }) => {
     const [workshopDetails, setWorkshopDetails] = useState(null);
 
-    const handleSubmit = (e, formData) => {
+    const handleSubmit = async (e, formData) => {
         e.preventDefault();
-        workshopApi.edit(formData);
+        await workshopApi.edit(formData);
+        if (onClose) onClose();
     };
 
     useEffect(() => {
@@ -21,9 +22,7 @@ const WorkshopDetails = () => {
     }, []);
 
     return (
-        <main className="main workshop-details">
-            <WorkshopDetailsForm handleSubmit={handleSubmit} initialData={workshopDetails} />
-        </main>
+        <WorkshopDetailsForm handleSubmit={handleSubmit} initialData={workshopDetails} />
     );
 };
 

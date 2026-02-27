@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../assets/css/service-details.css';
+import '../../assets/css/workshop-details.css';
 import { workshopApi } from '../../services/workshopApi.js';
 
 const WorkshopDetailsForm = ({ handleSubmit, initialData = null }) => {
@@ -18,68 +18,65 @@ const WorkshopDetailsForm = ({ handleSubmit, initialData = null }) => {
     }
 
     return (
-        <div className="tile">
-            <h3 className="tile-header">Workshop Information</h3>
-            <form onSubmit={handleFormSubmit}>
-                <div className="form-section">
-                    <label htmlFor="name">Workshop Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        placeholder="Enter workshop name"
-                        value={workshopData ? workshopData.name : ''}
-                        onChange={(e) => setWorkshopData({ ...workshopData, name: e.target.value })}
-                        required
-                    />
-                </div>
-                <div className="form-section">
-                    <label htmlFor="address">Address</label>
-                    <input
-                        type="text"
-                        id="address"
-                        placeholder="Enter address"
-                        value={workshopData ? workshopData.address : ''}
-                        onChange={(e) => setWorkshopData({ ...workshopData, address: e.target.value })}
-                        required
-                    />
-                </div>
-                <div className="form-section">
-                    <label htmlFor="registrationNumber">Registration Number</label>
-                    <input
-                        type="text"
-                        id="registrationNumber"
-                        placeholder="Enter registration number"
-                        value={workshopData ? workshopData.registrationNumber : ''}
-                        onChange={(e) => setWorkshopData({ ...workshopData, registrationNumber: e.target.value })}
-                        required
-                    />
-                </div>
-                <div className="form-section">
-                    <label htmlFor="phoneNumber">Phone Number</label>
-                    <input
-                        type="tel"
-                        id="phoneNumber"
-                        placeholder="Enter phone number"
-                        value={workshopData ? workshopData.phoneNumber : ''}
-                        onChange={(e) => setWorkshopData({ ...workshopData, phoneNumber: e.target.value })}
-                        required
-                    />
-                </div>
-                <div className="form-section">
-                    <label htmlFor="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Enter email"
-                        value={workshopData ? workshopData.email : ''}
-                        onChange={(e) => setWorkshopData({ ...workshopData, email: e.target.value })}
-                    />
-                </div>
-                <div className="form-footer">
-                    <button type="submit" className="btn">Done</button>
-                </div>
-            </form>
-        </div>
+        <form onSubmit={handleFormSubmit} className="workshop-details-form">
+            <div className="form-section">
+                <label htmlFor="name">Workshop Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Enter workshop name"
+                    value={workshopData ? workshopData.name : ''}
+                    onChange={(e) => setWorkshopData({ ...workshopData, name: e.target.value })}
+                    required
+                />
+            </div>
+            <div className="form-section">
+                <label htmlFor="address">Address</label>
+                <input
+                    type="text"
+                    id="address"
+                    placeholder="Enter address"
+                    value={workshopData ? workshopData.address : ''}
+                    onChange={(e) => setWorkshopData({ ...workshopData, address: e.target.value })}
+                    required
+                />
+            </div>
+            <div className="form-section">
+                <label htmlFor="registrationNumber">Registration Number</label>
+                <input
+                    type="text"
+                    id="registrationNumber"
+                    placeholder="Enter registration number"
+                    value={workshopData ? workshopData.registrationNumber : ''}
+                    onChange={(e) => setWorkshopData({ ...workshopData, registrationNumber: e.target.value })}
+                    required
+                />
+            </div>
+            <div className="form-section">
+                <label htmlFor="phoneNumber">Phone Number</label>
+                <input
+                    type="tel"
+                    id="phoneNumber"
+                    placeholder="Enter phone number"
+                    value={workshopData ? workshopData.phoneNumber : ''}
+                    onChange={(e) => setWorkshopData({ ...workshopData, phoneNumber: e.target.value })}
+                    required
+                />
+            </div>
+            <div className="form-section">
+                <label htmlFor="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter email"
+                    value={workshopData ? workshopData.email : ''}
+                    onChange={(e) => setWorkshopData({ ...workshopData, email: e.target.value })}
+                />
+            </div>
+            <div className="form-footer">
+                <button type="submit" className="btn">Done</button>
+            </div>
+        </form>
     );
 };
 

@@ -30,6 +30,7 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
+import Popup from './components/common/Popup.jsx';
 import AccessDenied from './components/common/AccessDenied.jsx';
 
 import { authApi } from './services/authApi';
@@ -43,9 +44,7 @@ const PrivateRoute = ({ children, access }) => {
   }
 
   const hasWorkshop = localStorage.getItem('HasWorkshop');
-  if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
-    return <Navigate to="/workshop-details-initial" />;
-  }
+  // Removed redirection to /workshop-details-initial
 
   if (access) {
     if (!accesses.includes(access)) {
@@ -59,6 +58,11 @@ const PrivateRoute = ({ children, access }) => {
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { accesses, loading } = useAuth();
+  const [hasWorkshop, setHasWorkshop] = useState(localStorage.getItem('HasWorkshop') !== 'false');
+
+  useEffect(() => {
+    setHasWorkshop(localStorage.getItem('HasWorkshop') !== 'false');
+  }, [loading]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -112,7 +116,6 @@ function App() {
         { path: '/:id', element: <EditClient /> }
       ]
     },
-    { path: '/workshop-details', element: <WorkshopDetails />, children: [], access: 'Workshop Details' },
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
     { path: '/activity-log', element: <ActivityLog />, children: [], access: 'Activity Log' },
@@ -141,10 +144,6 @@ function App() {
             </PrivateRoute>
           } />
 
-          <Route path="/workshop-details-initial" element={<PrivateRoute>
-            <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-            <WorkshopDetailsInitial />
-          </PrivateRoute>} />
 
           {routes.map((route, i) => (
             <>
@@ -187,6 +186,14 @@ function App() {
 
         </Routes>
       </BrowserRouter>
+
+      <Popup
+        isOpen={!hasWorkshop && !loading && localStorage.getItem('token')}
+        onClose={() => { }}
+        title="Workshop Information"
+      >
+        <WorkshopDetailsInitial onClose={() => setHasWorkshop(true)} />
+      </Popup>
     </>
   );
 }

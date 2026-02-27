@@ -5,21 +5,18 @@ import ThemeToggle from '../common/ThemeToggle.jsx';
 import WorkshopDetailsForm from './WorkshopDetailsForm.jsx';
 import { workshopApi } from '../../services/workshopApi.js';
 
-const WorkshopDetailsInitial = () => {
+const WorkshopDetailsInitial = ({ onClose }) => {
     const navigate = useNavigate();
-    const handleSubmit = (e, formData) => {
+    const handleSubmit = async (e, formData) => {
         e.preventDefault();
-        workshopApi.create(formData);
+        await workshopApi.create(formData);
+        localStorage.setItem('HasWorkshop', 'true');
+        if (onClose) onClose();
         navigate('/');
     };
 
     return (
-        <div className="work-area">
-            <main className="main workshop-details">
-                <ThemeToggle className="theme-toggle" />
-                <WorkshopDetailsForm handleSubmit={handleSubmit} />
-            </main>
-        </div>
+        <WorkshopDetailsForm handleSubmit={handleSubmit} />
     );
 };
 

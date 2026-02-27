@@ -15,7 +15,8 @@ const SignUpPage = () => {
 
         try {
             await authApi.register(formData.email, formData.password);
-            navigate('/workshop-details-initial');
+            localStorage.setItem('HasWorkshop', 'false'); // Ensure popup shows up
+            navigate('/');
         } catch (err) {
             setError(err.message);
         } finally {

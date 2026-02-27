@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';
+import Popup from './Popup';
+import WorkshopDetails from '../workshopDetails/WorkshopDetails';
 
 const Sidebar = ({ open, onClose, accesses = [] }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -27,7 +29,7 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/done-orders', icon: 'fa-clipboard-check', label: 'Done Orders', access: 'Orders' },
     { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
     { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
-    { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
+    { icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details', popup: true, popupComponent: WorkshopDetails },
     { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', access: 'Admin Dashboard' },
     { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', access: 'Admin Makes and Models' },
     { path: '/admin/users', icon: 'fa-users', label: 'Users', access: 'Admin Users' },
@@ -51,28 +53,56 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     return accesses.includes(item.access);
   });
 
+  const [ActivePopup, setActivePopup] = useState(null);
+
   return (
     <>
       <div className={`sidebar-overlay ${open ? 'show' : ''}`} onClick={onClose}></div>
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <nav>
           {filteredNavItems.map((item, index) => (
-            item.divider ? <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
-              <Link
-                key={index}
-                to={item.path}
-                className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
-                onClick={onClose}
-              >
-                <div className="horizontal">
-                  <i className={`fa-solid ${item.icon}`}></i>
-                  <span>{item.label}</span>
+            item.divider ? //Divider
+              <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
+              item.popup ? ( //Popup
+                <div
+                  key={index}
+                  className="nav-item list-item"
+                  onClick={() => {
+                    setActivePopup(() => item.popupComponent);
+                    onClose();
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="horizontal">
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
                 </div>
-              </Link>
+              ) : ( //Link
+                <Link
+                  key={index}
+                  to={item.path}
+                  className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
+                  onClick={onClose}
+                >
+                  <div className="horizontal">
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
+                </Link>
+              )
           ))}
         </nav>
         <ThemeToggle />
       </aside>
+
+      <Popup
+        isOpen={!!ActivePopup}
+        onClose={() => setActivePopup(null)}
+        title={filteredNavItems.find(i => i.popupComponent === ActivePopup)?.label}
+      >
+        {ActivePopup && <ActivePopup onClose={() => setActivePopup(null)} />}
+      </Popup>
     </>
   );
 };
