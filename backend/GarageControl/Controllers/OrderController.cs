@@ -136,5 +136,22 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrder(string id)
+        {
+            try
+            {
+                var result = await _orderService.DeleteOrderAsync(GetUserId(), id, GetWorkshopId());
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

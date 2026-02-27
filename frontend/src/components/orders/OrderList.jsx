@@ -91,6 +91,18 @@ const OrderList = ({ mode = 'active' }) => {
         }
     };
 
+    const handleDeleteOrder = async (orderId) => {
+        if (!confirm('Are you sure you want to delete this entire order and all its jobs? This cannot be undone.')) return;
+
+        try {
+            await orderApi.deleteOrder(orderId);
+            fetchOrders();
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert("Error deleting order");
+        }
+    };
+
     const filteredOrders = orders.map(order => {
         const filteredJobs = order.jobs.filter(job =>
             filter === 'all' || job.status === filter
@@ -141,9 +153,14 @@ const OrderList = ({ mode = 'active' }) => {
                                         {order.carName} • {order.carRegistrationNumber} • {order.kilometers} km
                                     </div>
                                 </div>
-                                <button className="btn secondary icon-btn" onClick={() => setEditingOrder(order)} title="Order Details">
-                                    <i className="fa-solid fa-circle-info"></i>
-                                </button>
+                                <div style={{ display: 'flex', gap: '5px' }}>
+                                    <button className="btn secondary icon-btn" onClick={() => setEditingOrder(order)} title="Order Details">
+                                        <i className="fa-solid fa-circle-info"></i>
+                                    </button>
+                                    <button className="btn secondary icon-btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">
+                                        <i className="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="table">

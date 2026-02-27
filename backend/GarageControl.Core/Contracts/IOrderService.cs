@@ -1,5 +1,6 @@
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels.Shared;
 
 namespace GarageControl.Core.Contracts
 {
@@ -10,5 +11,6 @@ namespace GarageControl.Core.Contracts
         Task<OrderDetailsVM?> GetOrderByIdAsync(string id, string workshopId);
         Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id);
         Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model);
+        Task<MethodResponseVM> DeleteOrderAsync(string userId, string id, string workshopId);
     }
 }

@@ -18,6 +18,9 @@ const orderApi = {
     },
     updateOrder: async (id, data) => {
         return await request('PUT', `order/${id}`, data);
+    },
+    deleteOrder: async (id) => {
+        return await request('DELETE', `order/${id}`);
     }
 };
 

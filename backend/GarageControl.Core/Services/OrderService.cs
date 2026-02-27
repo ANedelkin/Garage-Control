@@ -20,19 +20,22 @@ namespace GarageControl.Core.Services
         private readonly OrderActivityLogger _activityLogger;
         private readonly IWorkshopService _workshopService;
         private readonly IInventoryService _inventoryService;
+        private readonly IJobService _jobService;
 
         public OrderService(
             GarageControlDbContext context,
             INotificationService notificationService,
             IActivityLogService activityLogService,
             IWorkshopService workshopService,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            IJobService jobService)
         {
             _context = context;
             _notificationService = notificationService;
             _activityLogger = new OrderActivityLogger(activityLogService);
             _workshopService = workshopService;
             _inventoryService = inventoryService;
+            _jobService = jobService;
         }
         public async Task<List<OrderListVM>> GetOrdersAsync(string workshopId, bool? isDone = null)
         {
@@ -180,6 +183,28 @@ namespace GarageControl.Core.Services
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<MethodResponseVM> DeleteOrderAsync(string userId, string id, string workshopId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Car)
+                    .ThenInclude(c => c.Owner)
+                .Include(o => o.Jobs)
+                .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
+
+            if (order == null) return new MethodResponseVM(false, "Order not found or access denied.");
+
+            // Use JobService to delete each job properly
+            foreach (var job in order.Jobs.ToList())
+            {
+                await _jobService.DeleteJobAsync(userId, job.Id, workshopId);
+            }
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+
+            return new MethodResponseVM(true, "Order deleted successfully.");
         }
     }
 }
