@@ -1,7 +1,5 @@
 namespace GarageControl.Core.ViewModels.Orders
 {
-    using GarageControl.Core.ViewModels.Jobs;
-
     public class OrderDetailsVM
     {
         public string Id { get; set; } = null!;
@@ -11,6 +9,5 @@ namespace GarageControl.Core.ViewModels.Orders
         public string ClientName { get; set; } = null!;
         public int Kilometers { get; set; }
         public bool IsDone { get; set; }
-        public List<JobDetailsVM> Jobs { get; set; } = new List<JobDetailsVM>();
     }
 }

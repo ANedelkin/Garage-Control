@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { orderApi } from '../../services/orderApi';
+import { jobApi } from '../../services/jobApi';
 import { useAuth } from '../../context/AuthContext';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/status.css';
@@ -24,7 +24,7 @@ const ToDoPage = () => {
 
     const fetchJobs = async () => {
         try {
-            const data = await orderApi.getMyJobs();
+            const data = await jobApi.getMyJobs();
             setJobs(data);
         } catch (error) {
             console.error(error);

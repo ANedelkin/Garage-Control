@@ -53,19 +53,7 @@ namespace GarageControl.Core.Services
                     o.Car.RegistrationNumber,
                     o.Car.Owner.Name,
                     o.Kilometers,
-                    o.IsDone,
-                    Jobs = o.Jobs.Select(j => new
-                    {
-                        j.Id,
-                        TypeName = j.JobType.Name,
-                        Description = j.Description ?? "",
-                        j.Status,
-                        MechanicName = j.Worker.Name,
-                        j.StartTime,
-                        j.EndTime,
-                        j.LaborCost,
-                        PartsCost = j.JobParts.Sum(jp => (decimal)jp.UsedQuantity * jp.Price)
-                    }).ToList()
+                    o.IsDone
                 })
                 .ToListAsync();
 
@@ -77,20 +65,7 @@ namespace GarageControl.Core.Services
                 CarRegistrationNumber = o.RegistrationNumber,
                 ClientName = o.Name,
                 Kilometers = o.Kilometers,
-                IsDone = o.IsDone,
-                Jobs = o.Jobs.Select(j => new JobListVM
-                {
-                    Id = j.Id,
-                    Type = j.TypeName,
-                    Description = j.Description,
-                    Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
-                             j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
-                    MechanicName = j.MechanicName,
-                    StartTime = j.StartTime,
-                    EndTime = j.EndTime,
-                    LaborCost = j.LaborCost,
-                    PartsCost = j.PartsCost,
-                }).ToList()
+                IsDone = o.IsDone
             }).ToList();
         }
         public async Task<OrderDetailsVM?> GetOrderByIdAsync(string id, string workshopId)
@@ -106,28 +81,7 @@ namespace GarageControl.Core.Services
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,
                     Kilometers = o.Kilometers,
-                    IsDone = o.IsDone,
-                    Jobs = o.Jobs.Select(j => new JobDetailsVM
-                    {
-                        Id = j.Id,
-                        JobTypeId = j.JobTypeId,
-                        WorkerId = j.WorkerId,
-                        Description = j.Description ?? "",
-                        Status = j.Status,
-                        LaborCost = j.LaborCost,
-                        StartTime = j.StartTime,
-                        EndTime = j.EndTime,
-                        Parts = j.JobParts.Select(jp => new JobPartDetailsVM
-                        {
-                            PartId = jp.PartId,
-                            PartName = jp.Part.Name,
-                            PlannedQuantity = jp.PlannedQuantity,
-                            SentQuantity = jp.SentQuantity,
-                            UsedQuantity = jp.UsedQuantity,
-                            RequestedQuantity = jp.RequestedQuantity,
-                            Price = jp.Price
-                        }).ToList()
-                    }).ToList()
+                    IsDone = o.IsDone
                 })
                 .FirstOrDefaultAsync();
         }
@@ -149,70 +103,6 @@ namespace GarageControl.Core.Services
                 IsDone = false
             };
             _context.Orders.Add(order);
-
-            foreach (var jobModel in model.Jobs)
-            {
-                var job = new Job
-                {
-                    Order = order,
-                    JobTypeId = jobModel.JobTypeId,
-                    WorkerId = jobModel.WorkerId,
-                    Description = jobModel.Description,
-                    Status = jobModel.Status,
-                    LaborCost = jobModel.LaborCost,
-                    StartTime = jobModel.StartTime,
-                    EndTime = jobModel.EndTime,
-                    JobParts = new List<JobPart>()
-                };
-
-                _context.Jobs.Add(job);
-
-                foreach (var partModel in jobModel.Parts)
-                {
-                    var part = await _context.Parts.FindAsync(partModel.PartId);
-                    if (part == null) continue;
-
-                    var jobPart = new JobPart
-                    {
-                        Job = job,
-                        PartId = part.Id,
-                        PlannedQuantity = partModel.PlannedQuantity,
-                        SentQuantity = partModel.SentQuantity,
-                        UsedQuantity = partModel.UsedQuantity,
-                        RequestedQuantity = partModel.RequestedQuantity,
-                        Price = part.Price
-                    };
-                    _context.JobParts.Add(jobPart);
-
-                    if (part.AvailabilityBalance >= partModel.PlannedQuantity)
-                    {
-                        part.AvailabilityBalance -= partModel.PlannedQuantity;
-                    }
-                    else
-                    {
-                        return new MethodResponseVM(false, $"Insufficient availability for part '{part.Name}'");
-                    }
-
-                    if (part.Quantity >= partModel.SentQuantity)
-                    {
-                        part.Quantity -= partModel.SentQuantity;
-                    }
-                    else
-                    {
-                        return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
-                    }
-
-                    await _context.SaveChangesAsync();
-                    await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-
-                    var updatedPart = await _context.Parts.FindAsync(part.Id);
-                    if (updatedPart != null && updatedPart.AvailabilityBalance < updatedPart.MinimumQuantity)
-                    {
-                        await _notificationService.SendStockNotificationAsync(workshopId, part.Id, updatedPart.Name, updatedPart.AvailabilityBalance, updatedPart.MinimumQuantity);
-                    }
-                }
-            }
-
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---
@@ -244,90 +134,7 @@ namespace GarageControl.Core.Services
 
             order.Kilometers = model.Kilometers;
             order.IsDone = model.IsDone;
-
-            foreach (var jobModel in model.Jobs)
-            {
-                var existingJob = order.Jobs.FirstOrDefault(j => j.Id == jobModel.Id);
-                if (existingJob != null)
-                {
-                    existingJob.Description = jobModel.Description;
-                    existingJob.LaborCost = jobModel.LaborCost;
-                    existingJob.Status = jobModel.Status;
-                    existingJob.StartTime = jobModel.StartTime;
-                    existingJob.EndTime = jobModel.EndTime;
-
-                    foreach (var partModel in jobModel.Parts)
-                    {
-                        var part = await _context.Parts.FindAsync(partModel.PartId);
-                        if (part == null) continue;
-
-                        var existingJobPart = existingJob.JobParts.FirstOrDefault(jp => jp.PartId == partModel.PartId);
-                        if (existingJobPart != null)
-                        {
-                            var sentDelta = partModel.SentQuantity - existingJobPart.SentQuantity;
-
-                            if (part.Quantity < sentDelta)
-                                return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
-
-                            part.Quantity -= sentDelta;
-
-                            existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
-                            existingJobPart.SentQuantity = partModel.SentQuantity;
-                            existingJobPart.UsedQuantity = partModel.UsedQuantity;
-                            existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
-
-                            await _context.SaveChangesAsync();
-                            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-                        }
-                        else
-                        {
-                            if (part.Quantity < partModel.SentQuantity)
-                                return new MethodResponseVM(false, $"Insufficient stock for part '{part.Name}'");
-
-                            part.Quantity -= partModel.SentQuantity;
-
-                            _context.JobParts.Add(new JobPart
-                            {
-                                JobId = existingJob.Id,
-                                PartId = partModel.PartId,
-                                PlannedQuantity = partModel.PlannedQuantity,
-                                SentQuantity = partModel.SentQuantity,
-                                UsedQuantity = partModel.UsedQuantity,
-                                RequestedQuantity = partModel.RequestedQuantity,
-                                Price = part.Price
-                            });
-
-                            await _context.SaveChangesAsync();
-                            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
-                        }
-                    }
-
-                    if (jobModel.Status != existingJob.Status)
-                    {
-                        existingJob.Status = jobModel.Status;
-                        foreach (var jp in existingJob.JobParts)
-                        {
-                            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, jp.PartId);
-                        }
-                    }
-                }
-                else
-                {
-                    var newJob = new Job
-                    {
-                        OrderId = order.Id,
-                        JobTypeId = jobModel.JobTypeId,
-                        WorkerId = jobModel.WorkerId,
-                        Description = jobModel.Description,
-                        Status = jobModel.Status,
-                        LaborCost = jobModel.LaborCost,
-                        StartTime = jobModel.StartTime,
-                        EndTime = jobModel.EndTime
-                    };
-                    _context.Jobs.Add(newJob);
-                }
-            }
-
+            
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---

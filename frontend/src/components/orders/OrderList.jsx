@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
+import { jobApi } from '../../services/jobApi';
 import { request } from '../../Utilities/request';
 import Dropdown from '../common/Dropdown';
 import OrderDetailsPopup from './OrderDetailsPopup';
@@ -27,7 +28,13 @@ const OrderList = ({ mode = 'active' }) => {
             const data = mode === 'completed'
                 ? await orderApi.getCompletedOrders()
                 : await orderApi.getActiveOrders();
-            setOrders(data);
+
+            const ordersWithJobs = await Promise.all(data.map(async (order) => {
+                const jobs = await jobApi.getJobsByOrderId(order.id);
+                return { ...order, jobs };
+            }));
+
+            setOrders(ordersWithJobs);
         } catch (error) {
             console.error(error);
         } finally {
@@ -46,25 +53,10 @@ const OrderList = ({ mode = 'active' }) => {
 
     const handleSaveOrderDetails = async (details) => {
         try {
-            const fullOrder = await orderApi.getOrder(editingOrder.id);
             const payload = {
                 carId: details.carId,
                 kilometers: details.kilometers,
-                isDone: details.isDone,
-                jobs: fullOrder.jobs.map(j => ({
-                    id: j.id,
-                    jobTypeId: j.jobTypeId,
-                    workerId: j.workerId,
-                    description: j.description,
-                    status: j.status,
-                    laborCost: j.laborCost,
-                    startTime: j.startTime,
-                    endTime: j.endTime,
-                    parts: j.parts.map(p => ({
-                        partId: p.partId,
-                        quantity: p.quantity
-                    }))
-                }))
+                isDone: details.isDone
             };
 
             await orderApi.updateOrder(editingOrder.id, payload);
@@ -90,27 +82,7 @@ const OrderList = ({ mode = 'active' }) => {
         if (!confirm('Are you sure you want to delete this job?')) return;
 
         try {
-            const fullOrder = await orderApi.getOrder(orderId);
-            const payload = {
-                carId: fullOrder.carId,
-                kilometers: fullOrder.kilometers,
-                isDone: fullOrder.isDone,
-                jobs: fullOrder.jobs.filter(j => j.id !== jobId).map(j => ({
-                    id: j.id,
-                    jobTypeId: j.jobTypeId,
-                    workerId: j.workerId,
-                    description: j.description,
-                    status: j.status,
-                    laborCost: j.laborCost,
-                    startTime: j.startTime,
-                    endTime: j.endTime,
-                    parts: j.parts.map(p => ({
-                        partId: p.partId,
-                        quantity: p.quantity
-                    }))
-                }))
-            };
-            await orderApi.updateOrder(orderId, payload);
+            await jobApi.deleteJob(jobId);
             fetchOrders();
         } catch (error) {
             console.error('Failed to delete job:', error);

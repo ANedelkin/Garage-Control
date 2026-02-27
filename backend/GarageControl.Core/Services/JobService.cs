@@ -150,6 +150,26 @@ namespace GarageControl.Core.Services.Jobs
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<JobListVM>> GetJobsByOrderIdAsync(string orderId, string workshopId)
+        {
+            return await _context.Jobs
+                .AsNoTracking()
+                .Where(j => j.OrderId == orderId && j.Order.Car.Owner.WorkshopId == workshopId)
+                .Select(j => new JobListVM
+                {
+                    Id = j.Id,
+                    Type = j.JobType.Name,
+                    Description = j.Description ?? "",
+                    Status = (int)j.Status == 0 ? "pending" : (int)j.Status == 1 ? "inprogress" : "finished",
+                    MechanicName = j.Worker.Name,
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
+                    LaborCost = j.LaborCost,
+                    PartsCost = j.JobParts.Sum(jp => (decimal)jp.PlannedQuantity * jp.Price)
+                })
+                .ToListAsync();
+        }
+
         // ==============================
         // JOB UPDATE (minor cleanup)
         // ==============================
@@ -319,6 +339,48 @@ namespace GarageControl.Core.Services.Jobs
                 changes.Add(new ActivityPropertyChange("description", "updated", ""));
 
             return changes;
+        }
+        public async Task<MethodResponseVM> DeleteJobAsync(string userId, string jobId, string workshopId)
+        {
+            var job = await _context.Jobs
+                .Include(j => j.JobParts)
+                    .ThenInclude(jp => jp.Part)
+                .Include(j => j.Order)
+                    .ThenInclude(o => o.Car)
+                        .ThenInclude(c => c.Owner)
+                .Include(j => j.JobType)
+                .FirstOrDefaultAsync(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId);
+
+            if (job == null) return new MethodResponseVM(false, "Job not found or access denied.");
+
+            var car = job.Order.Car;
+            string carInfo = $"{car.Model?.CarMake?.Name} {car.Model?.Name} ({car.RegistrationNumber})";
+
+            var userAccesses = await _authService.GetUserAccess(userId);
+
+            // Revert parts
+            var changes = new List<string>();
+            var affectedPartIds = new HashSet<string>();
+            
+            foreach (var jp in job.JobParts.ToList())
+            {
+                if (jp.Part != null)
+                {
+                    jp.Part.Quantity += jp.SentQuantity;
+                    affectedPartIds.Add(jp.PartId);
+                }
+                _context.JobParts.Remove(jp);
+            }
+
+            _context.Jobs.Remove(job);
+            await _context.SaveChangesAsync();
+
+            foreach (var partId in affectedPartIds)
+            {
+                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
+            }
+
+            return new MethodResponseVM(true, "Job deleted successfully");
         }
     }
 }

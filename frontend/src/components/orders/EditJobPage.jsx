@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
+import { jobApi } from '../../services/jobApi';
 import { partApi } from '../../services/partApi';
 import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
@@ -31,7 +32,7 @@ const EditJobPage = ({ mechanicView = false }) => {
 
                 if (isEdit) {
                     // If it's editing, fetch the job data
-                    jobData = await orderApi.getJob(jobId);
+                    jobData = await jobApi.getJob(jobId);
 
                     // Map parts if available
                     if (jobData.parts) {
@@ -135,9 +136,9 @@ const EditJobPage = ({ mechanicView = false }) => {
             };
 
             if (isEdit) {
-                await orderApi.updateJob(jobId, payload);
+                await jobApi.updateJob(jobId, payload);
             } else {
-                await orderApi.createJob(orderId, payload);
+                await jobApi.createJob(orderId, payload);
             }
 
             // Trigger notification refresh in header

@@ -14,13 +14,11 @@ namespace GarageControl.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
-        private readonly IJobService _jobService;
         private readonly IPDFGeneratorService _pdfGeneratorService;
 
-        public OrderController(IOrderService orderService, IJobService jobService, IPDFGeneratorService pdfGeneratorService)
+        public OrderController(IOrderService orderService, IPDFGeneratorService pdfGeneratorService)
         {
             _orderService = orderService;
-            _jobService = jobService;
             _pdfGeneratorService = pdfGeneratorService;
         }
 
@@ -132,73 +130,6 @@ namespace GarageControl.Controllers
                     return BadRequest(new { message = resp.Message });
                 }
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-        [HttpGet("my-jobs")]
-        public async Task<IActionResult> GetMyJobs()
-        {
-            try
-            {
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-                var jobs = await _jobService.GetMyJobsAsync(userId, GetWorkshopId());
-                return Ok(jobs);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpGet("job/{jobId}")]
-        public async Task<IActionResult> GetJobById(string jobId)
-        {
-            try
-            {
-                var job = await _jobService.GetJobByIdAsync(jobId, GetWorkshopId());
-                if (job == null) return NotFound();
-                return Ok(job);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost("{id}/job")]
-        public async Task<IActionResult> CreateJob(string id, [FromBody] CreateJobVM model)
-        {
-            try
-            {
-                var result = await _jobService.CreateJobAsync(GetUserId(), id, GetWorkshopId(), model);
-                if (!result.Success)
-                {
-                    return BadRequest(new { message = result.Message });
-                }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpPut("job/{jobId}")]
-        public async Task<IActionResult> UpdateJob(string jobId, [FromBody] UpdateJobVM model)
-        {
-            try
-            {
-                var result = await _jobService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
-                if (!result.Success)
-                {
-                    return BadRequest(new { message = result.Message });
-                }
-                return Ok();
             }
             catch (Exception ex)
             {

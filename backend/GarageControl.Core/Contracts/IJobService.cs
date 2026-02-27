@@ -23,4 +23,13 @@ public interface IJobService
     Task<List<JobToDoVM>> GetMyJobsAsync(
         string userId,
         string workshopId);
+
+    Task<List<JobListVM>> GetJobsByOrderIdAsync(
+        string orderId,
+        string workshopId);
+
+    Task<MethodResponseVM> DeleteJobAsync(
+        string userId,
+        string jobId,
+        string workshopId);
 }
