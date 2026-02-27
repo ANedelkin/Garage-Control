@@ -18,15 +18,16 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/', icon: 'fa-house', label: 'Home', access: 'Dashboard' },
     { path: '/todo', icon: 'fa-clipboard-list', label: 'To Do', access: 'To Do' },
     { path: '/orders', icon: 'fa-screwdriver-wrench', label: 'Orders', access: 'Orders' },
-    { path: '/done-orders', icon: 'fa-check-double', label: 'Done Orders', access: 'Orders' },
     { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', access: 'Parts Stock' },
     { path: '/workers', icon: 'fa-users-gear', label: 'Workers', access: 'Workers' },
-    { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
     { path: '/clients', icon: 'fa-user', label: 'Clients', access: 'Clients' },
-    { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
-    { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
     { path: '/cars', icon: 'fa-car', label: 'Cars', access: 'Cars' },
     { path: '/activity-log', icon: 'fa-clock-rotate-left', label: 'Activity Log', access: 'Activity Log' },
+    { divider: true },
+    { path: '/done-orders', icon: 'fa-clipboard-check', label: 'Done Orders', access: 'Orders' },
+    { path: '/job-types', icon: 'fa-gear', label: 'Job Types', access: 'Job Types' },
+    { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', access: 'Makes and Models' },
+    { path: '/workshop-details', icon: 'fa-circle-info', label: 'Workshop Details', access: 'Workshop Details' },
     { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', access: 'Admin Dashboard' },
     { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', access: 'Admin Makes and Models' },
     { path: '/admin/users', icon: 'fa-users', label: 'Users', access: 'Admin Users' },
@@ -40,8 +41,8 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     }
     // For other paths, check if current path starts with item path
     // and is followed by either nothing or a slash
-    return location.pathname === itemPath || 
-           location.pathname.startsWith(itemPath + '/');
+    return location.pathname === itemPath ||
+      location.pathname.startsWith(itemPath + '/');
   };
 
   console.log(accesses);
@@ -56,17 +57,18 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <nav>
           {filteredNavItems.map((item, index) => (
-            <Link
-              key={index}
-              to={item.path}
-              className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
-              onClick={onClose}
-            >
-              <div className="horizontal">
-                <i className={`fa-solid ${item.icon}`}></i>
-                <span>{item.label}</span>
-              </div>
-            </Link>
+            item.divider ? <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
+              <Link
+                key={index}
+                to={item.path}
+                className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
+                onClick={onClose}
+              >
+                <div className="horizontal">
+                  <i className={`fa-solid ${item.icon}`}></i>
+                  <span>{item.label}</span>
+                </div>
+              </Link>
           ))}
         </nav>
         <ThemeToggle />
