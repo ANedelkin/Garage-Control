@@ -252,7 +252,7 @@ namespace GarageControl.Core.Services.Jobs
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += jp.SentQuantity;
+                    jp.Part.Quantity += (jp.SentQuantity - jp.UsedQuantity);
                     changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
                     affectedPartIds.Add(jp.PartId);
                 }
@@ -366,7 +366,7 @@ namespace GarageControl.Core.Services.Jobs
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += jp.SentQuantity;
+                    jp.Part.Quantity += (jp.SentQuantity - jp.UsedQuantity);
                     affectedPartIds.Add(jp.PartId);
                 }
                 _context.JobParts.Remove(jp);
