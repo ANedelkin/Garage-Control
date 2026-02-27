@@ -44,7 +44,9 @@ const PrivateRoute = ({ children, access }) => {
   }
 
   const hasWorkshop = localStorage.getItem('HasWorkshop');
-  // Removed redirection to /workshop-details-initial
+  if (hasWorkshop === 'false' && window.location.pathname !== '/workshop-details-initial') {
+    return <Navigate to="/workshop-details-initial" />;
+  }
 
   if (access) {
     if (!accesses.includes(access)) {
@@ -144,6 +146,12 @@ function App() {
             </PrivateRoute>
           } />
 
+          <Route path="/workshop-details-initial" element={
+            <PrivateRoute>
+              <WorkshopDetailsInitial />
+            </PrivateRoute>
+          } />
+
 
           {routes.map((route, i) => (
             <>
@@ -186,14 +194,6 @@ function App() {
 
         </Routes>
       </BrowserRouter>
-
-      <Popup
-        isOpen={!hasWorkshop && !loading && localStorage.getItem('token')}
-        onClose={() => { }}
-        title="Workshop Information"
-      >
-        <WorkshopDetailsInitial onClose={() => setHasWorkshop(true)} />
-      </Popup>
     </>
   );
 }

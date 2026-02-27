@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import ThemeToggle from '../common/ThemeToggle.jsx';
+import Header from '../common/Header.jsx';
 import WorkshopDetailsForm from './WorkshopDetailsForm.jsx';
 import { workshopApi } from '../../services/workshopApi.js';
 
-const WorkshopDetailsInitial = ({ onClose }) => {
+const WorkshopDetailsInitial = () => {
     const navigate = useNavigate();
     const handleSubmit = async (e, formData) => {
         e.preventDefault();
         await workshopApi.create(formData);
         localStorage.setItem('HasWorkshop', 'true');
-        if (onClose) onClose();
         navigate('/');
     };
 
     return (
-        <WorkshopDetailsForm handleSubmit={handleSubmit} />
+        <div className="vertical" style={{ height: '100vh' }}>
+            <Header />
+            <main className="main" style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="tile" style={{ width: 'fit-content', marginTop: '75px' }}>
+                    <h3 className="tile-header">Workshop Information</h3>
+                    <WorkshopDetailsForm handleSubmit={handleSubmit} />
+                </div>
+            </main>
+        </div>
     );
 };
 
