@@ -147,43 +147,51 @@ const OrderList = ({ mode = 'active' }) => {
                             </div>
 
                             <div className="table">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Status</th>
-                                            <th>Time</th>
-                                            <th>Type</th>
-                                            <th>Mechanic</th>
-                                            <th>Cost</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {order.jobs.map(job => (
-                                            <tr key={job.id} onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} className="clickable">
-                                                <td>
-                                                    <span className={`job-status ${job.status}`}>
-                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
-                                                            job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
-                                                            } job-status-${job.status} status-icon`}></i>
-                                                        {job.status === 'pending' ? 'Pending' :
-                                                            job.status === 'inprogress' ? 'In Progress' : 'Done'
-                                                        }
-                                                    </span>
-                                                </td>
-                                                <td>{formatDate(job.startTime)}</td>
-                                                <td>{job.type}</td>
-                                                <td>{job.mechanicName}</td>
-                                                <td>&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
-                                                <td onClick={e => e.stopPropagation()}>
-                                                    <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
-                                                        <i className="fa-solid fa-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="table">
+                                    {order.jobs.length === 0 ? (
+                                        <p className="list-empty">
+                                            No jobs added to order
+                                        </p>
+                                    ) : (
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Status</th>
+                                                    <th>Time</th>
+                                                    <th>Type</th>
+                                                    <th>Mechanic</th>
+                                                    <th>Cost</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {order.jobs.map(job => (
+                                                    <tr key={job.id} onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} className="clickable">
+                                                        <td>
+                                                            <span className={`job-status ${job.status}`}>
+                                                                <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
+                                                                    job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
+                                                                    } job-status-${job.status} status-icon`}></i>
+                                                                {job.status === 'pending' ? 'Pending' :
+                                                                    job.status === 'inprogress' ? 'In Progress' : 'Done'
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                        <td>{formatDate(job.startTime)}</td>
+                                                        <td>{job.type}</td>
+                                                        <td>{job.mechanicName}</td>
+                                                        <td>&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
+                                                        <td onClick={e => e.stopPropagation()}>
+                                                            <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
+                                                                <i className="fa-solid fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
                             </div>
                             {mode === 'active' && (
                                 <div className="tile-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '10px' }}>
@@ -207,7 +215,13 @@ const OrderList = ({ mode = 'active' }) => {
             )}
 
             {showNewOrder && (
-                <NewOrderSetup onClose={() => setShowNewOrder(false)} />
+                <NewOrderSetup
+                    onClose={() => setShowNewOrder(false)}
+                    onSuccess={() => {
+                        setShowNewOrder(false);
+                        fetchOrders();
+                    }}
+                />
             )}
         </main>
     );

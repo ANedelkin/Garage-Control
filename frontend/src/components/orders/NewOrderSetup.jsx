@@ -5,7 +5,7 @@ import { orderApi } from '../../services/orderApi';
 import { request } from '../../Utilities/request';
 import '../../assets/css/orders.css';
 
-const NewOrderSetup = ({ onClose }) => {
+const NewOrderSetup = ({ onClose, onSuccess }) => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
     const [carSearch, setCarSearch] = useState('');
@@ -60,8 +60,11 @@ const NewOrderSetup = ({ onClose }) => {
                 jobs: [] // Start with empty jobs
             });
 
-            // Redirect to add first job
-            navigate(`/orders/${result.orderId}/jobs/new`);
+            if (onSuccess) {
+                onSuccess();
+            } else if (onClose) {
+                onClose();
+            }
         } catch (e) {
             console.error(e);
             alert("Failed to create order");
@@ -102,7 +105,7 @@ const NewOrderSetup = ({ onClose }) => {
 
             <div className="form-footer" style={{ marginTop: '20px' }}>
                 <button className="btn primary" onClick={handleCreateOrder} disabled={!selectedCar}>
-                    Create Order & Add Job
+                    Create Order
                 </button>
                 <button className="btn" onClick={onClose}>
                     Cancel
