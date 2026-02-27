@@ -18,7 +18,6 @@ import Clients from './components/clients/Clients.jsx';
 import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
-import NewOrderSetup from './components/orders/NewOrderSetup.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
 import ActivityLog from './components/activityLog/ActivityLog.jsx';
@@ -93,7 +92,6 @@ function App() {
     },
     {
       path: '/orders', element: <OrdersPage mode="active" />, access: 'Orders', children: [
-        { path: '/new', element: <NewOrderSetup /> },
         { path: '/:orderId/jobs/new', element: <EditJobPage /> },
         { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> }
       ]

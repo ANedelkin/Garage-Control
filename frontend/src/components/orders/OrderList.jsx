@@ -5,6 +5,7 @@ import { jobApi } from '../../services/jobApi';
 import { request } from '../../Utilities/request';
 import Dropdown from '../common/Dropdown';
 import OrderDetailsPopup from './OrderDetailsPopup';
+import NewOrderSetup from './NewOrderSetup';
 import '../../assets/css/orders.css';
 
 const OrderList = ({ mode = 'active' }) => {
@@ -16,6 +17,7 @@ const OrderList = ({ mode = 'active' }) => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [editingOrder, setEditingOrder] = useState(null);
+    const [showNewOrder, setShowNewOrder] = useState(false);
 
     useEffect(() => {
         fetchOrders();
@@ -118,7 +120,7 @@ const OrderList = ({ mode = 'active' }) => {
                     <option value="inprogress">In Progress</option>
                     <option value="finished">Finished</option>
                 </Dropdown>
-                {mode === 'active' && <Link to="/orders/new" className="btn primary">+ New Order</Link>}
+                {mode === 'active' && <button className="btn primary" onClick={() => setShowNewOrder(true)}>+ New Order</button>}
             </div>
 
             {loading ? (
@@ -202,6 +204,10 @@ const OrderList = ({ mode = 'active' }) => {
                     onClose={() => setEditingOrder(null)}
                     onSave={handleSaveOrderDetails}
                 />
+            )}
+
+            {showNewOrder && (
+                <NewOrderSetup onClose={() => setShowNewOrder(false)} />
             )}
         </main>
     );
