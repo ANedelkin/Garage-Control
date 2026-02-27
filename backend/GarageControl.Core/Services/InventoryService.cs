@@ -85,7 +85,8 @@ namespace GarageControl.Core.Services
         }
         public async Task RecalculateAvailabilityBalanceAsync(
             string workshopId,
-            string? partId = null)
+            string? partId = null,
+            int? previousMinimumQuantity = null)
         {
             var partsQuery = _context.Parts
                 .Where(p => p.WorkshopId == workshopId);
@@ -116,15 +117,15 @@ namespace GarageControl.Core.Services
             {
                 var oldBalance = part.AvailabilityBalance;
 
-                var outstandingQty =
-                    outstandingDict.GetValueOrDefault(part.Id);
+                var outstandingQty = outstandingDict.GetValueOrDefault(part.Id);
 
                 var newBalance = part.Quantity - outstandingQty;
 
                 part.AvailabilityBalance = newBalance;
 
                 // Notify ONLY when crossing threshold (avoid spam)
-                bool wasLow = oldBalance < part.MinimumQuantity;
+                int effectiveOldMin = previousMinimumQuantity ?? part.MinimumQuantity;
+                bool wasLow = oldBalance < effectiveOldMin;
                 bool isLow = newBalance < part.MinimumQuantity;
 
                 if (!wasLow && isLow)
@@ -136,7 +137,7 @@ namespace GarageControl.Core.Services
                         newBalance,
                         part.MinimumQuantity);
                 }
-                else if (wasLow && isLow && oldBalance != newBalance)
+                else if (wasLow && isLow && (oldBalance != newBalance || effectiveOldMin != part.MinimumQuantity))
                 {
                     await _notification.SendStockNotificationAsync(
                         workshopId,

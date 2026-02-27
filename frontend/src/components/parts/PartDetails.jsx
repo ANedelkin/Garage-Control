@@ -36,15 +36,32 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
         setIsDirty(true);
     };
 
-    const handleStockAdj = (amount) => {
+    const handleStockAdj = async (amount) => {
         const adj = parseInt(amount);
         if (isNaN(adj)) return;
 
-        setFormData(prev => {
-            const currentQty = parseInt(prev.quantity) || 0;
-            return { ...prev, quantity: Math.max(0, currentQty + adj) };
-        });
+        const newQuantity = Math.max(0, (parseInt(formData.quantity) || 0) + adj);
+        const updatedFormData = { ...formData, quantity: newQuantity };
+
+        setFormData(updatedFormData);
         setIsDirty(true);
+
+        // Auto-save after adjustment
+        try {
+            await partApi.updatePart(part.id, {
+                ...updatedFormData,
+                price: parseFloat(updatedFormData.price),
+                quantity: parseInt(updatedFormData.quantity),
+                minimumQuantity: parseInt(updatedFormData.minimumQuantity)
+            });
+            onUpdate();
+            setIsDirty(false);
+            setStockAdj('');
+            window.dispatchEvent(new CustomEvent('refresh-notifications'));
+        } catch (error) {
+            console.error("Error saving part after adjustment", error);
+            alert(error.message || "Failed to save part");
+        }
     };
 
     const handleSave = async (e) => {

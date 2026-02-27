@@ -187,8 +187,9 @@ namespace GarageControl.Core.Services
             if (part == null)
                 throw new ArgumentException("Part not found");
 
+            int oldMin = part.MinimumQuantity;
             var changes = TrackPartChanges(part, model);
-
+            
             part.Name = model.Name;
             part.PartNumber = model.PartNumber;
             part.Price = model.Price;
@@ -197,7 +198,7 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
-            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id);
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, part.Id, oldMin);
 
             await _activityLogger.LogPartUpdatedAsync(
                 userId,
