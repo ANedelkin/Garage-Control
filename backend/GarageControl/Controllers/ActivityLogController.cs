@@ -2,10 +2,12 @@ using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Activity Log")]
     [ApiController]
     [Route("api/[controller]")]
     public class ActivityLogController : ControllerBase

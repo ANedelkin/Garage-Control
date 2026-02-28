@@ -4,10 +4,12 @@ using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Workers;
 using System.Security.Claims;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Workers")]
     [ApiController]
     [Route("api/[controller]")]
     public class WorkerController : ControllerBase

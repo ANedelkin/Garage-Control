@@ -2,10 +2,13 @@ using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels.Jobs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Orders", "To Do")]
     [ApiController]
     [Route("api/[controller]")]
     public class JobController : ControllerBase

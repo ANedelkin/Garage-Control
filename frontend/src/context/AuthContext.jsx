@@ -103,6 +103,7 @@ export const AuthProvider = ({ children }) => {
             if (data) {
                 if (data.accesses) {
                     setAccesses(data.accesses);
+                    localStorage.setItem('accesses', JSON.stringify(data.accesses));
                 }
                 if (data.userId || data.workerId) {
                     setUser({ id: data.userId, workerId: data.workerId });

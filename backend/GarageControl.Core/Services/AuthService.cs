@@ -175,8 +175,8 @@ namespace GarageControl.Core.Services
                 }
             }
 
-            string newAccess = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
+            string newAccess = GenerateAccessToken(user, roles, workshopId, accesses);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
             var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
@@ -212,8 +212,8 @@ namespace GarageControl.Core.Services
 
             var workshopId = await GetUserWorkshopId(user.Id);
             var roles = await _userManager.GetRolesAsync(user);
-            string token = GenerateAccessToken(user, roles, workshopId);
             var accesses = await GetUserAccess(user.Id);
+            string token = GenerateAccessToken(user, roles, workshopId, accesses);
             bool hasWorkshop = await UserHasWorkshop(user.Id);
             var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
@@ -234,7 +234,7 @@ namespace GarageControl.Core.Services
             var isWorker = await _repo.GetAllAsNoTracking<Worker>().AnyAsync(w => w.UserId == userId);
             return isWorker;
         }
-        private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null)
+        private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null, IList<string>? accesses = null)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
@@ -248,6 +248,14 @@ namespace GarageControl.Core.Services
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            if (accesses != null)
+            {
+                foreach (var access in accesses)
+                {
+                    claims.Add(new Claim("Access", access));
+                }
             }
 
             if (!string.IsNullOrEmpty(workshopId))

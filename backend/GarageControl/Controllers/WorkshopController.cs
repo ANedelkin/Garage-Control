@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Workshop;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Workshop Details")]
     [ApiController]
     [Route("api/[controller]")]
     public class WorkshopController : ControllerBase

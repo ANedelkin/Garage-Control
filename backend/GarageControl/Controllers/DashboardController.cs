@@ -3,10 +3,12 @@ using GarageControl.Core.Services;
 using GarageControl.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Dashboard")]
     [ApiController]
     [Route("api/[controller]")]
     public class DashboardController : ControllerBase

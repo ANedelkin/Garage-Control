@@ -4,10 +4,12 @@ using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Jobs;
 using System.Security.Claims;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Job Types")]
     [ApiController]
     [Route("api/[controller]")]
     public class JobTypeController : ControllerBase

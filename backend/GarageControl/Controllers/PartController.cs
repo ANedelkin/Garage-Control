@@ -5,10 +5,12 @@ using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Parts Stock")]
     [ApiController]
     [Route("api/[controller]")]
     public class PartController : ControllerBase

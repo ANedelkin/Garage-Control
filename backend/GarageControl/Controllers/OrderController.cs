@@ -5,10 +5,12 @@ using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.ViewModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Orders")]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase

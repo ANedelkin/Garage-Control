@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
+using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
+    [RequireAccess("Makes and Models", "Cars")]
     [ApiController]
     [Route("api/[controller]")]
     public class MakeController : ControllerBase
