@@ -68,10 +68,6 @@ header {
   .brand h1 {
     font-size: 16px;
   }
-
-  .select-wrapper {
-    display: none;
-  }
 }
 
 /* Notification styles */
