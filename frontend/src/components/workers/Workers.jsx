@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/table.css';
 import '../../assets/css/workers.css';
 import { workerApi } from '../../services/workerApi';
 
 const Workers = () => {
+    const navigate = useNavigate();
     const [roleFilter, setRoleFilter] = useState('all');
     const [search, setSearch] = useState('');
 
@@ -78,7 +79,7 @@ const Workers = () => {
 
                         <tbody>
                             {loading ? <tr><td colSpan="4">Loading...</td></tr> : filteredWorkers.map((w, i) => (
-                                <tr key={w.id} onClick={() => window.location.href = `/workers/${w.id}`}>
+                                <tr key={w.id} onClick={() => navigate(`/workers/${w.id}`)}>
                                     <td>{w.name}</td>
 
                                     <td className="description" title={w.accesses.map(r => r.name).join(', ')}>

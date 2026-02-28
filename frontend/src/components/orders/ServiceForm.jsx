@@ -136,7 +136,7 @@ const ServiceForm = ({
                             <DropDown
                                 value={service.jobTypeId}
                                 onChange={e => handleChange('jobTypeId', e.target.value)}
-                                disabled={mechanicView}
+                                disabled={mechanicView || service.status === 2}
                             >
                                 <option value="">Select Type</option>
                                 {jobTypes.map(jt =>
@@ -147,7 +147,7 @@ const ServiceForm = ({
                     )}
                 </div>
 
-                {removeService && !mechanicView && (
+                {removeService && !mechanicView && service.status !== 2 && (
                     <button
                         type="button"
                         className="btn delete"
@@ -255,6 +255,7 @@ const ServiceForm = ({
                                     <DropDown
                                         value={service.workerId}
                                         onChange={e => handleChange('workerId', e.target.value)}
+                                        disabled={service.status === 2}
                                     >
                                         <option value="">Select Mechanic</option>
                                         {workers
@@ -278,6 +279,7 @@ const ServiceForm = ({
                                         step="0.01"
                                         value={service.laborCost}
                                         onChange={e => handleChange('laborCost', parseFloat(e.target.value))}
+                                        disabled={service.status === 2}
                                     />
                                 </div>
                             )}
@@ -288,6 +290,7 @@ const ServiceForm = ({
                                     worker={workers.find(w => w.id === service.workerId)}
                                     initialStart={service.startTime}
                                     initialEnd={service.endTime}
+                                    readonly={service.status === 2}
                                     onTimeSelect={(start, end) => {
                                         handleChange('startTime', start);
                                         handleChange('endTime', end);
@@ -304,6 +307,7 @@ const ServiceForm = ({
                                 value={service.description}
                                 onChange={e => handleChange('description', e.target.value)}
                                 placeholder="Describe..."
+                                disabled={service.status === 2}
                             />
                         </div>
                     </>
@@ -347,6 +351,7 @@ const ServiceForm = ({
                                             onChange={e => handlePartSearch(e.target.value, i)}
                                             placeholder="Search Part..."
                                             onFocus={() => setActivePartIndex(i)}
+                                            disabled={service.status === 2}
                                         />
                                         {activePartIndex === i && suggestions.length > 0 && (
                                             <ul className="car-suggestions" style={{ top: '100%', left: 0, width: '100%' }}>
@@ -365,8 +370,8 @@ const ServiceForm = ({
                                             value={p.plannedQuantity}
                                             min={p.sentQuantity || 0}
                                             onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
-                                            disabled={mechanicView || (!hasStockAccess && !isAssignedWorker)}
-                                            title={(mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
+                                            disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                            title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                         />
                                     </td>
                                     <td>
@@ -377,8 +382,8 @@ const ServiceForm = ({
                                             min={p.usedQuantity || 0}
                                             max={p.plannedQuantity || 0}
                                             onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
-                                            disabled={mechanicView || !hasStockAccess}
-                                            title={(mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
+                                            disabled={service.status === 2 || mechanicView || !hasStockAccess}
+                                            title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                         />
                                     </td>
                                     <td>
@@ -388,8 +393,8 @@ const ServiceForm = ({
                                             min={0}
                                             max={p.sentQuantity || 0}
                                             onChange={e => updatePartRow(i, 'usedQuantity', parseFloat(e.target.value))}
-                                            disabled={!isAssignedWorker}
-                                            title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                            disabled={service.status === 2 || !isAssignedWorker}
+                                            title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                         />
                                     </td>
                                     <td>
@@ -399,14 +404,14 @@ const ServiceForm = ({
                                                 value={p.requestedQuantity}
                                                 min={0}
                                                 onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
-                                                disabled={!isAssignedWorker}
-                                                title={!isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                disabled={service.status === 2 || !isAssignedWorker}
+                                                title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                 style={{ flex: 1 }}
                                             />
                                             <button
                                                 type="button"
                                                 className="btn icon-btn"
-                                                disabled={!p.requestedQuantity}
+                                                disabled={service.status === 2 || !p.requestedQuantity}
                                                 onClick={() => setTransferInfo({ isOpen: true, partIndex: i })}
                                                 title="Transfer to Planned"
                                             >
@@ -424,7 +429,7 @@ const ServiceForm = ({
                                         {(p.usedQuantity * p.price).toFixed(2)}
                                     </td>
                                     <td>
-                                        <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)}>
+                                        <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={service.status === 2}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
@@ -434,7 +439,7 @@ const ServiceForm = ({
                     </tbody>
                 </table>
                 <div className="form-footer">
-                    <button type="button" className="btn" onClick={addNewRow}>+ Add Part</button>
+                    <button type="button" className="btn" onClick={addNewRow} disabled={service.status === 2}>+ Add Part</button>
                 </div>
             </div>
 

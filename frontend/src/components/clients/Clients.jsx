@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
 
 const Clients = () => {
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
@@ -69,7 +70,7 @@ const Clients = () => {
                             {loading ? <tr><td colSpan="5">Loading...</td></tr> : filteredClients.map((c) => (
                                 <tr
                                     key={c.id}
-                                    onClick={() => window.location.href = `/clients/${c.id}`}
+                                    onClick={() => navigate(`/clients/${c.id}`)}
                                     style={{ cursor: 'pointer' }}
                                     className="clickable-row"
                                 >
