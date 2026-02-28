@@ -69,16 +69,6 @@
     gap: 20px;
 }
 
-/* 
-.order-tile {
-    transition: transform 0.2s, box-shadow 0.2s;
-} */
-
-/* .order-tile:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-} */
-
 .clickable {
     cursor: pointer;
 }
@@ -100,35 +90,8 @@
     color: var(--safe-text);
 }
 
-/* Modal / Popup Refinement */
-.popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-
 .popup {
     width: 350px;
-}
-
-@keyframes popupFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
 }
 
 .popup-header {
@@ -198,11 +161,6 @@
     opacity: 0.7;
     cursor: not-allowed;
 }
-
-/* .parts-table-wrapper table th,
-.parts-table-wrapper table td {
-    width: 120px;
-} */
 
 .mechanic-layout .mechanic-left select:disabled {
     opacity: 0.7;
