@@ -103,18 +103,17 @@ namespace GarageControl.Core.Services
 
         public async Task<List<WorkshopAdminVM>> GetWorkshopsAsync()
         {
-            var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
-            var users = await _userManager.Users.ToListAsync();
-
-            return workshops.Select(w => new WorkshopAdminVM
-            {
-                Id = w.Id,
-                Name = w.Name,
-                Address = w.Address,
-                RegistrationNumber = w.RegistrationNumber ?? "N/A",
-                OwnerEmail = users.FirstOrDefault(u => u.Id == w.BossId)?.Email ?? "N/A",
-                IsBlocked = w.IsBlocked
-            }).ToList();
+            return await _repo.GetAllAsNoTracking<Workshop>()
+                              .Select(w => new WorkshopAdminVM
+                              {
+                                  Id = w.Id,
+                                  Name = w.Name,
+                                  OwnerEmail = w.Boss.Email,
+                                  Address = w.Address,
+                                  WorkersCount = w.Workers.Count,
+                                  IsBlocked = w.IsBlocked
+                              })
+                              .ToListAsync();
         }
 
         public async Task<MethodResponseVM> ToggleWorkshopBlockAsync(string workshopId, string? reason = null)

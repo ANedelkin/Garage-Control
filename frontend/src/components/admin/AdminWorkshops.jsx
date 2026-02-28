@@ -113,7 +113,7 @@ const AdminWorkshops = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Boss Email</th>
+                                <th>Owner Email</th>
                                 <th>Address</th>
                                 <th style={{ textAlign: 'center' }}>Workers</th>
                                 <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
@@ -123,9 +123,9 @@ const AdminWorkshops = () => {
                             {filteredWorkshops.map(w => (
                                 <tr key={w.id}>
                                     <td>{w.name}</td>
-                                    <td>{w.bossEmail}</td>
+                                    <td>{w.ownerEmail}</td>
                                     <td>{w.address}</td>
-                                    <td style={{ textAlign: 'center' }}>{w.workerCount}</td>
+                                    <td style={{ textAlign: 'center' }}>{w.workersCount}</td>
                                     <td style={{ textAlign: 'center', height: '61px' }}>
                                         <button
                                             className={`status-btn btn ${w.isBlocked ? 'admin-blocked' : 'admin-active'}`}
