@@ -231,18 +231,20 @@ const EditWorker = () => {
               <label>Access</label>
               <div className="list-container grow">
                 {worker.accesses.map((access, idx) => (
-                  <label key={access.id} className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={access.isSelected}
-                      onChange={e => {
-                        const updatedAccesses = [...worker.accesses];
-                        updatedAccesses[idx].isSelected = e.target.checked;
-                        setWorker({ ...worker, accesses: updatedAccesses });
-                      }}
-                    />
-                    {access.name}
-                  </label>
+                  <div className="list-item">
+                    <label key={access.id} className="checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={access.isSelected}
+                        onChange={e => {
+                          const updatedAccesses = [...worker.accesses];
+                          updatedAccesses[idx].isSelected = e.target.checked;
+                          setWorker({ ...worker, accesses: updatedAccesses });
+                        }}
+                      />
+                      {access.name}
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
@@ -251,19 +253,21 @@ const EditWorker = () => {
               <label>Job Types</label>
               <div className="list-container grow">
                 {allJobTypes.map(jt => (
-                  <label key={jt.id} className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={worker.jobTypeIds.includes(jt.id)}
-                      onChange={e => {
-                        let updated = [...worker.jobTypeIds];
-                        if (e.target.checked) updated.push(jt.id);
-                        else updated = updated.filter(id => id !== jt.id);
-                        setWorker({ ...worker, jobTypeIds: updated });
-                      }}
-                    />
-                    {jt.name}
-                  </label>
+                  <div className="list-item">
+                    <label key={jt.id} className="checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={worker.jobTypeIds.includes(jt.id)}
+                        onChange={e => {
+                          let updated = [...worker.jobTypeIds];
+                          if (e.target.checked) updated.push(jt.id);
+                          else updated = updated.filter(id => id !== jt.id);
+                          setWorker({ ...worker, jobTypeIds: updated });
+                        }}
+                      />
+                      {jt.name}
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
@@ -292,7 +296,7 @@ const EditWorker = () => {
                       onClick={() => openLeavePopup(leave, i)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <span>
+                      <span className="item-label">
                         {new Date(leave.startDate).toLocaleDateString()} -{" "}
                         {new Date(leave.endDate).toLocaleDateString()}
                       </span>
