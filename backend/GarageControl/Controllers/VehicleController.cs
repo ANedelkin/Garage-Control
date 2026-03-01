@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Cars")]
     [ApiController]
     [Route("api/[controller]")]
     public class VehicleController : ControllerBase
@@ -21,6 +20,7 @@ namespace GarageControl.Controllers
             _vehicleService = vehicleService;
         }
 
+        [RequireAccess("Cars", "Orders")]
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
@@ -28,14 +28,14 @@ namespace GarageControl.Controllers
             var result = await _vehicleService.All(userId);
             return Ok(result);
         }
-
+        [RequireAccess("Clients")]
         [HttpGet("by-client/{clientId}")]
         public async Task<IActionResult> GetByClient(string clientId)
         {
             var result = await _vehicleService.GetByClient(clientId);
             return Ok(result);
         }
-
+       [RequireAccess("Cars")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] VehicleVM model)
         {
@@ -52,7 +52,7 @@ namespace GarageControl.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [RequireAccess("Cars")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(string id)
         {
@@ -60,7 +60,7 @@ namespace GarageControl.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
-
+        [RequireAccess("Cars")]
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] VehicleVM model)
         {
@@ -69,7 +69,7 @@ namespace GarageControl.Controllers
              await _vehicleService.Edit(id, model, userId!);
              return Ok();
         }
-
+        [RequireAccess("Cars")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

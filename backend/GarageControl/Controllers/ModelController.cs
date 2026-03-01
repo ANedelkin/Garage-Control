@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Makes and Models", "Cars")]
     [ApiController]
     [Route("api/[controller]")]
     public class ModelController : ControllerBase
@@ -21,6 +20,7 @@ namespace GarageControl.Controllers
             _modelService = modelService;
         }
 
+        [RequireAccess("Makes and Models", "Admin", "Clients")]
         [HttpGet("all/{makeId}")]
         public async Task<IActionResult> All(string makeId)
         {
@@ -29,6 +29,7 @@ namespace GarageControl.Controllers
             return Ok(models);
         }
 
+        [RequireAccess("Makes and Models", "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ModelVM model)
         {
@@ -45,7 +46,7 @@ namespace GarageControl.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [RequireAccess("Makes and Models", "Admin")]
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] ModelVM model)
         {
@@ -61,7 +62,7 @@ namespace GarageControl.Controllers
                  return Forbid();
              }
         }
-
+        [RequireAccess("Makes and Models", "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -76,7 +77,7 @@ namespace GarageControl.Controllers
                 return Forbid();
             }
         }
-
+        [RequireAccess("Makes and Models")]
         [HttpPost("merge-with-global")]
         public async Task<IActionResult> MergeModelWithGlobal([FromBody] MergeModelRequest request)
         {

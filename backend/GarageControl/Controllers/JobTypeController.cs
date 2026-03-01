@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Job Types")]
     [ApiController]
     [Route("api/[controller]")]
     public class JobTypeController : ControllerBase
@@ -21,6 +20,7 @@ namespace GarageControl.Controllers
             _jobTypeService = jobTypeService;
         }
 
+        [RequireAccess("Job Types", "Orders", "Workers")]
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
@@ -28,7 +28,7 @@ namespace GarageControl.Controllers
             var jobTypes = await _jobTypeService.All(userId);
             return Ok(jobTypes);
         }
-
+        [RequireAccess("Job Types")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(string id)
         {
@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
             if (jobType == null) return NotFound();
             return Ok(jobType);
         }
-
+        [RequireAccess("Job Types")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] JobTypeVM model)
         {
@@ -45,7 +45,7 @@ namespace GarageControl.Controllers
             await _jobTypeService.Create(model, userId);
             return Ok(new { message = "Job type created successfully" });
         }
-
+        [RequireAccess("Job Types")]
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] JobTypeVM model)
         {
@@ -56,7 +56,7 @@ namespace GarageControl.Controllers
             await _jobTypeService.Edit(id, model, userId);
             return Ok(new { message = "Job type updated successfully" });
         }
-
+        [RequireAccess("Job Types")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

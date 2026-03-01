@@ -184,7 +184,7 @@ const ServiceForm = ({
                             <div className="form-section">
                                 <label>Job Status</label>
                                 <DropDown
-                                    className={`status-glow job-status-${service.status === 0
+                                    className={`glow job-status-${service.status === 0
                                         ? 'pending'
                                         : service.status === 1
                                             ? 'inprogress'
@@ -234,7 +234,7 @@ const ServiceForm = ({
                             <div className="form-section">
                                 <label>Job Status</label>
                                 <DropDown
-                                    className={`status-glow job-status-${service.status === 0
+                                    className={`glow job-status-${service.status === 0
                                         ? 'pending'
                                         : service.status === 1
                                             ? 'inprogress'

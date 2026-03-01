@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Workers")]
     [ApiController]
     [Route("api/[controller]")]
     public class WorkerController : ControllerBase
@@ -21,6 +20,7 @@ namespace GarageControl.Controllers
             _workerService = workerService;
         }
 
+        [RequireAccess("Workers", "Orders", "Job Types")]
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
@@ -29,6 +29,7 @@ namespace GarageControl.Controllers
             return Ok(workers);
         }
 
+        [RequireAccess("Workers")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(string id)
         {
@@ -37,6 +38,7 @@ namespace GarageControl.Controllers
             return Ok(worker);
         }
 
+        [RequireAccess("Workers")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] WorkerVM model)
         {
@@ -53,6 +55,7 @@ namespace GarageControl.Controllers
             }
         }
 
+        [RequireAccess("Workers")]
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] WorkerVM model)
         {
@@ -77,6 +80,7 @@ namespace GarageControl.Controllers
             return Ok(accesses);
         }
         
+        [RequireAccess("Workers")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

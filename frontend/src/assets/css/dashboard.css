@@ -1,18 +1,3 @@
-.grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 18px;
-}
-
-.tile .count {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #fff;
-    margin-left: auto;
-}
-
 .tile.clickable {
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;

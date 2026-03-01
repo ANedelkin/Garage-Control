@@ -119,10 +119,10 @@ function App() {
     { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
     { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
     { path: '/activity-log', element: <ActivityLog />, children: [], access: 'Activity Log' },
-    { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin Dashboard' },
-    { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin Makes and Models' },
-    { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin Users' },
-    { path: '/admin/workshops', element: <AdminWorkshops />, children: [], access: 'Admin Workshops' },
+    { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin' },
+    { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin' },
+    { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin' },
+    { path: '/admin/workshops', element: <AdminWorkshops />, children: [], access: 'Admin' },
   ];
 
   return (

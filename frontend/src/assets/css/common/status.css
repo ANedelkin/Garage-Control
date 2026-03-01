@@ -1,36 +1,3 @@
-.status-glow {
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-}
-
-.status-glow::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.status-glow:hover::before {
-    opacity: 1;
-}
-
-.status-glow>* {
-    position: relative;
-    z-index: 2;
-}
-
-.job-status-awaiting {
-    background: var(--awaiting-orders, #6c757d) !important;
-}
-
 .job-status-pending {
     background: var(--pending-orders) !important;
 }
@@ -47,22 +14,18 @@
     background: var(--all-orders) !important;
 }
 
-.job-status-awaiting.status-glow::before {
-    background: var(--awaiting-orders-hover, #5a6268);
-}
-
-.job-status-pending.status-glow::before {
+.job-status-pending.glow::before {
     background: var(--pending-orders-hover);
 }
 
-.job-status-inprogress.status-glow::before {
+.job-status-inprogress.glow::before {
     background: var(--inprogress-orders-hover);
 }
 
-.job-status-finished.status-glow::before {
+.job-status-finished.glow::before {
     background: var(--finished-orders-hover);
 }
 
-.job-status-all.status-glow::before {
+.job-status-all.glow::before {
     background: var(--all-orders-hover);
 }

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 import '../../assets/css/dashboard.css';
+import '../../assets/css/common/glow.css';
 import '../../assets/css/common/status.css';
 import { dashboardApi } from '../../services/dashboardApi';
 
@@ -124,14 +125,17 @@ const Dashboard = () => {
     return (
         <main className="main dashboard">
             <section className="grid">
-                <div className="tile status-glow job-status-all" onClick={() => navigate('/orders')}>
-                    <h3>All orders <span className="count">{dashboardData.orderStats.allOrders}</span></h3>
+                <div className="tile count-tile glow job-status-all" onClick={() => navigate('/orders')}>
+                    <h3>All orders</h3>
+                    <p className="count">{dashboardData.orderStats.allOrders}</p>
                 </div>
-                <div className="tile status-glow job-status-pending" onClick={() => navigate('/orders?status=pending')}>
-                    <h3>Pending jobs <span className="count">{dashboardData.orderStats.pendingJobs}</span></h3>
+                <div className="tile count-tile glow job-status-pending" onClick={() => navigate('/orders?status=pending')}>
+                    <h3>Pending jobs</h3>
+                    <p className="count">{dashboardData.orderStats.pendingJobs}</p>
                 </div>
-                <div className="tile status-glow job-status-inprogress" onClick={() => navigate('/orders?status=inprogress')}>
-                    <h3>Jobs in progress <span className="count">{dashboardData.orderStats.inProgressJobs}</span></h3>
+                <div className="tile count-tile glow job-status-inprogress" onClick={() => navigate('/orders?status=inprogress')}>
+                    <h3>Jobs in progress</h3>
+                    <p className="count">{dashboardData.orderStats.inProgressJobs}</p>
                 </div>
 
                 <div className="tile chart-card">

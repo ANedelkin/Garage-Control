@@ -30,10 +30,10 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/job-types', icon: 'fa-gear', label: 'Job Types', accesses: ['Job Types'] },
     { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', accesses: ['Makes and Models'] },
     { icon: 'fa-circle-info', label: 'Workshop Details', accesses: ['Workshop Details'], popup: true, popupComponent: WorkshopDetails },
-    { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', accesses: ['Admin Dashboard'] },
-    { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', accesses: ['Admin Makes and Models'] },
-    { path: '/admin/users', icon: 'fa-users', label: 'Users', accesses: ['Admin Users'] },
-    { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', accesses: ['Admin Workshops'] },
+    { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', accesses: ['Admin'] },
+    { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', accesses: ['Admin'] },
+    { path: '/admin/users', icon: 'fa-users', label: 'Users', accesses: ['Admin'] },
+    { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', accesses: ['Admin'] },
   ];
 
   const isPathActive = (itemPath) => {

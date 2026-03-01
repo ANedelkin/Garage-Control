@@ -1,0 +1,29 @@
+.glow {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--glass-hover);
+}
+
+.glow:hover::before {
+    opacity: 1;
+}
+
+.glow>* {
+    position: relative;
+    z-index: 2;
+}

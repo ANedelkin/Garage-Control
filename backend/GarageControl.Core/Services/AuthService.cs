@@ -302,10 +302,7 @@ namespace GarageControl.Core.Services
             {
                 return new List<string>
                 {
-                    "Admin Dashboard",
-                    "Admin Makes and Models",
-                    "Admin Users",
-                    "Admin Workshops"
+                    "Admin"
                 };
             }
 

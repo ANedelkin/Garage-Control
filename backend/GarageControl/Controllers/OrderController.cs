@@ -5,12 +5,10 @@ using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.ViewModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GarageControl.Core.Attributes;
 
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Orders")]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -130,23 +128,6 @@ namespace GarageControl.Controllers
                 if (result is MethodResponseVM resp && !resp.Success)
                 {
                     return BadRequest(new { message = resp.Message });
-                }
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrder(string id)
-        {
-            try
-            {
-                var result = await _orderService.DeleteOrderAsync(GetUserId(), id, GetWorkshopId());
-                if (!result.Success)
-                {
-                    return BadRequest(new { message = result.Message });
                 }
                 return Ok(result);
             }

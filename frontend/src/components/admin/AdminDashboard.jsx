@@ -21,56 +21,52 @@ const AdminDashboard = () => {
         fetchStats();
     }, []);
 
-    if (loading) {
-        return <div>Loading stats...</div>;
-    }
-
-    if (!stats) {
-        return <div>Failed to load stats.</div>;
-    }
-
     return (
         <div className="main">
-            <h1>Admin Dashboard</h1>
+            {loading ? <div>Loading stats...</div> : !stats ? <div>Failed to load stats.</div> :
+                <>
+                    <h1>Admin Dashboard</h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                <div className="tile no-hover">
-                    <h3>Total Users</h3>
-                    <p style={{ fontSize: '2em', fontWeight: 'bold' }}>{stats.totalUsers}</p>
-                </div>
-                <div className="tile no-hover">
-                    <h3>Total Workshops</h3>
-                    <p style={{ fontSize: '2em', fontWeight: 'bold' }}>{stats.totalWorkshops}</p>
-                </div>
-                <div className="tile no-hover">
-                    <h3>Total Orders</h3>
-                    <p style={{ fontSize: '2em', fontWeight: 'bold' }}>{stats.totalOrders}</p>
-                </div>
-            </div>
+                    <div className="grid">
+                        <div className="tile count-tile glow">
+                            <h3>Total Users</h3>
+                            <p className="count">{stats.totalUsers}</p>
+                        </div>
+                        <div className="tile count-tile glow">
+                            <h3>Total Workshops</h3>
+                            <p className="count">{stats.totalWorkshops}</p>
+                        </div>
+                        <div className="tile count-tile glow">
+                            <h3>Total Orders</h3>
+                            <p className="count">{stats.totalOrders}</p>
+                        </div>
+                    </div>
 
-            <div className="tile">
-                <h3>Recent Users</h3>
-                <div className="table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Workshop</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {stats.recentUsers.map(user => (
-                                <tr key={user.id}>
-                                    <td>{user.email}</td>
-                                    <td>{user.role}</td>
-                                    <td>{user.workshopName || '-'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    <div className="tile">
+                        <h3>Recent Users</h3>
+                        <div className="table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Workshop</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.recentUsers.map(user => (
+                                        <tr key={user.id}>
+                                            <td>{user.email}</td>
+                                            <td>{user.role}</td>
+                                            <td>{user.workshopName || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </>
+            }
         </div>
     );
 };

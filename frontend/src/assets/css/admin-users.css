@@ -21,20 +21,6 @@
     background-color: rgba(220, 53, 69, 0.1) !important;
 }
 
-/* .admin-users-page .role-filter-dropdown {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border2);
-    background: var(--solid3);
-    color: var(--text-clr);
-    outline: none;
-    cursor: pointer;
-}
-
-.admin-users-page .role-filter-dropdown:focus {
-    border-color: var(--primary);
-} */
-
 .admin-users-page .loading-container {
     display: flex;
     justify-content: center;

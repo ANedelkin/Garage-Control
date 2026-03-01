@@ -13,6 +13,23 @@
     margin-bottom: 20px;
 }
 
+.tile.count-tile {
+    display: flex;
+    justify-content: space-between;
+}
+
+.tile.count-tile h3 {
+    margin: auto 0 5px 0;
+}
+
+.tile.count-tile .count {
+    margin: 0;
+    font-size: 50px;
+    font-weight: 600;
+    color: var(--text-clr2);
+}
+
+
 @media (max-width: 600px) {
     .tile {
         padding: 16px;

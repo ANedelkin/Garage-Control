@@ -10,7 +10,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Parts Stock")]
     [ApiController]
     [Route("api/[controller]")]
     public class PartController : ControllerBase
@@ -34,6 +33,7 @@ namespace GarageControl.Controllers
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
         }
 
+        [RequireAccess("Parts Stock")]
         [HttpGet("folder-content")]
         public async Task<IActionResult> GetFolderContent([FromQuery] string? folderId)
         {
@@ -47,7 +47,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock", "Orders")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllParts()
         {
@@ -61,7 +61,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPartById(string id)
         {
@@ -76,7 +76,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpPost("create")]
         public async Task<IActionResult> CreatePart([FromBody] CreatePartVM model)
         {
@@ -90,7 +90,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdatePart(string id, [FromBody] UpdatePartVM model)
         {
@@ -104,7 +104,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePart(string id)
         {
@@ -118,7 +118,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpPost("folder/create")]
         public async Task<IActionResult> CreateFolder([FromBody] CreateFolderVM model)
         {
@@ -132,7 +132,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpPut("folder/rename/{id}")]
         public async Task<IActionResult> RenameFolder(string id, [FromBody] string newName)
         {
@@ -146,7 +146,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpDelete("folder/delete/{id}")]
         public async Task<IActionResult> DeleteFolder(string id)
         {
@@ -160,6 +160,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [RequireAccess("Parts Stock")]
         [HttpPut("move/{id}")]
         public async Task<IActionResult> MovePart(string id, [FromBody] string? newParentId)
         {
@@ -173,7 +174,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [RequireAccess("Parts Stock")]
         [HttpPut("folder/move/{id}")]
         public async Task<IActionResult> MoveFolder(string id, [FromBody] string? newParentId)
         {

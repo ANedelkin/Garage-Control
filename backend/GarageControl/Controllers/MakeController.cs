@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Makes and Models", "Cars")]
     [ApiController]
     [Route("api/[controller]")]
     public class MakeController : ControllerBase
@@ -21,6 +20,7 @@ namespace GarageControl.Controllers
             _makeService = makeService;
         }
 
+        [RequireAccess("Makes and Models", "Admin", "Cars", "Clients")]
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
@@ -29,6 +29,7 @@ namespace GarageControl.Controllers
             return Ok(makes);
         }
 
+        [RequireAccess("Makes and Models", "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] MakeVM model)
         {
@@ -46,6 +47,7 @@ namespace GarageControl.Controllers
             }
         }
 
+        [RequireAccess("Makes and Models", "Admin")]
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] MakeVM model)
         {
@@ -87,6 +89,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpDelete("{id}")]
+        [RequireAccess("Makes and Models", "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -102,7 +105,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("promote-model")]
-        [Authorize(Roles = "Admin")]
+        [RequireAccess("Makes and Models", "Admin")]
         public async Task<IActionResult> PromoteModel([FromBody] PromoteModelRequest request)
         {
             await _makeService.PromoteModelSuggestion(request.MakeName, request.ModelName, request.NewModelName, request.NewMakeName);
@@ -110,6 +113,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("merge-with-global")]
+        [RequireAccess("Makes and Models")]
         public async Task<IActionResult> MergeMakeWithGlobal([FromBody] MergeMakeRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
