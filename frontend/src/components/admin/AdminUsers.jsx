@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
-import JustificationPopup from '../common/JustificationPopup';
+import JustificationPopup from './JustificationPopup';
 import '../../assets/css/admin-users.css';
 
 const AdminUsers = () => {
@@ -11,7 +11,6 @@ const AdminUsers = () => {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [isJustifyOpen, setIsJustifyOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
 
     useEffect(() => {
@@ -34,11 +33,8 @@ const AdminUsers = () => {
 
     const handleToggleBlock = async (user) => {
         if (!user.isBlocked) {
-            // Opening block popup
             setSelectedUserId(user.id);
-            setIsJustifyOpen(true);
         } else {
-            // Direct unblock
             await performToggleBlock(user.id);
         }
     };
@@ -51,7 +47,6 @@ const AdminUsers = () => {
                     ? { ...u, isBlocked: !u.isBlocked }
                     : u
             ));
-            setIsJustifyOpen(false);
             setSelectedUserId(null);
         } catch (err) {
             console.error('Error toggling block status:', err);
@@ -155,8 +150,8 @@ const AdminUsers = () => {
             <footer>GarageFlow — Users Management</footer>
 
             <JustificationPopup
-                isOpen={isJustifyOpen}
-                onClose={() => setIsJustifyOpen(false)}
+                isOpen={selectedUserId}
+                onClose={() => setSelectedUserId(false)}
                 onConfirm={(reason) => performToggleBlock(selectedUserId, reason)}
                 title="Block User"
                 message="Please provide a reason for blocking this user."

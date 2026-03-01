@@ -9,19 +9,15 @@ import '../../assets/css/popup.css';
 const AdminMakesModels = () => {
     const [existing, setExisting] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('existing'); // For small screens
     const [popupNode, setPopupNode] = useState(null);
 
     const loadData = async () => {
-        setLoading(true);
         try {
             const [makesData, suggestionsData] = await Promise.all([
                 makeApi.getAll(),
                 makeApi.getSuggestions()
             ]);
 
-            // Map Existing Makes to Tree Nodes
             setExisting(makesData.map(m => ({
                 id: m.id,
                 name: m.name,
@@ -29,22 +25,18 @@ const AdminMakesModels = () => {
                 className: 'make-node'
             })));
 
-            // Map Suggestions to Tree Nodes
-            // Backend returns [{ name, count }]
             setSuggestions(suggestionsData.map((s, index) => ({
                 id: s.name,
-                name: s.name, // Capitalized/Trimmed from backend
+                name: s.name,
                 count: s.count,
                 isExisting: s.isExisting,
-                type: 'group', // Can't expand yet as we don't fetch sub-models for suggestions
+                type: 'group',
                 className: s.isExisting ? 'suggestion-node existing' : 'suggestion-node'
             })));
 
         } catch (error) {
             console.error("Failed to load makes/models", error);
             alert("Error loading data");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -52,12 +44,11 @@ const AdminMakesModels = () => {
         loadData();
     }, []);
 
-    // --- Actions for Existing Tree ---
     const fetchModels = async (makeId) => {
         const models = await modelApi.getAll(makeId);
         return {
             items: models.map(m => ({ ...m, type: 'item' })),
-            groups: [] // Models don't have sub-groups
+            groups: []
         };
     };
 
@@ -66,9 +57,9 @@ const AdminMakesModels = () => {
         return {
             items: models.map(m => ({
                 ...m,
-                id: `SUGG_MOD_${m.name}`, // Unique ID for tree
+                id: `SUGG_MOD_${m.name}`, //TODO: names are already unique, no need  for prefix
                 type: 'item',
-                makeName: makeName, // Pass parent make name for popup
+                makeName: makeName,
                 className: 'suggestion-model-node'
             })),
             groups: []
@@ -76,9 +67,7 @@ const AdminMakesModels = () => {
     };
 
     const existingActions = {
-        // onAddGroup Removed as per requirements
         onAddItem: async (node, onSuccess) => {
-            // Add Model to Make
             const name = prompt("Enter model name:");
             if (!name) return;
             try {
@@ -96,13 +85,6 @@ const AdminMakesModels = () => {
                     await makeApi.editMake(node.id, { name: newName });
                 } else {
                     await modelApi.editModel(node.id, { name: newName, makeId: node.carMakeId });
-                    // Helper: ModelVM needs MakeId? ItemsTreeNode doesn't hold parent ID explicitly unless passed.
-                    // fetchModels returns models. Do they have makeId?
-                    // I need to ensure fetchModels result includes everything needed for update.
-                    // Backend ModelVM requires MakeId for edit?
-                    // ModelController.Edit -> UpdateModel -> Repo.GetById -> Update props.
-                    // ModelVM definition has MakeId [Required].
-                    // So I must ensure the node has makeId.
                 }
                 onSuccess();
             } catch (e) {
@@ -124,10 +106,6 @@ const AdminMakesModels = () => {
         }
     };
 
-    // Special: Models from backend might not have properties needed for logic if not carefully mapped.
-    // fetchModels wrapper ensures 'type' is set. 
-    // Models from ModelController: { id, name, carMakeId, ... }
-    // So node.carMakeId should be available.
 
     const existingLabels = {
         addItem: "Add Model",
@@ -135,18 +113,12 @@ const AdminMakesModels = () => {
         rename: "Rename"
     };
 
-    // --- Actions for Suggestions ---
     const handleOpenPopup = (node) => {
-        // If it's a make and NOT existing, we promote it directly (or open popup? User said "When a model... has its add button pressed... popup")
-        // "Their make should be shown as a folder... just without an add button" (If existing).
-
         if (node.type === 'group') {
             if (!node.isExisting) handlePromote(node);
             return;
         }
 
-        // It's a model
-        // Find if parent make is existing using the makeName we passed
         const parentMake = existing.find(m => m.name.toUpperCase() === node.makeName?.toUpperCase());
 
         setPopupNode({
@@ -160,7 +132,6 @@ const AdminMakesModels = () => {
         const newName = prompt("Enter name for the new Make:", node.name);
         if (!newName) return;
 
-        // Check duplicates locally
         const normalized = newName.trim().toUpperCase();
         const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
 
@@ -171,7 +142,7 @@ const AdminMakesModels = () => {
 
         try {
             await makeApi.promote({ name: node.name, newName });
-            loadData(); // Reload to see move
+            loadData();
         } catch (e) {
             alert("Failed to promote");
         }
@@ -179,23 +150,21 @@ const AdminMakesModels = () => {
 
     const handleConfirmModelAdd = async (makeName, modelName) => {
         try {
-            // Use promote model flow which handles notifications and existing check
             await makeApi.promoteModel({
-                makeName: popupNode.makeName, // Original make name
+                makeName: popupNode.makeName,
                 newMakeName: makeName !== popupNode.makeName ? makeName : null,
-                modelName: popupNode.name,    // Original suggested name
+                modelName: popupNode.name, 
                 newModelName: modelName !== popupNode.name ? modelName : null
             });
 
             setPopupNode(null);
-            loadData(); // Refresh everything
+            loadData();
         } catch (e) {
             alert("Error: " + e.message);
         }
     };
 
     const renderSuggestionActions = (node, type) => {
-        // If existing make, no button
         if (type === 'group' && node.isExisting) return null;
 
         return (
@@ -203,27 +172,20 @@ const AdminMakesModels = () => {
                 className="icon-btn btn success-text"
                 title="Add to system"
                 onClick={(e) => { e.stopPropagation(); handleOpenPopup(node); }}
-                style={{ marginRight: '10px' }}
             >
                 <i className="fa-solid fa-plus"></i>
             </button>
         );
     };
 
-    // Add New Make (Top Level)
     const handleAddMake = async () => {
         const name = prompt("Enter new make name:");
         if (!name) return;
 
-        // Check duplicate
         const normalized = name.trim().toUpperCase();
         const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
         if (duplicate) {
-            if (window.confirm(`Make "${duplicate.name}" already exists. Continue?`)) {
-                // proceed
-            } else {
-                return;
-            }
+            if (window.confirm(`Make "${duplicate.name}" already exists. Continue?`)) return;
         }
 
         try {
@@ -249,7 +211,7 @@ const AdminMakesModels = () => {
                     <div className="list-container grow">
                         <ItemsTree
                             groups={suggestions}
-                            fetchChildren={fetchSuggestedModels} // Enable expansion
+                            fetchChildren={fetchSuggestedModels}
                             actions={{}}
                             renderActions={renderSuggestionActions}
                         />

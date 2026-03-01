@@ -2,16 +2,6 @@ import React, { useState, useEffect } from 'react';
 import '../../assets/css/popup.css'; // Assuming styles will be added here or reuse existing
 
 const SuggestedModelPopup = ({ node, onClose, onConfirm }) => {
-    // node: { id, name, count, isExisting (false for model?), parentName (Make Name) }
-    // Actually node here is the MODEL suggestion. Its parent is the Make.
-    // The make might be existing or not.
-    // We need to know the Make name. It's not directly in node unless passed.
-    // Let's assume onConfirm takes (makeName, modelName).
-
-    // We need parent make name. 
-    // In AdminMakesModels, fetchSuggestedModels knows the make name.
-    // We should pass makeName as prop.
-
     const [makeName, setMakeName] = useState(node.makeName || '');
     const [modelName, setModelName] = useState(node.name || '');
     const [isMakeExisting, setIsMakeExisting] = useState(node.isMakeExisting || false);
@@ -38,8 +28,7 @@ const SuggestedModelPopup = ({ node, onClose, onConfirm }) => {
                             className="form-control"
                             value={makeName}
                             onChange={(e) => setMakeName(e.target.value)}
-                            disabled={isMakeExisting} // If make exists, probably shouldn't change it here? Or allow changing to move it?
-                        // User request: "inputs for the model's make,'s name if the make isn't an already existing one"
+                            disabled={isMakeExisting}
                         />
                     </div>
                     <div className="form-group">

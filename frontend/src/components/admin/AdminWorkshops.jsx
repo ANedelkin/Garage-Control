@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
-import JustificationPopup from '../common/JustificationPopup';
-import '../../assets/css/admin-users.css'; // Reuse scoped styles
+import JustificationPopup from './JustificationPopup';
+import '../../assets/css/admin-users.css';
 
 const AdminWorkshops = () => {
     const [workshops, setWorkshops] = useState([]);
@@ -10,7 +10,6 @@ const AdminWorkshops = () => {
     const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [isJustifyOpen, setIsJustifyOpen] = useState(false);
     const [selectedWorkshopId, setSelectedWorkshopId] = useState(null);
 
     useEffect(() => {
@@ -33,11 +32,8 @@ const AdminWorkshops = () => {
 
     const handleToggleBlock = async (workshop) => {
         if (!workshop.isBlocked) {
-            // Opening block popup
             setSelectedWorkshopId(workshop.id);
-            setIsJustifyOpen(true);
         } else {
-            // Direct unblock
             await performToggleBlock(workshop.id);
         }
     };
@@ -50,7 +46,6 @@ const AdminWorkshops = () => {
                     ? { ...w, isBlocked: !w.isBlocked }
                     : w
             ));
-            setIsJustifyOpen(false);
             setSelectedWorkshopId(null);
         } catch (err) {
             console.error('Error toggling workshop block status:', err);
@@ -144,8 +139,8 @@ const AdminWorkshops = () => {
             <footer>GarageFlow — Workshops Management</footer>
 
             <JustificationPopup
-                isOpen={isJustifyOpen}
-                onClose={() => setIsJustifyOpen(false)}
+                isOpen={selectedWorkshopId}
+                onClose={() => setSelectedWorkshopId(null)}
                 onConfirm={(reason) => performToggleBlock(selectedWorkshopId, reason)}
                 title="Block Workshop"
                 message="Please provide a reason for blocking this workshop."
