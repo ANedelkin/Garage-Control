@@ -1,0 +1,36 @@
+.activity-sentence {
+    line-height: 1.5;
+    font-size: 1.1em;
+    color: var(--text-clr1);
+}
+
+.log-link {
+    font-weight: 600;
+    color: var(--link-clr);
+    text-decoration: none;
+}
+
+.log-link:hover {
+    text-decoration: underline;
+}
+
+.actor-link {
+    color: var(--link-clr);
+}
+
+.target-link {
+    color: var(--link-clr);
+}
+
+/* .action-text {
+    color: var(--text-clr1);
+} */
+
+.actor-name {
+    font-weight: 600;
+    color: var(--link-clr);
+}
+
+b {
+    font-weight: 600;
+}

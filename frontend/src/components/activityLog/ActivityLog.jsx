@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import activityLogApi from '../../services/activityLogApi';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/common/table.css';
+import '../../assets/css/activity-log.css';
 
 const ActivityLog = () => {
     const [logs, setLogs] = useState([]);
@@ -46,12 +47,10 @@ const ActivityLog = () => {
 
     return (
         <div className="main">
-            <div className="horizontal between center" style={{ marginBottom: '20px' }}>
-                <h1>Activity Log</h1>
-            </div>
 
-            <div className="tile no-hover" style={{ padding: '0' }}>
-                <div className="table" onClick={handleLogClick}>
+            <div className="tile">
+                <h3>Activity Log</h3>
+                <div style={{ overflowX: 'auto' }} onClick={handleLogClick}>
                     <table>
                         <thead>
                             <tr>
@@ -67,7 +66,7 @@ const ActivityLog = () => {
                             ) : (
                                 logs.map(log => (
                                     <tr key={log.id}>
-                                        <td style={{ whiteSpace: 'nowrap', verticalAlign: 'top' }}>{formatTimestamp(log.timestamp)}</td>
+                                        <td>{formatTimestamp(log.timestamp)}</td>
                                         <td>
                                             <div
                                                 className="activity-sentence"
@@ -81,46 +80,6 @@ const ActivityLog = () => {
                     </table>
                 </div>
             </div>
-
-            <style>{`
-                .activity-sentence {
-                    line-height: 1.5;
-                    font-size: 1.1em;
-                }
-                .log-link {
-                    font-weight: 600;
-                    color: var(--primary-color);
-                    text-decoration: none;
-                }
-                .log-link:hover {
-                    text-decoration: underline;
-                }
-                .actor-link {
-                    color: #2c3e50;
-                }
-                [data-theme='dark'] .actor-link {
-                    color: #ecf0f1;
-                }
-                .target-link {
-                    color: var(--primary-color);
-                }
-                .action-text {
-                    color: #555;
-                }
-                [data-theme='dark'] .action-text {
-                    color: #bbb;
-                }
-                .actor-name {
-                    font-weight: 600;
-                    color: #2c3e50;
-                }
-                [data-theme='dark'] .actor-name {
-                    color: #ecf0f1;
-                }
-                b {
-                    font-weight: 600;
-                }
-            `}</style>
         </div>
     );
 };
