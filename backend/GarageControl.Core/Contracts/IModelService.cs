@@ -7,6 +7,7 @@ namespace GarageControl.Core.Contracts
     {
         Task<IEnumerable<ModelVM>> GetModels(string makeId, string userId);
         Task<ModelVM?> GetModel(string id);
+        Task<ModelVM?> GetModel(string id, string userId);
         Task CreateModel(ModelVM model, string userId);
         Task UpdateModel(string id, ModelVM model, string userId);
         Task DeleteModel(string id, string userId);

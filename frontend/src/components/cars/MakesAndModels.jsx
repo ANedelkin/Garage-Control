@@ -263,10 +263,15 @@ const MakesAndModels = () => {
                                             {model.globalId && (
                                                 <button
                                                     className="btn icon-btn"
-                                                    onClick={() => {
-                                                        const globalModel = models.find(m => m.id === model.globalId);
-                                                        if (globalModel) {
-                                                            handleOpenMerge('model', model, globalModel);
+                                                    onClick={async () => {
+                                                        try {
+                                                            const globalModel = await modelApi.getModel(model.globalId);
+                                                            if (globalModel) {
+                                                                handleOpenMerge('model', model, globalModel);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Error fetching global model:', error);
+                                                            alert('Failed to load global model');
                                                         }
                                                     }}
                                                     title="Merge with global"

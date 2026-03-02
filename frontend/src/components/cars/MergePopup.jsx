@@ -53,7 +53,7 @@ const MergePopup = ({ isOpen, onClose, mergeType, customItem, globalItem, onMerg
 
                 <div className="form-footer">
                     <button className="btn" onClick={onMerge}>
-                        <i className="fa-solid fa-code-merge"></i> Merge
+                        <i className="fa-solid fa-arrows-to-circle"></i> Merge
                     </button>
                     <button className="btn" onClick={onClose}>Cancel</button>
                 </div>

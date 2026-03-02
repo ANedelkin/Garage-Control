@@ -68,7 +68,16 @@
     color: white;
 }
 
-/* Merge comparison layout */
+.popup.tile {
+    width: 500px !important;
+    /* height: fit-content !important;
+    flex-direction: column; */
+}
+/* 
+.form-section{
+    width: 600px;
+} */
+
 .merge-comparison {
     display: flex;
     align-items: center;

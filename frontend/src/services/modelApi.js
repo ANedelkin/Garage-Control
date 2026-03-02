@@ -4,6 +4,9 @@ export const modelApi = {
     getAll: async (makeId) => {
         return await request('GET', `model/all/${makeId}`);
     },
+    getModel: async (id) => {
+        return await request('GET', `model/${id}`);
+    },
     createModel: async (modelData) => {
         return await request('POST', 'model/create', modelData);
     },

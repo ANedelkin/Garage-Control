@@ -29,6 +29,15 @@ namespace GarageControl.Controllers
             return Ok(models);
         }
 
+        [RequireAccess("Makes and Models", "Admin", "Clients")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var model = await _modelService.GetModel(id, userId);
+            return Ok(model);
+        }
+
         [RequireAccess("Makes and Models", "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] ModelVM model)

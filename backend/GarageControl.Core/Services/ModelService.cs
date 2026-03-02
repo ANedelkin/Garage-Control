@@ -80,6 +80,53 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<ModelVM?> GetModel(string id, string userId)
+        {
+            var bossId = await _workshopService.GetWorkshopBossId(userId);
+            var carModel = await _repo.GetAllAsNoTracking<CarModel>()
+                .Include(m => m.CarMake)
+                .FirstOrDefaultAsync(m => m.Id == id && (m.CreatorId == null || (bossId != null && m.CreatorId == bossId)));
+
+            if (carModel == null) return null;
+
+            var vm = new ModelVM
+            {
+                Id = carModel.Id,
+                Name = carModel.Name,
+                MakeId = carModel.CarMakeId,
+                IsCustom = carModel.CreatorId != null
+            };
+
+            if (vm.IsCustom)
+            {
+                // If this is a custom model, look for matching global model
+                // First check under the same make, then under the global version of this make
+                var globalMatch = await _repo.GetAllAsNoTracking<CarModel>()
+                    .FirstOrDefaultAsync(gm => gm.CreatorId == null 
+                        && gm.CarMakeId == carModel.CarMakeId 
+                        && gm.Name.ToUpper() == carModel.Name.ToUpper());
+                
+                if (globalMatch == null && carModel.CarMake?.CreatorId != null)
+                {
+                    // Model is custom and in a custom make, look under the global version of this make
+                    var globalMake = await _repo.GetAllAsNoTracking<CarMake>()
+                        .FirstOrDefaultAsync(m => m.CreatorId == null && m.Name.ToUpper() == carModel.CarMake.Name.ToUpper());
+                    
+                    if (globalMake != null)
+                    {
+                        globalMatch = await _repo.GetAllAsNoTracking<CarModel>()
+                            .FirstOrDefaultAsync(gm => gm.CreatorId == null 
+                                && gm.CarMakeId == globalMake.Id 
+                                && gm.Name.ToUpper() == carModel.Name.ToUpper());
+                    }
+                }
+                
+                vm.GlobalId = globalMatch?.Id;
+            }
+
+            return vm;
+        }
+
         public async Task<IEnumerable<ModelVM>> GetModels(string makeId, string userId)
         {
             var bossId = await _workshopService.GetWorkshopBossId(userId);
