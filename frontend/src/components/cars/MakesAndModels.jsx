@@ -218,7 +218,10 @@ const MakesAndModels = () => {
                                                 className="btn icon-btn"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleOpenMerge('make', make, { id: make.globalId, name: make.name });
+                                                    const globalMake = makes.find(m => m.id === make.globalId);
+                                                    if (globalMake) {
+                                                        handleOpenMerge('make', make, globalMake);
+                                                    }
                                                 }}
                                                 title="Merge with global"
                                             >
@@ -260,7 +263,12 @@ const MakesAndModels = () => {
                                             {model.globalId && (
                                                 <button
                                                     className="btn icon-btn"
-                                                    onClick={() => handleOpenMerge('model', model, { id: model.globalId, name: model.name })}
+                                                    onClick={() => {
+                                                        const globalModel = models.find(m => m.id === model.globalId);
+                                                        if (globalModel) {
+                                                            handleOpenMerge('model', model, globalModel);
+                                                        }
+                                                    }}
                                                     title="Merge with global"
                                                 >
                                                     <i className="fa-solid fa-arrows-to-circle"></i>

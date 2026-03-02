@@ -114,7 +114,7 @@ namespace GarageControl.Core.Services
                 .GroupBy(n => n.Name.Trim().ToUpper())
                 .Select(g => new MetricSuggestionVM 
                 { 
-                    Name = g.First().Name.Trim(), 
+                    Name = g.Key, 
                     Count = g.Count(), // Or sum of new models? The original count was just grouping makes. Stick to that for now.
                     IsExisting = g.Any(x => x.CreatorId == null) // If any make in this group is System, it's Existing.
                 })
@@ -138,7 +138,7 @@ namespace GarageControl.Core.Services
                 .GroupBy(n => n.Trim().ToUpper())
                 .Select(g => new MetricSuggestionVM
                 {
-                    Name = g.First(),
+                    Name = g.Key,
                     Count = g.Count(),
                     IsExisting = false // Models are inherently new suggestions here
                 })
