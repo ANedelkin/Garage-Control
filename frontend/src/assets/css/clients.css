@@ -3,6 +3,10 @@
     max-width: 95%;
 }
 
-.edit-client .popup {
-    max-width: 400px;
+.client-form {
+    width: 800px;
+}
+
+.car-form{
+    width: 400px;
 }

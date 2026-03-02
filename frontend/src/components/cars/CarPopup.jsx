@@ -45,7 +45,7 @@ const CarPopup = ({ isOpen, onClose, onSave, car, makes }) => {
 
     return (
         <div className="popup-overlay" onClick={onClose}>
-            <div className="popup tile" onClick={e => e.stopPropagation()} style={{ width: '400px' }}>
+            <div className="popup tile car-form" onClick={e => e.stopPropagation()} style={{ width: '400px' }}>
                 <h3>{currentCar.id ? "Edit Car" : "Add Car"}</h3>
 
                 <div className="form-section">

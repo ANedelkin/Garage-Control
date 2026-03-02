@@ -1,28 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
+import ClientPopup from './ClientPopup';
 
 const Clients = () => {
-    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
+    const [showPopup, setShowPopup] = useState(false);
+    const [selectedClientId, setSelectedClientId] = useState(null);
 
     useEffect(() => {
-        const fetchClients = async () => {
-            try {
-                const data = await clientApi.getAll();
-                setClients(data);
-            } catch (error) {
-                console.error("Failed to fetch clients", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchClients();
     }, []);
+
+    const fetchClients = async () => {
+        setLoading(true);
+        try {
+            const data = await clientApi.getAll();
+            setClients(data);
+        } catch (error) {
+            console.error("Failed to fetch clients", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredClients = clients.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -41,6 +44,20 @@ const Clients = () => {
         }
     };
 
+    const openEditPopup = (clientId) => {
+        setSelectedClientId(clientId);
+        setShowPopup(true);
+    };
+
+    const handlePopupClose = () => {
+        setShowPopup(false);
+        setSelectedClientId(null);
+    };
+
+    const handlePopupSave = (clientId) => {
+        fetchClients();
+    };
+
     return (
         <main className="main">
             <div className="header">
@@ -50,7 +67,10 @@ const Clients = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <Link className="btn" to="/clients/new">+ New Client</Link>
+                <button className="btn" onClick={() => {
+                    setSelectedClientId(null);
+                    setShowPopup(true);
+                }}>+ New Client</button>
             </div>
 
             <div className="tile">
@@ -70,7 +90,7 @@ const Clients = () => {
                             {loading ? <tr><td colSpan="5">Loading...</td></tr> : filteredClients.map((c) => (
                                 <tr
                                     key={c.id}
-                                    onClick={() => navigate(`/clients/${c.id}`)}
+                                    onClick={() => openEditPopup(c.id)}
                                     style={{ cursor: 'pointer' }}
                                     className="clickable-row"
                                 >
@@ -79,7 +99,10 @@ const Clients = () => {
                                     <td>{c.email}</td>
                                     <td>{c.address}</td>
                                     <td onClick={e => e.stopPropagation()}>
-                                        <button className="btn delete icon-btn" onClick={() => handleDelete(c.id)}>
+                                        <button className="btn icon-btn" title="Edit client" onClick={() => openEditPopup(c.id)}>
+                                            <i className="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button className="btn delete icon-btn" title="Delete client" onClick={() => handleDelete(c.id)}>
                                             <i className="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
@@ -92,6 +115,14 @@ const Clients = () => {
                     </table>
                 </div>
             </div>
+
+            <ClientPopup
+                isOpen={showPopup}
+                onClose={handlePopupClose}
+                onSave={handlePopupSave}
+                clientId={selectedClientId}
+            />
+
             <footer>GarageFlow — Clients Management</footer>
         </main>
     );
