@@ -14,19 +14,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
             var context = serviceProvider.GetRequiredService<GarageControlDbContext>();
 
             // Seed accesses
-            var accesses = new List<string>
-            {
-                "Dashboard",
-                "Orders",
-                "Parts Stock",
-                "Workers",
-                "Job Types",
-                "Clients",
-                "Workshop Details",
-                "Makes and Models",
-                "Cars",
-                "Activity Log",
-            };
+            var accesses = Accesses.AccessNames.Select(a => a.Value).ToList();
 
             var missingAccesses = accesses
                 .Where(a => !context.Accesses.Any(e => e.Name == a))

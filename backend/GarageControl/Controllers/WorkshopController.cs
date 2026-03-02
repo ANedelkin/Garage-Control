@@ -9,7 +9,6 @@ using GarageControl.Core.Attributes;
 namespace GarageControl.Controllers
 {
     [Authorize]
-    [RequireAccess("Workshop Details")]
     [ApiController]
     [Route("api/[controller]")]
     public class WorkshopController : ControllerBase
@@ -53,6 +52,7 @@ namespace GarageControl.Controllers
             return Ok(new { message = "Workshop created successfully." });
         }
 
+        [RequireAccess("Workshop Details")]
         [HttpGet("details")]
         public async Task<IActionResult> Details()
         {
@@ -64,6 +64,7 @@ namespace GarageControl.Controllers
             }
             return Ok(workshop);
         }
+        [RequireAccess("Workshop Details")]
         [HttpPut("edit")]
         public async Task<IActionResult> Edit([FromBody] WorkshopVM workshop)
         {
