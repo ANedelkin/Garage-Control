@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { usePopup } from "../../context/PopupContext";
 import "../../assets/css/common/popup.css";
 import "../../assets/css/common/layout.css";
 import "../../assets/css/common/colors.css";
@@ -10,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { workerApi } from "../../services/workerApi";
 import { jobTypeApi } from "../../services/jobTypeApi";
 import ScheduleSelector from "./ScheduleSelector";
+import LeavePopup from "./LeavePopup";
 
 const EditWorker = () => {
   const { id } = useParams();
@@ -32,7 +34,7 @@ const EditWorker = () => {
   const [allJobTypes, setAllJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [showLeavePopup, setShowLeavePopup] = useState(false);
+  const { addPopup, removeLastPopup } = usePopup();
   const [currentLeave, setCurrentLeave] = useState({ startDate: new Date(), endDate: new Date() });
   const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
 
@@ -167,15 +169,14 @@ const EditWorker = () => {
     }
   };
 
-  const handleAddOrUpdateLeave = () => {
+  const handleAddOrUpdateLeave = (leave) => {
     let updatedLeaves = [...worker.leaves];
     if (editingLeaveIndex >= 0) {
-      updatedLeaves[editingLeaveIndex] = currentLeave;
+      updatedLeaves[editingLeaveIndex] = leave;
     } else {
-      updatedLeaves.push(currentLeave);
+      updatedLeaves.push(leave);
     }
     setWorker({ ...worker, leaves: updatedLeaves });
-    setShowLeavePopup(false);
     setEditingLeaveIndex(-1);
   };
 
@@ -193,7 +194,16 @@ const EditWorker = () => {
       setCurrentLeave({ startDate: new Date(), endDate: new Date() });
       setEditingLeaveIndex(-1);
     }
-    setShowLeavePopup(true);
+
+    addPopup(
+      index >= 0 ? 'Edit Leave' : 'Add Leave',
+      <LeavePopup
+        onClose={removeLastPopup}
+        onConfirm={handleAddOrUpdateLeave}
+        currentLeave={leave || { startDate: new Date(), endDate: new Date() }}
+        isEditing={index >= 0}
+      />
+    );
   };
 
   if (loading) return <div>Loading...</div>;
@@ -325,31 +335,7 @@ const EditWorker = () => {
           </div>
         </form>
       </div>
-      {showLeavePopup && (
-        <div className="popup-overlay" onClick={() => setShowLeavePopup(false)}>
-          <div className="tile popup" onClick={e => e.stopPropagation()}>
-            <h3>{editingLeaveIndex >= 0 ? "Edit Leave" : "Add Leave"}</h3>
-            <div className="form-section">
-              <label>Start Date</label>
-              <DatePicker
-                selected={currentLeave.startDate}
-                onChange={date => setCurrentLeave({ ...currentLeave, startDate: date })}
-              />
-            </div>
-            <div className="form-section">
-              <label>End Date</label>
-              <DatePicker
-                selected={currentLeave.endDate}
-                onChange={date => setCurrentLeave({ ...currentLeave, endDate: date })}
-              />
-            </div>
-            <div className="form-footer">
-              <button type="button" className="btn" onClick={handleAddOrUpdateLeave}>Save</button>
-              <button type="button" className="btn" onClick={() => setShowLeavePopup(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </main>
 
   );

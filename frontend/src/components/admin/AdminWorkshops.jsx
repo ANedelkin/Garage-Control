@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
+import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
 import '../../assets/css/admin-users.css';
 
@@ -10,7 +11,7 @@ const AdminWorkshops = () => {
     const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [selectedWorkshopId, setSelectedWorkshopId] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     useEffect(() => {
         fetchWorkshops();
@@ -32,7 +33,15 @@ const AdminWorkshops = () => {
 
     const handleToggleBlock = async (workshop) => {
         if (!workshop.isBlocked) {
-            setSelectedWorkshopId(workshop.id);
+            addPopup(
+                'Block Workshop',
+                <JustificationPopup
+                    onClose={removeLastPopup}
+                    onConfirm={(reason) => performToggleBlock(workshop.id, reason)}
+                    title="Block Workshop"
+                    message="Please provide a reason for blocking this workshop."
+                />
+            );
         } else {
             await performToggleBlock(workshop.id);
         }
@@ -46,7 +55,7 @@ const AdminWorkshops = () => {
                     ? { ...w, isBlocked: !w.isBlocked }
                     : w
             ));
-            setSelectedWorkshopId(null);
+            removeLastPopup();
         } catch (err) {
             console.error('Error toggling workshop block status:', err);
             alert(err.message || 'Failed to update workshop status');
@@ -138,13 +147,7 @@ const AdminWorkshops = () => {
 
             <footer>GarageFlow — Workshops Management</footer>
 
-            <JustificationPopup
-                isOpen={selectedWorkshopId}
-                onClose={() => setSelectedWorkshopId(null)}
-                onConfirm={(reason) => performToggleBlock(selectedWorkshopId, reason)}
-                title="Block Workshop"
-                message="Please provide a reason for blocking this workshop."
-            />
+
         </main>
     );
 };

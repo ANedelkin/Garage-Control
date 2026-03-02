@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { usePopup } from '../../context/PopupContext';
 import PartTransferPopup from './PartTransferPopup';
 import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
+import Popup from '../common/Popup';
 import '../../assets/css/common/status.css';
 
 const ServiceForm = ({
@@ -19,7 +21,7 @@ const ServiceForm = ({
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
-    const [transferInfo, setTransferInfo] = useState({ isOpen: false, partIndex: null });
+    const { addPopup, removeLastPopup } = usePopup();
 
     const { user, accesses } = useAuth();
     const hasStockAccess = accesses.includes('Parts Stock');
@@ -122,6 +124,21 @@ const ServiceForm = ({
         };
         newParts[partIndex] = updatedPart;
         updateService(service.id, 'parts', newParts);
+        removeLastPopup();
+    };
+
+    const openTransferPopup = (partIndex) => {
+        const part = service.parts[partIndex];
+        console.log("e");
+        addPopup(
+            'Transfer to Planned',
+            <PartTransferPopup
+                onClose={removeLastPopup}
+                onConfirm={(qty) => handleTransfer(partIndex, qty)}
+                maxQuantity={part.requestedQuantity}
+                partName={part.name}
+            />
+        );
     };
 
     return (
@@ -412,7 +429,7 @@ const ServiceForm = ({
                                                 type="button"
                                                 className="btn icon-btn"
                                                 disabled={service.status === 2 || !p.requestedQuantity}
-                                                onClick={() => setTransferInfo({ isOpen: true, partIndex: i })}
+                                                onClick={() => openTransferPopup(i)}
                                                 title="Transfer to Planned"
                                             >
                                                 <i className="fa-solid fa-plus"></i>
@@ -443,13 +460,7 @@ const ServiceForm = ({
                 </div>
             </div>
 
-            <PartTransferPopup
-                isOpen={transferInfo.isOpen}
-                onClose={() => setTransferInfo({ isOpen: false, partIndex: null })}
-                onConfirm={(qty) => handleTransfer(transferInfo.partIndex, qty)}
-                maxQuantity={transferInfo.partIndex !== null ? service.parts[transferInfo.partIndex].requestedQuantity : 0}
-                partName={transferInfo.partIndex !== null ? service.parts[transferInfo.partIndex].name : ''}
-            />
+
         </div>
     );
 };

@@ -45,8 +45,8 @@ const NotificationPopup = ({ notifications, onClose, onRefresh }) => {
     };
 
     return (
-        <div className="popup-overlay">
-            <div className="popup notification-popup tile" ref={popupRef}>
+        // <div className="popup-overlay">
+            <div className="notification-popup tile" ref={popupRef}>
                 <div className="section-header">
                     <h3>Notifications</h3>
                     <button className="icon-btn btn" onClick={onClose}>
@@ -83,7 +83,7 @@ const NotificationPopup = ({ notifications, onClose, onRefresh }) => {
                     )}
                 </div>
             </div>
-        </div>
+        // </div>
     );
 };
 

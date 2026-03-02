@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
+import { usePopup } from '../../context/PopupContext';
 import ClientPopup from './ClientPopup';
 
 const Clients = () => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
-    const [showPopup, setShowPopup] = useState(false);
-    const [selectedClientId, setSelectedClientId] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     useEffect(() => {
         fetchClients();
@@ -45,17 +45,16 @@ const Clients = () => {
     };
 
     const openEditPopup = (clientId) => {
-        setSelectedClientId(clientId);
-        setShowPopup(true);
-    };
-
-    const handlePopupClose = () => {
-        setShowPopup(false);
-        setSelectedClientId(null);
+        addPopup("Edit Client", <ClientPopup
+            onClose={removeLastPopup}
+            onSave={handlePopupSave}
+            clientId={clientId}
+        />);
     };
 
     const handlePopupSave = (clientId) => {
         fetchClients();
+        removeLastPopup();
     };
 
     return (
@@ -68,8 +67,11 @@ const Clients = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
                 <button className="btn" onClick={() => {
-                    setSelectedClientId(null);
-                    setShowPopup(true);
+                    addPopup("New Client", <ClientPopup
+                        onClose={removeLastPopup}
+                        onSave={handlePopupSave}
+                        clientId={null}
+                    />);
                 }}>+ New Client</button>
             </div>
 
@@ -116,12 +118,12 @@ const Clients = () => {
                 </div>
             </div>
 
-            <ClientPopup
+            {/* <ClientPopup
                 isOpen={showPopup}
                 onClose={handlePopupClose}
                 onSave={handlePopupSave}
                 clientId={selectedClientId}
-            />
+            /> */}
 
             <footer>GarageFlow — Clients Management</footer>
         </main>

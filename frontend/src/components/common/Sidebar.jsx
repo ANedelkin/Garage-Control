@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';
-import Popup from './Popup';
+import { usePopup } from '../../context/PopupContext';
 import WorkshopDetails from '../workshopDetails/WorkshopDetails';
 
 const Sidebar = ({ open, onClose, accesses = [] }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const { addPopup, removeLastPopup } = usePopup();
   const location = useLocation();
 
   useEffect(() => {
@@ -53,7 +54,14 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     return accesses.some(access => item.accesses.includes(access));
   });
 
-  const [ActivePopup, setActivePopup] = useState(null);
+  const handlePopupOpen = (item) => {
+    const PopupComponent = item.popupComponent;
+    addPopup(
+      item.label,
+      <PopupComponent onClose={removeLastPopup} />
+    );
+    onClose();
+  };
 
   return (
     <>
@@ -67,10 +75,7 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
                 <div
                   key={index}
                   className="nav-item list-item"
-                  onClick={() => {
-                    setActivePopup(() => item.popupComponent);
-                    onClose();
-                  }}
+                  onClick={() => handlePopupOpen(item)}
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="horizontal">
@@ -95,14 +100,6 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
         </nav>
         <ThemeToggle />
       </aside>
-
-      <Popup
-        isOpen={!!ActivePopup}
-        onClose={() => setActivePopup(null)}
-        title={filteredNavItems.find(i => i.popupComponent === ActivePopup)?.label}
-      >
-        {ActivePopup && <ActivePopup onClose={() => setActivePopup(null)} />}
-      </Popup>
     </>
   );
 };

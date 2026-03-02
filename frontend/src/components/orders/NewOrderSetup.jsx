@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Popup from '../common/Popup';
 import { orderApi } from '../../services/orderApi';
 import { request } from '../../Utilities/request';
 import '../../assets/css/orders.css';
@@ -71,10 +70,10 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
         }
     };
 
-    if (loading) return <Popup isOpen={true} onClose={onClose}><p>Loading...</p></Popup>;
+    if (loading) return <div>Loading...</div>;
 
     return (
-        <Popup isOpen={true} onClose={onClose} title="New Order" maxWidth="600px">
+        <>
             <div className="form-section" style={{ position: 'relative' }}>
                 <label>Select Car:</label>
                 <input
@@ -111,7 +110,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     Cancel
                 </button>
             </div>
-        </Popup>
+        </>
     );
 };
 

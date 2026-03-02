@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
 import { request } from '../../Utilities/request';
+import { usePopup } from '../../context/PopupContext';
 import Dropdown from '../common/Dropdown';
 import OrderDetailsPopup from './OrderDetailsPopup';
 import NewOrderSetup from './NewOrderSetup';
@@ -11,13 +12,13 @@ import '../../assets/css/orders.css';
 const OrderList = ({ mode = 'active' }) => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { addPopup, removeLastPopup } = usePopup();
     const [orders, setOrders] = useState([]);
     const [cars, setCars] = useState([]);
     const [filter, setFilter] = useState(searchParams.get('status') || 'all');
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [editingOrder, setEditingOrder] = useState(null);
-    const [showNewOrder, setShowNewOrder] = useState(false);
 
     useEffect(() => {
         fetchOrders();
@@ -62,12 +63,38 @@ const OrderList = ({ mode = 'active' }) => {
             };
 
             await orderApi.updateOrder(editingOrder.id, payload);
-            setEditingOrder(null);
+            removeLastPopup();
             fetchOrders();
         } catch (error) {
             console.error("Failed to update order:", error);
             alert("Error updating order details");
         }
+    };
+
+    const openOrderDetailsPopup = (order) => {
+        setEditingOrder(order);
+        addPopup(
+            'Order Details',
+            <OrderDetailsPopup
+                order={order}
+                cars={cars}
+                onClose={removeLastPopup}
+                onSave={handleSaveOrderDetails}
+            />
+        );
+    };
+
+    const openNewOrderPopup = () => {
+        addPopup(
+            'New Order',
+            <NewOrderSetup
+                onClose={removeLastPopup}
+                onSuccess={() => {
+                    removeLastPopup();
+                    fetchOrders();
+                }}
+            />
+        );
     };
 
     const formatDate = (input) => {
@@ -132,7 +159,7 @@ const OrderList = ({ mode = 'active' }) => {
                     <option value="inprogress">In Progress</option>
                     <option value="finished">Finished</option>
                 </Dropdown>
-                {mode === 'active' && <button className="btn primary" onClick={() => setShowNewOrder(true)}>+ New Order</button>}
+                {mode === 'active' && <button className="btn primary" onClick={openNewOrderPopup}>+ New Order</button>}
             </div>
 
             {loading ? (
@@ -154,7 +181,7 @@ const OrderList = ({ mode = 'active' }) => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button className="btn secondary icon-btn" onClick={() => setEditingOrder(order)} title="Order Details">
+                                    <button className="btn secondary icon-btn" onClick={() => openOrderDetailsPopup(order)} title="Order Details">
                                         <i className="fa-solid fa-circle-info"></i>
                                     </button>
                                     <button className="btn secondary icon-btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">
@@ -222,24 +249,7 @@ const OrderList = ({ mode = 'active' }) => {
                 </div>
             )}
 
-            {editingOrder && (
-                <OrderDetailsPopup
-                    order={editingOrder}
-                    cars={cars}
-                    onClose={() => setEditingOrder(null)}
-                    onSave={handleSaveOrderDetails}
-                />
-            )}
 
-            {showNewOrder && (
-                <NewOrderSetup
-                    onClose={() => setShowNewOrder(false)}
-                    onSuccess={() => {
-                        setShowNewOrder(false);
-                        fetchOrders();
-                    }}
-                />
-            )}
         </main>
     );
 };

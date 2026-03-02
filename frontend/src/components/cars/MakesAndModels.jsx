@@ -3,27 +3,23 @@ import { useSearchParams } from 'react-router-dom';
 import '../../assets/css/makes-models.css';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
+import { usePopup } from '../../context/PopupContext';
 import MergePopup from './MergePopup';
+import AddEditItemModal from './AddEditItemModal';
 
 const MakesAndModels = () => {
+    const { addPopup, removeLastPopup } = usePopup();
     const [searchParams, setSearchParams] = useSearchParams();
     const [makes, setMakes] = useState([]);
     const [models, setModels] = useState([]);
     const [selectedMake, setSelectedMake] = useState(null);
     const [loadingMakes, setLoadingMakes] = useState(true);
     const [loadingModels, setLoadingModels] = useState(false);
-
-    // Modal State
-    const [showModal, setShowModal] = useState(false);
+    
+    // Modal state (only for controlled variables, actual modal is in PopupContext)
     const [modalType, setModalType] = useState('make'); // 'make' or 'model'
     const [editingItem, setEditingItem] = useState(null); // null for create, object for edit
     const [itemName, setItemName] = useState('');
-
-    // Merge State
-    const [showMergePopup, setShowMergePopup] = useState(false);
-    const [mergeType, setMergeType] = useState('make');
-    const [customItem, setCustomItem] = useState(null);
-    const [globalItem, setGlobalItem] = useState(null);
 
     useEffect(() => {
         fetchMakes();
@@ -53,10 +49,7 @@ const MakesAndModels = () => {
                         const global = allMakes.find(m => m.id === globalId);
 
                         if (custom && global) {
-                            setMergeType('make');
-                            setCustomItem(custom);
-                            setGlobalItem(global);
-                            setShowMergePopup(true);
+                            handleOpenMerge('make', custom, global);
                         }
                     } else if (merge === 'model') {
                         // Need to find the make first
@@ -67,10 +60,7 @@ const MakesAndModels = () => {
                             const global = makeModels.find(m => m.id === globalId);
 
                             if (custom && global) {
-                                setMergeType('model');
-                                setCustomItem(custom);
-                                setGlobalItem(global);
-                                setShowMergePopup(true);
+                                handleOpenMerge('model', custom, global);
                                 break;
                             }
                         }
@@ -115,13 +105,21 @@ const MakesAndModels = () => {
         setModalType(type);
         setEditingItem(item);
         setItemName(item ? item.name : '');
-        setShowModal(true);
+        
+        addPopup(
+            `${item ? 'Edit' : 'Add'} ${type === 'make' ? 'Make' : 'Model'}`,
+            <AddEditItemModal
+                itemType={type}
+                currentName={item ? item.name : ''}
+                onClose={removeLastPopup}
+                onConfirm={(name) => handleSaveModal(type, item, name)}
+            />
+        );
     };
 
-    const handleSave = async (e) => {
-        e.preventDefault();
+    const handleSaveModal = async (type, editingItem, itemName) => {
         try {
-            if (modalType === 'make') {
+            if (type === 'make') {
                 if (editingItem) {
                     await makeApi.editMake(editingItem.id, { name: itemName });
                 } else {
@@ -136,7 +134,6 @@ const MakesAndModels = () => {
                 }
                 fetchModels(selectedMake.id);
             }
-            setShowModal(false);
         } catch (error) {
             console.error("Error saving item", error);
             alert(error.message || "An error occurred");
@@ -161,28 +158,34 @@ const MakesAndModels = () => {
     };
 
     const handleOpenMerge = (type, custom, global) => {
-        setMergeType(type);
-        setCustomItem(custom);
-        setGlobalItem(global);
-        setShowMergePopup(true);
-    };
-
-    const handleMerge = async () => {
-        try {
-            if (mergeType === 'make') {
-                await makeApi.mergeMakeWithGlobal(customItem.id, globalItem.id);
-                if (selectedMake && selectedMake.id === customItem.id) setSelectedMake(null);
-                fetchMakes();
-            } else {
-                await modelApi.mergeModelWithGlobal(customItem.id, globalItem.id);
-                fetchModels(selectedMake.id);
+        const handleMergeAction = async () => {
+            try {
+                if (type === 'make') {
+                    await makeApi.mergeMakeWithGlobal(custom.id, global.id);
+                    if (selectedMake && selectedMake.id === custom.id) setSelectedMake(null);
+                    fetchMakes();
+                } else {
+                    await modelApi.mergeModelWithGlobal(custom.id, global.id);
+                    fetchModels(selectedMake.id);
+                }
+                removeLastPopup();
+                alert('Merge completed successfully!');
+            } catch (error) {
+                console.error('Error merging:', error);
+                alert('Failed to merge. Check console.');
             }
-            setShowMergePopup(false);
-            alert('Merge completed successfully!');
-        } catch (error) {
-            console.error('Error merging:', error);
-            alert('Failed to merge. Check console.');
-        }
+        };
+
+        addPopup(
+            `Merge ${type === 'make' ? 'Make' : 'Model'}`,
+            <MergePopup
+                mergeType={type}
+                customItem={custom}
+                globalItem={global}
+                onMerge={handleMergeAction}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     // Helper to find matching global make/model
@@ -294,40 +297,7 @@ const MakesAndModels = () => {
                 </div>
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="popup-overlay" onClick={() => setShowModal(false)}>
-                    <div className="popup tile" onClick={e => e.stopPropagation()}>
-                        <h3>{editingItem ? 'Edit' : 'Add'} {modalType === 'make' ? 'Make' : 'Model'}</h3>
-                        <form onSubmit={handleSave}>
-                            <div className="form-section">
-                                <label>Name</label>
-                                <input
-                                    type="text"
-                                    value={itemName}
-                                    onChange={e => setItemName(e.target.value)}
-                                    required
-                                    autoFocus
-                                />
-                            </div>
-                            <div className="form-footer">
-                                <button type="submit" className="btn">Save</button>
-                                <button type="button" className="btn" onClick={() => setShowModal(false)}>Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* Merge Popup */}
-            <MergePopup
-                isOpen={showMergePopup}
-                onClose={() => setShowMergePopup(false)}
-                mergeType={mergeType}
-                customItem={customItem}
-                globalItem={globalItem}
-                onMerge={handleMerge}
-            />
         </main>
     );
 };

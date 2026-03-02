@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
+import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
 import '../../assets/css/admin-users.css';
 
@@ -11,7 +12,7 @@ const AdminUsers = () => {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [selectedUserId, setSelectedUserId] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     useEffect(() => {
         fetchUsers();
@@ -33,7 +34,15 @@ const AdminUsers = () => {
 
     const handleToggleBlock = async (user) => {
         if (!user.isBlocked) {
-            setSelectedUserId(user.id);
+            addPopup(
+                'Block User',
+                <JustificationPopup
+                    onClose={removeLastPopup}
+                    onConfirm={(reason) => performToggleBlock(user.id, reason)}
+                    title="Block User"
+                    message="Please provide a reason for blocking this user."
+                />
+            );
         } else {
             await performToggleBlock(user.id);
         }
@@ -47,7 +56,7 @@ const AdminUsers = () => {
                     ? { ...u, isBlocked: !u.isBlocked }
                     : u
             ));
-            setSelectedUserId(null);
+            removeLastPopup();
         } catch (err) {
             console.error('Error toggling block status:', err);
             alert(err.message || 'Failed to update user status');
@@ -149,13 +158,7 @@ const AdminUsers = () => {
 
             <footer>GarageFlow — Users Management</footer>
 
-            <JustificationPopup
-                isOpen={selectedUserId}
-                onClose={() => setSelectedUserId(false)}
-                onConfirm={(reason) => performToggleBlock(selectedUserId, reason)}
-                title="Block User"
-                message="Please provide a reason for blocking this user."
-            />
+
         </main>
     );
 };

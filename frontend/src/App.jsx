@@ -29,8 +29,7 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
-import Popup from './components/common/Popup.jsx';
-import AccessDenied from './components/common/AccessDenied.jsx';
+import Popup from './components/common/Popup.jsx'; import PopupPortal from './components/common/PopupPortal.jsx'; import AccessDenied from './components/common/AccessDenied.jsx';
 
 import { authApi } from './services/authApi';
 import { useAuth } from './context/AuthContext';
@@ -128,6 +127,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
+        <PopupPortal />
         <Routes>
           <Route path="/login" element={<LogInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
@@ -201,6 +201,7 @@ export default App;
 function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen, accesses }) {
   return (
     <>
+      {/* <PopupPortal /> */}
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div className="horizontal work-area">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} accesses={accesses} />

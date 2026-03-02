@@ -5,6 +5,7 @@ import { clientApi } from "../../services/clientApi";
 import { vehicleApi } from "../../services/vehicleApi";
 import { makeApi } from "../../services/makeApi";
 import { modelApi } from "../../services/modelApi";
+import { usePopup } from "../../context/PopupContext";
 import CarPopup from "../cars/CarPopup";
 
 const EditClient = () => {
@@ -27,8 +28,7 @@ const EditClient = () => {
     const [makes, setMakes] = useState([]);
     const [modelsMap, setModelsMap] = useState({}); // map[modelId] -> modelName
 
-    const [showCarPopup, setShowCarPopup] = useState(false);
-    const [currentCar, setCurrentCar] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     // Initial Load
     useEffect(() => {
@@ -106,7 +106,7 @@ const EditClient = () => {
                 setModelsMap(updMap);
             }
 
-            setShowCarPopup(false);
+            removeLastPopup();
         } catch (error) {
             console.error("Error saving car", error);
             alert("Failed to save car.");
@@ -125,8 +125,15 @@ const EditClient = () => {
     };
 
     const openCarPopup = (car = null) => {
-        setCurrentCar(car);
-        setShowCarPopup(true);
+        addPopup(
+            car ? 'Edit Car' : 'Add Car',
+            <CarPopup
+                onClose={removeLastPopup}
+                onSave={handleSaveCar}
+                car={car}
+                makes={makes}
+            />
+        );
     };
 
     if (loading) return <div>Loading...</div>;
@@ -222,13 +229,7 @@ const EditClient = () => {
                 </form>
             </div>
 
-            <CarPopup
-                isOpen={showCarPopup}
-                onClose={() => setShowCarPopup(false)}
-                onSave={handleSaveCar}
-                car={currentCar}
-                makes={makes}
-            />
+
         </main>
     );
 };

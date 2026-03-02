@@ -4,10 +4,11 @@ import { clientApi } from '../../services/clientApi';
 import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
+import { usePopup } from '../../context/PopupContext';
 import Popup from '../common/Popup';
 import CarPopup from '../cars/CarPopup';
 
-const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
+const ClientPopup = ({ onClose, onSave, clientId }) => {
     const isNew = !clientId;
 
     const [client, setClient] = useState({
@@ -25,8 +26,7 @@ const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
     const [makes, setMakes] = useState([]);
     const [modelsMap, setModelsMap] = useState({});
 
-    const [showCarPopup, setShowCarPopup] = useState(false);
-    const [currentCar, setCurrentCar] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     // Load makes once
     useEffect(() => {
@@ -41,11 +41,9 @@ const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
         fetchMakes();
     }, []);
 
-    // Load client data when popup opens
+    // Load client data when component mounts or clientId changes
     useEffect(() => {
         const fetchData = async () => {
-            if (!isOpen) return;
-
             setLoading(true);
             try {
                 if (!isNew) {
@@ -85,7 +83,7 @@ const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
             }
         };
         fetchData();
-    }, [isOpen, clientId, isNew]);
+    }, [clientId, isNew]);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -128,7 +126,7 @@ const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
                 setModelsMap(updMap);
             }
 
-            setShowCarPopup(false);
+            removeLastPopup();
         } catch (error) {
             console.error("Error saving car", error);
             alert("Failed to save car.");
@@ -147,116 +145,107 @@ const ClientPopup = ({ isOpen, onClose, onSave, clientId }) => {
     };
 
     const openCarPopup = (car = null) => {
-        setCurrentCar(car);
-        setShowCarPopup(true);
+        addPopup(
+            car ? 'Edit Car' : 'Add Car',
+            <CarPopup
+                onClose={removeLastPopup}
+                onSave={handleSaveCar}
+                car={car}
+                makes={makes}
+            />
+        );
     };
 
     return (
         <>
-            {!loading && (
-                <Popup
-                    isOpen={isOpen}
-                    onClose={onClose}
-                    title={isNew ? "New Client" : "Edit Client"}
-                >
-                    <form className="client-form" onSubmit={handleSave}>
-                        <div className="horizontal">
-                            <div className="form-column" style={{ flex: 1 }}>
-                                <div className="form-section">
-                                    <label>Name</label>
-                                    <input
-                                        type="text"
-                                        value={client.name}
-                                        onChange={e => setClient({ ...client, name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-section">
-                                    <label>Phone Number</label>
-                                    <input
-                                        type="text"
-                                        value={client.phoneNumber}
-                                        onChange={e => setClient({ ...client, phoneNumber: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-section">
-                                    <label>Email</label>
-                                    <input
-                                        type="email"
-                                        value={client.email}
-                                        onChange={e => setClient({ ...client, email: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-section">
-                                    <label>Address</label>
-                                    <input
-                                        type="text"
-                                        value={client.address}
-                                        onChange={e => setClient({ ...client, address: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-section">
-                                    <label>Registration Number (Personal)</label>
-                                    <input
-                                        type="text"
-                                        value={client.registrationNumber}
-                                        onChange={e => setClient({ ...client, registrationNumber: e.target.value })}
-                                    />
-                                </div>
+            <form className="client-form" onSubmit={handleSave}>
+                <div className="horizontal">
+                    <div className="form-column" style={{ flex: 1 }}>
+                        <div className="form-section">
+                            <label>Name</label>
+                            <input
+                                type="text"
+                                value={client.name}
+                                onChange={e => setClient({ ...client, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Phone Number</label>
+                            <input
+                                type="text"
+                                value={client.phoneNumber}
+                                onChange={e => setClient({ ...client, phoneNumber: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                value={client.email}
+                                onChange={e => setClient({ ...client, email: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Address</label>
+                            <input
+                                type="text"
+                                value={client.address}
+                                onChange={e => setClient({ ...client, address: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-section">
+                            <label>Registration Number (Personal)</label>
+                            <input
+                                type="text"
+                                value={client.registrationNumber}
+                                onChange={e => setClient({ ...client, registrationNumber: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-column cars-section" style={{ flex: 1 }}>
+                        <div className="form-section max-height">
+                            <div className="section-header">
+                                <label>Cars</label>
+                                {!isNew && (
+                                    <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
+                                )}
                             </div>
+                            <div className="list-container max-width max-height">
+                                {cars.length === 0 && <p className="list-empty">No cars added.</p>}
+                                {cars.map(car => {
+                                    const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
+                                    const modelName = modelsMap[car.modelId] || "Unknown";
 
-                            <div className="form-column cars-section" style={{ flex: 1 }}>
-                                <div className="form-section max-height">
-                                    <div className="section-header">
-                                        <label>Cars</label>
-                                        {!isNew && (
-                                            <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
-                                        )}
-                                    </div>
-                                    <div className="list-container max-width max-height">
-                                        {cars.length === 0 && <p className="list-empty">No cars added.</p>}
-                                        {cars.map(car => {
-                                            const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
-                                            const modelName = modelsMap[car.modelId] || "Unknown";
-
-                                            return (
-                                                <div key={car.id} className="list-item">
-                                                    <div>
-                                                        <strong>{makeName} {modelName}</strong> <br />
-                                                        <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
-                                                    </div>
-                                                    <div>
-                                                        <button type="button" className="icon-btn btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
-                                                            <i className="fa-solid fa-pen"></i>
-                                                        </button>
-                                                        <button type="button" className="icon-btn delete btn" onClick={() => handleDeleteCar(car.id)}>
-                                                            <i className="fa-solid fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
+                                    return (
+                                        <div key={car.id} className="list-item">
+                                            <div>
+                                                <strong>{makeName} {modelName}</strong> <br />
+                                                <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
+                                            </div>
+                                            <div>
+                                                <button type="button" className="icon-btn btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
+                                                    <i className="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button type="button" className="icon-btn delete btn" onClick={() => handleDeleteCar(car.id)}>
+                                                    <i className="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div className="form-footer">
-                            <button type="submit" className="btn">Save Client</button>
-                            <button type="button" className="btn" onClick={onClose}>Cancel</button>
-                        </div>
-                    </form>
-
-                    <CarPopup
-                        isOpen={showCarPopup}
-                        onClose={() => setShowCarPopup(false)}
-                        onSave={handleSaveCar}
-                        car={currentCar}
-                        makes={makes}
-                    />
-                </Popup>
-            )}
+                <div className="form-footer">
+                    <button type="submit" className="btn">Save Client</button>
+                    <button type="button" className="btn" onClick={onClose}>Cancel</button>
+                </div>
+            </form>
         </>
     );
 };

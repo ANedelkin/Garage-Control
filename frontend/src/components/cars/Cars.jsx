@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
+import { usePopup } from '../../context/PopupContext';
 import CarPopup from './CarPopup';
 import '../../assets/css/clients.css';
 
@@ -13,8 +14,7 @@ const Cars = () => {
     const [makesList, setMakesList] = useState([]); // array for popup prop
     const [models, setModels] = useState({}); // id -> name map
 
-    const [showPopup, setShowPopup] = useState(false);
-    const [selectedCar, setSelectedCar] = useState(null);
+    const { addPopup, removeLastPopup } = usePopup();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -77,8 +77,15 @@ const Cars = () => {
     };
 
     const handleRowClick = (car) => {
-        setSelectedCar(car);
-        setShowPopup(true);
+        addPopup(
+            car.id ? 'Edit Car' : 'Add Car',
+            <CarPopup
+                onClose={removeLastPopup}
+                onSave={handleSaveCar}
+                car={car}
+                makes={makesList}
+            />
+        );
     };
 
     const handleSaveCar = async (carData) => {
@@ -102,7 +109,7 @@ const Cars = () => {
                 }
             }
 
-            setShowPopup(false);
+            removeLastPopup();
         } catch (error) {
             console.error("Failed to save car", error);
             alert("Failed to save changes");
@@ -159,13 +166,6 @@ const Cars = () => {
                 </div>
             </div>
 
-            <CarPopup
-                isOpen={showPopup}
-                onClose={() => setShowPopup(false)}
-                onSave={handleSaveCar}
-                car={selectedCar}
-                makes={makesList}
-            />
 
             <footer>GarageFlow — Cars Management</footer>
         </main>
