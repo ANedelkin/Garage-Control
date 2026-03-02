@@ -160,7 +160,7 @@ const EditJobPage = ({ mechanicView = false }) => {
 
     return (
         <main className="main edit-order">
-            <div className="header">
+            <div className="section-header">
                 <div className="order-context-info">
                     <h2>{isEdit ? 'Edit Job' : 'Add New Job'}</h2>
                     <p>{order?.clientName} • {order?.carName} ({order?.carRegistrationNumber})</p>

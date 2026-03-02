@@ -18,7 +18,7 @@
 .tile table td {
     padding: 10px 12px;
     text-align: left;
-    border-bottom: 1px solid var(--border3);
+    border-bottom: 1px solid var(--border2);
     font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;

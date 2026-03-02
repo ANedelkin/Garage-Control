@@ -33,7 +33,7 @@
 }
 
 .makes-models .popup {
-    width: 400px !important;
+    width: 600px !important;
     height: fit-content !important;
     flex-direction: column;
 }
@@ -67,16 +67,6 @@
     background: var(--primary-clr);
     color: white;
 }
-
-.popup.tile {
-    width: 500px !important;
-    /* height: fit-content !important;
-    flex-direction: column; */
-}
-/* 
-.form-section{
-    width: 600px;
-} */
 
 .merge-comparison {
     display: flex;

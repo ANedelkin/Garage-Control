@@ -131,7 +131,7 @@ const ServiceForm = ({
                 <div className="header">
                     {/* Only render Job Type field if mechanicView is false */}
                     {!mechanicView && (
-                        <div>
+                        <>
                             <label>Job Type</label>
                             <DropDown
                                 value={service.jobTypeId}
@@ -143,7 +143,7 @@ const ServiceForm = ({
                                     <option key={jt.id} value={jt.id}>{jt.name}</option>
                                 )}
                             </DropDown>
-                        </div>
+                        </>
                     )}
                 </div>
 
