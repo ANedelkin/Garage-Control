@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { usePopup } from '../../context/PopupContext';
 import PartTransferPopup from './PartTransferPopup';
 import DropDown from '../common/Dropdown';
 import TimeSlotPicker from '../common/TimeSlotPicker';
 import Popup from '../common/Popup';
+import Suggestions from '../common/Suggestions';
 import '../../assets/css/common/status.css';
 
 const ServiceForm = ({
@@ -21,6 +22,7 @@ const ServiceForm = ({
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
+    const suggestionsRef = useRef(null);
     const { addPopup, removeLastPopup } = usePopup();
 
     const { user, accesses } = useAuth();
@@ -361,24 +363,31 @@ const ServiceForm = ({
 
                             return (
                                 <tr key={i} style={{ position: 'relative' }}>
-                                    <td>
+                                    <td style={{ position: 'relative', overflow: 'visible', zIndex: 10 }}>
                                         <input
                                             type="text"
                                             value={p.name}
                                             onChange={e => handlePartSearch(e.target.value, i)}
                                             placeholder="Search Part..."
                                             onFocus={() => setActivePartIndex(i)}
+                                            onBlur={() => setTimeout(() => setActivePartIndex(null), 200)}
+                                            onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                                             disabled={service.status === 2}
                                         />
-                                        {activePartIndex === i && suggestions.length > 0 && (
-                                            <ul className="car-suggestions" style={{ top: '100%', left: 0, width: '100%' }}>
-                                                {suggestions.map(part => (
-                                                    <li key={part.id} onClick={() => addPart(part)}>
-                                                        <b>{part.name}</b> ({part.partNumber}) - ${part.price}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                                        <Suggestions
+                                            ref={suggestionsRef}
+                                            suggestions={activePartIndex === i ? suggestions : []}
+                                            isOpen={activePartIndex === i && suggestions.length > 0}
+                                            onSelect={addPart}
+                                            onClose={() => setActivePartIndex(null)}
+                                            renderItem={(part) => (
+                                                <>
+                                                    <b>{part.name}</b> ({part.partNumber}) - ${part.price}
+                                                </>
+                                            )}
+                                            maxHeight="150px"
+                                            style={{ width: '100%' }}
+                                        />
                                     </td>
                                     <td>
                                         <input

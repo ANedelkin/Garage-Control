@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
+import Suggestions from '../common/Suggestions';
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
 import { workerApi } from '../../services/workerApi.js';
@@ -12,20 +13,13 @@ const EditJobType = () => {
   const [newMechanic, setNewMechanic] = useState('');
   const [workers, setWorkers] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [mechanicSuggestions, setMechanicSuggestions] = useState([]);
   const suggestionsRef = useRef(null);
 
   useEffect(() => {
     workerApi.getWorkers()
       .then(res => setWorkers(res))
       .catch(err => console.error("Error fetching workers:", err));
-
-    const handleClickOutside = (event) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -61,7 +55,7 @@ const EditJobType = () => {
   };
 
   const handleAddMechanic = (mechanicName) => {
-    const name = mechanicName || newMechanic;
+    const name = (mechanicName && typeof mechanicName === 'object' ? mechanicName.name : mechanicName) || newMechanic;
     if (!name.trim()) return;
 
     // Prevent duplicates
@@ -77,6 +71,25 @@ const EditJobType = () => {
     });
     setNewMechanic('');
     setShowSuggestions(false);
+    setMechanicSuggestions([]);
+  };
+
+  const handleMechanicSearch = (val) => {
+    setNewMechanic(val);
+
+    if (!val.trim()) {
+      setMechanicSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const filtered = workers.filter(w =>
+      w.name.toLowerCase().includes(val.toLowerCase()) &&
+      !jobTypeData.mechanics.includes(w.name)
+    );
+
+    setMechanicSuggestions(filtered);
+    setShowSuggestions(true);
   };
 
   const handleDeleteMechanic = (index) => {
@@ -133,37 +146,32 @@ const EditJobType = () => {
                     type="text"
                     placeholder="Enter mechanic name"
                     value={newMechanic}
-                    onChange={(e) => {
-                      setNewMechanic(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
+                    onChange={(e) => handleMechanicSearch(e.target.value)}
+                    onFocus={() => newMechanic && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleAddMechanic();
+                        if (showSuggestions && mechanicSuggestions.length > 0) {
+                          suggestionsRef.current?.handleKeyDown(e);
+                        } else {
+                          handleAddMechanic();
+                        }
+                      } else {
+                        suggestionsRef.current?.handleKeyDown(e);
                       }
                     }}
                   />
-                  {showSuggestions && newMechanic.trim() !== '' && (
-                    <div className="suggestions-list" ref={suggestionsRef}>
-                      {workers
-                        .filter(w =>
-                          w.name.toLowerCase().includes(newMechanic.toLowerCase()) &&
-                          !jobTypeData.mechanics.includes(w.name)
-                        )
-                        .map(worker => (
-                          <div
-                            key={worker.id}
-                            className="suggestion-item"
-                            onClick={() => handleAddMechanic(worker.name)}
-                          >
-                            {worker.name}
-                          </div>
-                        ))
-                      }
-                    </div>
-                  )}
+                  <Suggestions
+                    ref={suggestionsRef}
+                    suggestions={showSuggestions ? mechanicSuggestions : []}
+                    isOpen={showSuggestions && mechanicSuggestions.length > 0}
+                    onSelect={handleAddMechanic}
+                    onClose={() => setShowSuggestions(false)}
+                    renderItem={(worker) => worker.name}
+                    maxHeight="200px"
+                    style={{ width: '100%' }}
+                  />
                   <button
                     type="button"
                     className="btn"

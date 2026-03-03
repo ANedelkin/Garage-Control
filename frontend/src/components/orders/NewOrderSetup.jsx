@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { request } from '../../Utilities/request';
+import Suggestions from '../common/Suggestions';
 import '../../assets/css/orders.css';
 
 const NewOrderSetup = ({ onClose, onSuccess }) => {
@@ -12,6 +13,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [kilometers, setKilometers] = useState(0);
     const [loading, setLoading] = useState(true);
+    const suggestionsRef = useRef(null);
 
     useEffect(() => {
         const loadCars = async () => {
@@ -81,16 +83,23 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     placeholder="Search by Reg Number or Model..."
                     value={carSearch}
                     onChange={e => handleCarSearch(e.target.value)}
+                    onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
+                    onBlur={() => setTimeout(() => setSuggestions([]), 200)}
                 />
-                {suggestions.length > 0 && (
-                    <ul className="car-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', maxHeight: '200px', overflowY: 'auto' }}>
-                        {suggestions.map(c => (
-                            <li key={c.id} onClick={() => selectCar(c)} style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}>
-                                <b>{c.registrationNumber}</b> - {c.model.make.name} {c.model.name}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <Suggestions
+                    ref={suggestionsRef}
+                    suggestions={suggestions}
+                    isOpen={suggestions.length > 0}
+                    onSelect={selectCar}
+                    onClose={() => setSuggestions([])}
+                    renderItem={(car) => (
+                        <>
+                            <b>{car.registrationNumber}</b> - {car.model.make.name} {car.model.name}
+                        </>
+                    )}
+                    maxHeight="200px"
+                    style={{ position: 'absolute', top: '100%', left: 0, right: 0 }}
+                />
             </div>
 
             <div className="form-section">
