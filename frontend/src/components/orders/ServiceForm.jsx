@@ -53,7 +53,12 @@ const ServiceForm = ({
 
         if (activePartIndex !== null) {
             const newParts = [...service.parts];
-            newParts[activePartIndex] = newPart;
+            newParts[activePartIndex] = {
+                ...newParts[activePartIndex],
+                partId: part.id,
+                name: part.name,
+                price: part.price
+            };
             updateService(service.id, 'parts', newParts);
             setActivePartIndex(null);
         } else {
