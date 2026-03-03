@@ -10,14 +10,14 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { workerApi } from "../../services/workerApi";
 import { jobTypeApi } from "../../services/jobTypeApi";
-import ScheduleSelector from "./ScheduleSelector";
 import LeavePopup from "./LeavePopup";
+import WorkhoursPopup from "./WorkhoursPopup";
 
 const EditWorker = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, refreshAuth } = useAuth();
-  const isNew = !id || id === 'new';
+  const isNew = !id || id === "new";
 
   const [worker, setWorker] = useState({
     name: "",
@@ -33,7 +33,7 @@ const EditWorker = () => {
   const [allJobTypes, setAllJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const {addPopup, removeLastPopup } = usePopup();
+  const { addPopup, removeLastPopup } = usePopup();
   const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
 
   useEffect(() => {
@@ -49,16 +49,16 @@ const EditWorker = () => {
           const workerRes = await workerApi.getWorker(id);
           // Parse dates
           workerRes.hiredOn = new Date(workerRes.hiredOn);
-          workerRes.leaves = workerRes.leaves.map(l => ({
+          workerRes.leaves = workerRes.leaves.map((l) => ({
             ...l,
             startDate: new Date(l.startDate),
             endDate: new Date(l.endDate)
           }));
           setWorker(workerRes);
         } else {
-          setWorker(prev => ({
+          setWorker((prev) => ({
             ...prev,
-            accesses: accessesRes.map(r => ({ ...r, isSelected: false }))
+            accesses: accessesRes.map((r) => ({ ...r, isSelected: false }))
           }));
         }
       } catch (error) {
@@ -79,11 +79,11 @@ const EditWorker = () => {
         await refreshAuth();
       }
 
-      navigate('/workers');
+      navigate("/workers");
     } catch (error) {
       console.error("Error saving worker", error);
       alert(error.message || "Failed to save worker");
-    } finally { };
+    } finally { }
   };
 
   const handleAddOrUpdateLeave = (leave) => {
@@ -109,9 +109,9 @@ const EditWorker = () => {
     } else {
       setEditingLeaveIndex(-1);
     }
-
+    console.log("a");
     addPopup(
-      index >= 0 ? 'Edit Leave' : 'Add Leave',
+      index >= 0 ? "Edit Leave" : "Add Leave",
       <LeavePopup
         onClose={removeLastPopup}
         onConfirm={handleAddOrUpdateLeave}
@@ -121,6 +121,10 @@ const EditWorker = () => {
     );
   };
 
+  const handleChangeSchedule = (newSchedules) => {
+    setWorker({ ...worker, schedules: newSchedules });
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -128,27 +132,62 @@ const EditWorker = () => {
       <div className="tile">
         <h3 className="tile-header">{isNew ? "New Worker" : "Edit Worker"}</h3>
         <form onSubmit={handleSave} className="worker-form">
-
           <div className="form-upper">
             <div className="form-column">
               <div className="form-section">
                 <label>Name</label>
-                <input type="text" value={worker.name} onChange={e => setWorker({ ...worker, name: e.target.value })} required />
+                <input
+                  type="text"
+                  value={worker.name}
+                  onChange={(e) => setWorker({ ...worker, name: e.target.value })}
+                  required
+                />
               </div>
               <div className="form-section">
                 <label>Email</label>
-                <input type="email" value={worker.email} onChange={e => setWorker({ ...worker, email: e.target.value })} required />
+                <input
+                  type="email"
+                  value={worker.email}
+                  onChange={(e) => setWorker({ ...worker, email: e.target.value })}
+                  required
+                />
               </div>
               <div className="form-section">
                 <label>Password</label>
-                <input type="password" value={worker.password} onChange={e => setWorker({ ...worker, password: e.target.value })} required={isNew} />
+                <input
+                  type="password"
+                  value={worker.password}
+                  onChange={(e) => setWorker({ ...worker, password: e.target.value })}
+                  required={isNew}
+                />
               </div>
               <div className="form-section">
                 <label>Hired On</label>
                 <DatePicker
                   selected={worker.hiredOn}
-                  onChange={date => setWorker({ ...worker, hiredOn: date })}
+                  onChange={(date) => setWorker({ ...worker, hiredOn: date })}
                 />
+              </div>
+              <div className="form-section">
+                <label>Schedule</label>
+                <button
+                  type="button"
+                  className="btn full-width"
+                  onClick={() => {
+                    addPopup(
+                      "Edit Schedule",
+                      <WorkhoursPopup
+                        worker={worker}
+                        onChangeSchedule={handleChangeSchedule}
+                        openLeavePopup={openLeavePopup}
+                        handleAddOrUpdateLeave={handleAddOrUpdateLeave}
+                        deleteLeave={deleteLeave}
+                      />
+                    );
+                  }}
+                >
+                  Edit Schedule
+                </button>
               </div>
             </div>
 
@@ -156,12 +195,12 @@ const EditWorker = () => {
               <label>Access</label>
               <div className="list-container grow">
                 {worker.accesses.map((access, idx) => (
-                  <div className="list-item">
-                    <label key={access.id} className="checkbox-item">
+                  <div className="list-item" key={access.id}>
+                    <label className="checkbox-item">
                       <input
                         type="checkbox"
                         checked={access.isSelected}
-                        onChange={e => {
+                        onChange={(e) => {
                           const updatedAccesses = [...worker.accesses];
                           updatedAccesses[idx].isSelected = e.target.checked;
                           setWorker({ ...worker, accesses: updatedAccesses });
@@ -177,16 +216,16 @@ const EditWorker = () => {
             <div className="form-section">
               <label>Job Types</label>
               <div className="list-container grow">
-                {allJobTypes.map(jt => (
-                  <div className="list-item">
-                    <label key={jt.id} className="checkbox-item">
+                {allJobTypes.map((jt) => (
+                  <div className="list-item" key={jt.id}>
+                    <label className="checkbox-item">
                       <input
                         type="checkbox"
                         checked={worker.jobTypeIds.includes(jt.id)}
-                        onChange={e => {
+                        onChange={(e) => {
                           let updated = [...worker.jobTypeIds];
                           if (e.target.checked) updated.push(jt.id);
-                          else updated = updated.filter(id => id !== jt.id);
+                          else updated = updated.filter((id) => id !== jt.id);
                           setWorker({ ...worker, jobTypeIds: updated });
                         }}
                       />
@@ -197,75 +236,19 @@ const EditWorker = () => {
               </div>
             </div>
           </div>
-
+          {/* 
           <div className="form-lower">
-            <div className="form-section">
-              <label>Schedule</label>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  addPopup("Edit Schedule",
-                  <ScheduleSelector
-                      schedules={worker.schedules} // now always latest
-                      onChange={(newSchedules) =>
-                        setWorker({ ...worker, schedules: newSchedules })
-                      }
-                    />
-                  );
-                }}
-              >
-                Edit Schedule
-              </button>
-
-            </div>
-
-            <div className="form-section">
-              <div className="section-header">
-                <label>Leaves</label>
-                <button type="button" className="btn" onClick={() => openLeavePopup()}>+ Add Leave</button>
-              </div>
-              <div className="list-container max-height">
-                {worker.leaves.length ? (
-                  worker.leaves.map((leave, i) => (
-                    <div
-                      key={i}
-                      className="list-item"
-                      onClick={() => openLeavePopup(leave, i)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <span className="item-label">
-                        {new Date(leave.startDate).toLocaleDateString()} -{" "}
-                        {new Date(leave.endDate).toLocaleDateString()}
-                      </span>
-                      <button
-                        type="button"
-                        className="icon-btn delete btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteLeave(i);
-                        }}
-                      >
-                        <i className="fa-solid fa-trash"></i>
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="list-empty">No leaves added</div>
-                )}
-
-              </div>
-            </div>
-          </div>
+            
+          </div> */}
 
           <div className="form-footer">
-            <button type="submit" className="btn">Save Worker</button>
+            <button type="submit" className="btn">
+              Save Worker
+            </button>
           </div>
         </form>
       </div>
-
     </main>
-
   );
 };
 
