@@ -1,125 +1,194 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-const ScheduleSelector = ({ schedules, onChange }) => {
+const ScheduleSelector = ({ schedules = [], onChange }) => {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+    const [localSchedules, setLocalSchedules] = useState([]);
     const [selectionStart, setSelectionStart] = useState(null);
+    const [selectedCell, setSelectedCell] = useState(null);  // Track the clicked cell
 
+    // Sync from parent safely
     useEffect(() => {
-        const handleGlobalClick = (e) => {
-            if (!e.target.classList.contains('schedule-cell')) {
-                setSelectionStart(null);
-            }
-        };
-        document.addEventListener('click', handleGlobalClick);
-        return () => document.removeEventListener('click', handleGlobalClick);
-    }, []);
+        if (Array.isArray(schedules)) {
+            setLocalSchedules(schedules);
+        } else {
+            setLocalSchedules([]);
+        }
+    }, [schedules]);
 
-    const getStartHour = (s) => parseInt((s.startTime || s.StartTime).split(':')[0]);
-    const getEndHour = (s) => parseInt((s.endTime || s.EndTime).split(':')[0]);
+    // -------------------------
+    // SAFE TIME HELPERS
+    // -------------------------
 
-    const isWorkingHour = (dayIndex, hour) => {
-        return schedules.some(s =>
-            s.dayOfWeek === dayIndex &&
-            getStartHour(s) <= hour &&
-            getEndHour(s) > hour
-        );
+    const extractTime = (s, type) => {
+        if (!s) return null;
+
+        const value =
+            type === "start"
+                ? s.startTime ?? s.StartTime ?? s.start
+                : s.endTime ?? s.EndTime ?? s.end;
+
+        if (!value || typeof value !== "string") return null;
+
+        return value;
     };
 
-    const mergeSchedules = (currentSchedules) => {
+    const getStartHour = (s) => {
+        const time = extractTime(s, "start");
+        if (!time) return 0;
+        return parseInt(time.split(":")[0], 10);
+    };
+
+    const getEndHour = (s) => {
+        const time = extractTime(s, "end");
+        if (!time) return 0;
+        return parseInt(time.split(":")[0], 10);
+    };
+
+    // -------------------------
+    // WORKING CHECK
+    // -------------------------
+
+    const isWorkingHour = (dayIndex, hour) => {
+        return localSchedules.some((s) => {
+            if (s.dayOfWeek !== dayIndex) return false;
+
+            const start = getStartHour(s);
+            const end = getEndHour(s);
+
+            return start <= hour && end > hour;
+        });
+    };
+
+    // -------------------------
+    // MERGE LOGIC (IMMUTABLE)
+    // -------------------------
+
+    const mergeSchedules = (input) => {
         const byDay = {};
-        currentSchedules.forEach(s => {
+
+        input.forEach((s) => {
             if (!byDay[s.dayOfWeek]) byDay[s.dayOfWeek] = [];
-            byDay[s.dayOfWeek].push(s);
+            byDay[s.dayOfWeek].push({ ...s });
         });
 
-        let merged = [];
+        const merged = [];
 
-        Object.keys(byDay).forEach(day => {
-            const daySchedules = byDay[day];
-            daySchedules.sort((a, b) => getStartHour(a) - getStartHour(b));
+        Object.keys(byDay).forEach((day) => {
+            const daySchedules = byDay[day].sort(
+                (a, b) => getStartHour(a) - getStartHour(b)
+            );
 
-            if (daySchedules.length === 0) return;
+            if (!daySchedules.length) return;
 
             let current = daySchedules[0];
 
             for (let i = 1; i < daySchedules.length; i++) {
                 const next = daySchedules[i];
 
-                const currentEnd = getEndHour(current);
-                const nextStart = getStartHour(next);
-                const nextEnd = getEndHour(next);
-
-                if (nextStart <= currentEnd) {
-                    if (nextEnd > currentEnd) {
-                        current.endTime = next.endTime || next.EndTime; // Keep existing format if possible, or normalize
-                        if (current.EndTime) current.EndTime = current.endTime; // Ensure both if mixed
-                    }
+                if (getStartHour(next) <= getEndHour(current)) {
+                    current = {
+                        ...current,
+                        endTime:
+                            getEndHour(next) > getEndHour(current)
+                                ? extractTime(next, "end")
+                                : extractTime(current, "end")
+                    };
                 } else {
                     merged.push(current);
                     current = next;
                 }
             }
+
             merged.push(current);
         });
 
         return merged;
     };
 
+    // -------------------------
+    // CLICK HANDLING
+    // -------------------------
+
     const handleCellClick = (dayIndex, hour) => {
         if (!selectionStart) {
             setSelectionStart({ dayIndex, hour });
-        } else {
-            if (selectionStart.dayIndex !== dayIndex) {
-                setSelectionStart({ dayIndex, hour });
-                return;
-            }
-
-            const startHour = Math.min(selectionStart.hour, hour);
-            const endHour = Math.max(selectionStart.hour, hour);
-
-            const startTime = `${startHour.toString().padStart(2, '0')}:00`;
-            const endTime = `${(endHour + 1).toString().padStart(2, '0')}:00`;
-
-            const newEntry = { dayOfWeek: dayIndex, startTime, endTime };
-            let updatedSchedules = [...schedules, newEntry];
-
-            updatedSchedules = mergeSchedules(updatedSchedules);
-
-            onChange(updatedSchedules);
-            setSelectionStart(null);
+            setSelectedCell({ dayIndex, hour });  // Set clicked cell
+            return;
         }
+
+        if (selectionStart.dayIndex !== dayIndex) {
+            setSelectionStart({ dayIndex, hour });
+            setSelectedCell({ dayIndex, hour });  // Update clicked cell
+            return;
+        }
+
+        const startHour = Math.min(selectionStart.hour, hour);
+        const endHour = Math.max(selectionStart.hour, hour);
+
+        const newEntry = {
+            dayOfWeek: dayIndex,
+            startTime: `${startHour.toString().padStart(2, "0")}:00`,
+            endTime: `${(endHour + 1).toString().padStart(2, "0")}:00`
+        };
+
+        const updated = mergeSchedules([...localSchedules, newEntry]);
+
+        setLocalSchedules(updated);
+        onChange?.(updated);
+
+        setSelectionStart(null);
+        setSelectedCell(null);  // Reset clicked cell after selection
     };
 
     const handleRightClick = (e, dayIndex, hour) => {
         e.preventDefault();
-        const remaining = schedules.filter(s => {
+
+        const remaining = localSchedules.filter((s) => {
             if (s.dayOfWeek !== dayIndex) return true;
+
             const start = getStartHour(s);
             const end = getEndHour(s);
+
             return !(hour >= start && hour < end);
         });
 
-        onChange(remaining);
+        setLocalSchedules(remaining);
+        onChange?.(remaining);
     };
+
+    // -------------------------
+    // RENDER
+    // -------------------------
 
     return (
         <div className="schedule-grid">
             <div className="schedule-header-cell">Time</div>
-            {days.map(d => <div key={d} className="schedule-header-cell">{d}</div>)}
 
-            {hours.map(hour => (
+            {days.map((d) => (
+                <div key={d} className="schedule-header-cell">
+                    {d}
+                </div>
+            ))}
+
+            {hours.map((hour) => (
                 <React.Fragment key={hour}>
                     <div className="schedule-time-cell">{hour}:00</div>
+
                     {days.map((_, dayIndex) => {
                         const working = isWorkingHour(dayIndex, hour);
+                        const isSelected =
+                            selectedCell?.dayIndex === dayIndex && selectedCell?.hour === hour; // Check if the cell is selected
+
                         return (
                             <div
                                 key={`${dayIndex}-${hour}`}
-                                className={`schedule-cell ${working ? 'working' : ''} ${selectionStart && selectionStart.dayIndex === dayIndex && selectionStart.hour === hour ? 'selecting' : ''}`}
+                                className={`schedule-cell ${working ? "working" : ""} ${isSelected ? "selecting" : ""}`}  // Add selected class if it's clicked
                                 onClick={() => handleCellClick(dayIndex, hour)}
-                                onContextMenu={(e) => handleRightClick(e, dayIndex, hour)}
+                                onContextMenu={(e) =>
+                                    handleRightClick(e, dayIndex, hour)
+                                }
                             />
                         );
                     })}

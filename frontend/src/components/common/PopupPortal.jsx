@@ -13,7 +13,7 @@ const PopupPortal = () => {
 
   return ReactDOM.createPortal(
     <>
-        {console.log(stack)}
+      {console.log(stack)}
       {stack.map((params, index) => {
         const isTop = index === stack.length - 1;
 

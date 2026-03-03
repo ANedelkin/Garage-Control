@@ -30,12 +30,10 @@ const EditWorker = () => {
     leaves: []
   });
 
-  const [allAccesses, setAllAccesses] = useState([]);
   const [allJobTypes, setAllJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { addPopup, removeLastPopup } = usePopup();
-  const [currentLeave, setCurrentLeave] = useState({ startDate: new Date(), endDate: new Date() });
+  const {addPopup, removeLastPopup } = usePopup();
   const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
 
   useEffect(() => {
@@ -45,7 +43,6 @@ const EditWorker = () => {
           workerApi.getAccesses(),
           jobTypeApi.getJobTypes()
         ]);
-        setAllAccesses(accessesRes);
         setAllJobTypes(jobTypesRes);
 
         if (!isNew) {
@@ -76,7 +73,6 @@ const EditWorker = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      console.log(worker);
       await workerApi.edit(id, worker);
 
       if (user && user.workerId === id) {
@@ -88,85 +84,6 @@ const EditWorker = () => {
       console.error("Error saving worker", error);
       alert(error.message || "Failed to save worker");
     } finally { };
-  };
-
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  const [selectionStart, setSelectionStart] = useState(null);
-
-  useEffect(() => {
-    const handleGlobalClick = (e) => {
-      if (!e.target.classList.contains('schedule-cell')) {
-        setSelectionStart(null);
-      }
-    };
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, []);
-
-  const mergeSchedules = (schedules) => {
-    const byDay = {};
-    schedules.forEach(s => {
-      if (!byDay[s.dayOfWeek]) byDay[s.dayOfWeek] = [];
-      byDay[s.dayOfWeek].push(s);
-    });
-
-    let merged = [];
-
-    Object.keys(byDay).forEach(day => {
-      const daySchedules = byDay[day];
-      daySchedules.sort((a, b) => parseInt(a.startTime) - parseInt(b.startTime));
-
-      if (daySchedules.length === 0) return;
-
-      let current = daySchedules[0];
-
-      for (let i = 1; i < daySchedules.length; i++) {
-        const next = daySchedules[i];
-
-        const currentEnd = parseInt(current.endTime.split(':')[0]);
-        const nextStart = parseInt(next.startTime.split(':')[0]);
-        const nextEnd = parseInt(next.endTime.split(':')[0]);
-
-        if (nextStart <= currentEnd) {
-          if (nextEnd > currentEnd) {
-            current.endTime = next.endTime;
-          }
-        } else {
-          merged.push(current);
-          current = next;
-        }
-      }
-      merged.push(current);
-    });
-
-    return merged;
-  };
-
-  const handleCellClick = (dayIndex, hour) => {
-    if (!selectionStart) {
-      setSelectionStart({ dayIndex, hour });
-    } else {
-      if (selectionStart.dayIndex !== dayIndex) {
-        setSelectionStart({ dayIndex, hour });
-        return;
-      }
-
-      const startHour = Math.min(selectionStart.hour, hour);
-      const endHour = Math.max(selectionStart.hour, hour);
-
-      const startTime = `${startHour.toString().padStart(2, '0')}:00`;
-      const endTime = `${(endHour + 1).toString().padStart(2, '0')}:00`;
-
-      const newEntry = { dayOfWeek: dayIndex, startTime, endTime };
-      let updatedSchedules = [...worker.schedules, newEntry];
-
-      updatedSchedules = mergeSchedules(updatedSchedules);
-
-      setWorker({ ...worker, schedules: updatedSchedules });
-      setSelectionStart(null);
-    }
   };
 
   const handleAddOrUpdateLeave = (leave) => {
@@ -188,10 +105,8 @@ const EditWorker = () => {
 
   const openLeavePopup = (leave = null, index = -1) => {
     if (leave) {
-      setCurrentLeave(leave);
       setEditingLeaveIndex(index);
     } else {
-      setCurrentLeave({ startDate: new Date(), endDate: new Date() });
       setEditingLeaveIndex(-1);
     }
 
@@ -286,10 +201,23 @@ const EditWorker = () => {
           <div className="form-lower">
             <div className="form-section">
               <label>Schedule</label>
-              <ScheduleSelector
-                schedules={worker.schedules}
-                onChange={(newSchedules) => setWorker({ ...worker, schedules: newSchedules })}
-              />
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  addPopup("Edit Schedule",
+                  <ScheduleSelector
+                      schedules={worker.schedules} // now always latest
+                      onChange={(newSchedules) =>
+                        setWorker({ ...worker, schedules: newSchedules })
+                      }
+                    />
+                  );
+                }}
+              >
+                Edit Schedule
+              </button>
+
             </div>
 
             <div className="form-section">
