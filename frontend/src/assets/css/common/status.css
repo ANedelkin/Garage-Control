@@ -6,8 +6,8 @@
     background: var(--inprogress-orders) !important;
 }
 
-.job-status-finished {
-    background: var(--finished-orders) !important;
+.job-status-done {
+    background: var(--done-orders) !important;
 }
 
 .job-status-all {
@@ -22,8 +22,8 @@
     background: var(--inprogress-orders-hover);
 }
 
-.job-status-finished.glow::before {
-    background: var(--finished-orders-hover);
+.job-status-done.glow::before {
+    background: var(--done-orders-hover);
 }
 
 .job-status-all.glow::before {

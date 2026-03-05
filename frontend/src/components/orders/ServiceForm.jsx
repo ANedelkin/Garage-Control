@@ -212,14 +212,14 @@ const ServiceForm = ({
                                         ? 'pending'
                                         : service.status === 1
                                             ? 'inprogress'
-                                            : 'finished'
+                                            : 'done'
                                         }`}
                                     value={service.status}
                                     onChange={e => handleChange('status', parseInt(e.target.value))}
                                 >
                                     <option value={0}>Pending</option>
                                     <option value={1}>In Progress</option>
-                                    <option value={2}>Finished</option>
+                                    <option value={2}>Done</option>
                                 </DropDown>
                             </div>
 
@@ -262,7 +262,7 @@ const ServiceForm = ({
                                         ? 'pending'
                                         : service.status === 1
                                             ? 'inprogress'
-                                            : 'finished'
+                                            : 'done'
                                         }`}
                                     value={service.status}
                                     onChange={e => handleChange('status', parseInt(e.target.value))}

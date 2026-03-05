@@ -29,8 +29,8 @@ body.dark {
     --inprogress-orders: linear-gradient(180deg, rgba(25, 65, 100), rgba(25, 60, 100, 0.03));
     --inprogress-orders-hover: linear-gradient(180deg, rgba(40, 95, 140), rgba(40, 95, 140, 0.06));
 
-    --finished-orders: linear-gradient(180deg, rgba(20, 80, 55), rgba(20, 80, 55, 0.03));
-    --finished-orders-hover: linear-gradient(180deg, rgba(25, 100, 70), rgba(25, 100, 70, 0.06));
+    --done-orders: linear-gradient(180deg, rgba(20, 80, 55), rgba(20, 80, 55, 0.03));
+    --done-orders-hover: linear-gradient(180deg, rgba(25, 100, 70), rgba(25, 100, 70, 0.06));
 }
 
 body.light {
@@ -64,6 +64,6 @@ body.light {
     --inprogress-orders: linear-gradient(180deg, rgba(135, 180, 240), rgba(200, 215, 255, 0.3));
     --inprogress-orders-hover: linear-gradient(180deg, rgba(110, 160, 230), rgba(180, 200, 255, 0.4));
 
-    --finished-orders: linear-gradient(180deg, rgba(140, 220, 180), rgba(200, 245, 220, 0.4));
-    --finished-orders-hover: linear-gradient(180deg, rgba(110, 200, 150), rgba(180, 230, 200, 0.5));
+    --done-orders: linear-gradient(180deg, rgba(140, 220, 180), rgba(200, 245, 220, 0.4));
+    --done-orders-hover: linear-gradient(180deg, rgba(110, 200, 150), rgba(180, 230, 200, 0.5));
 }
