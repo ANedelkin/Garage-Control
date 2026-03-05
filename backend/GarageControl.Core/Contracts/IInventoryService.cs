@@ -9,7 +9,7 @@ namespace GarageControl.Core.Contracts
     {
         void SendParts(Part part, int quantity);
         void ReturnParts(Part part, int quantity);
-        Task RecalculateAvailabilityBalanceAsync(string workshopId, IEnumerable<string>? partIds = null, int? previousMinimumQuantity = null);
+        Task RecalculateAvailabilityBalanceAsync(string workshopId, IEnumerable<string> partIds, int? oldMin = null);
         // Task CheckLowStockAsync(string workshopId, Part part);
         Task<int> GetPartsToSendAsync(string partId);
         Task<Dictionary<string, int>> GetPartsToSendAsync(string workshopId, IEnumerable<string> partIds);

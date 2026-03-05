@@ -103,7 +103,7 @@ namespace GarageControl.Core.Services
                 Price = p.Price,
                 Quantity = p.Quantity,
                 AvailabilityBalance = p.AvailabilityBalance,
-                PartsToSend = partsToSendDict.GetValueOrDefault(p.Id),
+                PartsToSend = p.Quantity - p.AvailabilityBalance,
                 MinimumQuantity = p.MinimumQuantity,
                 ParentId = p.ParentId,
                 DeficitStatus = p.DeficitStatus

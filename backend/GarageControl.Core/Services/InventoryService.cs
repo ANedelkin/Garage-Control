@@ -60,25 +60,16 @@ namespace GarageControl.Core.Services
             }
         }
 
-        public async Task RecalculateAvailabilityBalanceAsync(string workshopId, IEnumerable<string>? partIds = null, int? previousMinimumQuantity = null)
+        public async Task RecalculateAvailabilityBalanceAsync(string workshopId, IEnumerable<string> partIds, int? oldMin = null)
         {
-            // Query parts based on workshop and optional partIds
-            var partsQuery = _context.Parts.Where(p => p.WorkshopId == workshopId);
-
-            if (partIds != null && partIds.Any())
-            {
-                partsQuery = partsQuery.Where(p => partIds.Contains(p.Id));
-            }
-
-            var parts = await partsQuery.ToListAsync();
+            var parts = await _context.Parts.Where(p => p.WorkshopId == workshopId && partIds.Contains(p.Id)).ToListAsync();
             if (!parts.Any()) return;
 
-            // Get outstanding quantities for all relevant parts in one query
             var outstandingDict = await _context.JobParts
                 .Where(jp => jp.Job.JobType.WorkshopId == workshopId
                              && jp.Job.Status != JobStatus.Done
                              && jp.PlannedQuantity > jp.SentQuantity
-                             && (partIds == null || partIds.Contains(jp.PartId)))
+                             && partIds.Contains(jp.PartId))
                 .GroupBy(jp => jp.PartId)
                 .Select(g => new
                 {
@@ -94,7 +85,7 @@ namespace GarageControl.Core.Services
                 var newBalance = part.Quantity - outstandingQty;
                 part.AvailabilityBalance = newBalance;
 
-                int effectiveOldMin = previousMinimumQuantity ?? part.MinimumQuantity;
+                int effectiveOldMin = oldMin ?? part.MinimumQuantity;
                 bool wasLow = oldBalance < effectiveOldMin;
                 bool isLow = newBalance < part.MinimumQuantity;
 

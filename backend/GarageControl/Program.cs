@@ -52,7 +52,7 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IPDFGeneratorService, PDFGeneratorService>();
 
 builder.Services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
-builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();
+// builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();
 
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)
