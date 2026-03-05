@@ -7,7 +7,6 @@ import SignUpPage from './components/auth/SignUp';
 
 import Dashboard from './components/dashboard/Dashboard';
 import Workers from './components/workers/Workers';
-import EditWorker from './components/workers/EditWorker';
 import WorkshopDetails from './components/workshopDetails/WorkshopDetails';
 import WorkshopDetailsInitial from './components/workshopDetails/WorkshopDetailsInitial';
 import JobTypes from './components/orders/JobTypes';
@@ -97,12 +96,7 @@ function App() {
     },
     { path: '/done-orders', element: <OrdersPage mode="completed" />, access: 'Orders', children: [] },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
-    {
-      path: '/workers', element: <Workers />, access: 'Workers', children: [
-        { path: '/new', element: <EditWorker /> },
-        { path: '/:id', element: <EditWorker /> }
-      ]
-    },
+    { path: '/workers', element: <Workers />, children: [], access: 'Workers' },
     {
       path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [
         { path: '/new', element: <EditJobType /> },

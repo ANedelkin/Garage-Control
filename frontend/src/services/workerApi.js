@@ -7,6 +7,9 @@ export const workerApi = {
     getWorker: async (id) => {
         return await request('GET', `worker/${id}`);
     },
+    create: async (workerData) => {
+        await request('POST', 'worker/create', workerData);
+    },
     edit: async (id, workerData) => {
         await request('PUT', `worker/edit/${id}`, workerData);
     },
