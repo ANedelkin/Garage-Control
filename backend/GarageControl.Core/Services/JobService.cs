@@ -1,14 +1,10 @@
 using GarageControl.Core.Contracts;
-using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.ViewModels.Shared;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GarageControl.Core.Models;
 
 namespace GarageControl.Core.Services.Jobs
@@ -32,27 +28,29 @@ namespace GarageControl.Core.Services.Jobs
             _activityLogger = new JobActivityLogger(activityLogService);
         }
 
-        // ==============================
-        // QUERIES (unchanged)
-        // ==============================
         public async Task<MethodResponseVM> CreateJobAsync(
-    string userId,
-    string orderId,
-    string workshopId,
-    CreateJobVM model)
+                                                string userId,
+                                                string orderId,
+                                                string workshopId,
+                                                CreateJobVM model)
         {
             var order = await _context.Orders
-                .Include(o => o.Car)
-                    .ThenInclude(c => c.Owner)
-                .Include(o => o.Car.Model.CarMake)
-                .Include(o => o.Car.Model)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.Car.Owner.WorkshopId == workshopId);
+                .Select(o => new
+                {
+                    Id = o.Id,
+                    CarId = o.CarId,
+                    CarMakeName = o.Car.Model.CarMake.Name,
+                    CarModelName = o.Car.Model.Name,
+                    CarRegistrationNumber = o.Car.RegistrationNumber,
+                    ClientName = o.Car.Owner.Name,
+                    WorkshopId = o.Car.Owner.WorkshopId
+                })
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.WorkshopId == workshopId);
 
             if (order == null)
                 return new MethodResponseVM(false, "Order not found or access denied.");
 
-            var car = order.Car;
-            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
+            string carInfo = $"{order.CarMakeName} {order.CarModelName} ({order.CarRegistrationNumber})";
 
             var jobType = await _context.JobTypes.FindAsync(model.JobTypeId);
             var worker = await _context.Workers.FindAsync(model.WorkerId);
@@ -76,17 +74,13 @@ namespace GarageControl.Core.Services.Jobs
             var userAccesses = await _authService.GetUserAccess(userId);
 
             var (changes, affectedPartIds) =
-                await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+                await ApplyPartsChangesAsync(job, model.Parts, userId, userAccesses);
 
             _context.Jobs.Add(job);
 
             await _context.SaveChangesAsync();
 
-            // Inventory recalculation handles notifications automatically now
-            foreach (var partId in affectedPartIds)
-            {
-                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
-            }
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
             await _activityLogger.LogJobCreatedAsync(
                 userId,
@@ -102,16 +96,15 @@ namespace GarageControl.Core.Services.Jobs
         {
             return await _context.Jobs.Where(j => j.Worker.UserId == userId)
                                       .Select(j => new JobToDoVM
-                                             {
-                                                Id = j.Id,
-                                                TypeName = j.JobType.Name,
-                                                Description = j.Description ?? "",
-                                                Status = j.Status == Shared.Enums.JobStatus.Pending ? "pending" :
-                                                         j.Status == Shared.Enums.JobStatus.InProgress ? "inprogress" : "finished",
-                                                StartTime = j.StartTime,
-                                                CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
-                                                CarRegistrationNumber = j.Order.Car.RegistrationNumber,
-                                             })
+                                      {
+                                          Id = j.Id,
+                                          TypeName = j.JobType.Name,
+                                          Description = j.Description ?? "",
+                                          Status = j.Status.ToString().ToLower(),
+                                          StartTime = j.StartTime,
+                                          CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
+                                          CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                                      })
                                       .OrderBy(j => j.StartTime)
                                       .ToListAsync();
         }
@@ -160,7 +153,7 @@ namespace GarageControl.Core.Services.Jobs
                     Id = j.Id,
                     Type = j.JobType.Name,
                     Description = j.Description ?? "",
-                    Status = (int)j.Status == 0 ? "pending" : (int)j.Status == 1 ? "inprogress" : "finished",
+                    Status = j.Status.ToString().ToLower(),
                     MechanicName = j.Worker.Name,
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
@@ -169,10 +162,6 @@ namespace GarageControl.Core.Services.Jobs
                 })
                 .ToListAsync();
         }
-
-        // ==============================
-        // JOB UPDATE (minor cleanup)
-        // ==============================
 
         public async Task<MethodResponseVM> UpdateJobAsync(string userId, string jobId, string workshopId, UpdateJobVM model)
         {
@@ -202,7 +191,7 @@ namespace GarageControl.Core.Services.Jobs
             var userAccesses = await _authService.GetUserAccess(userId);
 
             var (partsChanges, affectedPartIds) =
-                await ApplyPartsChangesAsync(job, model.Parts, workshopId, userId, userAccesses);
+                await ApplyPartsChangesAsync(job, model.Parts, userId, userAccesses);
 
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
@@ -223,22 +212,16 @@ namespace GarageControl.Core.Services.Jobs
 
             await _context.SaveChangesAsync();
 
-            foreach (var partId in affectedPartIds)
-                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
             await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
 
             return new MethodResponseVM(true, "Job updated successfully");
         }
 
-        // ==============================
-        // PART CHANGES (FIXED)
-        // ==============================
-
         private async Task<(List<string> changes, HashSet<string> affectedPartIds)> ApplyPartsChangesAsync(
             Job job,
             List<CreateJobPartVM> updatedParts,
-            string workshopId,
             string userId,
             List<string> userAccesses)
         {
@@ -252,7 +235,7 @@ namespace GarageControl.Core.Services.Jobs
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += (jp.SentQuantity - jp.UsedQuantity);
+                    jp.Part.Quantity += jp.SentQuantity - jp.UsedQuantity;
                     changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
                     affectedPartIds.Add(jp.PartId);
                 }
@@ -358,15 +341,14 @@ namespace GarageControl.Core.Services.Jobs
 
             var userAccesses = await _authService.GetUserAccess(userId);
 
-            // Revert parts
             var changes = new List<string>();
             var affectedPartIds = new HashSet<string>();
-            
+
             foreach (var jp in job.JobParts.ToList())
             {
                 if (jp.Part != null)
                 {
-                    jp.Part.Quantity += (jp.SentQuantity - jp.UsedQuantity);
+                    jp.Part.Quantity += jp.SentQuantity - jp.UsedQuantity;
                     affectedPartIds.Add(jp.PartId);
                 }
                 _context.JobParts.Remove(jp);
@@ -375,10 +357,7 @@ namespace GarageControl.Core.Services.Jobs
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();
 
-            foreach (var partId in affectedPartIds)
-            {
-                await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, partId);
-            }
+            await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
             return new MethodResponseVM(true, "Job deleted successfully");
         }
