@@ -55,6 +55,15 @@ namespace GarageControl.Core.Services.Jobs
             string actionHtml = $"updated job '{jobTypeName}' for {FormatOrderLink(carInfo)}: {string.Join(", ", allChanges)}";
             await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
         }
+        public async Task LogJobDeletedAsync(
+            string userId,
+            string workshopId,
+            string jobTypeName,
+            string carInfo)
+        {
+            string actionHtml = $"deleted job '{jobTypeName}' for {FormatOrderLink(carInfo)}";
+            await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+        }
 
         public string FormatPartAdded(string partName) => $"added part '<b>{partName}</b>'";
         public string FormatPartRemoved(string partName) => $"removed part '<b>{partName}</b>'";

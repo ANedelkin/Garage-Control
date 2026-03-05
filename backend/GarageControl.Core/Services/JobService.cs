@@ -331,13 +331,17 @@ namespace GarageControl.Core.Services.Jobs
                 .Include(j => j.Order)
                     .ThenInclude(o => o.Car)
                         .ThenInclude(c => c.Owner)
+                .Include(j => j.Order.Car.Model)
+                    .ThenInclude(m => m.CarMake)
                 .Include(j => j.JobType)
                 .FirstOrDefaultAsync(j => j.Id == jobId && j.Order.Car.Owner.WorkshopId == workshopId);
 
             if (job == null) return new MethodResponseVM(false, "Job not found or access denied.");
 
             var car = job.Order.Car;
-            string carInfo = $"{car.Model?.CarMake?.Name} {car.Model?.Name} ({car.RegistrationNumber})";
+
+            // Check for null values to prevent null reference exceptions
+            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} {car.RegistrationNumber}";
 
             var userAccesses = await _authService.GetUserAccess(userId);
 
@@ -358,6 +362,9 @@ namespace GarageControl.Core.Services.Jobs
             await _context.SaveChangesAsync();
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
+
+            // Log the deletion
+            await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.JobType.Name, carInfo);
 
             return new MethodResponseVM(true, "Job deleted successfully");
         }
