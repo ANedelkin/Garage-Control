@@ -47,17 +47,13 @@ namespace GarageControl.Core.Services
 
         public async Task<LoginResponseVM> SignUp(AuthVM model)
         {
-            var normalizedEmail = _userManager.NormalizeEmail(model.Email);
-
-            if (await UserExists(normalizedEmail))
+            if (await UserExistsByUsername(model.Username))
                 return new LoginResponseVM(false, "User already exists");
-
-            string username = await GenerateUsernameFromEmail(model.Email);
 
             var user = new User
             {
-                UserName = username,
-                Email = model.Email
+                UserName = model.Username,
+                Email = null // Users can set their email later, but initially it's null
             };
 
             IdentityResult result;
@@ -81,8 +77,7 @@ namespace GarageControl.Core.Services
             if (string.IsNullOrEmpty(model.Password))
                 return new LoginResponseVM(false, "Password required");
 
-            var normalizedEmail = _userManager.NormalizeEmail(model.Email);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+            var user = await _userManager.FindByNameAsync(model.Username);
 
             if (user == null)
                 return new LoginResponseVM(false, "Invalid credentials");
@@ -270,6 +265,8 @@ namespace GarageControl.Core.Services
 
             return handler.WriteToken(token);
         }
+        public async Task<bool> UserExistsByUsername(string username) =>
+            await _userManager.Users.AnyAsync(u => u.UserName == username);
 
         public async Task<bool> UserExists(string normalizedEmail) =>
             await _userManager.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail);
@@ -286,7 +283,7 @@ namespace GarageControl.Core.Services
         private async Task<User?> FindByToken(string token) =>
             await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == token);
 
-        public async Task<LoginResponseVM> ExternalLogin(string provider, string providerKey, string email)
+        public async Task<LoginResponseVM> ExternalLogin(string provider, string providerKey, string email, string? name)
         {
             email = email.ToLower();
             var normalizedEmail = _userManager.NormalizeEmail(email);

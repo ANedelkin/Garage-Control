@@ -96,11 +96,14 @@ namespace GarageControl.Controllers
                         result.Principal.FindFirst("preferred_username")?.Value ??
                         result.Principal.FindFirst("upn")?.Value;
 
+            var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value ??
+                       result.Principal.FindFirst("name")?.Value;
+
             if (externalUserId == null || email == null)
                 return BadRequest(new { Message = "Email or Microsoft ID not provided" });
 
             // Handle external login via AuthService
-            var response = await _authService.ExternalLogin("Microsoft", externalUserId, email);
+            var response = await _authService.ExternalLogin("Microsoft", externalUserId, email, name);
 
             if (response.Success)
             {
@@ -132,12 +135,14 @@ namespace GarageControl.Controllers
             // Get the permanent Google user ID (sub) - DO NOT rely only on email
             var externalUserId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name) ??
+                       result.Principal.FindFirstValue(ClaimTypes.GivenName);
 
             if (externalUserId == null || email == null)
                 return BadRequest(new { Message = "Email or Google ID not provided" });
 
             // Use the new AuthService method to handle external login properly
-            var response = await _authService.ExternalLogin("Google", externalUserId, email);
+            var response = await _authService.ExternalLogin("Google", externalUserId, email, name);
 
             if (response.Success)
             {

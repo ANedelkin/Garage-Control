@@ -16,7 +16,7 @@ const LogInPage = () => {
         setError('');
 
         try {
-            const data = await authApi.login(formData.email, formData.password);
+            const data = await authApi.login(formData.username, formData.password);
 
             // Update AuthContext
             login(data);

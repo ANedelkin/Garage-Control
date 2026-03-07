@@ -4,6 +4,8 @@ namespace GarageControl.Shared.Constants
     {
         public const int emailMinLength = 5;
         public const int emailMaxLength = 50;
+        public const int usernameMinLength = 3;
+        public const int usernameMaxLength = 50;
         public const int passwordMinLength = 6;
         public const int passwordMaxLength = 50;
     }

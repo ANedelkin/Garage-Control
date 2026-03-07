@@ -60,7 +60,8 @@ namespace GarageControl.Core.Services
             {
                 Id = w.Id,
                 Name = w.Name,
-                Email = w.User.Email!,
+                Username = w.User.UserName!,
+                Email = w.User.Email,
                 HiredOn = w.HiredOn,
                 JobTypeIds = w.Activities.Select(a => a.Id).ToList(),
                 Schedules = w.Schedules.Select(s => new WorkerScheduleVM
@@ -87,7 +88,7 @@ namespace GarageControl.Core.Services
             // 1. Create Identity User
             var user = new User
             {
-                UserName = model.Email,
+                UserName = model.Username,
                 Email = model.Email,
                 EmailConfirmed = true 
             };
@@ -214,7 +215,8 @@ namespace GarageControl.Core.Services
             {
                 Id = worker.Id,
                 Name = worker.Name,
-                Email = worker.User.Email!,
+                Username = worker.User.UserName!,
+                Email = worker.User.Email,
                 HiredOn = worker.HiredOn,
                 Accesses = accessesVm,
                 JobTypeIds = worker.Activities.Select(a => a.Id).ToList(),
@@ -268,22 +270,43 @@ namespace GarageControl.Core.Services
                 }
 
                 TrackChange("name", worker.Name, model.Name);
+                TrackChange("username", user.UserName, model.Username);
                 TrackChange("email", user.Email, model.Email);
                 TrackChange("hired date", worker.HiredOn.ToString("yyyy-MM-dd"), model.HiredOn.ToString("yyyy-MM-dd"));
 
                 worker.Name = model.Name;
                 
+                bool userUpdated = false;
+
+                if (user.UserName != model.Username)
+                {
+                    var existingUsername = await _userManager.FindByNameAsync(model.Username);
+                    if (existingUsername != null)
+                    {
+                        throw new Exception("Username is already taken");
+                    }
+
+                    user.UserName = model.Username;
+                    userUpdated = true;
+                }
+
                 if (user.Email != model.Email)
                 {
-                    var existingUser = await _userManager.FindByEmailAsync(model.Email);
-                    if (existingUser != null)
+                    if (!string.IsNullOrEmpty(model.Email))
                     {
-                        throw new Exception("Email is already taken");
+                        var existingUser = await _userManager.FindByEmailAsync(model.Email);
+                        if (existingUser != null)
+                        {
+                            throw new Exception("Email is already taken");
+                        }
                     }
 
                     user.Email = model.Email;
-                    user.UserName = model.Email;
-                    
+                    userUpdated = true;
+                }
+
+                if (userUpdated)
+                {
                     var result = await _userManager.UpdateAsync(user);
                     if (!result.Succeeded)
                     {

@@ -52,14 +52,14 @@ namespace GarageControl.Tests.Services
         public async Task LogIn_ShouldReturnSuccessForValidCredentials()
         {
             // Arrange
-            var model = new AuthVM { Email = "test@test.com", Password = "Pass" };
-            var user = new User { Id = "u1", Email = "test@test.com" };
+            var model = new AuthVM { Username = "test", Password = "Pass" };
+            var user = new User { Id = "u1", UserName = "test", Email = "test@test.com" };
 
             var workshop = new Workshop { Id = "w1", BossId = "u1", Name = "W", Address = "A", PhoneNumber = "123" };
             _context.Workshops.Add(workshop);
             await _context.SaveChangesAsync();
 
-            _mockUserManager.Setup(x => x.FindByEmailAsync(model.Email)).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByNameAsync(model.Username)).ReturnsAsync(user);
             _mockUserManager.Setup(x => x.CheckPasswordAsync(user, model.Password)).ReturnsAsync(true);
             _mockUserManager.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "Worker" });
             
@@ -76,10 +76,10 @@ namespace GarageControl.Tests.Services
         public async Task LogIn_ShouldReturnFailureForBlockedUser()
         {
             // Arrange
-            var model = new AuthVM { Email = "test@test.com", Password = "Pass" };
-            var user = new User { Id = "u1", Email = "test@test.com", LockoutEnd = DateTimeOffset.UtcNow.AddDays(1) };
+            var model = new AuthVM { Username = "test", Password = "Pass" };
+            var user = new User { Id = "u1", UserName = "test", Email = "test@test.com", LockoutEnd = DateTimeOffset.UtcNow.AddDays(1) };
 
-            _mockUserManager.Setup(x => x.FindByEmailAsync(model.Email)).ReturnsAsync(user);
+            _mockUserManager.Setup(x => x.FindByNameAsync(model.Username)).ReturnsAsync(user);
             _mockUserManager.Setup(x => x.CheckPasswordAsync(user, model.Password)).ReturnsAsync(true);
             
             // Act

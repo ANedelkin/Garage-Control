@@ -13,7 +13,7 @@ namespace GarageControl.Core.Contracts
         Task SetAuthCookies(HttpResponse response, LoginResponseVM body);
         Task<bool> UserExists(string email);
         Task<List<string>> GetUserAccess(string userId);
-        Task<LoginResponseVM> ExternalLogin(string provider, string providerKey, string email);
+        Task<LoginResponseVM> ExternalLogin(string provider, string providerKey, string email, string? name);
         Task<LoginResponseVM> GenerateTokenForUser(string userId);
     }
 }

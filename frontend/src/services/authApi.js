@@ -1,9 +1,9 @@
 import { request } from '../Utilities/request.js';
 
 export const authApi = {
-    register: async (email, password) => {
+    register: async (username, password) => {
         try {
-            const data = await request('POST', 'auth/signup', { email, password });
+            const data = await request('POST', 'auth/signup', { username, password });
 
             // Only update localStorage if the request succeeded (2xx)
             localStorage.setItem('LoggedIn', 'true');
@@ -21,9 +21,9 @@ export const authApi = {
         }
     },
 
-    login: async (email, password) => {
+    login: async (username, password) => {
         try {
-            const data = await request('POST', 'auth/login', { email, password });
+            const data = await request('POST', 'auth/login', { username, password });
 
             localStorage.setItem('LoggedIn', 'true');
             localStorage.setItem('accesses', JSON.stringify(data.accesses || []));

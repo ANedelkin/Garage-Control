@@ -18,6 +18,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
 
   const [worker, setWorker] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     hiredOn: new Date(),
@@ -105,11 +106,11 @@ const EditWorker = ({ id, onClose, onSave }) => {
               />
             </div>
             <div className="form-section">
-              <label>Email</label>
+              <label>Username</label>
               <input
-                type="email"
-                value={worker.email}
-                onChange={(e) => setWorker({ ...worker, email: e.target.value })}
+                type="text"
+                value={worker.username || ""}
+                onChange={(e) => setWorker({ ...worker, username: e.target.value })}
                 required
               />
             </div>
@@ -120,6 +121,14 @@ const EditWorker = ({ id, onClose, onSave }) => {
                 value={worker.password}
                 onChange={(e) => setWorker({ ...worker, password: e.target.value })}
                 required={isNew}
+              />
+            </div>
+            <div className="form-section">
+              <label>Email (Optional)</label>
+              <input
+                type="email"
+                value={worker.email || ""}
+                onChange={(e) => setWorker({ ...worker, email: e.target.value })}
               />
             </div>
             <div className="form-section">

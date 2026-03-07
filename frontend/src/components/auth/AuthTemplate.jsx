@@ -10,7 +10,7 @@ import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
 
 const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ username: '', password: '' });
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
@@ -35,12 +35,12 @@ const AuthTemplate = ({ title = "Welcome Back", handlers, children }) => {
                     <h3 className="tile-header">{title}</h3>
                     <form onSubmit={handleFormSubmit}>
                         <div className="form-section">
-                            <label>Email</label>
+                            <label>Username</label>
                             <input
-                                type="email"
-                                placeholder="Enter email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                type="text"
+                                placeholder="Enter username"
+                                value={formData.username}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                 required
                             />
                         </div>

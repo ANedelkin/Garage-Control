@@ -6,10 +6,10 @@ namespace GarageControl.Core.ViewModels.Auth
     public class AuthVM
     {
         [Required]
-        [EmailAddress(ErrorMessage = "Invalid email.")]
-        [MinLength(AuthConstants.emailMinLength, ErrorMessage = "Email too short.")]
-        [MaxLength(AuthConstants.emailMaxLength, ErrorMessage = "Email too long.")]
-        public string Email { get; set; } = null!;
+        [MinLength(AuthConstants.usernameMinLength, ErrorMessage = "Username too short.")]
+        [MaxLength(AuthConstants.usernameMaxLength, ErrorMessage = "Username too long.")]
+        public string Username { get; set; } = null!;
+
 
         [Required]
         [MinLength(AuthConstants.passwordMinLength, ErrorMessage = "Password too short.")]

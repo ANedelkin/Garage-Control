@@ -13,9 +13,13 @@ namespace GarageControl.Core.ViewModels.Workers
         public string Name { get; set; } = null!;
 
         [Required]
+        [MinLength(AuthConstants.usernameMinLength)]
+        [MaxLength(AuthConstants.usernameMaxLength)]
+        public string Username { get; set; } = null!;
+
         [EmailAddress]
         [StringLength(GenericConstants.emailMaxLength)]
-        public string Email { get; set; } = null!;
+        public string? Email { get; set; }
 
         public string? Password { get; set; }
         public DateTime HiredOn { get; set; } = DateTime.Today;
