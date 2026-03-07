@@ -71,10 +71,15 @@ const EditWorker = ({ id, onClose, onSave }) => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
+      const dataToSave = {
+        ...worker,
+        email: worker.email?.trim() === "" ? null : worker.email
+      };
+
       if (isNew) {
-        await workerApi.create(worker);
+        await workerApi.create(dataToSave);
       } else {
-        await workerApi.edit(id, worker);
+        await workerApi.edit(id, dataToSave);
       }
 
       if (user && user.workerId === id) {
