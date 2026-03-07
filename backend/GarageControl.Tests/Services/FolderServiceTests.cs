@@ -86,7 +86,8 @@ namespace GarageControl.Tests.Services
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
-            _mockInventoryService.Setup(x => x.GetPartsToSendAsync(part.Id)).ReturnsAsync(2.0);
+            _mockInventoryService.Setup(x => x.GetPartsToSendAsync(workshopId, It.IsAny<IEnumerable<string>>()))
+                .ReturnsAsync(new Dictionary<string, int> { { part.Id, 2 } });
 
             // Act
             var result = await _service.GetFolderContentAsync(workshopId, "parent");

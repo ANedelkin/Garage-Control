@@ -21,6 +21,7 @@ namespace GarageControl.Tests.Services
         private readonly Mock<IActivityLogService> _mockActivityLogService;
         private readonly Mock<IWorkshopService> _mockWorkshopService;
         private readonly Mock<IInventoryService> _mockInventoryService;
+        private readonly Mock<IJobService> _mockJobService;
         private readonly GarageControlDbContext _context;
         private readonly OrderService _service;
 
@@ -35,13 +36,15 @@ namespace GarageControl.Tests.Services
             _mockActivityLogService = new Mock<IActivityLogService>();
             _mockWorkshopService = new Mock<IWorkshopService>();
             _mockInventoryService = new Mock<IInventoryService>();
+            _mockJobService = new Mock<IJobService>();
 
             _service = new OrderService(
                 _context, 
                 _mockNotificationService.Object, 
                 _mockActivityLogService.Object, 
                 _mockWorkshopService.Object, 
-                _mockInventoryService.Object);
+                _mockInventoryService.Object,
+                _mockJobService.Object);
         }
 
         [Fact]
@@ -84,8 +87,7 @@ namespace GarageControl.Tests.Services
             var createModel = new CreateOrderVM 
             { 
                 CarId = "car1", 
-                Kilometers = 1000, 
-                Jobs = new List<CreateJobVM>() 
+                Kilometers = 1000
             };
 
             // Act

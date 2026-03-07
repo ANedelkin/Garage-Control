@@ -15,6 +15,7 @@ namespace GarageControl.Tests.Services
     public class InventoryServiceTests
     {
         private readonly Mock<INotificationService> _mockNotification;
+        private readonly Mock<IDeficitService> _mockDeficitService;
         private readonly GarageControlDbContext _context;
         private readonly InventoryService _service;
 
@@ -26,8 +27,9 @@ namespace GarageControl.Tests.Services
 
             _context = new GarageControlDbContext(options);
             _mockNotification = new Mock<INotificationService>();
+            _mockDeficitService = new Mock<IDeficitService>();
 
-            _service = new InventoryService(_context, _mockNotification.Object);
+            _service = new InventoryService(_context, _mockNotification.Object, _mockDeficitService.Object);
         }
 
         [Fact]
@@ -82,7 +84,7 @@ namespace GarageControl.Tests.Services
             // So oldBalance = 1 (wasLow), newBalance = 10 (!isLow).
 
             // Act
-            await _service.RecalculateAvailabilityBalanceAsync(workshopId, "p1");
+            await _service.RecalculateAvailabilityBalanceAsync(workshopId, new List<string> { "p1" });
 
             // Assert
             _mockNotification.Verify(x => x.RemoveStockNotificationAsync(workshopId, "p1"), Times.Once);
@@ -101,7 +103,7 @@ namespace GarageControl.Tests.Services
             // oldBalance = 2, newBalance = 4, both < 5 and oldBalance != newBalance.
 
             // Act
-            await _service.RecalculateAvailabilityBalanceAsync(workshopId, "p1");
+            await _service.RecalculateAvailabilityBalanceAsync(workshopId, new List<string> { "p1" });
 
             // Assert
             _mockNotification.Verify(x => x.SendStockNotificationAsync(workshopId, "p1", "Part", 4, 5), Times.Once);

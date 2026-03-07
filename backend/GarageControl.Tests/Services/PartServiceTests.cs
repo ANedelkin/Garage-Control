@@ -115,7 +115,7 @@ namespace GarageControl.Tests.Services
             Assert.Equal("New Name", updated.Name);
             Assert.Equal(12, updated.Price);
 
-            _mockInventoryService.Verify(x => x.RecalculateAvailabilityBalanceAsync(workshopId, "part1"), Times.Once);
+            _mockInventoryService.Verify(x => x.RecalculateAvailabilityBalanceAsync(workshopId, It.Is<IEnumerable<string>>(ids => ids.Contains("part1")), It.IsAny<int?>()), Times.Once);
             _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("updated part") && s.Contains("New Name"))), Times.Once);
         }
 
