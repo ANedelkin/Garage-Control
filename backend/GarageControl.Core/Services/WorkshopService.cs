@@ -1,5 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.ViewModels.Auth;
 using GarageControl.Core.ViewModels.Workshop;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
@@ -10,13 +11,17 @@ namespace GarageControl.Core.Services
     public class WorkshopService : IWorkshopService
     {
         private readonly IRepository _repository;
-        public WorkshopService(IRepository repository)
+        private readonly IAuthService _authService;
+
+        public WorkshopService(IRepository repository, IAuthService authService)
         {
             _repository = repository;
+            _authService = authService;
         }
-        public async Task CreateWorkshop(string userId, WorkshopVM model)
+
+        public async Task<LoginResponseVM> CreateWorkshop(string userId, WorkshopVM model)
         {
-            await _repository.AddAsync<Workshop>(new Workshop
+            var workshop = new Workshop
             {
                 Name = model.Name,
                 Address = model.Address,
@@ -24,9 +29,25 @@ namespace GarageControl.Core.Services
                 PhoneNumber = model.PhoneNumber,
                 Email = model.Email,
                 BossId = userId
-            });
+            };
+            await _repository.AddAsync<Workshop>(workshop);
+
+            var allAccesses = await _repository.GetAll<Access>().ToListAsync();
+            var worker = new Worker
+            {
+                UserId = userId,
+                Name = model.Name,
+                Workshop = workshop,
+                HiredOn = DateTime.Now,
+                Accesses = new HashSet<Access>(allAccesses)
+            };
+            await _repository.AddAsync<Worker>(worker);
 
             await _repository.SaveChangesAsync();
+
+            // Generate a new token with the updated accesses
+            var tokenResponse = await _authService.GenerateTokenForUser(userId);
+            return tokenResponse;
         }
 
         public async Task<WorkshopVM> GetWorkshopDetails(string workshopId)

@@ -14,9 +14,12 @@ namespace GarageControl.Controllers
     public class WorkshopController : ControllerBase
     {
         private readonly IWorkshopService _workshopService;
-        public WorkshopController(IWorkshopService workshopService)
+        private readonly IAuthService _authService;
+
+        public WorkshopController(IWorkshopService workshopService, IAuthService authService)
         {
             _workshopService = workshopService;
+            _authService = authService;
         }
         [HttpGet("has-workshop")]
         public async Task<IActionResult> HasWorkshop()
@@ -47,9 +50,15 @@ namespace GarageControl.Controllers
                 return Unauthorized(new { message = "User not authenticated or token is invalid." });
             }
             
-            await _workshopService.CreateWorkshop(userId, workshop);
+            var result = await _workshopService.CreateWorkshop(userId, workshop);
 
-            return Ok(new { message = "Workshop created successfully." });
+            if (result.Success)
+            {
+                await _authService.SetAuthCookies(Response, result);
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
         [RequireAccess("Workshop Details")]

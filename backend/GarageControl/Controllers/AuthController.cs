@@ -30,7 +30,13 @@ namespace GarageControl.Controllers
             }
 
             var result = await _authService.SignUp(model);
-            return result.Success ? Ok(result) : BadRequest(result);
+
+            if (result.Success)
+            {
+                await _authService.SetAuthCookies(Response, result);
+                return Ok(result);
+            }
+            else return BadRequest(result);
         }
 
         [HttpPost("login")]
@@ -83,39 +89,23 @@ namespace GarageControl.Controllers
             if (!result.Succeeded)
                 return BadRequest(new { Message = "Microsoft authentication failed" });
 
+            var externalUserId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Use preferred_username or upn as fallback for email
             var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value ??
                         result.Principal.FindFirst("preferred_username")?.Value ??
                         result.Principal.FindFirst("upn")?.Value;
 
-            if (email == null)
-                return BadRequest(new { Message = "Email not provided by Microsoft" });
+            if (externalUserId == null || email == null)
+                return BadRequest(new { Message = "Email or Microsoft ID not provided" });
 
-            var userExists = await _authService.UserExists(email);
-
-            LoginResponseVM response;
-            if (!userExists)
-            {
-                response = await _authService.SignUp(new AuthVM
-                {
-                    Email = email,
-                    Password = null
-                });
-            }
-            else
-            {
-                response = await _authService.LogIn(new AuthVM
-                {
-                    Email = email,
-                    Password = null
-                });
-            }
+            // Handle external login via AuthService
+            var response = await _authService.ExternalLogin("Microsoft", externalUserId, email);
 
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-
                 var frontendRedirectUri = $"https://localhost:5173";
-
                 return Redirect(frontendRedirectUri);
             }
 
@@ -133,42 +123,26 @@ namespace GarageControl.Controllers
         [HttpGet("google-callback")]
         public async Task<IActionResult> GoogleCallback()
         {
+            // Authenticate external login using Identity's external scheme
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
             if (!result.Succeeded)
                 return BadRequest(new { Message = "Google authentication failed" });
 
-            var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            // Get the permanent Google user ID (sub) - DO NOT rely only on email
+            var externalUserId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
 
-            if (email == null)
-                return BadRequest(new { Message = "Email not provided by Google" });
+            if (externalUserId == null || email == null)
+                return BadRequest(new { Message = "Email or Google ID not provided" });
 
-            var userExists = await _authService.UserExists(email);
-
-            LoginResponseVM response;
-            if (!userExists)
-            {
-                response = await _authService.SignUp(new AuthVM
-                {
-                    Email = email,
-                    Password = null
-                });
-            }
-            else
-            {
-                response = await _authService.LogIn(new AuthVM
-                {
-                    Email = email,
-                    Password = null
-                });
-            }
+            // Use the new AuthService method to handle external login properly
+            var response = await _authService.ExternalLogin("Google", externalUserId, email);
 
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-
                 var frontendRedirectUri = $"https://localhost:5173";
-
                 return Redirect(frontendRedirectUri);
             }
 

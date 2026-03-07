@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Workshop;
+using Moq;
+using GarageControl.Core.Contracts;
+using GarageControl.Core.ViewModels.Auth;
 
 namespace GarageControl.Tests.Services
 {
@@ -16,6 +19,7 @@ namespace GarageControl.Tests.Services
         private readonly GarageControlDbContext _context;
         private readonly IRepository _repo;
         private readonly WorkshopService _service;
+        private readonly Mock<IAuthService> _mockAuthService;
 
         public WorkshopServiceTests()
         {
@@ -25,7 +29,14 @@ namespace GarageControl.Tests.Services
 
             _context = new GarageControlDbContext(options);
             _repo = new Repository(_context);
-            _service = new WorkshopService(_repo);
+            _mockAuthService = new Mock<IAuthService>();
+            
+            // Setup mock to return a successful token response
+            _mockAuthService
+                .Setup(x => x.GenerateTokenForUser(It.IsAny<string>()))
+                .ReturnsAsync(new LoginResponseVM(true, "Token generated", "test-token", "refresh-token", new List<string>(), true, "u1", "w1"));
+
+            _service = new WorkshopService(_repo, _mockAuthService.Object);
         }
 
         [Fact]

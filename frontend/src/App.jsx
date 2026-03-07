@@ -34,9 +34,9 @@ import { authApi } from './services/authApi';
 import { useAuth } from './context/AuthContext';
 
 const PrivateRoute = ({ children, access }) => {
-  const { loggedIn, accesses } = useAuth();
+  const { accesses } = useAuth();
 
-  if (!loggedIn) {
+  if (!localStorage.getItem('LoggedIn')) {
     return <Navigate to="/login" />;
   }
 
