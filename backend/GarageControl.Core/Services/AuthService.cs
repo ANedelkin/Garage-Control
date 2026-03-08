@@ -241,7 +241,7 @@ namespace GarageControl.Core.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email)
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
             };
 
             foreach (var role in roles)
@@ -268,8 +268,8 @@ namespace GarageControl.Core.Services
         public async Task<bool> UserExistsByUsername(string username) =>
             await _userManager.Users.AnyAsync(u => u.UserName == username);
 
-        public async Task<bool> UserExists(string normalizedEmail) =>
-            await _userManager.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail);
+        public async Task<bool> UserExists(string normalizedUsername) =>
+            await _userManager.Users.AnyAsync(u => u.NormalizedUserName == normalizedUsername);
 
         private string GenerateRefreshToken()
         {

@@ -44,25 +44,23 @@ namespace GarageControl.Infrastructure.Data.Seeding
             }
 
             // Seed Admin User
-            var adminEmail = Environment.GetEnvironmentVariable("SEED_ADMIN_EMAIL");
+            var adminUsername = Environment.GetEnvironmentVariable("SEED_ADMIN_USERNAME");
             var adminPass = Environment.GetEnvironmentVariable("SEED_ADMIN_PASS");
 
-            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPass))
+            if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPass))
             {
                 Console.WriteLine("Admin credentials not set in environment variables. Skipping admin seeding.");
                 return;
             }
 
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            var adminUser = await userManager.FindByEmailAsync(adminUsername);
 
             if (adminUser == null)
             {
                 adminUser = new User
                 {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
+                    UserName = adminUsername,
                 };
 
                 var createResult = await userManager.CreateAsync(adminUser, adminPass);
