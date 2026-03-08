@@ -27,14 +27,7 @@ header {
 
 .profile-name {
   padding: 6px 10px;
-  border-radius: 8px;
   color: var(--text-clr2);
-  cursor: pointer;
-}
-
-.profile-name:hover {
-  background-color: var(--solid4);
-  color: var(--text-clr1);
 }
 
 /* .logout-icon {
@@ -110,8 +103,9 @@ header {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
-.notification-popup h3{
-  margin:0;
+
+.notification-popup h3 {
+  margin: 0;
 }
 
 
