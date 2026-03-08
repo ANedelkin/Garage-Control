@@ -13,7 +13,7 @@ const Header = ({ onToggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const fetchNotifications = async () => {
     try {
@@ -59,7 +59,7 @@ const Header = ({ onToggleSidebar }) => {
         <h1>GarageControl</h1>
       </div>
       <div className="profile">
-        <div className="profile-name">Genco Gencin</div>
+        <div className="profile-name">{user?.userName || 'User'}</div>
         <button
           className="icon-btn btn notification-btn"
           title="Notifications"

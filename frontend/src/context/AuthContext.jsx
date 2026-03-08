@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
                             localStorage.setItem('accesses', JSON.stringify(data.accesses));
                         }
                         if (data.userId || data.workerId) {
-                            const userData = { id: data.userId, workerId: data.workerId };
+                            const userData = { id: data.userId, workerId: data.workerId, userName: data.userName };
                             setUser(userData);
                             localStorage.setItem('user', JSON.stringify(userData));
                         }
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('accesses');
         }
         if (data.userId || data.workerId) {
-            const userData = { id: data.userId, workerId: data.workerId };
+            const userData = { id: data.userId, workerId: data.workerId, userName: data.userName };
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
         } else {
@@ -106,7 +106,9 @@ export const AuthProvider = ({ children }) => {
                     localStorage.setItem('accesses', JSON.stringify(data.accesses));
                 }
                 if (data.userId || data.workerId) {
-                    setUser({ id: data.userId, workerId: data.workerId });
+                    const userData = { id: data.userId, workerId: data.workerId, userName: data.userName };
+                    setUser(userData);
+                    localStorage.setItem('user', JSON.stringify(userData));
                 }
                 return data;
             }

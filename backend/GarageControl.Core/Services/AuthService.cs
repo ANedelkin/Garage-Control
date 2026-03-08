@@ -169,7 +169,7 @@ namespace GarageControl.Core.Services
             var workerId = (await _repo.GetAllAsNoTracking<Worker>()
                 .FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponseVM(true, "Token refreshed", newAccess, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
+            return new LoginResponseVM(true, "Token refreshed", newAccess, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
 
         public Task SetAuthCookies(HttpResponse response, LoginResponseVM body)
@@ -211,7 +211,7 @@ namespace GarageControl.Core.Services
             var workerId = (await _repo.GetAllAsNoTracking<Worker>()
                 .FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
 
-            return new LoginResponseVM(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
+            return new LoginResponseVM(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
 
         private async Task<string> GenerateUsernameFromEmail(string email)
@@ -404,7 +404,7 @@ namespace GarageControl.Core.Services
             bool hasWorkshop = await UserHasWorkshop(userId);
             var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == userId))?.Id;
 
-            return new LoginResponseVM(true, "Token generated", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId);
+            return new LoginResponseVM(true, "Token generated", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
     }
 }

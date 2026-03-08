@@ -68,6 +68,7 @@ const AdminUsers = () => {
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = user.email.toLowerCase().includes(search.toLowerCase()) ||
+            user.userName.toLowerCase().includes(search.toLowerCase()) ||
             (user.workshopName && user.workshopName.toLowerCase().includes(search.toLowerCase()));
         const matchesRole = roleFilter === 'All' || user.role === roleFilter;
         const matchesStatus = statusFilter === 'All' ||
@@ -127,6 +128,7 @@ const AdminUsers = () => {
                     <table>
                         <thead>
                             <tr>
+                                <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Workshop</th>
@@ -136,6 +138,7 @@ const AdminUsers = () => {
                         <tbody>
                             {filteredUsers.map(user => (
                                 <tr key={user.id}>
+                                    <td>{user.userName}</td>
                                     <td>{user.email}</td>
                                     <td>{user.role}</td>
                                     <td>{user.workshopName || '-'}</td>

@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
         public async Task<List<UserAdminVM>> GetUsersAsync()
         {
             var users = await _userManager.Users
-                .Select(u => new { u.Id, u.Email, u.LockoutEnd })
+                .Select(u => new { u.Id, u.UserName, u.Email, u.LockoutEnd })
                 .ToListAsync();
 
             var adminUser = await _userManager.GetUsersInRoleAsync("Admin");
@@ -46,6 +46,7 @@ namespace GarageControl.Core.Services
                 var userVM = new UserAdminVM
                 {
                     Id = user.Id,
+                    UserName = user.UserName ?? string.Empty,
                     Email = user.Email ?? string.Empty,
                     IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow
                 };
@@ -108,7 +109,7 @@ namespace GarageControl.Core.Services
                               {
                                   Id = w.Id,
                                   Name = w.Name,
-                                  OwnerEmail = w.Boss.Email,
+                                  ContactEmail = w.Email ?? string.Empty,
                                   Address = w.Address,
                                   WorkersCount = w.Workers.Count,
                                   IsBlocked = w.IsBlocked
@@ -175,6 +176,7 @@ namespace GarageControl.Core.Services
                 recentUsersVM.Add(new UserAdminVM
                 {
                     Id = user.Id,
+                    UserName = user.UserName ?? "",
                     Email = user.Email ?? "",
                     IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
                     Role = role,

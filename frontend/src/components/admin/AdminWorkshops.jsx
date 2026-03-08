@@ -67,7 +67,7 @@ const AdminWorkshops = () => {
     const filteredWorkshops = workshops.filter(w => {
         const matchesSearch = w.name.toLowerCase().includes(search.toLowerCase()) ||
             w.address.toLowerCase().includes(search.toLowerCase()) ||
-            w.bossEmail.toLowerCase().includes(search.toLowerCase());
+            w.contactEmail.toLowerCase().includes(search.toLowerCase());
         const matchesStatus = statusFilter === 'All' ||
             (statusFilter === 'Active' && !w.isBlocked) ||
             (statusFilter === 'Blocked' && w.isBlocked);
@@ -117,7 +117,7 @@ const AdminWorkshops = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Owner Email</th>
+                                <th>Contact Email</th>
                                 <th>Address</th>
                                 <th style={{ textAlign: 'center' }}>Workers</th>
                                 <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
@@ -127,7 +127,7 @@ const AdminWorkshops = () => {
                             {filteredWorkshops.map(w => (
                                 <tr key={w.id}>
                                     <td>{w.name}</td>
-                                    <td>{w.ownerEmail}</td>
+                                    <td>{w.contactEmail}</td>
                                     <td>{w.address}</td>
                                     <td style={{ textAlign: 'center' }}>{w.workersCount}</td>
                                     <td style={{ textAlign: 'center', height: '61px' }}>
