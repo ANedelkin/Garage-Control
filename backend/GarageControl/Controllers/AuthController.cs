@@ -22,7 +22,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] AuthVM model)
+        public async Task<IActionResult> SignUp([FromBody] RegisterVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -40,7 +40,7 @@ namespace GarageControl.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] AuthVM model)
+        public async Task<IActionResult> Login([FromBody] LoginVM model)
         {
             if (!ModelState.IsValid)
             {

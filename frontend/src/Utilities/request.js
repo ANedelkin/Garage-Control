@@ -18,7 +18,7 @@ export async function request(method, url, body = null, options = {}) {
 
     let data = null;
     const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType && (contentType.includes('application/json') || contentType.includes('application/problem+json'))) {
         try {
             data = await response.json();
         } catch (e) {
@@ -27,7 +27,7 @@ export async function request(method, url, body = null, options = {}) {
     }
 
     if (!response.ok) {
-        const errorMessage = data?.message || data?.error || response.statusText || 'Request failed';
+        const errorMessage = data?.message || data?.error || data?.title || response.statusText || 'Request failed';
         const error = new Error(errorMessage);
         error.status = response.status;
         error.data = data;

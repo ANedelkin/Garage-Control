@@ -45,7 +45,7 @@ namespace GarageControl.Core.Services
             _accessTokenExpiryMinutes = 30;
         }
 
-        public async Task<LoginResponseVM> SignUp(AuthVM model)
+        public async Task<LoginResponseVM> SignUp(RegisterVM model)
         {
             if (await UserExistsByUsername(model.Username))
                 return new LoginResponseVM(false, "User already exists");
@@ -72,7 +72,7 @@ namespace GarageControl.Core.Services
             return await DoLogin(user);
         }
 
-        public async Task<LoginResponseVM> LogIn(AuthVM model)
+        public async Task<LoginResponseVM> LogIn(LoginVM model)
         {
             if (string.IsNullOrEmpty(model.Password))
                 return new LoginResponseVM(false, "Password required");

@@ -21,10 +21,11 @@
     margin-bottom: 0;
 }
 
-.form-section .select-wrapper{
+.form-section .select-wrapper {
     width: 100%;
 }
-.form-section select{
+
+.form-section select {
     width: 100%;
 }
 
@@ -44,4 +45,14 @@
 
 label {
     margin-right: 0 !important;
+}
+
+.field-error {
+    color: red;
+    margin-bottom: 0;
+}
+
+.form-error {
+    color: red;
+    margin-bottom: 10px;
 }
