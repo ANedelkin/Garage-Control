@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { partApi } from '../../services/partApi';
+import FieldError from '../common/FieldError.jsx';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const PartDetails = ({ part, onUpdate, onDelete }) => {
     const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
     });
     const [stockAdj, setStockAdj] = useState('');
     const [isDirty, setIsDirty] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (part) {
@@ -60,7 +63,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             window.dispatchEvent(new CustomEvent('refresh-notifications'));
         } catch (error) {
             console.error("Error saving part after adjustment", error);
-            alert(error.message || "Failed to save part");
+            setErrors(parseValidationErrors(error));
         }
     };
 
@@ -83,7 +86,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
             // alert("Saved successfully");
         } catch (error) {
             console.error("Error saving part", error);
-            alert(error.message || "Failed to save part");
+            setErrors(parseValidationErrors(error));
         }
     };
 
@@ -119,6 +122,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                 onChange={handleChange}
                                 required
                             />
+                            <FieldError name="Name" errors={errors} />
                         </div>
                         <div className="form-section">
                             <label>Part Number</label>
@@ -129,6 +133,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                 onChange={handleChange}
                                 required
                             />
+                            <FieldError name="PartNumber" errors={errors} />
                         </div>
                         <div className="form-section">
                             <label>Price</label>
@@ -142,6 +147,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                     onChange={handleChange}
                                     required
                                 />
+                                <FieldError name="Price" errors={errors} />
                             </div>
                         </div>
                     </div>
@@ -158,6 +164,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                 onChange={handleChange}
                                 required
                             />
+                            <FieldError name="Quantity" errors={errors} />
                         </div>
 
                         <div className="form-section-row">
@@ -174,6 +181,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                     value={formData.availabilityBalance}
                                     disabled
                                 />
+                                <FieldError name="AvailabilityBalance" errors={errors} />
                             </div>
 
                             <div className={`form-section`}>
@@ -184,6 +192,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                     value={formData.partsToSend}
                                     disabled
                                 />
+                                <FieldError name="PartsToSend" errors={errors} />
                             </div>
                         </div>
 
@@ -196,6 +205,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                                 onChange={handleChange}
                                 required
                             />
+                            <FieldError name="MinimumQuantity" errors={errors} />
                         </div>
 
                         <div className="form-section">
@@ -229,6 +239,7 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
                 </div>
 
                 <div className="form-footer">
+                    {errors.general && <p className="form-error">{errors.general}</p>}
                     <button type="submit" className="btn" disabled={!isDirty}>Save Changes</button>
                 </div>
             </form>

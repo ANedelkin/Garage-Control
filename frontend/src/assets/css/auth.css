@@ -32,8 +32,8 @@
   gap: 10px;
 }
 
-.auth .form-section {
-  width: 350px;
+.auth .tile {
+  width: 400px;
 }
 
 .auth .lnk {

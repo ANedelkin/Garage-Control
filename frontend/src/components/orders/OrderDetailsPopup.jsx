@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { request } from '../../Utilities/request';
 import Suggestions from '../common/Suggestions';
 import '../../assets/css/orders.css';
+import FieldError from '../common/FieldError.jsx';
 
-const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
+const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
     const [carSearch, setCarSearch] = useState(`${order.carRegistrationNumber} - ${order.carName}`);
     const [selectedCarId, setSelectedCarId] = useState(order.carId);
     const [kilometers, setKilometers] = useState(order.kilometers);
@@ -44,6 +45,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
                 <label>Car:</label>
                 <input
                     type="text"
+                    name="CarId"
                     placeholder="Search car..."
                     value={carSearch}
                     onChange={(e) => handleCarSearch(e.target.value)}
@@ -51,6 +53,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
                     onBlur={() => setTimeout(() => setSuggestions([]), 200)}
                     style={{ position: 'relative' }}
                 />
+                <FieldError name="CarId" errors={errors} />
                 <Suggestions
                     ref={suggestionsRef}
                     suggestions={suggestions}
@@ -70,9 +73,11 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
                 <label>Kilometers:</label>
                 <input
                     type="number"
+                    name="Kilometers"
                     value={kilometers}
                     onChange={(e) => setKilometers(e.target.value)}
                 />
+                <FieldError name="Kilometers" errors={errors} />
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
                 <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
@@ -109,6 +114,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave }) => {
             </div>
             <div className="divider"></div>
             <div className="form-footer">
+                {errors.general && <p className="form-error">{errors.general}</p>}
                 <button className="btn" onClick={handleSave}>Save Changes</button>
                 <button className="btn" onClick={onClose}>Cancel</button>
             </div>

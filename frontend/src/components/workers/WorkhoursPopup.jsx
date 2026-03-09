@@ -3,12 +3,14 @@ import ScheduleSelector from "./ScheduleSelector";
 import LeavePopup from "./LeavePopup";
 import { workerApi } from "../../services/workerApi";
 import { usePopup } from "../../context/PopupContext";
+import { parseValidationErrors } from "../../Utilities/formErrors.js";
 
 const WorkhoursPopup = ({ id, onClose, onSave }) => {
     const [worker, setWorker] = useState(null);
     const [loading, setLoading] = useState(true);
     const { addPopup, removeLastPopup } = usePopup();
     const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchWorker = async () => {
@@ -36,9 +38,10 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
             await workerApi.edit(id, worker);
             if (onSave) onSave();
             if (onClose) onClose();
+            setErrors({});
         } catch (error) {
             console.error("Error saving worker schedule", error);
-            alert(error.message || "Failed to save schedule");
+            setErrors(parseValidationErrors(error));
         }
     };
 
@@ -133,6 +136,7 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
             </div>
 
             <div className="form-footer" style={{ marginTop: '20px' }}>
+                {errors.general && <p className="form-error">{errors.general}</p>}
                 <button type="button" className="btn" onClick={handleSave}>
                     Save Schedule
                 </button>

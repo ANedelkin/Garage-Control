@@ -48,8 +48,13 @@ label {
 }
 
 .field-error {
-    color: red;
+    color: var(--error-color, #ff4444);
+    margin-top: 5px;
     margin-bottom: 0;
+    font-size: 0.85em;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .form-error {

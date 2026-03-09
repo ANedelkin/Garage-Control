@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../../services/authApi.js';
 import ThemeToggle from '../common/ThemeToggle.jsx';
+import FieldError from '../common/FieldError.jsx';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
 import '../../assets/css/auth.css';
@@ -22,32 +24,7 @@ const SignUpPage = () => {
             localStorage.setItem('HasWorkshop', 'false'); // Ensure popup shows up
             navigate('/');
         } catch (err) {
-            console.error('Registration error detail:', err, err.data);
-            const newErrors = {};
-            const data = err.data;
-
-            if (data?.errors && typeof data.errors === 'object') {
-                // Map ASP.NET ModelState errors
-                Object.keys(data.errors).forEach(key => {
-                    const fieldErrors = data.errors[key];
-                    const message = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors;
-                    newErrors[key.toLowerCase()] = message;
-                });
-            } else if (data?.Message || data?.message) {
-                // Map specific business logic errors
-                const errorMessage = data.Message || data.message;
-                const msg = errorMessage.toLowerCase();
-                if (msg.includes('user already exists') || msg.includes('username')) {
-                    newErrors.username = errorMessage;
-                } else if (msg.includes('password')) {
-                    newErrors.password = errorMessage;
-                } else {
-                    newErrors.general = errorMessage;
-                }
-            } else {
-                newErrors.general = err.message || 'An error occurred during registration';
-            }
-            setErrors(newErrors);
+            setErrors(parseValidationErrors(err));
         } finally {
             setLoading(false);
         }
@@ -75,23 +52,25 @@ const SignUpPage = () => {
                             <label>Username</label>
                             <input
                                 type="text"
+                                name="Username"
                                 placeholder="Enter username"
                                 value={formData.username}
                                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                 required
                             />
-                            {errors.username && <p className="field-error">{errors.username}</p>}
+                            <FieldError name="Username" errors={errors} />
                         </div>
                         <div className="form-section">
                             <label>Password</label>
                             <input
                                 type="password"
+                                name="Password"
                                 placeholder="Enter password"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 required
                             />
-                            {errors.password && <p className="field-error">{errors.password}</p>}
+                            <FieldError name="Password" errors={errors} />
                         </div>
                         {errors.general && <p className="form-error">{errors.general}</p>}
 

@@ -7,6 +7,8 @@ import { makeApi } from "../../services/makeApi";
 import { modelApi } from "../../services/modelApi";
 import { usePopup } from "../../context/PopupContext";
 import CarPopup from "../cars/CarPopup";
+import FieldError from "../common/FieldError.jsx";
+import { parseValidationErrors } from "../../Utilities/formErrors.js";
 
 const EditClient = () => {
     const { id } = useParams();
@@ -20,6 +22,8 @@ const EditClient = () => {
         address: "",
         registrationNumber: ""
     });
+
+    const [errors, setErrors] = useState({});
 
     const [loading, setLoading] = useState(true);
 
@@ -77,7 +81,7 @@ const EditClient = () => {
             navigate('/clients');
         } catch (error) {
             console.error('Error saving client info:', error);
-            alert(error.message || 'Error occurred while saving client details.');
+            setErrors(parseValidationErrors(error));
         } finally { }
     };
 
@@ -149,43 +153,53 @@ const EditClient = () => {
                                 <label>Name</label>
                                 <input
                                     type="text"
+                                    name="Name"
                                     value={client.name}
                                     onChange={e => setClient({ ...client, name: e.target.value })}
                                     required
                                 />
+                                <FieldError name="Name" errors={errors} />
                             </div>
                             <div className="form-section">
                                 <label>Phone Number</label>
                                 <input
                                     type="text"
+                                    name="PhoneNumber"
                                     value={client.phoneNumber}
                                     onChange={e => setClient({ ...client, phoneNumber: e.target.value })}
                                     required
                                 />
+                                <FieldError name="PhoneNumber" errors={errors} />
                             </div>
                             <div className="form-section">
                                 <label>Email</label>
                                 <input
                                     type="email"
+                                    name="Email"
                                     value={client.email}
                                     onChange={e => setClient({ ...client, email: e.target.value })}
                                 />
+                                <FieldError name="Email" errors={errors} />
                             </div>
                             <div className="form-section">
                                 <label>Address</label>
                                 <input
                                     type="text"
+                                    name="Address"
                                     value={client.address}
                                     onChange={e => setClient({ ...client, address: e.target.value })}
                                 />
+                                <FieldError name="Address" errors={errors} />
                             </div>
                             <div className="form-section">
                                 <label>Registration Number (Personal)</label>
                                 <input
                                     type="text"
+                                    name="RegistrationNumber"
                                     value={client.registrationNumber}
                                     onChange={e => setClient({ ...client, registrationNumber: e.target.value })}
                                 />
+                                <FieldError name="RegistrationNumber" errors={errors} />
                             </div>
                         </div>
 
@@ -224,6 +238,7 @@ const EditClient = () => {
                     </div>
 
                     <div className="form-footer" style={{ marginTop: '20px' }}>
+                        {errors.general && <p className="form-error">{errors.general}</p>}
                         <button type="submit" className="btn">Save Client</button>
                     </div>
                 </form>

@@ -4,6 +4,8 @@ import Suggestions from '../common/Suggestions';
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
 import { workerApi } from '../../services/workerApi.js';
+import FieldError from '../common/FieldError.jsx';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const EditJobType = () => {
   const { id } = useParams();
@@ -14,6 +16,7 @@ const EditJobType = () => {
   const [workers, setWorkers] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mechanicSuggestions, setMechanicSuggestions] = useState([]);
+  const [errors, setErrors] = useState({});
   const suggestionsRef = useRef(null);
 
   useEffect(() => {
@@ -42,16 +45,16 @@ const EditJobType = () => {
     }
   }, [id, isNew]);
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const action = isNew ? jobTypeApi.addJobType(jobTypeData) : jobTypeApi.editJobType(id, jobTypeData);
-
-    action
-      .then(() => navigate('/job-types'))
-      .catch(error => {
-        console.error("Error saving job type:", error);
-        alert(error.message || "Failed to save job type");
-      });
+    try {
+      const action = isNew ? jobTypeApi.addJobType(jobTypeData) : jobTypeApi.editJobType(id, jobTypeData);
+      await action;
+      navigate('/job-types');
+    } catch (error) {
+      console.error("Error saving job type:", error);
+      setErrors(parseValidationErrors(error));
+    }
   };
 
   const handleAddMechanic = (mechanicName) => {
@@ -114,12 +117,14 @@ const EditJobType = () => {
                   <input
                     type="text"
                     id="name"
+                    name="Name"
                     placeholder="Enter job type name"
                     value={jobTypeData.name}
                     onChange={(e) =>
                       setJobTypeData({ ...jobTypeData, name: e.target.value })
                     }
                   />
+                  <FieldError name="Name" errors={errors} />
                 </div>
               </div>
 
@@ -127,6 +132,7 @@ const EditJobType = () => {
                 <label htmlFor="description">Description</label>
                 <textarea
                   id="description"
+                  name="Description"
                   className="description"
                   placeholder="Enter job type description"
                   value={jobTypeData.description}
@@ -134,6 +140,7 @@ const EditJobType = () => {
                     setJobTypeData({ ...jobTypeData, description: e.target.value })
                   }
                 />
+                <FieldError name="Description" errors={errors} />
               </div>
             </div>
 
@@ -215,6 +222,7 @@ const EditJobType = () => {
 
           {/* Submit */}
           <div className="form-footer" style={{ marginTop: '16px' }}>
+            {errors.general && <p className="form-error">{errors.general}</p>}
             <button type="submit" className="btn">
               Done
             </button>

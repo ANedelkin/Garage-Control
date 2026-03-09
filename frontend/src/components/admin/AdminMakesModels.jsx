@@ -5,11 +5,13 @@ import { modelApi } from '../../services/modelApi';
 import SuggestedModelPopup from './SuggestedModelPopup';
 import '../../assets/css/admin-makes-models.css';
 import '../../assets/css/popup.css';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const AdminMakesModels = () => {
     const [existing, setExisting] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [popupNode, setPopupNode] = useState(null);
+    const [errors, setErrors] = useState({});
 
     const loadData = async () => {
         try {
@@ -153,14 +155,16 @@ const AdminMakesModels = () => {
             await makeApi.promoteModel({
                 makeName: popupNode.makeName,
                 newMakeName: makeName !== popupNode.makeName ? makeName : null,
-                modelName: popupNode.name, 
+                modelName: popupNode.name,
                 newModelName: modelName !== popupNode.name ? modelName : null
             });
 
             setPopupNode(null);
+            setErrors({});
             loadData();
         } catch (e) {
-            alert("Error: " + e.message);
+            console.error("Error promoting model", e);
+            setErrors(parseValidationErrors(e));
         }
     };
 
@@ -242,6 +246,7 @@ const AdminMakesModels = () => {
                     node={popupNode}
                     onClose={() => setPopupNode(null)}
                     onConfirm={handleConfirmModelAdd}
+                    errors={errors}
                 />
             )}
         </div>

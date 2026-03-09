@@ -8,6 +8,7 @@ import Dropdown from '../common/Dropdown';
 import OrderDetailsPopup from './OrderDetailsPopup';
 import NewOrderSetup from './NewOrderSetup';
 import '../../assets/css/orders.css';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const OrderList = ({ mode = 'active' }) => {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ const OrderList = ({ mode = 'active' }) => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [editingOrder, setEditingOrder] = useState(null);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchOrders();
@@ -64,10 +66,11 @@ const OrderList = ({ mode = 'active' }) => {
 
             await orderApi.updateOrder(editingOrder.id, payload);
             removeLastPopup();
+            setErrors({});
             fetchOrders();
         } catch (error) {
             console.error("Failed to update order:", error);
-            alert("Error updating order details");
+            setErrors(parseValidationErrors(error));
         }
     };
 
@@ -80,6 +83,7 @@ const OrderList = ({ mode = 'active' }) => {
                 cars={cars}
                 onClose={removeLastPopup}
                 onSave={handleSaveOrderDetails}
+                errors={errors}
             />
         );
     };

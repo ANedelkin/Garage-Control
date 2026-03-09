@@ -11,6 +11,8 @@ import { workerApi } from "../../services/workerApi";
 import { jobTypeApi } from "../../services/jobTypeApi";
 import LeavePopup from "./LeavePopup";
 import WorkhoursPopup from "./WorkhoursPopup";
+import FieldError from "../common/FieldError.jsx";
+import { parseValidationErrors } from "../../Utilities/formErrors.js";
 
 const EditWorker = ({ id, onClose, onSave }) => {
   const { user, refreshAuth } = useAuth();
@@ -30,6 +32,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
 
   const [allJobTypes, setAllJobTypes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState({});
 
   const { addPopup, removeLastPopup } = usePopup();
   const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
@@ -90,7 +93,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
       onClose();
     } catch (error) {
       console.error("Error saving worker", error);
-      alert(error.message || "Failed to save worker");
+      setErrors(parseValidationErrors(error));
     } finally { }
   };
 
@@ -105,36 +108,44 @@ const EditWorker = ({ id, onClose, onSave }) => {
               <label>Name</label>
               <input
                 type="text"
+                name="Name"
                 value={worker.name}
                 onChange={(e) => setWorker({ ...worker, name: e.target.value })}
                 required
               />
+              <FieldError name="Name" errors={errors} />
             </div>
             <div className="form-section">
               <label>Username</label>
               <input
                 type="text"
+                name="Username"
                 value={worker.username || ""}
                 onChange={(e) => setWorker({ ...worker, username: e.target.value })}
                 required
               />
+              <FieldError name="Username" errors={errors} />
             </div>
             <div className="form-section">
               <label>Password</label>
               <input
                 type="password"
+                name="Password"
                 value={worker.password}
                 onChange={(e) => setWorker({ ...worker, password: e.target.value })}
                 required={isNew}
               />
+              <FieldError name="Password" errors={errors} />
             </div>
             <div className="form-section">
               <label>Email (Optional)</label>
               <input
                 type="email"
+                name="Email"
                 value={worker.email || ""}
                 onChange={(e) => setWorker({ ...worker, email: e.target.value })}
               />
+              <FieldError name="Email" errors={errors} />
             </div>
             <div className="form-section">
               <label>Hired On</label>
@@ -142,6 +153,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
                 selected={worker.hiredOn}
                 onChange={(date) => setWorker({ ...worker, hiredOn: date })}
               />
+              <FieldError name="HiredOn" errors={errors} />
             </div>
           </div>
 
@@ -196,6 +208,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
           </div> */}
 
         <div className="form-footer">
+          {errors.general && <p className="form-error">{errors.general}</p>}
           <button type="submit" className="btn">
             Save Worker
           </button>

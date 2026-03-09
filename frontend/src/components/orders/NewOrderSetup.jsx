@@ -4,6 +4,8 @@ import { orderApi } from '../../services/orderApi';
 import { request } from '../../Utilities/request';
 import Suggestions from '../common/Suggestions';
 import '../../assets/css/orders.css';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import FieldError from '../common/FieldError.jsx';
 
 const NewOrderSetup = ({ onClose, onSuccess }) => {
     const navigate = useNavigate();
@@ -13,6 +15,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [kilometers, setKilometers] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState({});
     const suggestionsRef = useRef(null);
 
     useEffect(() => {
@@ -68,7 +71,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
             }
         } catch (e) {
             console.error(e);
-            alert("Failed to create order");
+            setErrors(parseValidationErrors(e));
         }
     };
 
@@ -80,12 +83,14 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                 <label>Select Car:</label>
                 <input
                     type="text"
+                    name="CarId"
                     placeholder="Search by Reg Number or Model..."
                     value={carSearch}
                     onChange={e => handleCarSearch(e.target.value)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                     onBlur={() => setTimeout(() => setSuggestions([]), 200)}
                 />
+                <FieldError name="CarId" errors={errors} />
                 <Suggestions
                     ref={suggestionsRef}
                     suggestions={suggestions}
@@ -106,12 +111,15 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                 <label>Current Kilometers:</label>
                 <input
                     type="number"
+                    name="Kilometers"
                     value={kilometers}
                     onChange={e => setKilometers(e.target.value)}
                 />
+                <FieldError name="Kilometers" errors={errors} />
             </div>
 
             <div className="form-footer" style={{ marginTop: '20px' }}>
+                {errors.general && <p className="form-error">{errors.general}</p>}
                 <button className="btn primary" onClick={handleCreateOrder} disabled={!selectedCar}>
                     Create Order
                 </button>

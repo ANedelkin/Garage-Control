@@ -5,6 +5,7 @@ import { jobApi } from '../../services/jobApi';
 import { partApi } from '../../services/partApi';
 import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 
@@ -19,6 +20,7 @@ const EditJobPage = ({ mechanicView = false }) => {
     const [workers, setWorkers] = useState([]);
     const [allParts, setAllParts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState({});
 
     // Derived orderId (either from params or fetched job)
     const [fetchedOrderId, setFetchedOrderId] = useState(null);
@@ -151,7 +153,7 @@ const EditJobPage = ({ mechanicView = false }) => {
             }
         } catch (e) {
             console.error(e);
-            alert("Failed to save job");
+            setErrors(parseValidationErrors(e));
         }
     };
 
@@ -184,6 +186,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 workers={workers}
                 allParts={allParts}
                 mechanicView={mechanicView}
+                errors={errors}
             />
         </main>
     );

@@ -6,6 +6,7 @@ import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import MergePopup from './MergePopup';
 import AddEditItemModal from './AddEditItemModal';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const MakesAndModels = () => {
     const { addPopup, removeLastPopup } = usePopup();
@@ -15,11 +16,12 @@ const MakesAndModels = () => {
     const [selectedMake, setSelectedMake] = useState(null);
     const [loadingMakes, setLoadingMakes] = useState(true);
     const [loadingModels, setLoadingModels] = useState(false);
-    
+
     // Modal state (only for controlled variables, actual modal is in PopupContext)
     const [modalType, setModalType] = useState('make'); // 'make' or 'model'
     const [editingItem, setEditingItem] = useState(null); // null for create, object for edit
     const [itemName, setItemName] = useState('');
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchMakes();
@@ -105,7 +107,7 @@ const MakesAndModels = () => {
         setModalType(type);
         setEditingItem(item);
         setItemName(item ? item.name : '');
-        
+
         addPopup(
             `${item ? 'Edit' : 'Add'} ${type === 'make' ? 'Make' : 'Model'}`,
             <AddEditItemModal
@@ -113,6 +115,7 @@ const MakesAndModels = () => {
                 currentName={item ? item.name : ''}
                 onClose={removeLastPopup}
                 onConfirm={(name) => handleSaveModal(type, item, name)}
+                errors={errors}
             />
         );
     };
@@ -134,9 +137,11 @@ const MakesAndModels = () => {
                 }
                 fetchModels(selectedMake.id);
             }
+            removeLastPopup();
+            setErrors({});
         } catch (error) {
             console.error("Error saving item", error);
-            alert(error.message || "An error occurred");
+            setErrors(parseValidationErrors(error));
         }
     };
 

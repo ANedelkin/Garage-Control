@@ -7,6 +7,7 @@ import TimeSlotPicker from '../common/TimeSlotPicker';
 import Popup from '../common/Popup';
 import Suggestions from '../common/Suggestions';
 import '../../assets/css/common/status.css';
+import FieldError from '../common/FieldError.jsx';
 
 const ServiceForm = ({
     service,
@@ -16,7 +17,8 @@ const ServiceForm = ({
     jobTypes,
     workers,
     allParts = [],
-    mechanicView = false
+    mechanicView = false,
+    errors = {}
 }) => {
 
     const [partSearch, setPartSearch] = useState('');
@@ -158,6 +160,7 @@ const ServiceForm = ({
                         <>
                             <label>Job Type</label>
                             <DropDown
+                                name="JobTypeId"
                                 value={service.jobTypeId}
                                 onChange={e => handleChange('jobTypeId', e.target.value)}
                                 disabled={mechanicView || service.status === 2}
@@ -167,6 +170,7 @@ const ServiceForm = ({
                                     <option key={jt.id} value={jt.id}>{jt.name}</option>
                                 )}
                             </DropDown>
+                            <FieldError name="JobTypeId" errors={errors} />
                         </>
                     )}
                 </div>
@@ -214,6 +218,7 @@ const ServiceForm = ({
                                             ? 'inprogress'
                                             : 'done'
                                         }`}
+                                    name="Status"
                                     value={service.status}
                                     onChange={e => handleChange('status', parseInt(e.target.value))}
                                 >
@@ -221,6 +226,7 @@ const ServiceForm = ({
                                     <option value={1}>In Progress</option>
                                     <option value={2}>Done</option>
                                 </DropDown>
+                                <FieldError name="Status" errors={errors} />
                             </div>
 
                             <div className="form-section">
@@ -242,9 +248,11 @@ const ServiceForm = ({
                                 <label>Description</label>
                                 <textarea
                                     className="description"
+                                    name="Description"
                                     value={service.description}
                                     readOnly
                                 />
+                                <FieldError name="Description" errors={errors} />
                             </div>
                         </div>
 
@@ -264,6 +272,7 @@ const ServiceForm = ({
                                             ? 'inprogress'
                                             : 'done'
                                         }`}
+                                    name="Status"
                                     value={service.status}
                                     onChange={e => handleChange('status', parseInt(e.target.value))}
                                 >
@@ -271,12 +280,14 @@ const ServiceForm = ({
                                     <option value={1}>In Progress</option>
                                     <option value={2}>Finished</option>
                                 </DropDown>
+                                <FieldError name="Status" errors={errors} />
                             </div>
 
                             {!mechanicView && (
                                 <div className="form-section">
                                     <label>Mechanic</label>
                                     <DropDown
+                                        name="WorkerId"
                                         value={service.workerId}
                                         onChange={e => handleChange('workerId', e.target.value)}
                                         disabled={service.status === 2}
@@ -292,6 +303,7 @@ const ServiceForm = ({
                                             )
                                         }
                                     </DropDown>
+                                    <FieldError name="WorkerId" errors={errors} />
                                 </div>
                             )}
 
@@ -300,11 +312,13 @@ const ServiceForm = ({
                                     <label>Labor Cost</label>
                                     <input
                                         type="number"
+                                        name="LaborCost"
                                         step="0.01"
                                         value={service.laborCost}
                                         onChange={e => handleChange('laborCost', parseFloat(e.target.value))}
                                         disabled={service.status === 2}
                                     />
+                                    <FieldError name="LaborCost" errors={errors} />
                                 </div>
                             )}
 
@@ -328,11 +342,13 @@ const ServiceForm = ({
                             <label>Description</label>
                             <textarea
                                 className="description"
+                                name="Description"
                                 value={service.description}
                                 onChange={e => handleChange('description', e.target.value)}
                                 placeholder="Describe..."
                                 disabled={service.status === 2}
                             />
+                            <FieldError name="Description" errors={errors} />
                         </div>
                     </>
 
@@ -397,6 +413,7 @@ const ServiceForm = ({
                                     <td>
                                         <input
                                             type="number"
+                                            name={`Parts[${i}].PlannedQuantity`}
                                             className={sentError ? 'input-error' : ''}
                                             value={p.plannedQuantity}
                                             min={p.sentQuantity || 0}
@@ -404,10 +421,12 @@ const ServiceForm = ({
                                             disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
                                             title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                         />
+                                        <FieldError name={`Parts[${i}].PlannedQuantity`} errors={errors} />
                                     </td>
                                     <td>
                                         <input
                                             type="number"
+                                            name={`Parts[${i}].SentQuantity`}
                                             className={usedError ? 'input-error' : ''}
                                             value={p.sentQuantity}
                                             min={p.usedQuantity || 0}
@@ -416,10 +435,12 @@ const ServiceForm = ({
                                             disabled={service.status === 2 || mechanicView || !hasStockAccess}
                                             title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                         />
+                                        <FieldError name={`Parts[${i}].SentQuantity`} errors={errors} />
                                     </td>
                                     <td>
                                         <input
                                             type="number"
+                                            name={`Parts[${i}].UsedQuantity`}
                                             value={p.usedQuantity}
                                             min={0}
                                             max={p.sentQuantity || 0}
@@ -427,11 +448,13 @@ const ServiceForm = ({
                                             disabled={service.status === 2 || !isAssignedWorker}
                                             title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                         />
+                                        <FieldError name={`Parts[${i}].UsedQuantity`} errors={errors} />
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <input
                                                 type="number"
+                                                name={`Parts[${i}].RequestedQuantity`}
                                                 value={p.requestedQuantity}
                                                 min={0}
                                                 onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
@@ -449,6 +472,7 @@ const ServiceForm = ({
                                                 <i className="fa-solid fa-plus"></i>
                                             </button>
                                         </div>
+                                        <FieldError name={`Parts[${i}].RequestedQuantity`} errors={errors} />
                                     </td>
                                     <td>
                                         {p.price.toFixed(2)}
