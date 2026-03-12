@@ -12,7 +12,7 @@ const SuggestedModelPopup = ({ node, onClose, onConfirm, errors = {} }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ maxWidth: '400px' }}>
             <div className="form-section">
                 <label>Make Name</label>
                 <input

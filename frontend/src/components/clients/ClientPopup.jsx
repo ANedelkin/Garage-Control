@@ -162,7 +162,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
 
     return (
         <>
-            <form className="client-form" onSubmit={handleSave}>
+            <form className="client-form" onSubmit={handleSave} style={{ maxWidth: '800px' }}>
                 <div className="horizontal">
                     <div className="form-column" style={{ flex: 1 }}>
                         <div className="form-section">
