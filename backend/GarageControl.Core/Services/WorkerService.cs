@@ -7,6 +7,8 @@ using GarageControl.Core.ViewModels.Workers;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using System.Globalization;
+using GarageControl.Core.Helpers;
+using GarageControl.Core.ViewModels.Shared;
 
 namespace GarageControl.Core.Services
 {
@@ -80,44 +82,41 @@ namespace GarageControl.Core.Services
             });
         }
 
-        public async Task Create(WorkerVM model, string userId)
+        public async Task<MethodResponseVM> Create(WorkerVM model, string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
-
-            // 1. Create Identity User
-            var user = new User
+            if (workshopId == null)
             {
-                UserName = model.Username,
-                Email = model.Email,
-                EmailConfirmed = true 
-            };
-            
-            var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+                return new MethodResponseVM(false, "Workshop not found");
             }
 
-            // 2. Create Worker Entity
+            // Create a new user for the worker
+            var newUser = new User
+            {
+                UserName = model.Username,
+                Email = model.Email
+            };
+
+            var userCreationResult = await _userManager.CreateAsync(newUser, model.Password);
+            if (!userCreationResult.Succeeded)
+            {
+                var errors = IdentityResultHelper.ProcessIdentityResult(userCreationResult);
+                return new MethodResponseVM(false, "Failed to create user for worker", errors: errors);
+            }
+
+            // Create the worker and assign the new user's ID
             var worker = new Worker
             {
-                UserId = user.Id,
                 Name = model.Name,
+                HiredOn = model.HiredOn,
                 WorkshopId = workshopId,
-                HiredOn = model.HiredOn
+                UserId = newUser.Id
             };
-            
+
             await _repo.AddAsync(worker);
             await _repo.SaveChangesAsync();
 
-            // 3. Add Relations (Roles, Schedules, Leaves, JobTypes)
-            await UpdateWorkerRelations(worker.Id, model);
-
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"hired <a href='/workers/{worker.Id}' class='log-link target-link'>{worker.Name}</a>");
+            return new MethodResponseVM(true, "Worker created successfully");
         }
 
         public async Task Delete(string id, string userId)
@@ -237,14 +236,20 @@ namespace GarageControl.Core.Services
             };
         }
 
-        public async Task Edit(string id, WorkerVM model, string userId)
+        public async Task<MethodResponseVM> Edit(string id, WorkerVM model, string userId)
         {
-            var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null) throw new ArgumentException("User does not have a workshop");
-
             var worker = await _repo.GetByIdAsync<Worker>(id);
-            if (worker == null) return;
-            
+            if (worker == null)
+            {
+                return new MethodResponseVM(false, "Worker not found");
+            }
+
+            var workshopId = await _workshopService.GetWorkshopId(userId);
+            if (workshopId == null)
+            {
+                return new MethodResponseVM(false, "Workshop not found");
+            }
+
             var user = await _userManager.FindByIdAsync(worker.UserId);
             if (user != null)
             {
@@ -257,7 +262,7 @@ namespace GarageControl.Core.Services
                     {
                         string oldDisp = string.IsNullOrEmpty(oldStr) ? "[empty]" : oldStr;
                         string newDisp = string.IsNullOrEmpty(newStr) ? "[empty]" : newStr;
-                        
+
                         if (oldDisp.Length > 100 || newDisp.Length > 100)
                         {
                             changes.Add(fieldName);
@@ -275,7 +280,7 @@ namespace GarageControl.Core.Services
                 TrackChange("hired date", worker.HiredOn.ToString("yyyy-MM-dd"), model.HiredOn.ToString("yyyy-MM-dd"));
 
                 worker.Name = model.Name;
-                
+
                 bool userUpdated = false;
 
                 if (user.UserName != model.Username)
@@ -283,7 +288,7 @@ namespace GarageControl.Core.Services
                     var existingUsername = await _userManager.FindByNameAsync(model.Username);
                     if (existingUsername != null)
                     {
-                        throw new Exception("Username is already taken");
+                        return new MethodResponseVM(false, "Username is already taken");
                     }
 
                     user.UserName = model.Username;
@@ -297,7 +302,7 @@ namespace GarageControl.Core.Services
                         var existingUser = await _userManager.FindByEmailAsync(model.Email);
                         if (existingUser != null)
                         {
-                            throw new Exception("Email is already taken");
+                            return new MethodResponseVM(false, "Email is already taken");
                         }
                     }
 
@@ -310,24 +315,27 @@ namespace GarageControl.Core.Services
                     var result = await _userManager.UpdateAsync(user);
                     if (!result.Succeeded)
                     {
-                        throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+                        var errors = IdentityResultHelper.ProcessIdentityResult(result);
+                        return new MethodResponseVM(false, "Failed to update user", errors: errors);
                     }
                 }
-                
+
                 if (!string.IsNullOrEmpty(model.Password))
                 {
                     var removeResult = await _userManager.RemovePasswordAsync(user);
                     if (!removeResult.Succeeded)
                     {
-                        throw new Exception(string.Join(", ", removeResult.Errors.Select(e => e.Description)));
+                        var errors = IdentityResultHelper.ProcessIdentityResult(removeResult);
+                        return new MethodResponseVM(false, "Failed to remove password", errors: errors);
                     }
 
                     var addResult = await _userManager.AddPasswordAsync(user, model.Password);
                     if (!addResult.Succeeded)
                     {
-                        throw new Exception(string.Join(", ", addResult.Errors.Select(e => e.Description)));
+                        var errors = IdentityResultHelper.ProcessIdentityResult(addResult);
+                        return new MethodResponseVM(false, "Failed to add password", errors: errors);
                     }
-                    
+
                     changes.Add("password");
                 }
 
@@ -357,7 +365,11 @@ namespace GarageControl.Core.Services
 
                     await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
                 }
+
+                return new MethodResponseVM(true, "Worker updated successfully");
             }
+
+            return new MethodResponseVM(false, "Unexpected error occurred");
         }
         
         private async Task<List<string>> UpdateWorkerRelations(string workerId, WorkerVM model)

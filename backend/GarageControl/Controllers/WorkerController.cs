@@ -44,15 +44,12 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
+            var response = await _workerService.Create(model, userId);
+            if (response.Success)
             {
-                await _workerService.Create(model, userId);
-                return Ok(new { message = "Worker created successfully" });
+                return Ok(response);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            else return BadRequest(response);
         }
 
         [RequireAccess("Workers")]
@@ -69,7 +66,7 @@ namespace GarageControl.Controllers
             }
             catch (Exception ex)
             {
-                 return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -79,14 +76,14 @@ namespace GarageControl.Controllers
             var accesses = await _workerService.AllAccesses();
             return Ok(accesses);
         }
-        
+
         [RequireAccess("Workers")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
             var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _workerService.Delete(id, actingUserId!);
-             return Ok(new { message = "Worker deleted successfully" });
+            return Ok(new { message = "Worker deleted successfully" });
         }
     }
 }

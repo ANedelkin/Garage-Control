@@ -13,6 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using GarageControl.Core.Helpers;
 
 namespace GarageControl.Core.Services
 {
@@ -65,7 +66,7 @@ namespace GarageControl.Core.Services
 
             if (!result.Succeeded)
             {
-                var errors = ProcessIdentityResult(result);
+                var errors = IdentityResultHelper.ProcessIdentityResult(result);
                 string firstError = result.Errors.First().Description;
                 return new LoginResponseVM(false, firstError, errors: errors);
             }
@@ -310,7 +311,7 @@ namespace GarageControl.Core.Services
 
                 if (!result.Succeeded)
                 {
-                    var errors = ProcessIdentityResult(result);
+                    var errors = IdentityResultHelper.ProcessIdentityResult(result);
                     string firstError = result.Errors.First().Description;
                     return new LoginResponseVM(false, firstError, errors: errors);
                 }
