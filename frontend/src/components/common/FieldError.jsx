@@ -11,7 +11,19 @@ const FieldError = ({ name, errors }) => {
     // Normalize to lowercase to handle case-mismatches between VM and HTML
     const error = errors[name.toLowerCase()];
 
-    return error ? <p className="field-error">{error}</p> : null;
+    if (!error) return null;
+
+    if (Array.isArray(error)) {
+        return (
+            <>
+                {error.map((msg, i) => (
+                    <p key={i} className="field-error">{msg}</p>
+                ))}
+            </>
+        );
+    }
+
+    return <p className="field-error">{error}</p>;
 };
 
 export default FieldError;

@@ -4,7 +4,7 @@ namespace GarageControl.Core.ViewModels.Auth
 {
     public class LoginResponseVM
     {
-        public LoginResponseVM(bool success, string message = "", string token = "", string refreshToken = "", List<string>? accesses = null, bool hasWorkshop = false, string? userId = null, string? workerId = null, string? userName = null)
+        public LoginResponseVM(bool success, string message = "", string token = "", string refreshToken = "", List<string>? accesses = null, bool hasWorkshop = false, string? userId = null, string? workerId = null, string? userName = null, Dictionary<string, List<string>>? errors = null)
         {
             Token = token;
             RefreshToken = refreshToken;
@@ -15,6 +15,7 @@ namespace GarageControl.Core.ViewModels.Auth
             UserId = userId;
             WorkerId = workerId;
             UserName = userName;
+            Errors = errors;
         }
         public object ToResponse()
         {
@@ -25,7 +26,8 @@ namespace GarageControl.Core.ViewModels.Auth
                 HasWorkshop,
                 UserId,
                 WorkerId,
-                UserName
+                UserName,
+                Errors
             };
         }
     
@@ -39,5 +41,6 @@ namespace GarageControl.Core.ViewModels.Auth
         public string? UserId { get; set; }
         public string? WorkerId { get; set; }
         public string? UserName { get; set; }
+        public Dictionary<string, List<string>>? Errors { get; set; }
     }
 }

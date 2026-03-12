@@ -65,8 +65,9 @@ namespace GarageControl.Core.Services
 
             if (!result.Succeeded)
             {
-                string errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return new LoginResponseVM(false, errors);
+                var errors = ProcessIdentityResult(result);
+                string firstError = result.Errors.First().Description;
+                return new LoginResponseVM(false, firstError, errors: errors);
             }
 
             return await DoLogin(user);
@@ -80,12 +81,18 @@ namespace GarageControl.Core.Services
             var user = await _userManager.FindByNameAsync(model.Username);
 
             if (user == null)
-                return new LoginResponseVM(false, "Invalid credentials");
+            {
+                var errors = new Dictionary<string, List<string>> { { "General", new List<string> { "Invalid credentials" } } };
+                return new LoginResponseVM(false, "Invalid credentials", errors: errors);
+            }
 
             bool passwordMatch = await _userManager.CheckPasswordAsync(user, model.Password);
 
             if (!passwordMatch)
-                return new LoginResponseVM(false, "Invalid credentials");
+            {
+                var errors = new Dictionary<string, List<string>> { { "General", new List<string> { "Invalid credentials" } } };
+                return new LoginResponseVM(false, "Invalid credentials", errors: errors);
+            }
 
             if (user.LockoutEnd > DateTimeOffset.UtcNow)
             {
@@ -303,8 +310,9 @@ namespace GarageControl.Core.Services
 
                 if (!result.Succeeded)
                 {
-                    string errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    return new LoginResponseVM(false, errors);
+                    var errors = ProcessIdentityResult(result);
+                    string firstError = result.Errors.First().Description;
+                    return new LoginResponseVM(false, firstError, errors: errors);
                 }
 
                 return await DoLogin(user);
@@ -322,8 +330,9 @@ namespace GarageControl.Core.Services
 
             if (!createResult.Succeeded)
             {
-                string errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
-                return new LoginResponseVM(false, errors);
+                var errors = ProcessIdentityResult(createResult);
+                string firstError = createResult.Errors.First().Description;
+                return new LoginResponseVM(false, firstError, errors: errors);
             }
 
             var loginInfo = new UserLoginInfo(provider, providerKey, provider);
@@ -405,6 +414,38 @@ namespace GarageControl.Core.Services
             var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == userId))?.Id;
 
             return new LoginResponseVM(true, "Token generated", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
+        }
+
+        private Dictionary<string, List<string>> ProcessIdentityResult(IdentityResult result)
+        {
+            var errorsDictionary = new Dictionary<string, List<string>>();
+
+            foreach (var error in result.Errors)
+            {
+                string field = "General";
+
+                if (error.Code.Contains("Password"))
+                {
+                    field = "Password";
+                }
+                else if (error.Code.Contains("UserName"))
+                {
+                    field = "Username";
+                }
+                else if (error.Code.Contains("Email"))
+                {
+                    field = "Email";
+                }
+
+                if (!errorsDictionary.ContainsKey(field))
+                {
+                    errorsDictionary[field] = new List<string>();
+                }
+
+                errorsDictionary[field].Add(error.Description);
+            }
+
+            return errorsDictionary;
         }
     }
 }

@@ -7,13 +7,13 @@ export function parseValidationErrors(error) {
     const errors = {};
     const data = error.data;
 
-    if (data?.errors && typeof data.errors === 'object') {
+    const validationErrors = data?.errors || data?.Errors;
+    if (validationErrors && typeof validationErrors === 'object') {
         // Map ASP.NET ModelState errors
-        Object.keys(data.errors).forEach(key => {
-            const fieldErrors = data.errors[key];
-            const message = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors;
+        Object.keys(validationErrors).forEach(key => {
+            const fieldErrors = validationErrors[key];
             // Normalize key to lowercase for matching input names
-            errors[key.toLowerCase()] = message;
+            errors[key.toLowerCase()] = fieldErrors;
         });
     } else if (data?.Message || data?.message || data?.title) {
         // Fallback for general or business logic errors

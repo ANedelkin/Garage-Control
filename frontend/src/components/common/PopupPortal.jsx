@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { usePopup } from "../../context/PopupContext";
 import "../../assets/css/popup.css";
@@ -8,6 +8,7 @@ const modalRoot = document.getElementById("modal-root");
 
 const PopupPortal = () => {
   const { stack, removeLastPopup } = usePopup();
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   if (!modalRoot) return null;
 
@@ -22,7 +23,17 @@ const PopupPortal = () => {
             key={index}
             className={`popup-overlay ${isTop ? "top" : ""}`}
             style={{ zIndex: 1000 + index }}
-            onClick={isTop ? removeLastPopup : undefined}
+            onMouseDown={(e) => {
+              if (isTop && e.target.classList.contains("popup-overlay")) {
+                setIsMouseDown(true);
+              }
+            }}
+            onMouseUp={(e) => {
+              if (isTop && isMouseDown && e.target.classList.contains("popup-overlay")) {
+                removeLastPopup();
+              }
+              setIsMouseDown(false);
+            }}
           >
             <Popup title={params.title}>
               {params.children}
