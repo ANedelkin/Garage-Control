@@ -417,14 +417,22 @@ const ServiceForm = ({
 
                                 return (
                                     <tr key={i} style={{ position: 'relative' }}>
-                                        <td style={{ position: 'relative', overflow: 'visible', zIndex: 10 }}>
+                                        <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
                                             <input
                                                 type="text"
                                                 value={p.name}
-                                                onChange={e => handlePartSearch(e.target.value, i)}
+                                                onInput={e => handlePartSearch(e.target.value, i)}
                                                 placeholder="Search Part..."
-                                                onFocus={() => setActivePartIndex(i)}
-                                                onBlur={() => setTimeout(() => setActivePartIndex(null), 200)}
+                                                onFocus={() => {
+                                                    setActivePartIndex(i);
+                                                    handlePartSearch(p.name, i);
+                                                }}
+                                                onBlur={() => {
+                                                    if (activePartIndex === i && suggestions.length > 0) {
+                                                        addPart(suggestions[0]);
+                                                    }
+                                                    setTimeout(() => setActivePartIndex(null), 200);
+                                                }}
                                                 onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                                                 disabled={service.status === 2}
                                             />

@@ -153,9 +153,14 @@ const EditJobType = () => {
                     type="text"
                     placeholder="Enter mechanic name"
                     value={newMechanic}
-                    onChange={(e) => handleMechanicSearch(e.target.value)}
-                    onFocus={() => newMechanic && setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    onInput={(e) => handleMechanicSearch(e.target.value)}
+                    onFocus={() => handleMechanicSearch(newMechanic)}
+                    onBlur={() => {
+                      if (showSuggestions && mechanicSuggestions.length > 0) {
+                        handleAddMechanic(mechanicSuggestions[0]);
+                      }
+                      setTimeout(() => setShowSuggestions(false), 200);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();

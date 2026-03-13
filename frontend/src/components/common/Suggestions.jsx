@@ -44,6 +44,9 @@ const Suggestions = forwardRef(({
                 break;
             case 'Escape':
                 e.preventDefault();
+                if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+                    onSelect(suggestions[highlightedIndex]);
+                }
                 if (onClose) {
                     onClose();
                 }
@@ -66,7 +69,7 @@ const Suggestions = forwardRef(({
         top: '100%',
         left: 0,
         right: 0,
-        zIndex: 100,
+        zIndex: 9999,
         maxHeight: maxHeight,
         overflowY: 'auto',
         ...style

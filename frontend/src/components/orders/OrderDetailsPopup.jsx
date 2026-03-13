@@ -48,9 +48,15 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     name="CarId"
                     placeholder="Search car..."
                     value={carSearch}
-                    onChange={(e) => handleCarSearch(e.target.value)}
+                    onInput={(e) => handleCarSearch(e.target.value)}
+                    onFocus={() => handleCarSearch(carSearch)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                    onBlur={() => setTimeout(() => setSuggestions([]), 200)}
+                    onBlur={() => {
+                        if (suggestions.length > 0) {
+                            selectCar(suggestions[0]);
+                        }
+                        setTimeout(() => setSuggestions([]), 200);
+                    }}
                     style={{ position: 'relative' }}
                 />
                 <FieldError name="CarId" errors={errors} />

@@ -119,7 +119,7 @@ function App() {
   ];
 
   return (
-    <>
+    <div className="app-container">
       <BrowserRouter>
         <PopupPortal />
         <Routes>
@@ -186,7 +186,7 @@ function App() {
 
         </Routes>
       </BrowserRouter>
-    </>
+    </div>
   );
 }
 

@@ -87,9 +87,15 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     name="CarId"
                     placeholder="Search by Reg Number or Model..."
                     value={carSearch}
-                    onChange={e => handleCarSearch(e.target.value)}
+                    onInput={e => handleCarSearch(e.target.value)}
+                    onFocus={() => handleCarSearch(carSearch)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                    onBlur={() => setTimeout(() => setSuggestions([]), 200)}
+                    onBlur={() => {
+                        if (suggestions.length > 0) {
+                            selectCar(suggestions[0]);
+                        }
+                        setTimeout(() => setSuggestions([]), 200);
+                    }}
                 />
                 <FieldError name="CarId" errors={errors} />
                 <Suggestions

@@ -1,3 +1,10 @@
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -14,6 +21,7 @@
 
 .work-area {
     flex: 1;
+    overflow: hidden;
 }
 
 .vertical {
