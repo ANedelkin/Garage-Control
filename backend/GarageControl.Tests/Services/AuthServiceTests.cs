@@ -52,7 +52,7 @@ namespace GarageControl.Tests.Services
         public async Task LogIn_ShouldReturnSuccessForValidCredentials()
         {
             // Arrange
-            var model = new AuthVM { Username = "test", Password = "Pass" };
+            var model = new LoginVM { Username = "test", Password = "Pass" };
             var user = new User { Id = "u1", UserName = "test", Email = "test@test.com" };
 
             var workshop = new Workshop { Id = "w1", BossId = "u1", Name = "W", Address = "A", PhoneNumber = "123" };
@@ -76,7 +76,7 @@ namespace GarageControl.Tests.Services
         public async Task LogIn_ShouldReturnFailureForBlockedUser()
         {
             // Arrange
-            var model = new AuthVM { Username = "test", Password = "Pass" };
+            var model = new LoginVM { Username = "test", Password = "Pass" };
             var user = new User { Id = "u1", UserName = "test", Email = "test@test.com", LockoutEnd = DateTimeOffset.UtcNow.AddDays(1) };
 
             _mockUserManager.Setup(x => x.FindByNameAsync(model.Username)).ReturnsAsync(user);

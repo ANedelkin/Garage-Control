@@ -106,6 +106,10 @@ namespace GarageControl.Core.Services
                 IsDone = false
             };
             _context.Orders.Add(order);
+            
+            // Sync car kilometers
+            car.Kilometers = model.Kilometers;
+            
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---
@@ -137,6 +141,9 @@ namespace GarageControl.Core.Services
 
             order.Kilometers = model.Kilometers;
             order.IsDone = model.IsDone;
+
+            // Sync car kilometers
+            order.Car.Kilometers = model.Kilometers;
             
             await _context.SaveChangesAsync();
 
