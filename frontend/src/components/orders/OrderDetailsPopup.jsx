@@ -27,7 +27,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
 
     const selectCar = (car) => {
         setSelectedCarId(car.id);
-        setCarSearch(`${car.registrationNumber} - ${car.model.make.name} ${car.model.name}`);
+        setCarSearch(car.registrationNumber);
         setSuggestions([]);
     };
 

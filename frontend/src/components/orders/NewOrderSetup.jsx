@@ -47,7 +47,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
 
     const selectCar = (car) => {
         setSelectedCar(car);
-        setCarSearch(`${car.registrationNumber} - ${car.model.make.name} ${car.model.name}`);
+        setCarSearch(car.registrationNumber);
         setKilometers(car.kilometers || 0);
         setSuggestions([]);
     };
