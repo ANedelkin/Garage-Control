@@ -98,3 +98,11 @@ a {
         padding: 8px 10px;
     }
 }
+
+.btn:disabled,
+.icon-btn:disabled {
+    filter: grayscale(1);
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+}
