@@ -102,8 +102,11 @@ namespace GarageControl.Core.Services.Jobs
                                           Description = j.Description ?? "",
                                           Status = j.Status.ToString().ToLower(),
                                           StartTime = j.StartTime,
+                                          EndTime = j.EndTime,
+                                          OrderId = j.OrderId,
                                           CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
                                           CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                                          ClientName = j.Order.Car.Owner.Name
                                       })
                                       .OrderBy(j => j.StartTime)
                                       .ToListAsync();

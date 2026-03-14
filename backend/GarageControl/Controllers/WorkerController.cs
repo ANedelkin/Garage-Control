@@ -29,7 +29,6 @@ namespace GarageControl.Controllers
             return Ok(workers);
         }
 
-        [RequireAccess("Workers")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(string id)
         {

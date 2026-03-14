@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jobApi } from '../../services/jobApi';
+import { workerApi } from '../../services/workerApi';
 import { useAuth } from '../../context/AuthContext';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/status.css';
@@ -12,15 +13,30 @@ const ToDoPage = () => {
     const [jobs, setJobs] = useState([]);
     const [viewMode, setViewMode] = useState(localStorage.getItem('myJobsViewMode') || 'list'); // 'list' or 'calendar'
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
+    const [worker, setWorker] = useState(null);
 
-    // Calendar state
+    // Common navigation state for calendar/week
     const today = new Date();
     const [currentMonth, setCurrentMonth] = useState(today.getMonth());
     const [currentYear, setCurrentYear] = useState(today.getFullYear());
+    const [viewDate, setViewDate] = useState(new Date());
 
     useEffect(() => {
         fetchJobs();
-    }, []);
+        if (user?.workerId) {
+            fetchWorker();
+        }
+    }, [user?.workerId]);
+
+    const fetchWorker = async () => {
+        try {
+            const data = await workerApi.getWorker(user.workerId);
+            setWorker(data);
+        } catch (error) {
+            console.error("Failed to fetch worker details:", error);
+        }
+    };
 
     const fetchJobs = async () => {
         try {
@@ -160,10 +176,10 @@ const ToDoPage = () => {
                     </div>
                     <div className="day-events">
                         {dayJobs.map(j => (
-                            <div 
-                                key={j.id} 
-                                className={`calendar-event status-${j.status}`} 
-                                title={`${j.typeName}`} 
+                            <div
+                                key={j.id}
+                                className={`calendar-event status-${j.status}`}
+                                title={`${j.typeName}`}
                                 onClick={() => handleEventClick(j)}
                             >
                                 <span className="event-time">{new Date(j.startTime).getHours().toString().padStart(2, '0')}:00</span>
@@ -201,7 +217,7 @@ const ToDoPage = () => {
                         else { setCurrentMonth(currentMonth + 1); }
                     }}><i className="fa-solid fa-chevron-right"></i></button>
                 </div>
-                
+
                 <table className="calendar-table">
                     <thead>
                         <tr>
@@ -351,12 +367,275 @@ const ToDoPage = () => {
         );
     };
 
+    const renderWeekView = () => {
+        if (!worker) return <p>Loading worker schedule...</p>;
+
+        const { accesses } = useAuth();
+        const hasOrdersAccess = accesses.includes('Orders');
+
+        const handleEventClick = (job) => {
+            if (hasOrdersAccess) {
+                navigate(`/orders/${job.orderId}/jobs/${job.id}`);
+            } else {
+                navigate(`/todo/${job.id}`);
+            }
+        };
+
+        const getDayOfWeek = (date) => {
+            const day = date.getDay(); // 0 is Sun
+            return day === 0 ? 6 : day - 1;
+        };
+
+        const startOfWeek = new Date(viewDate);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const dayColumns = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(startOfWeek);
+            d.setDate(d.getDate() + i);
+            dayColumns.push(d);
+        }
+
+        const isOnLeave = (date) => {
+            if (!worker.leaves) return false;
+            return worker.leaves.some(l => {
+                const start = new Date(l.startDate);
+                const end = new Date(l.endDate);
+                const d = new Date(date);
+                d.setHours(0, 0, 0, 0);
+                start.setHours(0, 0, 0, 0);
+                end.setHours(0, 0, 0, 0);
+                return d >= start && d <= end;
+            });
+        };
+
+        const isWorking = (dayIndex, hour) => {
+            if (!worker.schedules) return false;
+            return worker.schedules.some(s => {
+                if (s.dayOfWeek !== dayIndex) return false;
+                const [startH] = s.startTime.split(':').map(Number);
+                const [endH] = s.endTime.split(':').map(Number);
+                return hour >= startH && hour < endH;
+            });
+        };
+
+        // Determine visible hours (union of all working hours in the schedule)
+        const visibleHours = Array.from({ length: 24 }, (_, i) => i).filter(h => {
+            return worker.schedules?.some(s => {
+                const [startH] = s.startTime.split(':').map(Number);
+                const [endH] = s.endTime.split(':').map(Number);
+                return h >= startH && h < endH;
+            });
+        });
+
+        const handleWeekChange = (offset) => {
+            const newDate = new Date(viewDate);
+            newDate.setDate(newDate.getDate() + offset * 7);
+            setViewDate(newDate);
+        };
+
+        return (
+            <div className="week-workspace tile">
+                <div className="calendar-controls">
+                    <button className="btn icon-btn" onClick={() => handleWeekChange(-1)}>
+                        <i className="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h3 className="calendar-title">
+                        {dayColumns[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {dayColumns[6].toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </h3>
+                    <button className="btn icon-btn" onClick={() => handleWeekChange(1)}>
+                        <i className="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div className="week-table-wrapper">
+                    <table className="week-table">
+                        <thead>
+                            <tr>
+                                <th className="hour-col"></th>
+                                {dayColumns.map((day, idx) => (
+                                    <th key={idx}>
+                                        <div className="day-weekday">{day.toLocaleDateString(undefined, { weekday: 'short' })}</div>
+                                        <div className="day-date">{day.getDate()}</div>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visibleHours.map(h => (
+                                <tr key={h}>
+                                    <td className="hour-label">{h.toString().padStart(2, '0')}:00</td>
+                                    {dayColumns.map((day, dayIdx) => {
+                                        const dow = getDayOfWeek(day);
+                                        const working = isWorking(dow, h);
+                                        const leave = isOnLeave(day);
+                                        const isActuallyWorking = working && !leave;
+
+                                        // Find jobs starting at this hour
+                                        const hourJobs = jobs.filter(j => {
+                                            const jStart = new Date(j.startTime);
+                                            return jStart.getDate() === day.getDate() &&
+                                                jStart.getMonth() === day.getMonth() &&
+                                                jStart.getFullYear() === day.getFullYear() &&
+                                                jStart.getHours() === h;
+                                        });
+
+                                        return (
+                                            <td
+                                                key={dayIdx}
+                                                className={`week-cell ${isActuallyWorking ? 'working' : 'transparent'}`}
+                                            >
+                                                {hourJobs.map(j => {
+                                                    const jStart = new Date(j.startTime);
+
+                                                    // Ensure jEnd is correctly parsed or defaulted
+                                                    let jEnd;
+                                                    if (j.endTime) {
+                                                        jEnd = new Date(j.endTime);
+                                                    } else {
+                                                        jEnd = new Date(jStart);
+                                                        jEnd.setHours(jEnd.getHours() + 1);
+                                                    }
+
+                                                    const durationHours = Math.max(1, Math.ceil((jEnd - jStart) / 3600000));
+
+                                                    return (
+                                                        <div
+                                                            key={j.id}
+                                                            className={`week-job status-${j.status}`}
+                                                            style={{
+                                                                height: `calc(${durationHours * 100}% - 4px)`,
+                                                                zIndex: 5
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEventClick(j);
+                                                            }}
+                                                            title={`${j.typeName}: ${j.description}`}
+                                                        >
+                                                            <div className="job-inner">
+                                                                <span className="job-time">
+                                                                    {jStart.getHours().toString().padStart(2, '0')}:00 - {jEnd.getHours().toString().padStart(2, '0')}:00
+                                                                </span>
+                                                                <span className="job-name">{j.typeName}</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <style>{`
+                    .week-workspace {
+                        margin-top: 20px;
+                        padding: 24px !important;
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 600px;
+                    }
+                    .calendar-controls {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 20px;
+                        flex-direction: row;
+                    }
+                    .week-table-wrapper {
+                        margin-top: 20px;
+                        overflow-x: auto;
+                        flex: 1;
+                    }
+                    .week-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        table-layout: fixed;
+                    }
+                    .week-table th, .week-table td {
+                        border: 1px solid var(--border2);
+                        padding: 0;
+                        position: relative;
+                        height: 50px;
+                        background: var(--solid3);
+                        overflow: visible !important; /* Ensure multi-hour jobs aren't clipped */
+                    }
+                    .hour-col { width: 80px; }
+                    .hour-label {
+                        text-align: center;
+                        font-size: 0.8rem;
+                        color: var(--text-clr2);
+                        background: transparent !important;
+                        font-family: monospace;
+                        padding: 0 10px;
+                    }
+                    .day-weekday { font-size: 0.8rem; font-weight: 600; color: var(--text-clr2); }
+                    .day-date { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+                    .week-table thead th {
+                        padding: 10px 0;
+                        background: transparent;
+                    }
+                    .week-table tr:hover .week-cell.working {
+                        background: rgba(255, 255, 255, 0.02) !important;
+                    }
+                    .week-table tr:hover .hour-label {
+                        background: rgba(255, 255, 255, 0.05) !important;
+                    }
+                    .week-cell.working {
+                        background: var(--solid3);
+                    }
+                    .week-cell.transparent {
+                        background: transparent;
+                    }
+                    .week-job {
+                        position: absolute;
+                        top: 1px;
+                        left: 2px;
+                        right: 2px;
+                        background: var(--accent);
+                        border-radius: 4px;
+                        padding: 4px;
+                        cursor: pointer;
+                        overflow: hidden;
+                        transition: filter 0.2s, transform 0.1s;
+                        border: 1px solid rgba(255,255,255, 0.1);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    }
+                    .week-job:hover {
+                        filter: brightness(1.2);
+                        z-index: 20 !important; /* Ensure hovered job is on top of everything */
+                    }
+                    .job-inner {
+                        display: flex;
+                        flex-direction: column;
+                        height: 100%;
+                        font-size: 0.75rem;
+                        color: white;
+                    }
+                    .job-time { font-size: 0.65rem; opacity: 0.9; font-weight: 600; }
+                    .job-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                    
+                    .week-job.status-pending { background: #f0ad4e33; border-left: 3px solid #f0ad4e; color: #f0ad4e; }
+                    .week-job.status-inprogress { background: #337ab733; border-left: 3px solid #337ab7; color: #337ab7; }
+                    .week-job.status-done { background: #5cb85c33; border-left: 3px solid #5cb85c; color: #5cb85c; }
+                    .week-job.status-pending .job-inner,
+                    .week-job.status-inprogress .job-inner,
+                    .week-job.status-done .job-inner { color: inherit; }
+                `}</style>
+            </div>
+        );
+    };
+
     return (
-        <main className={`main ${viewMode === 'calendar' ? 'calendar-layout' : ''}`}>
+        <main className={`main ${viewMode !== 'list' ? 'calendar-layout' : ''}`}>
             <div className="header">
                 <h1>My Jobs</h1>
-                <Dropdown 
-                    value={viewMode} 
+                <Dropdown
+                    value={viewMode}
                     onChange={e => {
                         const newMode = e.target.value;
                         setViewMode(newMode);
@@ -365,12 +644,14 @@ const ToDoPage = () => {
                 >
                     <option value="list">List View</option>
                     <option value="calendar">Calendar View</option>
+                    <option value="week">Week View</option>
                 </Dropdown>
             </div>
 
             {loading ? <p>Loading...</p> : (
                 jobs.length === 0 ? <p className="list-empty">No jobs assigned.</p> : (
-                    viewMode === 'list' ? renderList() : renderCalendar()
+                    viewMode === 'list' ? renderList() :
+                        viewMode === 'calendar' ? renderCalendar() : renderWeekView()
                 )
             )}
         </main>
