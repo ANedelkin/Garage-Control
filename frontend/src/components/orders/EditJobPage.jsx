@@ -67,8 +67,8 @@ const EditJobPage = ({ mechanicView = false }) => {
                         jobTypeId: '',
                         workerId: '',
                         laborCost: 0,
-                        startTime: '',
-                        endTime: '',
+                        startTime: null,
+                        endTime: null,
                         description: '',
                         parts: [],
                         status: 0
@@ -119,12 +119,24 @@ const EditJobPage = ({ mechanicView = false }) => {
                 return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`;
             };
 
+            const partErrors = {};
+            job.parts.forEach((p, i) => {
+                if (!p.name || !p.name.trim()) {
+                    partErrors[`parts[${i}].name`] = ["Part name required"];
+                }
+            });
+
+            if (Object.keys(partErrors).length > 0) {
+                setErrors(partErrors);
+                return;
+            }
+
             const payload = {
                 jobTypeId: job.jobTypeId,
                 workerId: job.workerId,
                 laborCost: job.laborCost,
-                startTime: job.startTime || getLocalISO(new Date()),
-                endTime: job.endTime || getLocalISO(new Date()),
+                startTime: job.startTime || null,
+                endTime: job.endTime || null,
                 description: job.description,
                 status: job.status,
                 parts: job.parts.map(p => ({

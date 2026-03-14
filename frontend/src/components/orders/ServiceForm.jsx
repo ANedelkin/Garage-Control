@@ -81,7 +81,7 @@ const ServiceForm = ({
         setPartSearch(val);
 
         const newParts = [...service.parts];
-        newParts[rowIndex] = { ...newParts[rowIndex], name: val };
+        newParts[rowIndex] = { ...newParts[rowIndex], name: val, partId: '' }; // Clear Id when name is changed
         updateService(service.id, 'parts', newParts);
 
         setActivePartIndex(rowIndex);
@@ -152,39 +152,6 @@ const ServiceForm = ({
 
     return (
         <form>
-            <div className="form-section">
-                <label>Service Name</label>
-                <input
-                    type="text"
-                    name="serviceName"
-                    value={service.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                />
-                <FieldError name="serviceName" errors={errors} />
-            </div>
-
-            <div className="form-section">
-                <label>Worker</label>
-                <DropDown
-                    name="workerId"
-                    options={workers}
-                    value={service.workerId}
-                    onChange={(value) => handleChange('workerId', value)}
-                />
-                <FieldError name="workerId" errors={errors} />
-            </div>
-
-            <div className="form-section">
-                <label>Job Type</label>
-                <DropDown
-                    name="jobTypeId"
-                    options={jobTypes}
-                    value={service.jobTypeId}
-                    onChange={(value) => handleChange('jobTypeId', value)}
-                />
-                <FieldError name="jobTypeId" errors={errors} />
-            </div>
-
             <div className="tile">
 
                 <div className="tile-header">
@@ -271,6 +238,7 @@ const ServiceForm = ({
                                         readonly={true}      // prevents opening or changing
                                         onTimeSelect={null}   // ensure user cannot change
                                     />
+                                    <FieldError name="StartTime" errors={errors} />
                                 </div>
 
                             </div>
@@ -367,6 +335,7 @@ const ServiceForm = ({
                                             handleChange('endTime', end);
                                         }}
                                     />
+                                    <FieldError name="StartTime" errors={errors} />
                                 </div>
 
                             </div>
@@ -450,6 +419,8 @@ const ServiceForm = ({
                                                 maxHeight="150px"
                                                 style={{ width: '100%' }}
                                             />
+                                            <FieldError name={`Parts[${i}].Name`} errors={errors} />
+                                            <FieldError name={`Parts[${i}].PartId`} errors={errors} />
                                         </td>
                                         <td>
                                             <input
@@ -535,6 +506,7 @@ const ServiceForm = ({
                         </tbody>
                     </table>
                     <div className="form-footer">
+                        <FieldError name="Parts" errors={errors} />
                         <button type="button" className="btn" onClick={addNewRow} disabled={service.status === 2}>+ Add Part</button>
                     </div>
                 </div>

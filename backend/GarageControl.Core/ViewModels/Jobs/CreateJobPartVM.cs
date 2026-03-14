@@ -4,7 +4,7 @@ namespace GarageControl.Core.ViewModels.Jobs
 {
     public class CreateJobPartVM : IValidatableObject
     {
-        [Required]
+        [Required(ErrorMessage = "Part doesn't exist")]
         public string PartId { get; set; } = null!;
         [Range(0, int.MaxValue)]
         public int PlannedQuantity { get; set; }
