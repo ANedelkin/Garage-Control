@@ -32,4 +32,10 @@ public interface IJobService
         string userId,
         string jobId,
         string workshopId);
+
+    Task<List<BusySlotVM>> GetBusySlotsAsync(
+        string workerId,
+        DateTime start,
+        DateTime end,
+        string? excludeJobId = null);
 }

@@ -35,9 +35,13 @@ const PopupPortal = () => {
               setIsMouseDown(false);
             }}
           >
-            <Popup title={params.title}>
-              {params.children}
-            </Popup>
+            {params.isRaw ? (
+              params.children
+            ) : (
+              <Popup title={params.title}>
+                {params.children}
+              </Popup>
+            )}
           </div>
         );
       })}

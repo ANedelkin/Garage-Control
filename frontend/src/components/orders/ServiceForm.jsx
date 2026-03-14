@@ -236,6 +236,7 @@ const ServiceForm = ({
                                         initialStart={service.startTime}
                                         initialEnd={service.endTime}
                                         readonly={true}      // prevents opening or changing
+                                        excludeId={service.id}
                                         onTimeSelect={null}   // ensure user cannot change
                                     />
                                     <FieldError name="StartTime" errors={errors} />
@@ -330,6 +331,7 @@ const ServiceForm = ({
                                         initialStart={service.startTime}
                                         initialEnd={service.endTime}
                                         readonly={service.status === 2}
+                                        excludeId={service.id}
                                         onTimeSelect={(start, end) => {
                                             handleChange('startTime', start);
                                             handleChange('endTime', end);

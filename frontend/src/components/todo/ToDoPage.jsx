@@ -55,42 +55,65 @@ const ToDoPage = () => {
             }
         };
 
+        // Group jobs by date (ignoring time)
+        const groupedJobs = jobs.reduce((acc, job) => {
+            const date = new Date(job.startTime).toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            if (!acc[date]) acc[date] = [];
+            acc[date].push(job);
+            return acc;
+        }, {});
+
         return (
-            <div className="tile" style={{ marginTop: '20px' }}>
-                <div className="table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Type</th>
-                                <th>Car</th>
-                                <th>Description</th>
-                                <th>Start Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {jobs.map(job => (
-                                <tr key={job.id} onClick={() => handleRowClick(job)}>
-                                    <td>
-                                        <span className={`job-status ${job.status}`}>
-                                            <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
-                                                job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
-                                                } job-status-${job.status} status-icon`}></i>
-                                            {job.status === 'pending' ? 'Pending' : job.status === 'inprogress' ? 'In Progress' : 'Done'}
-                                        </span>
-                                    </td>
-                                    <td>{job.typeName}</td>
-                                    <td>
-                                        <div>{job.carName}</div>
-                                        <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>{job.carRegistrationNumber}</div>
-                                    </td>
-                                    <td>{job.description}</td>
-                                    <td>{formatDate(job.startTime)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="daily-groups" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                {Object.entries(groupedJobs).map(([date, dayJobs]) => (
+                    <div key={date} className="day-group">
+                        <div className="tile">
+                            <div className="tile-header">
+                                <h3 style={{ margin: 0 }}>{date}</h3>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{dayJobs.length} {dayJobs.length === 1 ? 'task' : 'tasks'}</span>
+                            </div>
+                            <div className="table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Type</th>
+                                            <th>Car</th>
+                                            <th>Description</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {dayJobs.map(job => (
+                                            <tr key={job.id} onClick={() => handleRowClick(job)}>
+                                                <td>
+                                                    <span className={`job-status ${job.status}`}>
+                                                        <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
+                                                            job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
+                                                            } job-status-${job.status} status-icon`}></i>
+                                                        {job.status === 'pending' ? 'Pending' : job.status === 'inprogress' ? 'In Progress' : 'Done'}
+                                                    </span>
+                                                </td>
+                                                <td>{job.typeName}</td>
+                                                <td>
+                                                    <div>{job.carName}</div>
+                                                    <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>{job.carRegistrationNumber}</div>
+                                                </td>
+                                                <td>{job.description}</td>
+                                                <td style={{ fontWeight: 600 }}>{new Date(job.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     };

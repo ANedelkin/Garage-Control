@@ -18,6 +18,11 @@ const jobApi = {
     },
     deleteJob: async (jobId) => {
         return await request('DELETE', `job/${jobId}`);
+    },
+    getBusySlots: async (workerId, start, end, excludeId) => {
+        let url = `job/busy-slots?workerId=${workerId}&start=${start}&end=${end}`;
+        if (excludeId) url += `&excludeId=${excludeId}`;
+        return await request('GET', url);
     }
 };
 

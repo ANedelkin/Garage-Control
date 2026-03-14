@@ -109,6 +109,20 @@ namespace GarageControl.Core.Services.Jobs
                                       .ToListAsync();
         }
 
+        public async Task<List<BusySlotVM>> GetBusySlotsAsync(string workerId, DateTime start, DateTime end, string? excludeJobId = null)
+        {
+            return await _context.Jobs
+                .AsNoTracking()
+                .Where(j => j.WorkerId == workerId && j.StartTime < end && j.EndTime >= start)
+                .Where(j => excludeJobId == null || j.Id != excludeJobId)
+                .Select(j => new BusySlotVM
+                {
+                    Start = j.StartTime,
+                    End = j.EndTime
+                })
+                .ToListAsync();
+        }
+
 
         public async Task<JobDetailsVM?> GetJobByIdAsync(string jobId, string workshopId)
         {

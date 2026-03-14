@@ -125,5 +125,19 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("busy-slots")]
+        public async Task<IActionResult> GetBusySlots(string workerId, DateTime start, DateTime end, string? excludeId = null)
+        {
+            try
+            {
+                var slots = await _jobService.GetBusySlotsAsync(workerId, start, end, excludeId);
+                return Ok(slots);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

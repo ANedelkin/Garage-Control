@@ -135,9 +135,9 @@ const OrderList = ({ mode = 'active' }) => {
     };
 
     const filteredOrders = orders.map(order => {
-        const filteredJobs = order.jobs.filter(job =>
-            filter === 'all' || job.status === filter
-        );
+        const filteredJobs = order.jobs
+            .filter(job => filter === 'all' || job.status === filter)
+            .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
 
         return { ...order, jobs: filteredJobs };
     }).filter(order => {

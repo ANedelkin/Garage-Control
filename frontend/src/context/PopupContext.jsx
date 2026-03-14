@@ -7,9 +7,9 @@ export const usePopup = () => useContext(PopupContext);
 export const PopupProvider = ({ children }) => {
   const [stack, setStack] = useState([]);
 
-  const addPopup = useCallback((title, children) => {
-    console.log({title, children});
-    setStack(prev => [...prev, { title, children }]);
+  const addPopup = useCallback((title, children, isRaw = false) => {
+    console.log({title, children, isRaw});
+    setStack(prev => [...prev, { title, children, isRaw }]);
   }, []);
 
   const removeLastPopup = useCallback(() => {
