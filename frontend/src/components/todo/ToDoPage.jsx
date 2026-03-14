@@ -10,7 +10,7 @@ import '../../assets/css/orders.css';
 const ToDoPage = () => {
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
-    const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
+    const [viewMode, setViewMode] = useState(localStorage.getItem('myJobsViewMode') || 'list'); // 'list' or 'calendar'
     const [loading, setLoading] = useState(true);
 
     // Calendar state
@@ -106,12 +106,6 @@ const ToDoPage = () => {
             "July", "August", "September", "October", "November", "December"
         ];
 
-        const days = [];
-        // Empty slots for previous month days
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
-        }
-
         const handleEventClick = (job) => {
             if (hasOrdersAccess) {
                 navigate(`/orders/${job.orderId}/jobs/${job.id}`);
@@ -120,86 +114,232 @@ const ToDoPage = () => {
             }
         };
 
+        const rows = [];
+        let cells = [];
+
+        // Add empty cells for days from the previous month
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            cells.push(<td key={`empty-${i}`} className="calendar-cell empty"></td>);
+        }
+
+        // Add cells for the current month
         for (let day = 1; day <= daysInMonth; day++) {
             const dayJobs = jobs.filter(j => {
                 const jDate = new Date(j.startTime);
                 return jDate.getDate() === day && jDate.getMonth() === currentMonth && jDate.getFullYear() === currentYear;
             });
 
-            days.push(
-                <div key={day} className="calendar-day">
-                    <div className="day-number">{day}</div>
+            cells.push(
+                <td key={day} className="calendar-cell">
+                    <div className="day-header">
+                        <span className="day-number">{day}</span>
+                        {dayJobs.length > 0 && <span className="day-count">{dayJobs.length} tasks</span>}
+                    </div>
                     <div className="day-events">
                         {dayJobs.map(j => (
-                            <div key={j.id} className={`event-dot status-${j.status}`} title={`${j.typeName}`} onClick={() => handleEventClick(j)}>
-                                {j.typeName}
+                            <div 
+                                key={j.id} 
+                                className={`calendar-event status-${j.status}`} 
+                                title={`${j.typeName}`} 
+                                onClick={() => handleEventClick(j)}
+                            >
+                                <span className="event-time">{new Date(j.startTime).getHours().toString().padStart(2, '0')}:00</span>
+                                <span className="event-name">{j.typeName}</span>
                             </div>
                         ))}
                     </div>
-                </div>
+                </td>
             );
+
+            if (cells.length === 7) {
+                rows.push(<tr key={`row-${rows.length}`}>{cells}</tr>);
+                cells = [];
+            }
+        }
+
+        // Fill remaining cells in the last row
+        if (cells.length > 0) {
+            while (cells.length < 7) {
+                cells.push(<td key={`empty-end-${cells.length}`} className="calendar-cell empty"></td>);
+            }
+            rows.push(<tr key={`row-${rows.length}`}>{cells}</tr>);
         }
 
         return (
-            <div className="calendar-container tile">
-                <div className="calendar-header">
+            <div className="calendar-workspace tile">
+                <div className="calendar-controls">
                     <button className="btn icon-btn" onClick={() => {
                         if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
                         else { setCurrentMonth(currentMonth - 1); }
-                    }}>{"<"}</button>
-                    <h3 style={{ margin: 0 }}>{monthNames[currentMonth]} {currentYear}</h3>
+                    }}><i className="fa-solid fa-chevron-left"></i></button>
+                    <h3 className="calendar-title">{monthNames[currentMonth]} {currentYear}</h3>
                     <button className="btn icon-btn" onClick={() => {
                         if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
                         else { setCurrentMonth(currentMonth + 1); }
-                    }}>{">"}</button>
+                    }}><i className="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <div className="calendar-grid">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="calendar-head">{d}</div>)}
-                    {days}
-                </div>
+                
+                <table className="calendar-table">
+                    <thead>
+                        <tr>
+                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                                <th key={d} className="calendar-th">{d}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+
                 <style>{`
-                   .calendar-container {
-                       margin-top: 20px;
-                   }
-                   .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-                   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-                   .calendar-head { font-weight: bold; text-align: center; margin-bottom: 10px; color: var(--text-secondary); }
-                   .calendar-day {
-                       border: 1px solid var(--border2);
-                       min-height: 100px;
-                       padding: 8px;
-                       border-radius: 8px;
-                       background: var(--bg-secondary);
-                       display: flex;
-                       flex-direction: column;
-                   }
-                   .calendar-day.empty { background: transparent; border: none; }
-                   .day-number { font-weight: bold; margin-bottom: 5px; align-self: flex-end; color: var(--text-secondary); }
-                   .day-events { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-                   .event-dot {
-                       font-size: 0.75em;
-                       padding: 4px 6px;
-                       border-radius: 4px;
-                       background: var(--primary);
-                       color: white;
-                       cursor: pointer;
-                       white-space: nowrap;
-                       overflow: hidden;
-                       text-overflow: ellipsis;
-                   }
-                   .event-dot.status-0 { background: #f0ad4e; color: black; }
-                   .event-dot.status-1 { background: #337ab7; }
-                   .event-dot.status-2 { background: #5cb85c; }
-               `}</style>
+                    .calendar-workspace {
+                        margin-top: 20px;
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        padding: 24px !important;
+                    }
+                    .calendar-controls { 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        gap: 20px;
+                    }
+                    .calendar-title {
+                        font-size: 1.5rem;
+                        font-weight: 600;
+                        min-width: 200px;
+                        text-align: center;
+                        margin: 0;
+                    }
+                    .calendar-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        table-layout: fixed;
+                        flex: 1;
+                    }
+                    .calendar-table tbody {
+                        background: var(--solid3);
+                    }
+                    .calendar-th {
+                        padding: 12px;
+                        text-align: center;
+                        font-weight: 600;
+                        color: var(--text-clr2);
+                        border-bottom: 1px solid var(--border2);
+                    }
+                    .calendar-cell {
+                        border: 1px solid var(--border2);
+                        vertical-align: top;
+                        height: 120px;
+                        padding: 10px;
+                        transition: background 0.2s;
+                    }
+                    .calendar-cell:hover {
+                        background: var(--solid4) !important;
+                    }
+                    .calendar-table tr:hover {
+                        background: transparent !important;
+                    }
+                    .calendar-cell.empty {
+                        background: rgba(255, 255, 255, 0.02);
+                    }
+                    .day-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+                    .day-number {
+                        font-weight: 600;
+                        font-size: 0.6rem;
+                        color: var(--text-clr2);
+                    }
+                    .day-count {
+                        font-size: 0.5rem;
+                        color: var(--text-secondary);
+                        background: var(--solid3);
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        opacity: 0.8;
+                    }
+                    .day-events {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                        max-height: 80px;
+                        overflow-y: auto;
+                        padding-right: 2px;
+                    }
+                    .day-events::-webkit-scrollbar {
+                        width: 3px;
+                    }
+                    .day-events::-webkit-scrollbar-thumb {
+                        background: var(--border2);
+                        border-radius: 3px;
+                    }
+                    .calendar-event {
+                        font-size: 0.75rem;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        display: flex;
+                        gap: 6px;
+                        align-items: center;
+                        transition: transform 0.1s;
+                        border: 1px solid transparent;
+                    }
+                    .calendar-event:hover {
+                        transform: translateY(-1px);
+                        filter: brightness(1.1);
+                        border-color: rgba(255, 255, 255, 0.2);
+                    }
+                    .event-time {
+                        opacity: 0.8;
+                        font-weight: 600;
+                        font-family: monospace;
+                    }
+                    .event-name {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    .calendar-event.status-pending { background: rgba(240, 173, 78, 0.2); border-left: 3px solid #f0ad4e; color: #f0ad4e; }
+                    .calendar-event.status-inprogress { background: rgba(51, 122, 183, 0.2); border-left: 3px solid #337ab7; color: #337ab7; }
+                    .calendar-event.status-done { background: rgba(92, 184, 92, 0.2); border-left: 3px solid #5cb85c; color: #5cb85c; }
+                    
+                    @media (max-width: 1000px) {
+                        .calendar-cell { height: 80px; padding: 5px; }
+                        .event-time { display: none; }
+                    }
+                `}</style>
+                <style>{`
+                    .main.calendar-layout {
+                        padding-left: 2%;
+                        padding-right: 2%;
+                        max-width: none;
+                    }
+                    .main.calendar-layout .header h1 {
+                        margin: 0;
+                    }
+                `}</style>
             </div>
         );
     };
 
     return (
-        <main className="main">
+        <main className={`main ${viewMode === 'calendar' ? 'calendar-layout' : ''}`}>
             <div className="header">
                 <h1>My Jobs</h1>
-                <Dropdown value={viewMode} onChange={e => setViewMode(e.target.value)}>
+                <Dropdown 
+                    value={viewMode} 
+                    onChange={e => {
+                        const newMode = e.target.value;
+                        setViewMode(newMode);
+                        localStorage.setItem('myJobsViewMode', newMode);
+                    }}
+                >
                     <option value="list">List View</option>
                     <option value="calendar">Calendar View</option>
                 </Dropdown>
