@@ -100,9 +100,12 @@ a {
 }
 
 .btn:disabled,
-.icon-btn:disabled {
+.icon-btn:disabled,
+input:disabled,
+textarea:disabled,
+.select-wrapper.disabled {
     filter: grayscale(1);
-    opacity: 0.5;
+    opacity: 0.75;
     cursor: default;
     pointer-events: none;
 }

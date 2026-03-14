@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../../assets/css/orders.css'; // Ensure we can style it
 
-const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
+const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd, readonly = false }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     // Initialize viewDate to Today regardless of selection, or start of selection's week? 
@@ -186,7 +186,7 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd }) => {
 
     return (
         <div className="time-picker-container">
-            <button type="button" className="btn secondary time-display-btn" onClick={() => setIsOpen(true)}>
+            <button type="button" className="btn secondary time-display-btn" onClick={() => setIsOpen(true)} disabled={readonly}>
                 <i className="fa-regular fa-clock"></i> {formatTimeRange()}
             </button>
 
