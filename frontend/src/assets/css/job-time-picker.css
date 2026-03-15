@@ -103,13 +103,6 @@
     background: rgba(0, 255, 0, 0.05);
 }
 
-.time-slot.available:hover {
-    outline: 2px solid orange; /* Orange border on hover */
-    outline-offset: -2px;
-    z-index: 5;
-    position: relative;
-}
-
 .time-slot.unavailable,
 .time-slot.past {
     background: rgba(255, 255, 255, 0.05);
@@ -130,4 +123,9 @@
 .time-slot.selected-range {
     background: var(--primary) !important;
     opacity: 0.8 !important;
+}
+
+/* Disabled row hover background styling for time picker */
+.tp-table tr:hover {
+    background: transparent !important;
 }
