@@ -9,6 +9,7 @@ import WorkshopDetails from '../workshopDetails/WorkshopDetails';
 const Sidebar = ({ open, onClose, accesses = [] }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const { addPopup, removeLastPopup } = usePopup();
+  const [lastActivePath, setLastActivePath] = useState(localStorage.getItem('lastActiveSidebarPath') || '/');
   const location = useLocation();
 
   useEffect(() => {
@@ -37,15 +38,33 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', accesses: ['Admin'] },
   ];
 
-  const isPathActive = (itemPath) => {
-    // Exact match for root path
-    if (itemPath === '/') {
-      return location.pathname === '/';
+  useEffect(() => {
+    // Check if current path matches any nav item (excluding popups)
+    const matchingItem = navItems.find(item => item.path && (
+      location.pathname === item.path
+    ));
+
+    if (matchingItem) {
+      setLastActivePath(matchingItem.path);
+      localStorage.setItem('lastActiveSidebarPath', matchingItem.path);
     }
-    // For other paths, check if current path starts with item path
-    // and is followed by either nothing or a slash
-    return location.pathname === itemPath ||
-      location.pathname.startsWith(itemPath + '/');
+  }, [location.pathname]);
+
+  const isPathActive = (itemPath) => {
+    // Check if this item is the "best" match for the current URL
+    const isDirectMatch = location.pathname === itemPath;
+
+    // If no navigation item matches the current path exactly, 
+    // fallback to highlighting the last successful match.
+    const anyItemMatches = navItems.some(item => item.path && (
+      location.pathname === item.path
+    ));
+
+    if (anyItemMatches) {
+      return isDirectMatch;
+    }
+
+    return itemPath === lastActivePath;
   };
 
   console.log(accesses);

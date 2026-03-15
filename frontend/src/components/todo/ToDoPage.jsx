@@ -9,7 +9,7 @@ import ToDoWeekView from './ToDoWeekView';
 import '../../assets/css/common/status.css';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/orders.css';
-import './ToDoPage.css';
+import '../../assets/css/todo.css';
 
 const ToDoPage = () => {
     const [jobs, setJobs] = useState([]);

@@ -158,11 +158,7 @@ const EditJobPage = ({ mechanicView = false }) => {
             // Trigger notification refresh in header
             window.dispatchEvent(new CustomEvent('refresh-notifications'));
 
-            if (mechanicView) {
-                navigate('/todo');
-            } else {
-                navigate('/orders');
-            }
+            navigate(-1);
         } catch (e) {
             console.error(e);
             setErrors(parseValidationErrors(e));
@@ -180,7 +176,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                     <p>{order?.clientName} • {order?.carName} ({order?.carRegistrationNumber})</p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="btn secondary" onClick={() => navigate(mechanicView ? '/todo' : '/orders')}>
+                    <button className="btn secondary" onClick={() => navigate(-1)}>
                         Cancel
                     </button>
                     <button className="btn primary" onClick={handleSave}>

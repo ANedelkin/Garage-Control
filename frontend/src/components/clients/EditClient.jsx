@@ -78,7 +78,7 @@ const EditClient = () => {
             } else {
                 await clientApi.edit(id, client);
             }
-            navigate('/clients');
+            navigate(-1);
         } catch (error) {
             console.error('Error saving client info:', error);
             setErrors(parseValidationErrors(error));
