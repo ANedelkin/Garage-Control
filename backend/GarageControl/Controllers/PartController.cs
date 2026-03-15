@@ -105,6 +105,20 @@ namespace GarageControl.Controllers
             }
         }
         [RequireAccess("Parts Stock")]
+        [HttpPut("rename/{id}")]
+        public async Task<IActionResult> RenamePart(string id, [FromBody] string newName)
+        {
+            try
+            {
+                await _partService.RenamePartAsync(GetUserId(), GetWorkshopId(), id, newName);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [RequireAccess("Parts Stock")]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePart(string id)
         {

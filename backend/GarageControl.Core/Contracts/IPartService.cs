@@ -12,6 +12,7 @@ namespace GarageControl.Core.Contracts
         Task<PartVM> EditPartAsync(string userId, string workshopId, string partId, UpdatePartVM model);
         Task<PartWithPathVM?> GetPartWithPathAsync(string partId, string workshopId);
         Task MovePartAsync(string userId, string garageId, string partId, string? newParentId);
+        Task RenamePartAsync(string userId, string workshopId, string partId, string newName);
         Task DeletePartAsync(string userId, string workshopId, string partId);
     }
 }

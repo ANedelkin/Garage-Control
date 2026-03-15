@@ -63,7 +63,11 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
         const newName = prompt("Enter new name:", node.name);
         if (newName) {
             try {
-                await partApi.renameFolder(node.id, newName);
+                if (type === 'folder') {
+                    await partApi.renameFolder(node.id, newName);
+                } else {
+                    await partApi.renamePart(node.id, newName);
+                }
                 onRefresh();
             } catch (error) {
                 alert("Failed to rename");

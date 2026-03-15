@@ -211,6 +211,27 @@ namespace GarageControl.Core.Services
                 ?? throw new Exception("Part not found after update");
         }
 
+        public async Task RenamePartAsync(string userId, string workshopId, string partId, string newName)
+        {
+            var part = await _context.Parts
+                .FirstOrDefaultAsync(p => p.Id == partId && p.WorkshopId == workshopId);
+
+            if (part == null)
+                throw new ArgumentException("Part not found");
+
+            string oldName = part.Name;
+            part.Name = newName;
+
+            await _context.SaveChangesAsync();
+
+            await _activityLogger.LogPartUpdatedAsync(
+                userId,
+                workshopId,
+                part.Id,
+                part.Name,
+                new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, newName) });
+        }
+
         private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartVM model)
         {
             var changes = new List<ActivityPropertyChange>();

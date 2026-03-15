@@ -25,6 +25,9 @@ const partApi = {
     renameFolder: async (id, newName) => {
         await request('PUT', `part/folder/rename/${id}`, newName);
     },
+    renamePart: async (id, newName) => {
+        await request('PUT', `part/rename/${id}`, newName);
+    },
     deleteFolder: async (id) => {
         await request('DELETE', `part/folder/delete/${id}`);
     },
