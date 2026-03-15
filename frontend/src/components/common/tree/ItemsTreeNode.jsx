@@ -119,6 +119,9 @@ const ItemsTreeNode = ({
     const isActive = ((type === 'item' && node.id === selectedItemId) || (type === 'group' && selectedPath.includes(node.id) && !expanded));
 
     // Drag and Drop Handlers
+    const [dragOver, setDragOver] = useState(false);
+    const dragCounter = useRef(0); // Use counter to handle enter/leave on children
+
     const handleDragStart = (e) => {
         if (!allowDrag) return;
         e.dataTransfer.setData("application/json", JSON.stringify({ id: node.id, type: type }));
@@ -127,14 +130,34 @@ const ItemsTreeNode = ({
 
     const handleDragOver = (e) => {
         if (!allowDrag) return;
-        e.preventDefault(); // Always allow drop (we handle logic in Drop)
+        e.preventDefault();
         e.stopPropagation();
+    };
+
+    const handleDragEnter = (e) => {
+        if (!allowDrag) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current++;
+        setDragOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        if (!allowDrag) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current--;
+        if (dragCounter.current === 0) {
+            setDragOver(false);
+        }
     };
 
     const handleDrop = (e) => {
         if (!allowDrag) return;
         e.preventDefault();
         e.stopPropagation();
+        setDragOver(false);
+        dragCounter.current = 0;
 
         try {
             const data = JSON.parse(e.dataTransfer.getData("application/json"));
@@ -162,7 +185,7 @@ const ItemsTreeNode = ({
         }
     };
 
-    return (
+    const content = (
         <>
             <div
                 className={`list-item ${isActive ? 'active' : ''} ${node.className || ''}`}
@@ -170,8 +193,6 @@ const ItemsTreeNode = ({
                 onContextMenu={handleContextMenu}
                 draggable={allowDrag}
                 onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
             >
                 {renderItemLabel ? (
                     renderItemLabel(node, type, expanded)
@@ -199,7 +220,7 @@ const ItemsTreeNode = ({
                 )}
             </div>
 
-            {/* Children */}
+            {/* Children container inside the wrapper if it's a group */}
             {expanded && type === 'group' && (
                 <div className="parts-tree-children">
                     <ItemsTree
@@ -238,6 +259,22 @@ const ItemsTreeNode = ({
             )}
         </>
     );
+
+    if (type === 'group') {
+        return (
+            <div
+                className={`tree-node-wrapper ${dragOver ? 'drag-over' : ''}`}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
+                {content}
+            </div>
+        );
+    }
+
+    return content;
 };
 
 export default ItemsTreeNode;

@@ -130,6 +130,12 @@
     padding-left: 1.5rem;
 }
 
+/* Drag over styles for folders */
+.tree-node-wrapper.drag-over {
+    background-color: var(--solid4);
+    border-radius: 8px;
+}
+
 /* .context-menu {
     display: flex;
     flex-direction: column;
