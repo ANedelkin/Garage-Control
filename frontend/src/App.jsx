@@ -30,7 +30,6 @@ import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 import Popup from './components/common/Popup.jsx'; 
 import PopupPortal from './components/common/PopupPortal.jsx'; 
-import AccessDenied from './components/common/AccessDenied.jsx';
 import ErrorPage from './components/common/ErrorPage.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 
@@ -51,7 +50,7 @@ const PrivateRoute = ({ children, access }) => {
 
   if (access) {
     if (!accesses.includes(access)) {
-      return <AccessDenied />;
+      return <ErrorPage title="Access Denied" message="You do not have permission to view this page." />;
     }
   }
 
@@ -133,13 +132,7 @@ function App() {
 
             <Route path="/access-denied" element={
               <PrivateRoute>
-                <LayoutWithHeader
-                  sidebarOpen={sidebarOpen}
-                  setSidebarOpen={setSidebarOpen}
-                  accesses={accesses}
-                >
-                  <AccessDenied />
-                </LayoutWithHeader>
+                 <ErrorPage title="Access Denied" message="You do not have permission to view this page." />
               </PrivateRoute>
             } />
 
