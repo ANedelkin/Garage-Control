@@ -27,6 +27,14 @@ export async function request(method, url, body = null, options = {}) {
     }
 
     if (!response.ok) {
+        if (response.status === 404 && method.toLowerCase() === 'get') {
+            const resourceParts = url.split('/');
+            const resourceBase = resourceParts[0]; 
+            const resource = resourceBase.charAt(0).toUpperCase() + resourceBase.slice(1);
+            window.dispatchEvent(new CustomEvent('api-404', { detail: { resource } }));
+            return new Promise(() => {}); // Never resolve/reject so components don't show alerts during redirect
+        }
+
         const errorMessage = data?.message || data?.error || data?.title || response.statusText || 'Request failed';
         const error = new Error(errorMessage);
         error.status = response.status;

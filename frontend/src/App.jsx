@@ -28,10 +28,10 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
-import Popup from './components/common/Popup.jsx'; 
 import PopupPortal from './components/common/PopupPortal.jsx'; 
 import ErrorPage from './components/common/ErrorPage.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
+import GlobalErrorWatcher from './components/common/GlobalErrorWatcher.jsx';
 
 import { authApi } from './services/authApi';
 import { useAuth } from './context/AuthContext';
@@ -126,8 +126,9 @@ function App() {
       <BrowserRouter>
         <ErrorBoundary>
           <PopupPortal />
-          <Routes>
-            <Route path="/login" element={<LogInPage />} />
+          <GlobalErrorWatcher>
+            <Routes>
+              <Route path="/login" element={<LogInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
 
             <Route path="/access-denied" element={
@@ -184,7 +185,8 @@ function App() {
             {/* Catch-all route for 404 */}
             <Route path="*" element={<ErrorPage type="404" />} />
 
-          </Routes>
+            </Routes>
+          </GlobalErrorWatcher>
         </ErrorBoundary>
       </BrowserRouter>
     </div>
