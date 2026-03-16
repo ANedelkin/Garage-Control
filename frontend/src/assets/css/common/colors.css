@@ -67,3 +67,9 @@ body.light {
     --done-orders: linear-gradient(180deg, rgba(140, 220, 180), rgba(200, 245, 220, 0.4));
     --done-orders-hover: linear-gradient(180deg, rgba(110, 200, 150), rgba(180, 230, 200, 0.5));
 }
+
+.highlight-outline {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+    scroll-margin-top: 20px;
+}

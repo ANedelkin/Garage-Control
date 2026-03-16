@@ -74,7 +74,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(
                 userId,
                 workshopId,
-                $"created client <a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>");
+                $"created client <a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>");
         }
 
         public async Task Delete(string id, string userId)
@@ -155,7 +155,7 @@ namespace GarageControl.Core.Services
 
         private static string BuildChangeLog(Client client, List<string> changes)
         {
-            string link = $"<a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>";
+            string link = $"<a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>";
 
             if (changes.Count == 1 && changes[0].Contains("from"))
                 return $"changed {changes[0]} of client {link}";

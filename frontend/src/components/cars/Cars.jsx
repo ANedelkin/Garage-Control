@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
@@ -16,6 +16,9 @@ const Cars = () => {
     const [makes, setMakes] = useState({}); // id -> name map
     const [makesList, setMakesList] = useState([]); // array for popup prop
     const [models, setModels] = useState({}); // id -> name map
+    const rowRefs = useRef({});
+    const [searchParams] = useSearchParams();
+    const highlight = searchParams.get('highlight') === 'true';
 
     const { addPopup, removeLastPopup } = usePopup();
 
@@ -94,15 +97,23 @@ const Cars = () => {
     };
 
     useEffect(() => {
-        if (carId && makesList.length > 0) {
-            if (carId === 'new') {
-                handleRowClick({});
-            } else {
+        if (!loading && carId && carId !== 'new') {
+            const row = rowRefs.current[carId];
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight) {
                 const car = cars.find(c => c.id === carId);
                 if (car) handleRowClick(car);
             }
         }
-    }, [carId, cars, makesList]);
+    }, [loading, carId, cars, highlight]);
+
+    useEffect(() => {
+        if (carId === 'new') {
+            handleRowClick({});
+        }
+    }, [carId]);
 
     const handleSaveCar = async (carData) => {
         try {
@@ -133,8 +144,14 @@ const Cars = () => {
         }
     };
 
+    const handleContainerClick = () => {
+        if (carId) {
+            navigate('/cars', { replace: true });
+        }
+    };
+
     return (
-        <main className="main">
+        <main className="main" onClick={handleContainerClick}>
             <div className="header">
                 <input
                     type="text"
@@ -161,7 +178,13 @@ const Cars = () => {
                         </thead>
                         <tbody>
                             {loading ? <tr><td colSpan="7">Loading...</td></tr> : filteredCars.map(c => (
-                                <tr key={c.id} onClick={() => navigate(`/cars/${c.id}`)} style={{ cursor: 'pointer' }} className="clickable-row">
+                                <tr 
+                                    key={c.id} 
+                                    ref={el => rowRefs.current[c.id] = el}
+                                    onClick={(e) => { e.stopPropagation(); handleRowClick(c); }} 
+                                    style={{ cursor: 'pointer' }} 
+                                    className={`clickable-row ${carId === c.id ? 'highlight-outline' : ''}`}
+                                >
                                     <td>{makes[c.makeId] || c.makeId}</td>
                                     <td>{models[c.modelId] || c.modelId}</td>
                                     <td>{c.registrationNumber}</td>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/table.css';
 import '../../assets/css/job-types.css';
@@ -10,6 +10,9 @@ const JobTypes = () => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [jobTypes, setJobTypes] = useState([]);
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlightId');
+  const rowRefs = useRef({});
 
   useEffect(() => {
     jobTypeApi.getJobTypes().then(res => {
@@ -25,8 +28,23 @@ const JobTypes = () => {
       jobType.description && jobType.description.toLowerCase().includes(search.toLowerCase()))
   );
 
+  useEffect(() => {
+    if (highlightId) {
+      const row = rowRefs.current[highlightId];
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightId, jobTypes]);
+
+  const handleContainerClick = () => {
+    if (highlightId) {
+      navigate('/job-types', { replace: true });
+    }
+  };
+
   return (
-    <main className="main">
+    <main className="main" onClick={handleContainerClick}>
       {/* Header: search + new job type */}
       <div className="header">
         <input
@@ -59,7 +77,12 @@ const JobTypes = () => {
 
             <tbody>
               {filteredJobTypes.map((jobType, index) => (
-                <tr key={jobType.id || index} onClick={() => navigate(`/job-types/${jobType.id}`)}>
+                <tr 
+                  key={jobType.id || index} 
+                  ref={el => rowRefs.current[jobType.id] = el}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/job-types/${jobType.id}`); }}
+                  className={highlightId === jobType.id ? 'highlight-outline' : ''}
+                >
                   <td>{jobType.name}</td>
                   <td className="description" title={jobType.description}>
                     {jobType.description}

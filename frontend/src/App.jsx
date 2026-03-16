@@ -104,8 +104,7 @@ function App() {
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
     { path: '/workers', element: <Workers />, children: [
         { path: '/new', element: <Workers /> },
-        { path: '/:workerId', element: <Workers /> }, // Edit Worker popup
-        { path: '/:workerId/schedule', element: <Workers /> } // Edit Schedule popup
+        { path: '/:workerId', element: <Workers /> } // Edit Worker popup -> Outline Target
     ], access: 'Workers' },
     {
       path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [

@@ -41,10 +41,13 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
   ];
 
   useEffect(() => {
-    // Check if current path matches any nav item (excluding popups)
-    const matchingItem = navItems.find(item => item.path && (
-      location.pathname === item.path
-    ));
+    // Check if current path matches any nav item exactly
+    let matchingItem = navItems.find(item => item.path && location.pathname === item.path);
+
+    // Fallback to startsWith (for nested routes like /workers/123)
+    if (!matchingItem) {
+      matchingItem = navItems.find(item => item.path && item.path !== '/' && location.pathname.startsWith(item.path));
+    }
 
     if (matchingItem) {
       setLastActivePath(matchingItem.path);
@@ -53,19 +56,10 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
   }, [location.pathname]);
 
   const isPathActive = (itemPath) => {
-    // Check if this item is the "best" match for the current URL
-    const isDirectMatch = location.pathname === itemPath;
+    if (location.pathname === itemPath) return true;
+    if (itemPath !== '/' && location.pathname.startsWith(itemPath)) return true;
 
-    // If no navigation item matches the current path exactly, 
-    // fallback to highlighting the last successful match.
-    const anyItemMatches = navItems.some(item => item.path && (
-      location.pathname === item.path
-    ));
-
-    if (anyItemMatches) {
-      return isDirectMatch;
-    }
-
+    // If no navigation item matches, fallback to last known active
     return itemPath === lastActivePath;
   };
 

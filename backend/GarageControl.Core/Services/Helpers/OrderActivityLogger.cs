@@ -36,6 +36,6 @@ namespace GarageControl.Core.Services
         }
 
         private string FormatOrderLink(string orderId, string carInfo) 
-            => $"<a href='/orders/{orderId}' class='log-link target-link'>order for {carInfo}</a>";
+            => $"<a href='/orders/{orderId}?highlight=true' class='log-link target-link'>order for {carInfo}</a>";
     }
 }

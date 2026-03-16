@@ -76,9 +76,9 @@ namespace GarageControl.Core.Services.Jobs
             => $"changed {qtyType} qty of '<b>{partName}</b>' from <b>{oldVal}</b> to <b>{newVal}</b>";
 
         private string FormatOrderLink(string orderId, string carInfo) 
-            => $"<a href='/orders/{orderId}' class='log-link target-link'>order for {carInfo}</a>";
+            => $"<a href='/orders/{orderId}?highlight=true' class='log-link target-link'>order for {carInfo}</a>";
             
         private string FormatJobLink(string orderId, string jobId, string jobTypeName)
-            => $"<a href='/orders/{orderId}/jobs/{jobId}' class='log-link target-link'>'{jobTypeName}'</a>";
+            => $"<a href='/orders/{orderId}?highlightJob={jobId}' class='log-link target-link'>'{jobTypeName}'</a>";
     }
 }

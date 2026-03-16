@@ -116,7 +116,7 @@ namespace GarageControl.Core.Services
                 : "New Car";
 
             await _activityLogService.LogActionAsync(userId, workshopId, 
-                $"added car <a href='/cars/{car.Id}' class='log-link target-link'>{carDisplayName}</a> to client <a href='/clients/{client.Id}' class='log-link target-link'>{client.Name}</a>");
+                $"added car <a href='/cars/{car.Id}?highlight=true' class='log-link target-link'>{carDisplayName}</a> to client <a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>");
         }
 
         public async Task Edit(string id, VehicleVM model, string userId)
@@ -167,7 +167,7 @@ namespace GarageControl.Core.Services
 
                 if (changes.Count > 0)
                 {
-                    string carLink = $"<a href='/cars/{car.Id}' class='log-link target-link'>{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})</a>";
+                    string carLink = $"<a href='/cars/{car.Id}?highlight=true' class='log-link target-link'>{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})</a>";
                     string actionHtml = changes.Count == 1 && changes[0].Contains("from")
                         ? $"changed {changes[0]} of car {carLink}"
                         : $"updated car {carLink}: {string.Join(", ", changes)}";

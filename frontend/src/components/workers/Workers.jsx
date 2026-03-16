@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { usePopup } from '../../context/PopupContext';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/table.css';
@@ -13,12 +13,15 @@ const Workers = () => {
     const navigate = useNavigate();
     const { workerId } = useParams();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const highlight = searchParams.get('highlight') === 'true';
 
     const [roleFilter, setRoleFilter] = useState('all');
     const [search, setSearch] = useState('');
 
     const [loading, setLoading] = useState(true);
     const [workers, setWorkers] = useState([]);
+    const rowRefs = useRef({});
 
     const fetchWorkers = async () => {
         setLoading(true);
@@ -54,15 +57,24 @@ const Workers = () => {
         );
     };
 
+    // Highlighting and scrolling logic
     useEffect(() => {
-        if (workerId) {
-            if (location.pathname.endsWith('/schedule')) {
-                openWorkhours(workerId);
-            } else {
+        if (!loading && workerId && workerId !== 'new') {
+            const row = rowRefs.current[workerId];
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight) {
                 openEditWorker(workerId);
             }
         }
-    }, [workerId, location.pathname]);
+    }, [loading, workerId, workers, highlight]);
+
+    useEffect(() => {
+        if (workerId === 'new') {
+            openEditWorker('new');
+        }
+    }, [workerId]);
 
     // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
     // const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
@@ -72,8 +84,14 @@ const Workers = () => {
         w.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    const handleContainerClick = () => {
+        if (workerId) {
+            navigate('/workers', { replace: true });
+        }
+    };
+
     return (
-        <main className="main">
+        <main className="main" onClick={handleContainerClick}>
             {/* Header: search + filter + new worker */}
             <div className="header">
                 <input
@@ -90,7 +108,7 @@ const Workers = () => {
                     ))}
                 </Dropdown> */}
 
-                <button className="btn" onClick={() => navigate("/workers/new")}>+ New Worker</button>
+                <button className="btn" onClick={(e) => { e.stopPropagation(); navigate("/workers/new"); }}>+ New Worker</button>
             </div>
 
             {/* Workers table */}
@@ -116,7 +134,12 @@ const Workers = () => {
 
                         <tbody>
                             {loading ? <tr><td colSpan="4">Loading...</td></tr> : filteredWorkers.map((w, i) => (
-                                <tr key={w.id} onClick={() => openEditWorker(w.id)}>
+                                <tr 
+                                    key={w.id} 
+                                    ref={el => rowRefs.current[w.id] = el}
+                                    onClick={(e) => { e.stopPropagation(); openEditWorker(w.id); }}
+                                    className={workerId === w.id ? 'highlight-outline' : ''}
+                                >
                                     <td>{w.name}</td>
 
                                     <td className="description" title={w.accesses.filter(r => r.isSelected).map(r => r.name).join(', ')}>

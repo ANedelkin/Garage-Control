@@ -360,7 +360,7 @@ namespace GarageControl.Core.Services
 
                 if (changes.Count > 0)
                 {
-                    string workerLink = $"<a href='/workers/{worker.Id}' class='log-link target-link'>{worker.Name}</a>";
+                    string workerLink = $"<a href='/workers/{worker.Id}?highlight=true' class='log-link target-link'>{worker.Name}</a>";
                     string actionHtml;
 
                     if (changes.Count == 1 && (changes[0].Contains("from") || changes[0].Contains("Updated schedule")))

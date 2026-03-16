@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useParams, useNavigate, useLocation } from 'react-router-dom';
 import '../../assets/css/makes-models.css';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
@@ -18,6 +18,11 @@ const MakesAndModels = () => {
     const [selectedMake, setSelectedMake] = useState(null);
     const [loadingMakes, setLoadingMakes] = useState(true);
     const [loadingModels, setLoadingModels] = useState(false);
+    
+    const makeRefs = useRef({});
+    const modelRefs = useRef({});
+    const location = useLocation();
+    const highlight = searchParams.get('highlight') === 'true';
 
     // Modal state (only for controlled variables, actual modal is in PopupContext)
     const [modalType, setModalType] = useState('make'); // 'make' or 'model'
@@ -45,17 +50,27 @@ const MakesAndModels = () => {
             if (make && (!selectedMake || selectedMake.id !== makeId)) {
                 setSelectedMake(make);
             }
+            if (makeRefs.current[makeId]) {
+                makeRefs.current[makeId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight && make && !modelId && (!editingItem || editingItem.id !== makeId)) {
+                handleOpenModal('make', make);
+            }
         }
-    }, [makeId, makes]);
+    }, [makeId, makes, highlight, modelId]);
 
     useEffect(() => {
         if (selectedMake && selectedMake.id === makeId && modelId && models.length > 0) {
             const model = models.find(m => m.id === modelId);
-            if (model && (!editingItem || editingItem.id !== modelId)) {
+            // Instead of opening a modal, we just scroll to it
+            if (modelRefs.current[modelId]) {
+                modelRefs.current[modelId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight && model && (!editingItem || editingItem.id !== modelId)) {
                 handleOpenModal('model', model);
             }
         }
-    }, [modelId, models, selectedMake, makeId]);
+    }, [modelId, models, selectedMake, makeId, highlight]);
 
     // Handle query params for merge from notification
     useEffect(() => {
@@ -227,9 +242,16 @@ const MakesAndModels = () => {
     };
 
 
+    const handleContainerClick = () => {
+        if (makeId || modelId) {
+            navigate('/makes-and-models', { replace: true });
+        }
+        setSelectedMake(null);
+    };
+
     return (
-        <main className="main makes-models container">
-            <div className="tile">
+        <main className="main makes-models container" onClick={handleContainerClick}>
+            <div className="tile" onClick={(e) => e.stopPropagation()}>
                 <div className="horizontal grow">
                     {/* Makes Pane */}
                     <div className="form-left">
@@ -241,8 +263,9 @@ const MakesAndModels = () => {
                             {makes.map(make => (
                                 <div
                                     key={make.id}
-                                    className={`list-item ${selectedMake?.id === make.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedMake(make)}
+                                    ref={el => makeRefs.current[make.id] = el}
+                                    className={`list-item ${selectedMake?.id === make.id ? 'active' : ''} ${makeId === make.id && !modelId ? 'highlight-outline' : ''}`}
+                                    onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${make.id}`); }}
                                 >
                                     <span className="item-label">{make.name}</span>
                                     <div>
@@ -290,7 +313,12 @@ const MakesAndModels = () => {
                                 <p className="list-empty">Loading...</p>
                             ) : (
                                 models.map(model => (
-                                    <div key={model.id} className="list-item">
+                                    <div 
+                                        key={model.id} 
+                                        ref={el => modelRefs.current[model.id] = el}
+                                        className={`list-item ${modelId === model.id ? 'highlight-outline' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${selectedMake.id}/model/${model.id}`); }}
+                                    >
                                         <span className="item-label">{model.name}</span>
                                         <div>
                                             {model.globalId && (
@@ -312,7 +340,7 @@ const MakesAndModels = () => {
                                                     <i className="fa-solid fa-arrows-to-circle"></i>
                                                 </button>
                                             )}
-                                            <button className="btn icon-btn" onClick={() => navigate(`/makes-and-models/${selectedMake.id}/model/${model.id}`)}>
+                                            <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('model', model); }}>
                                                 <i className="fa-solid fa-pen"></i>
                                             </button>
                                             <button className="btn icon-btn delete" onClick={() => handleDelete('model', model.id)}>

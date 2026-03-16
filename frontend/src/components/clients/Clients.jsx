@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
@@ -13,6 +13,9 @@ const Clients = () => {
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
     const { addPopup, removeLastPopup } = usePopup();
+    const rowRefs = useRef({});
+    const [searchParams] = useSearchParams();
+    const highlight = searchParams.get('highlight') === 'true';
 
     useEffect(() => {
         fetchClients();
@@ -56,8 +59,20 @@ const Clients = () => {
     };
 
     useEffect(() => {
-        if (clientId) {
-            openEditPopup(clientId);
+        if (!loading && clientId && clientId !== 'new') {
+            const row = rowRefs.current[clientId];
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight) {
+                openEditPopup(clientId);
+            }
+        }
+    }, [loading, clientId, clients, highlight]);
+
+    useEffect(() => {
+        if (clientId === 'new') {
+            openEditPopup('new');
         }
     }, [clientId]);
 
@@ -67,8 +82,14 @@ const Clients = () => {
         navigate('/clients');
     };
 
+    const handleContainerClick = () => {
+        if (clientId) {
+            navigate('/clients', { replace: true });
+        }
+    };
+
     return (
-        <main className="main">
+        <main className="main" onClick={handleContainerClick}>
             <div className="header">
                 <input
                     type="text"
@@ -96,16 +117,17 @@ const Clients = () => {
                             {loading ? <tr><td colSpan="5">Loading...</td></tr> : filteredClients.map((c) => (
                                 <tr
                                     key={c.id}
-                                    onClick={() => navigate(`/clients/${c.id}`)}
+                                    ref={el => rowRefs.current[c.id] = el}
+                                    onClick={(e) => { e.stopPropagation(); openEditPopup(c.id); }}
                                     style={{ cursor: 'pointer' }}
-                                    className="clickable-row"
+                                    className={`clickable-row ${clientId === c.id ? 'highlight-outline' : ''}`}
                                 >
                                     <td>{c.name}</td>
                                     <td>{c.phoneNumber}</td>
                                     <td>{c.email}</td>
                                     <td>{c.address}</td>
                                     <td onClick={e => e.stopPropagation()}>
-                                        <button className="btn icon-btn" title="Edit client" onClick={() => navigate(`/clients/${c.id}`)}>
+                                        <button className="btn icon-btn" title="Edit client" onClick={() => openEditPopup(c.id)}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
                                         <button className="btn delete icon-btn" title="Delete client" onClick={() => handleDelete(c.id)}>

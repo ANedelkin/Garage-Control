@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
@@ -22,6 +22,10 @@ const OrderList = ({ mode = 'active' }) => {
     const [loading, setLoading] = useState(true);
     const [editingOrder, setEditingOrder] = useState(null);
     const [errors, setErrors] = useState({});
+    const orderRefs = useRef({});
+    const jobRefs = useRef({});
+    const highlightJob = searchParams.get('highlightJob');
+    const highlight = searchParams.get('highlight') === 'true';
 
     useEffect(() => {
         fetchOrders();
@@ -98,12 +102,27 @@ const OrderList = ({ mode = 'active' }) => {
 
     useEffect(() => {
         if (orderId && !loading && orders.length > 0) {
-            const order = orders.find(o => o.id === orderId);
-            if (order && (!editingOrder || editingOrder.id !== orderId)) {
-                openOrderDetailsPopup(order);
+            const orderRow = orderRefs.current[orderId];
+            if (orderRow) {
+                orderRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (!highlight && !highlightJob) {
+                const order = orders.find(o => o.id === orderId);
+                if (order && (!editingOrder || editingOrder.id !== orderId)) {
+                    openOrderDetailsPopup(order);
+                }
             }
         }
-    }, [orderId, loading, orders]);
+    }, [orderId, loading, orders, highlight, highlightJob]);
+
+    useEffect(() => {
+        if (highlightJob && !loading && orders.length > 0) {
+            const jobRow = jobRefs.current[highlightJob];
+            if (jobRow) {
+                jobRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [highlightJob, loading, orders]);
 
     const openNewOrderPopup = () => {
         addPopup(
@@ -165,8 +184,14 @@ const OrderList = ({ mode = 'active' }) => {
             order.carRegistrationNumber.toLowerCase().includes(search.toLowerCase()));
     });
 
+    const handleContainerClick = () => {
+        if (orderId || highlightJob) {
+            navigate(mode === 'completed' ? '/done-orders' : '/orders', { replace: true });
+        }
+    };
+
     return (
-        <main className="main">
+        <main className="main" onClick={handleContainerClick}>
             <div className="header">
                 <input
                     type="text"
@@ -190,7 +215,12 @@ const OrderList = ({ mode = 'active' }) => {
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map(order => (
-                        <div key={order.id} className="tile order-tile">
+                        <div 
+                            key={order.id} 
+                            ref={el => orderRefs.current[order.id] = el}
+                            className={`tile order-tile ${(orderId === order.id && !highlightJob) ? 'highlight-outline' : ''}`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="tile-header">
                                 <div className="order-car-info">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -202,7 +232,7 @@ const OrderList = ({ mode = 'active' }) => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button className="btn secondary icon-btn" onClick={() => navigate((mode === 'completed' ? '/done-orders/' : '/orders/') + order.id)} title="Order Details">
+                                    <button className="btn secondary icon-btn" onClick={() => openOrderDetailsPopup(order)} title="Order Details">
                                         <i className="fa-solid fa-circle-info"></i>
                                     </button>
                                     <button className="btn secondary icon-btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">
@@ -231,7 +261,12 @@ const OrderList = ({ mode = 'active' }) => {
                                             </thead>
                                             <tbody>
                                                 {order.jobs.map(job => (
-                                                    <tr key={job.id} onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} className="clickable">
+                                                    <tr 
+                                                        key={job.id} 
+                                                        ref={el => jobRefs.current[job.id] = el}
+                                                        onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} 
+                                                        className={`clickable ${highlightJob === job.id ? 'highlight-outline' : ''}`}
+                                                    >
                                                         <td>
                                                             <span className={`job-status ${job.status}`}>
                                                                 <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :

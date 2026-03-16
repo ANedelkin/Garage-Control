@@ -65,7 +65,7 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(jobType);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, $"created Job Type <a href='/job-types/{jobType.Id}' class='log-link target-link'>{jobType.Name}</a>");
+            await _activityLogService.LogActionAsync(userId, workshopId, $"created Job Type <a href='/job-types?highlightId={jobType.Id}' class='log-link target-link'>{jobType.Name}</a>");
         }
 
 
@@ -143,15 +143,15 @@ namespace GarageControl.Core.Services
                     string actionHtml;
                     if (changes.Count == 1 && changes[0].Contains("from"))
                     {
-                        actionHtml = $"changed {changes[0]} of Job Type <a href='/job-types/{id}' class='log-link target-link'>{jobType.Name}</a>";
+                        actionHtml = $"changed {changes[0]} of Job Type <a href='/job-types?highlightId={id}' class='log-link target-link'>{jobType.Name}</a>";
                     }
                     else if (changes.All(c => !c.Contains("from")))
                     {
-                        actionHtml = $"updated details of Job Type <a href='/job-types/{id}' class='log-link target-link'>{jobType.Name}</a>";
+                        actionHtml = $"updated details of Job Type <a href='/job-types?highlightId={id}' class='log-link target-link'>{jobType.Name}</a>";
                     }
                     else
                     {
-                        actionHtml = $"updated Job Type <a href='/job-types/{id}' class='log-link target-link'>{jobType.Name}</a>: {string.Join(", ", changes)}";
+                        actionHtml = $"updated Job Type <a href='/job-types?highlightId={id}' class='log-link target-link'>{jobType.Name}</a>: {string.Join(", ", changes)}";
                     }
 
                     await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);

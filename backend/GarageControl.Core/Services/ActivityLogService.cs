@@ -40,7 +40,7 @@ namespace GarageControl.Core.Services
                                                                           result.Worker?.Name ?? 
                                                                           "Unknown User";
 
-            string? actorLink = result.Worker != null ? $"/workers/{result.Worker.Id}" : null;
+            string? actorLink = result.Worker != null ? $"/workers/{result.Worker.Id}?highlight=true" : null;
 
             string actorHtml = actorLink != null
                 ? $"<a href='{actorLink}' class='log-link actor-link'>{actorDisplayName}</a>"
