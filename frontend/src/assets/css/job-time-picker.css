@@ -11,7 +11,8 @@
 
 .time-picker-content.tile {
     padding: 0;
-    width: 650px; /* Increased to fit 7 days */
+    width: 650px;
+    /* Increased to fit 7 days */
     overflow: hidden;
 }
 
@@ -86,7 +87,8 @@
     cursor: pointer;
     border-bottom: 1px solid var(--border2);
     border-right: 1px solid var(--border2);
-    transition: none; /* Removed transition */
+    transition: none;
+    /* Removed transition */
     box-sizing: border-box;
 }
 
@@ -101,6 +103,13 @@
 
 .time-slot.available {
     background: rgba(0, 255, 0, 0.05);
+}
+
+.time-slot.available:hover {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+    z-index: 1;
+    position: relative;
 }
 
 .time-slot.unavailable,

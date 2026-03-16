@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate, BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 
 // Import your components
@@ -28,7 +28,11 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
-import Popup from './components/common/Popup.jsx'; import PopupPortal from './components/common/PopupPortal.jsx'; import AccessDenied from './components/common/AccessDenied.jsx';
+import Popup from './components/common/Popup.jsx'; 
+import PopupPortal from './components/common/PopupPortal.jsx'; 
+import AccessDenied from './components/common/AccessDenied.jsx';
+import ErrorPage from './components/common/ErrorPage.jsx';
+import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 
 import { authApi } from './services/authApi';
 import { useAuth } from './context/AuthContext';
@@ -121,51 +125,35 @@ function App() {
   return (
     <div className="app-container">
       <BrowserRouter>
-        <PopupPortal />
-        <Routes>
-          <Route path="/login" element={<LogInPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
+        <ErrorBoundary>
+          <PopupPortal />
+          <Routes>
+            <Route path="/login" element={<LogInPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
 
-          <Route path="/access-denied" element={
-            <PrivateRoute>
-              <LayoutWithHeader
-                sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen}
-                accesses={accesses}
-              >
-                <AccessDenied />
-              </LayoutWithHeader>
-            </PrivateRoute>
-          } />
+            <Route path="/access-denied" element={
+              <PrivateRoute>
+                <LayoutWithHeader
+                  sidebarOpen={sidebarOpen}
+                  setSidebarOpen={setSidebarOpen}
+                  accesses={accesses}
+                >
+                  <AccessDenied />
+                </LayoutWithHeader>
+              </PrivateRoute>
+            } />
 
-          <Route path="/workshop-details-initial" element={
-            <PrivateRoute>
-              <WorkshopDetailsInitial />
-            </PrivateRoute>
-          } />
+            <Route path="/workshop-details-initial" element={
+              <PrivateRoute>
+                <WorkshopDetailsInitial />
+              </PrivateRoute>
+            } />
 
 
-          {routes.map((route, i) => (
-            <>
-              <Route
-                key={route.path}
-                path={route.path}
-                element={
-                  <PrivateRoute access={route.access}>
-                    <LayoutWithHeader
-                      sidebarOpen={sidebarOpen}
-                      setSidebarOpen={setSidebarOpen}
-                      accesses={accesses}
-                    >
-                      {route.element}
-                    </LayoutWithHeader>
-                  </PrivateRoute>
-                }
-              />
-              {route.children.map(childRoute => (
+            {routes.map((route, i) => (
+              <Fragment key={route.path}>
                 <Route
-                  key={route.path + childRoute.path}
-                  path={route.path + childRoute.path}
+                  path={route.path}
                   element={
                     <PrivateRoute access={route.access}>
                       <LayoutWithHeader
@@ -173,18 +161,38 @@ function App() {
                         setSidebarOpen={setSidebarOpen}
                         accesses={accesses}
                       >
-                        {childRoute.element}
+                        {route.element}
                       </LayoutWithHeader>
                     </PrivateRoute>
                   }
                 />
-              ))
-              }
-            </>
+                {route.children.map(childRoute => (
+                  <Route
+                    key={route.path + childRoute.path}
+                    path={route.path + childRoute.path}
+                    element={
+                      <PrivateRoute access={route.access}>
+                        <LayoutWithHeader
+                          sidebarOpen={sidebarOpen}
+                          setSidebarOpen={setSidebarOpen}
+                          accesses={accesses}
+                        >
+                          {childRoute.element}
+                        </LayoutWithHeader>
+                      </PrivateRoute>
+                    }
+                  />
+                ))
+                }
+              </Fragment>
 
-          ))}
+            ))}
 
-        </Routes>
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<ErrorPage type="404" />} />
+
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </div>
   );
