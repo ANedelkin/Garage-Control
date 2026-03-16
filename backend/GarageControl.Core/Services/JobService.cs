@@ -85,6 +85,7 @@ namespace GarageControl.Core.Services.Jobs
             await _activityLogger.LogJobCreatedAsync(
                 userId,
                 workshopId,
+                order.Id,
                 jobType.Name,
                 carInfo,
                 changes);
@@ -231,7 +232,7 @@ namespace GarageControl.Core.Services.Jobs
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
-            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
+            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
 
             return new MethodResponseVM(true, "Job updated successfully");
         }
@@ -381,7 +382,7 @@ namespace GarageControl.Core.Services.Jobs
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
             // Log the deletion
-            await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.JobType.Name, carInfo);
+            await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo);
 
             return new MethodResponseVM(true, "Job deleted successfully");
         }

@@ -7,13 +7,18 @@ export const usePopup = () => useContext(PopupContext);
 export const PopupProvider = ({ children }) => {
   const [stack, setStack] = useState([]);
 
-  const addPopup = useCallback((title, children, isRaw = false) => {
-    console.log({title, children, isRaw});
-    setStack(prev => [...prev, { title, children, isRaw }]);
+  const addPopup = useCallback((title, children, isRaw = false, onCloseCallback = null) => {
+    setStack(prev => [...prev, { title, children, isRaw, onCloseCallback }]);
   }, []);
 
   const removeLastPopup = useCallback(() => {
-    setStack(prev => prev.slice(0, -1));
+    setStack(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.onCloseCallback) {
+            last.onCloseCallback();
+        }
+        return prev.slice(0, -1);
+    });
   }, []);
 
   return (

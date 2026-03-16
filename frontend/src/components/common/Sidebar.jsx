@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';
@@ -11,6 +11,8 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
   const { addPopup, removeLastPopup } = usePopup();
   const [lastActivePath, setLastActivePath] = useState(localStorage.getItem('lastActiveSidebarPath') || '/');
   const location = useLocation();
+  const navigate = useNavigate();
+  const workshopPopupOpened = useRef(false);
 
   useEffect(() => {
     document.body.classList.remove('light', 'dark');
@@ -74,13 +76,29 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
   });
 
   const handlePopupOpen = (item) => {
-    const PopupComponent = item.popupComponent;
-    addPopup(
-      item.label,
-      <PopupComponent onClose={removeLastPopup} />
-    );
+    if (item.label === 'Workshop Details') {
+      navigate('/workshop-details');
+    } else {
+      const PopupComponent = item.popupComponent;
+      addPopup(
+        item.label,
+        <PopupComponent onClose={removeLastPopup} />
+      );
+    }
     onClose();
   };
+
+  useEffect(() => {
+    if (location.pathname === '/workshop-details' && !workshopPopupOpened.current) {
+        workshopPopupOpened.current = true;
+        addPopup(
+            'Workshop Details',
+            <WorkshopDetails onClose={() => { removeLastPopup(); navigate('/'); workshopPopupOpened.current = false; }} />,
+            false,
+            () => { navigate('/'); workshopPopupOpened.current = false; }
+        );
+    }
+  }, [location.pathname]);
 
   return (
     <>

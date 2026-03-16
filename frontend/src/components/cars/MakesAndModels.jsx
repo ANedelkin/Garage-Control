@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import '../../assets/css/makes-models.css';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
@@ -10,6 +10,8 @@ import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const MakesAndModels = () => {
     const { addPopup, removeLastPopup } = usePopup();
+    const navigate = useNavigate();
+    const { makeId, modelId } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const [makes, setMakes] = useState([]);
     const [models, setModels] = useState([]);
@@ -30,10 +32,30 @@ const MakesAndModels = () => {
     useEffect(() => {
         if (selectedMake) {
             fetchModels(selectedMake.id);
+            // Don't auto-navigate to /makes-and-models on make selection unless we intentionally want it in the URL
+            // Actually the requirement is mainly linking the popup.
         } else {
             setModels([]);
         }
     }, [selectedMake]);
+
+    useEffect(() => {
+        if (makes.length > 0 && makeId) {
+            const make = makes.find(m => m.id === makeId);
+            if (make && (!selectedMake || selectedMake.id !== makeId)) {
+                setSelectedMake(make);
+            }
+        }
+    }, [makeId, makes]);
+
+    useEffect(() => {
+        if (selectedMake && selectedMake.id === makeId && modelId && models.length > 0) {
+            const model = models.find(m => m.id === modelId);
+            if (model && (!editingItem || editingItem.id !== modelId)) {
+                handleOpenModal('model', model);
+            }
+        }
+    }, [modelId, models, selectedMake, makeId]);
 
     // Handle query params for merge from notification
     useEffect(() => {
@@ -113,10 +135,12 @@ const MakesAndModels = () => {
             <AddEditItemModal
                 itemType={type}
                 currentName={item ? item.name : ''}
-                onClose={removeLastPopup}
+                onClose={() => { removeLastPopup(); navigate('/makes-and-models'); }}
                 onConfirm={(name) => handleSaveModal(type, item, name)}
                 errors={errors}
-            />
+            />,
+            false,
+            () => navigate('/makes-and-models')
         );
     };
 
@@ -138,6 +162,7 @@ const MakesAndModels = () => {
                 fetchModels(selectedMake.id);
             }
             removeLastPopup();
+            navigate('/makes-and-models');
             setErrors({});
         } catch (error) {
             console.error("Error saving item", error);
@@ -236,7 +261,7 @@ const MakesAndModels = () => {
                                                 <i className="fa-solid fa-arrows-to-circle"></i>
                                             </button>
                                         )}
-                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
+                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${make.id}`); handleOpenModal('make', make); }}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
                                         <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
@@ -287,7 +312,7 @@ const MakesAndModels = () => {
                                                     <i className="fa-solid fa-arrows-to-circle"></i>
                                                 </button>
                                             )}
-                                            <button className="btn icon-btn" onClick={() => handleOpenModal('model', model)}>
+                                            <button className="btn icon-btn" onClick={() => navigate(`/makes-and-models/${selectedMake.id}/model/${model.id}`)}>
                                                 <i className="fa-solid fa-pen"></i>
                                             </button>
                                             <button className="btn icon-btn delete" onClick={() => handleDelete('model', model.id)}>

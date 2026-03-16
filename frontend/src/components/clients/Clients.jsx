@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
@@ -6,6 +7,8 @@ import { usePopup } from '../../context/PopupContext';
 import ClientPopup from './ClientPopup';
 
 const Clients = () => {
+    const navigate = useNavigate();
+    const { clientId } = useParams();
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
@@ -44,17 +47,24 @@ const Clients = () => {
         }
     };
 
-    const openEditPopup = (clientId) => {
+    const openEditPopup = (id) => {
         addPopup("Edit Client", <ClientPopup
-            onClose={removeLastPopup}
+            onClose={() => { removeLastPopup(); navigate('/clients'); }}
             onSave={handlePopupSave}
-            clientId={clientId}
-        />);
+            clientId={id === 'new' ? null : id}
+        />, false, () => navigate('/clients'));
     };
 
-    const handlePopupSave = (clientId) => {
+    useEffect(() => {
+        if (clientId) {
+            openEditPopup(clientId);
+        }
+    }, [clientId]);
+
+    const handlePopupSave = (id) => {
         fetchClients();
         removeLastPopup();
+        navigate('/clients');
     };
 
     return (
@@ -66,13 +76,7 @@ const Clients = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <button className="btn" onClick={() => {
-                    addPopup("New Client", <ClientPopup
-                        onClose={removeLastPopup}
-                        onSave={handlePopupSave}
-                        clientId={null}
-                    />);
-                }}>+ New Client</button>
+                <button className="btn" onClick={() => navigate("/clients/new")}>+ New Client</button>
             </div>
 
             <div className="tile">
@@ -92,7 +96,7 @@ const Clients = () => {
                             {loading ? <tr><td colSpan="5">Loading...</td></tr> : filteredClients.map((c) => (
                                 <tr
                                     key={c.id}
-                                    onClick={() => openEditPopup(c.id)}
+                                    onClick={() => navigate(`/clients/${c.id}`)}
                                     style={{ cursor: 'pointer' }}
                                     className="clickable-row"
                                 >
@@ -101,7 +105,7 @@ const Clients = () => {
                                     <td>{c.email}</td>
                                     <td>{c.address}</td>
                                     <td onClick={e => e.stopPropagation()}>
-                                        <button className="btn icon-btn" title="Edit client" onClick={() => openEditPopup(c.id)}>
+                                        <button className="btn icon-btn" title="Edit client" onClick={() => navigate(`/clients/${c.id}`)}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
                                         <button className="btn delete icon-btn" title="Delete client" onClick={() => handleDelete(c.id)}>

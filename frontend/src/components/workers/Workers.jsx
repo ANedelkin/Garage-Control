@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { usePopup } from '../../context/PopupContext';
 import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/table.css';
@@ -9,6 +10,10 @@ import WorkhoursPopup from './WorkhoursPopup';
 
 const Workers = () => {
     const { addPopup, removeLastPopup } = usePopup();
+    const navigate = useNavigate();
+    const { workerId } = useParams();
+    const location = useLocation();
+
     const [roleFilter, setRoleFilter] = useState('all');
     const [search, setSearch] = useState('');
 
@@ -34,16 +39,30 @@ const Workers = () => {
     const openEditWorker = (id) => {
         addPopup(
             id === "new" ? "New Worker" : "Edit Worker",
-            <EditWorker id={id} onClose={removeLastPopup} onSave={fetchWorkers} />
+            <EditWorker id={id} onClose={() => { removeLastPopup(); navigate('/workers'); }} onSave={fetchWorkers} />,
+            false,
+            () => navigate('/workers')
         );
     };
 
     const openWorkhours = (id) => {
         addPopup(
             "Edit Schedule",
-            <WorkhoursPopup id={id} onClose={removeLastPopup} onSave={fetchWorkers} />
+            <WorkhoursPopup id={id} onClose={() => { removeLastPopup(); navigate('/workers'); }} onSave={fetchWorkers} />,
+            false,
+            () => navigate('/workers')
         );
     };
+
+    useEffect(() => {
+        if (workerId) {
+            if (location.pathname.endsWith('/schedule')) {
+                openWorkhours(workerId);
+            } else {
+                openEditWorker(workerId);
+            }
+        }
+    }, [workerId, location.pathname]);
 
     // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
     // const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
@@ -71,7 +90,7 @@ const Workers = () => {
                     ))}
                 </Dropdown> */}
 
-                <button className="btn" onClick={() => openEditWorker("new")}>+ New Worker</button>
+                <button className="btn" onClick={() => navigate("/workers/new")}>+ New Worker</button>
             </div>
 
             {/* Workers table */}

@@ -39,7 +39,7 @@ namespace GarageControl.Core.Services
             if (workshopId != null)
             {
                 var make = await _repo.GetByIdAsync<CarMake>(model.MakeId);
-                await _activityLogService.LogActionAsync(userId, workshopId, $"added model <b>{carModel.Name}</b> to make <b>{make?.Name ?? "Unknown"}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, $"added model <a href='/makes-and-models/{model.MakeId}/model/{carModel.Id}' class='log-link target-link'>{carModel.Name}</a> to make <a href='/makes-and-models/{model.MakeId}' class='log-link target-link'>{make?.Name ?? "Unknown"}</a>");
             }
         }
 
@@ -194,7 +194,7 @@ namespace GarageControl.Core.Services
 
                 if (workshopId != null && oldName != model.Name)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed model <b>{oldName}</b> to <b>{model.Name}</b> (Make: <b>{carModel.CarMake.Name}</b>)");
+                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed model <b>{oldName}</b> to <a href='/makes-and-models/{carModel.CarMakeId}/model/{carModel.Id}' class='log-link target-link'>{model.Name}</a> (Make: <a href='/makes-and-models/{carModel.CarMakeId}' class='log-link target-link'>{carModel.CarMake.Name}</a>)");
                 }
             }
         }
@@ -251,7 +251,7 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom model <b>{customModelName}</b> into <b>{globalModelName}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom model <b>{customModelName}</b> into <a href='/makes-and-models/{globalModel.CarMakeId}/model/{globalModelId}' class='log-link target-link'>{globalModelName}</a>");
             }
         }
 

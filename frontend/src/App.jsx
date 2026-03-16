@@ -94,12 +94,19 @@ function App() {
     {
       path: '/orders', element: <OrdersPage mode="active" />, access: 'Orders', children: [
         { path: '/:orderId/jobs/new', element: <EditJobPage /> },
-        { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> }
+        { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> },
+        { path: '/:orderId', element: <OrdersPage mode="active" /> } // Route for opening order details popup
       ]
     },
-    { path: '/done-orders', element: <OrdersPage mode="completed" />, access: 'Orders', children: [] },
+    { path: '/done-orders', element: <OrdersPage mode="completed" />, access: 'Orders', children: [
+        { path: '/:orderId', element: <OrdersPage mode="completed" /> } // Route for opening done order details popup
+    ] },
     { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
-    { path: '/workers', element: <Workers />, children: [], access: 'Workers' },
+    { path: '/workers', element: <Workers />, children: [
+        { path: '/new', element: <Workers /> },
+        { path: '/:workerId', element: <Workers /> }, // Edit Worker popup
+        { path: '/:workerId/schedule', element: <Workers /> } // Edit Schedule popup
+    ], access: 'Workers' },
     {
       path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [
         { path: '/new', element: <EditJobType /> },
@@ -108,12 +115,18 @@ function App() {
     },
     {
       path: '/clients', element: <Clients />, access: 'Clients', children: [
-        { path: '/new', element: <EditClient /> },
-        { path: '/:id', element: <EditClient /> }
+        { path: '/new', element: <Clients /> },
+        { path: '/:clientId', element: <Clients /> } // Edit Client popup
       ]
     },
-    { path: '/makes-and-models', element: <MakesAndModels />, children: [], access: 'Makes and Models' },
-    { path: '/cars', element: <Cars />, children: [], access: 'Cars' },
+    { path: '/makes-and-models', element: <MakesAndModels />, children: [
+        { path: '/:makeId', element: <MakesAndModels /> },
+        { path: '/:makeId/model/:modelId', element: <MakesAndModels /> }
+    ], access: 'Makes and Models' },
+    { path: '/cars', element: <Cars />, children: [
+        { path: '/new', element: <Cars /> },
+        { path: '/:carId', element: <Cars /> } // Edit Car popup
+    ], access: 'Cars' },
     { path: '/activity-log', element: <ActivityLog />, children: [], access: 'Activity Log' },
     { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin' },
     { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin' },
@@ -140,6 +153,17 @@ function App() {
             <Route path="/workshop-details-initial" element={
               <PrivateRoute>
                 <WorkshopDetailsInitial />
+              </PrivateRoute>
+            } />
+            <Route path="/workshop-details" element={
+              <PrivateRoute>
+                <LayoutWithHeader
+                  sidebarOpen={sidebarOpen}
+                  setSidebarOpen={setSidebarOpen}
+                  accesses={accesses}
+                >
+                  <Dashboard /> {/* Render dashboard behind the workshop details popup */}
+                </LayoutWithHeader>
               </PrivateRoute>
             } />
 

@@ -114,7 +114,7 @@ namespace GarageControl.Core.Services
 
             // --- log via the activity logger ---
             string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
-            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, carInfo);
+            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, order.Id, carInfo);
 
             return new MethodResponseVM(true, "Order created successfully", new { orderId = order.Id });
         }
@@ -149,7 +149,7 @@ namespace GarageControl.Core.Services
 
             // --- log via the activity logger ---
             string carInfo = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
-            await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, carInfo, changes);
+            await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, order.Id, carInfo, changes);
 
             return new MethodResponseVM(true, "Order updated successfully", new { orderId = order.Id });
         }

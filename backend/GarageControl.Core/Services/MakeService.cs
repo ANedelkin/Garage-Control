@@ -39,7 +39,7 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"created custom make <b>{make.Name}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, $"created custom make <a href='/makes-and-models/{make.Id}' class='log-link target-link'>{make.Name}</a>");
             }
 
             return make.Id;
@@ -220,7 +220,7 @@ namespace GarageControl.Core.Services
 
                 if (workshopId != null && oldName != model.Name)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed make <b>{oldName}</b> to <b>{model.Name}</b>");
+                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed make <b>{oldName}</b> to <a href='/makes-and-models/{make.Id}' class='log-link target-link'>{model.Name}</a>");
                 }
             }
         }
@@ -390,7 +390,7 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom make <b>{customMakeName}</b> into <b>{globalMakeName}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom make <b>{customMakeName}</b> into <a href='/makes-and-models/{globalMakeId}' class='log-link target-link'>{globalMakeName}</a>");
             }
         }
 

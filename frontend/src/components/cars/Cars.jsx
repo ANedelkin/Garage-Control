@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
@@ -7,6 +8,8 @@ import CarPopup from './CarPopup';
 import '../../assets/css/clients.css';
 
 const Cars = () => {
+    const navigate = useNavigate();
+    const { carId } = useParams();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -80,13 +83,26 @@ const Cars = () => {
         addPopup(
             car.id ? 'Edit Car' : 'Add Car',
             <CarPopup
-                onClose={removeLastPopup}
+                onClose={() => { removeLastPopup(); navigate('/cars'); }}
                 onSave={handleSaveCar}
                 car={car}
                 makes={makesList}
-            />
+            />,
+            false,
+            () => navigate('/cars')
         );
     };
+
+    useEffect(() => {
+        if (carId && makesList.length > 0) {
+            if (carId === 'new') {
+                handleRowClick({});
+            } else {
+                const car = cars.find(c => c.id === carId);
+                if (car) handleRowClick(car);
+            }
+        }
+    }, [carId, cars, makesList]);
 
     const handleSaveCar = async (carData) => {
         try {
@@ -110,6 +126,7 @@ const Cars = () => {
             }
 
             removeLastPopup();
+            navigate('/cars');
         } catch (error) {
             console.error("Failed to save car", error);
             alert("Failed to save changes");
@@ -144,7 +161,7 @@ const Cars = () => {
                         </thead>
                         <tbody>
                             {loading ? <tr><td colSpan="7">Loading...</td></tr> : filteredCars.map(c => (
-                                <tr key={c.id} onClick={() => handleRowClick(c)} style={{ cursor: 'pointer' }} className="clickable-row">
+                                <tr key={c.id} onClick={() => navigate(`/cars/${c.id}`)} style={{ cursor: 'pointer' }} className="clickable-row">
                                     <td>{makes[c.makeId] || c.makeId}</td>
                                     <td>{models[c.modelId] || c.modelId}</td>
                                     <td>{c.registrationNumber}</td>

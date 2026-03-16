@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
 import { request } from '../../Utilities/request';
@@ -12,6 +12,7 @@ import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const OrderList = ({ mode = 'active' }) => {
     const navigate = useNavigate();
+    const { orderId } = useParams();
     const [searchParams] = useSearchParams();
     const { addPopup, removeLastPopup } = usePopup();
     const [orders, setOrders] = useState([]);
@@ -74,6 +75,11 @@ const OrderList = ({ mode = 'active' }) => {
         }
     };
 
+    const handleClosePopup = () => {
+        removeLastPopup();
+        navigate(mode === 'completed' ? '/done-orders' : '/orders');
+    };
+
     const openOrderDetailsPopup = (order) => {
         setEditingOrder(order);
         addPopup(
@@ -81,12 +87,23 @@ const OrderList = ({ mode = 'active' }) => {
             <OrderDetailsPopup
                 order={order}
                 cars={cars}
-                onClose={removeLastPopup}
+                onClose={handleClosePopup}
                 onSave={handleSaveOrderDetails}
                 errors={errors}
-            />
+            />,
+            false,
+            () => navigate(mode === 'completed' ? '/done-orders' : '/orders')
         );
     };
+
+    useEffect(() => {
+        if (orderId && !loading && orders.length > 0) {
+            const order = orders.find(o => o.id === orderId);
+            if (order && (!editingOrder || editingOrder.id !== orderId)) {
+                openOrderDetailsPopup(order);
+            }
+        }
+    }, [orderId, loading, orders]);
 
     const openNewOrderPopup = () => {
         addPopup(
@@ -185,7 +202,7 @@ const OrderList = ({ mode = 'active' }) => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button className="btn secondary icon-btn" onClick={() => openOrderDetailsPopup(order)} title="Order Details">
+                                    <button className="btn secondary icon-btn" onClick={() => navigate((mode === 'completed' ? '/done-orders/' : '/orders/') + order.id)} title="Order Details">
                                         <i className="fa-solid fa-circle-info"></i>
                                     </button>
                                     <button className="btn secondary icon-btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">

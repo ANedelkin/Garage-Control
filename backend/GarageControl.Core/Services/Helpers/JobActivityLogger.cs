@@ -19,11 +19,12 @@ namespace GarageControl.Core.Services.Jobs
         public async Task LogJobCreatedAsync(
             string userId,
             string workshopId,
+            string orderId,
             string jobTypeName,
             string carInfo,
             List<string> partChanges)
         {
-            string actionHtml = $"created job '{jobTypeName}' for {FormatOrderLink(carInfo)}";
+            string actionHtml = $"created job '{jobTypeName}' for {FormatOrderLink(orderId, carInfo)}";
             if (partChanges != null && partChanges.Any())
                 actionHtml += $": {string.Join(", ", partChanges)}";
 
@@ -33,6 +34,7 @@ namespace GarageControl.Core.Services.Jobs
         public async Task LogJobUpdatedAsync(
             string userId,
             string workshopId,
+            string orderId,
             string jobTypeName,
             string carInfo,
             List<ActivityPropertyChange> propertyChanges,
@@ -52,16 +54,17 @@ namespace GarageControl.Core.Services.Jobs
 
             if (!allChanges.Any()) return;
 
-            string actionHtml = $"updated job '{jobTypeName}' for {FormatOrderLink(carInfo)}: {string.Join(", ", allChanges)}";
+            string actionHtml = $"updated job '{jobTypeName}' for {FormatOrderLink(orderId, carInfo)}: {string.Join(", ", allChanges)}";
             await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
         }
         public async Task LogJobDeletedAsync(
             string userId,
             string workshopId,
+            string orderId,
             string jobTypeName,
             string carInfo)
         {
-            string actionHtml = $"deleted job '{jobTypeName}' for {FormatOrderLink(carInfo)}";
+            string actionHtml = $"deleted job '{jobTypeName}' for {FormatOrderLink(orderId, carInfo)}";
             await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
         }
 
@@ -70,7 +73,7 @@ namespace GarageControl.Core.Services.Jobs
         public string FormatPartQuantityChanged(string partName, string qtyType, string oldVal, string newVal) 
             => $"changed {qtyType} qty of '<b>{partName}</b>' from <b>{oldVal}</b> to <b>{newVal}</b>";
 
-        private string FormatOrderLink(string carInfo) 
-            => $"<a href='/orders' class='log-link target-link'>order for {carInfo}</a>";
+        private string FormatOrderLink(string orderId, string carInfo) 
+            => $"<a href='/orders/{orderId}' class='log-link target-link'>order for {carInfo}</a>";
     }
 }

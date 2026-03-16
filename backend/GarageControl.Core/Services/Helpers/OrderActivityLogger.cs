@@ -16,15 +16,15 @@ namespace GarageControl.Core.Services
             _activityLogService = activityLogService;
         }
 
-        public async Task LogOrderCreatedAsync(string userId, string workshopId, string carInfo)
+        public async Task LogOrderCreatedAsync(string userId, string workshopId, string orderId, string carInfo)
         {
-            string message = $"created {FormatOrderLink(carInfo)}";
+            string message = $"created {FormatOrderLink(orderId, carInfo)}";
             await _activityLogService.LogActionAsync(userId, workshopId, message);
         }
 
-        public async Task LogOrderUpdatedAsync(string userId, string workshopId, string carInfo, List<ActivityPropertyChange> changes)
+        public async Task LogOrderUpdatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)
         {
-            string actionHtml = $"updated {FormatOrderLink(carInfo)}";
+            string actionHtml = $"updated {FormatOrderLink(orderId, carInfo)}";
             
             if (changes != null && changes.Any())
             {
@@ -35,7 +35,7 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
         }
 
-        private string FormatOrderLink(string carInfo) 
-            => $"<a href='/orders' class='log-link target-link'>order for {carInfo}</a>";
+        private string FormatOrderLink(string orderId, string carInfo) 
+            => $"<a href='/orders/{orderId}' class='log-link target-link'>order for {carInfo}</a>";
     }
 }
