@@ -100,8 +100,13 @@ const Workers = () => {
                                 <tr key={w.id} onClick={() => openEditWorker(w.id)}>
                                     <td>{w.name}</td>
 
-                                    <td className="description" title={w.accesses.map(r => r.name).join(', ')}>
-                                        {w.accesses.length ? w.accesses.map(r => r.name).join(', ') : "-"}
+                                    <td className="description" title={w.accesses.filter(r => r.isSelected).map(r => r.name).join(', ')}>
+                                        {(() => {
+                                            const selected = w.accesses.filter(r => r.isSelected);
+                                            if (selected.length === 0) return "-";
+                                            if (selected.length === w.accesses.length) return "Full";
+                                            return selected.map(r => r.name).join(', ');
+                                        })()}
                                     </td>
 
                                     <td>{new Date(w.hiredOn).toLocaleDateString()}</td>

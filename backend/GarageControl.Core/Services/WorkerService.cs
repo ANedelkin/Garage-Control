@@ -58,8 +58,19 @@ namespace GarageControl.Core.Services
                 .Where(l => workers.Select(w => w.Id).Contains(l.WorkerId))
                 .ToListAsync();
 
-            return workers.Select(w => new WorkerVM
-            {
+            var allAccesses = await AllAccesses();
+
+            return workers.Select(w => {
+                var workerAccessIds = w.Accesses.Select(r => r.Id).ToList();
+                var accessesVm = allAccesses.Select(r => new AccessVM 
+                {
+                    Id = r.Id, 
+                    Name = r.Name, 
+                    IsSelected = workerAccessIds.Contains(r.Id) 
+                }).ToList();
+
+                return new WorkerVM
+                {
                 Id = w.Id,
                 Name = w.Name,
                 Username = w.User.UserName!,
@@ -78,7 +89,9 @@ namespace GarageControl.Core.Services
                     Id = l.Id,
                     StartDate = l.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
                     EndDate = l.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-                }).ToList()
+                }).ToList(),
+                Accesses = accessesVm
+                };
             });
         }
 
