@@ -86,6 +86,7 @@ namespace GarageControl.Core.Services.Jobs
                 userId,
                 workshopId,
                 order.Id,
+                job.Id,
                 jobType.Name,
                 carInfo,
                 changes);
@@ -232,7 +233,7 @@ namespace GarageControl.Core.Services.Jobs
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
-            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo, propertyChanges, partsChanges);
+            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.OrderId, job.Id, job.JobType.Name, carInfo, propertyChanges, partsChanges);
 
             return new MethodResponseVM(true, "Job updated successfully");
         }

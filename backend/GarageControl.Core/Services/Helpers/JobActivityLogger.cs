@@ -20,11 +20,12 @@ namespace GarageControl.Core.Services.Jobs
             string userId,
             string workshopId,
             string orderId,
+            string jobId,
             string jobTypeName,
             string carInfo,
             List<string> partChanges)
         {
-            string actionHtml = $"created job '{jobTypeName}' for {FormatOrderLink(orderId, carInfo)}";
+            string actionHtml = $"created job {FormatJobLink(orderId, jobId, jobTypeName)} for {FormatOrderLink(orderId, carInfo)}";
             if (partChanges != null && partChanges.Any())
                 actionHtml += $": {string.Join(", ", partChanges)}";
 
@@ -35,6 +36,7 @@ namespace GarageControl.Core.Services.Jobs
             string userId,
             string workshopId,
             string orderId,
+            string jobId,
             string jobTypeName,
             string carInfo,
             List<ActivityPropertyChange> propertyChanges,
@@ -54,7 +56,7 @@ namespace GarageControl.Core.Services.Jobs
 
             if (!allChanges.Any()) return;
 
-            string actionHtml = $"updated job '{jobTypeName}' for {FormatOrderLink(orderId, carInfo)}: {string.Join(", ", allChanges)}";
+            string actionHtml = $"updated job {FormatJobLink(orderId, jobId, jobTypeName)} for {FormatOrderLink(orderId, carInfo)}: {string.Join(", ", allChanges)}";
             await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
         }
         public async Task LogJobDeletedAsync(
@@ -75,5 +77,8 @@ namespace GarageControl.Core.Services.Jobs
 
         private string FormatOrderLink(string orderId, string carInfo) 
             => $"<a href='/orders/{orderId}' class='log-link target-link'>order for {carInfo}</a>";
+            
+        private string FormatJobLink(string orderId, string jobId, string jobTypeName)
+            => $"<a href='/orders/{orderId}/jobs/{jobId}' class='log-link target-link'>'{jobTypeName}'</a>";
     }
 }
