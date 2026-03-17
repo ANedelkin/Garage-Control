@@ -149,6 +149,10 @@
 }
 
 @media (max-width: 800px) {
+  .hide-md {
+    display: none !important;
+  }
+
   .form-upper {
     grid-template-columns: 1fr;
   }
@@ -160,5 +164,33 @@
   .schedule-grid {
     grid-template-columns: 60px repeat(7, 1fr);
     max-height: 300px;
+  }
+
+  .workhours {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .hide-sm {
+    display: none !important;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .header input, 
+  .header .btn {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Compact table padding */
+  th, td {
+    padding: 8px 4px !important;
+    font-size: 13px !important;
   }
 }

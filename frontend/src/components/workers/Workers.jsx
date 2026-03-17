@@ -18,6 +18,7 @@ const Workers = () => {
 
     const [roleFilter, setRoleFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const [activeMenu, setActiveMenu] = useState(null);
 
     const [loading, setLoading] = useState(true);
     const [workers, setWorkers] = useState([]);
@@ -85,6 +86,9 @@ const Workers = () => {
     );
 
     const handleContainerClick = () => {
+        if (activeMenu) {
+            setActiveMenu(null);
+        }
         if (workerId) {
             navigate('/workers', { replace: true });
         }
@@ -118,31 +122,31 @@ const Workers = () => {
                     <table>
                         <colgroup>
                             <col style={{ width: '200px' }} />
-                            <col />
-                            <col style={{ width: '140px' }} />
+                            <col className="hide-md" />
+                            <col className="hide-sm" style={{ width: '140px' }} />
                             <col style={{ width: '150px' }} />
                         </colgroup>
 
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Access</th>
-                                <th>Hired On</th>
+                                <th className="hide-md">Access</th>
+                                <th className="hide-sm">Hired On</th>
                                 <th></th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {loading ? <tr><td colSpan="4">Loading...</td></tr> : filteredWorkers.map((w, i) => (
-                                <tr 
-                                    key={w.id} 
+                                <tr
+                                    key={w.id}
                                     ref={el => rowRefs.current[w.id] = el}
                                     onClick={(e) => { e.stopPropagation(); openEditWorker(w.id); }}
                                     className={workerId === w.id ? 'highlight-outline' : ''}
                                 >
                                     <td>{w.name}</td>
 
-                                    <td className="description" title={w.accesses.filter(r => r.isSelected).map(r => r.name).join(', ')}>
+                                    <td className="hide-md description" title={w.accesses.filter(r => r.isSelected).map(r => r.name).join(', ')}>
                                         {(() => {
                                             const selected = w.accesses.filter(r => r.isSelected);
                                             if (selected.length === 0) return "-";
@@ -151,24 +155,59 @@ const Workers = () => {
                                         })()}
                                     </td>
 
-                                    <td>{new Date(w.hiredOn).toLocaleDateString()}</td>
+                                    <td className="hide-sm">{new Date(w.hiredOn).toLocaleDateString()}</td>
 
                                     <td onClick={e => e.stopPropagation()}>
-                                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
-                                            <button className="btn edit icon-btn" onClick={() => openEditWorker(w.id)} title="Edit Worker">
-                                                <i className="fa-solid fa-pen"></i>
-                                            </button>
-                                            <button className="btn schedule icon-btn" onClick={() => openWorkhours(w.id)} title="Edit Schedule">
-                                                <i className="fa-solid fa-calendar"></i>
-                                            </button>
-                                            <button className="btn delete icon-btn" onClick={async () => {
-                                                if (window.confirm('Delete worker?')) {
-                                                    await workerApi.deleteWorker(w.id);
-                                                    setWorkers(workers.filter(worker => worker.id !== w.id));
-                                                }
-                                            }} title="Delete Worker">
-                                                <i className="fa-solid fa-trash"></i>
-                                            </button>
+                                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', position: 'relative' }}>
+                                            <div className="desktop-only" style={{ display: 'flex', gap: '5px' }}>
+                                                <button className="btn edit icon-btn" onClick={() => openEditWorker(w.id)} title="Edit Worker">
+                                                    <i className="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button className="btn schedule icon-btn" onClick={() => openWorkhours(w.id)} title="Edit Schedule">
+                                                    <i className="fa-solid fa-calendar"></i>
+                                                </button>
+                                                <button className="btn delete icon-btn" onClick={async () => {
+                                                    if (window.confirm('Delete worker?')) {
+                                                        await workerApi.deleteWorker(w.id);
+                                                        setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                    }
+                                                }} title="Delete Worker">
+                                                    <i className="fa-solid fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <div className="mobile-only">
+                                                <button className="icon-btn btn" onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === w.id ? null : w.id); }}>
+                                                    <i className="fa-solid fa-ellipsis-vertical"></i>
+                                                </button>
+                                                {activeMenu === w.id && (
+                                                    <>
+                                                        <div className="context-menu-overlay" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }}></div>
+                                                        <div className="context-menu tile">
+                                                            <div className="list-item" onClick={() => { setActiveMenu(null); openEditWorker(w.id); }}>
+                                                                <div className="item-label">
+                                                                    <i className="fa-solid fa-pen"></i> Edit Worker
+                                                                </div>
+                                                            </div>
+                                                            <div className="list-item" onClick={() => { setActiveMenu(null); openWorkhours(w.id); }}>
+                                                                <div className="item-label">
+                                                                    <i className="fa-solid fa-calendar"></i> Edit Schedule
+                                                                </div>
+                                                            </div>
+                                                            <div className="list-item" onClick={async () => {
+                                                                setActiveMenu(null);
+                                                                if (window.confirm('Delete worker?')) {
+                                                                    await workerApi.deleteWorker(w.id);
+                                                                    setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                                }
+                                                            }}>
+                                                                <div className="item-label" style={{ color: 'var(--danger)' }}>
+                                                                    <i className="fa-solid fa-trash"></i> Delete Worker
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
