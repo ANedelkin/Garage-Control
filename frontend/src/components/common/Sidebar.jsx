@@ -98,37 +98,39 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     <>
       <div className={`sidebar-overlay ${open ? 'show' : ''}`} onClick={onClose}></div>
       <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <nav>
-          {filteredNavItems.map((item, index) => (
-            item.divider ? //Divider
-              <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
-              item.popup ? ( //Popup
-                <div
-                  key={index}
-                  className="nav-item list-item"
-                  onClick={() => handlePopupOpen(item)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="horizontal">
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.label}</span>
+        <div className="sidebar-nav">
+          <nav>
+            {filteredNavItems.map((item, index) => (
+              item.divider ? //Divider
+                <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
+                item.popup ? ( //Popup
+                  <div
+                    key={index}
+                    className="nav-item list-item"
+                    onClick={() => handlePopupOpen(item)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="horizontal">
+                      <i className={`fa-solid ${item.icon}`}></i>
+                      <span>{item.label}</span>
+                    </div>
                   </div>
-                </div>
-              ) : ( //Link
-                <Link
-                  key={index}
-                  to={item.path}
-                  className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
-                  onClick={onClose}
-                >
-                  <div className="horizontal">
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.label}</span>
-                  </div>
-                </Link>
-              )
-          ))}
-        </nav>
+                ) : ( //Link
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
+                    onClick={onClose}
+                  >
+                    <div className="horizontal">
+                      <i className={`fa-solid ${item.icon}`}></i>
+                      <span>{item.label}</span>
+                    </div>
+                  </Link>
+                )
+            ))}
+          </nav>
+        </div>
         <ThemeToggle />
       </aside>
     </>

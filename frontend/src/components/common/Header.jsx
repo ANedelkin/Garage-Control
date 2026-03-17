@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { notificationApi } from '../../services/notificationApi';
 import NotificationPopup from './NotificationPopup';
+import UserPopup from './UserPopup';
 
 import '../../assets/css/common/controls.css';
 import '../../assets/css/header.css';
@@ -11,6 +12,7 @@ const Header = ({ onToggleSidebar }) => {
   const [services] = useState(["Main Street Garage", "Downtown Service", "AutoPro - East"]);
   const [selectedService, setSelectedService] = useState(services[0]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserPopup, setShowUserPopup] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
@@ -59,22 +61,48 @@ const Header = ({ onToggleSidebar }) => {
         <h1>GarageControl</h1>
       </div>
       <div className="profile">
-        <div className="profile-name">{user?.userName || 'User'}</div>
+        <div className="profile-name desktop-only">{user?.userName || 'User'}</div>
         <button
           className="icon-btn btn notification-btn"
           title="Notifications"
-          onClick={() => setShowNotifications(!showNotifications)}
+          onClick={() => {
+            setShowNotifications(!showNotifications);
+            setShowUserPopup(false);
+          }}
         >
           <i className="fa-solid fa-bell"></i>
           {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
         </button>
-        <a className="fa-solid fa-right-from-bracket icon-btn btn" title="Log out" onClick={handleLogout}></a>
+        <button
+          className="icon-btn btn user-btn mobile-only"
+          title="User menu"
+          onClick={() => {
+            setShowUserPopup(!showUserPopup);
+            setShowNotifications(false);
+          }}
+        >
+          <i className="fa-solid fa-user"></i>
+        </button>
+        <button
+          className="icon-btn btn logout-btn desktop-only"
+          title="Log out"
+          onClick={handleLogout}
+        >
+          <i className="fa-solid fa-right-from-bracket"></i>
+        </button>
       </div>
       {showNotifications && (
         <NotificationPopup
           notifications={notifications}
           onClose={() => setShowNotifications(false)}
           onRefresh={fetchNotifications}
+        />
+      )}
+      {showUserPopup && (
+        <UserPopup
+          user={user}
+          onLogout={handleLogout}
+          onClose={() => setShowUserPopup(false)}
         />
       )}
     </header>

@@ -30,18 +30,23 @@ header {
   color: var(--text-clr2);
 }
 
-/* .logout-icon {
-  cursor: pointer;
-  padding: 8px;
-  color: var(--text-clr2);
-  border-radius: 8px;
-  border: none;
+.desktop-only {
+  display: block;
 }
 
-.logout-icon:hover {
-  background-color: var(--solid4);
-  color: var(--text-clr1);
-} */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+}
 
 .hamburger {
   display: none;
@@ -178,4 +183,34 @@ header {
 .empty-state p {
   margin: 0;
   font-size: 14px;
+}
+
+/* User Popup Styles */
+.user-popup {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 200px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  padding: 12px;
+}
+
+.user-popup .section-header {
+  margin: 0;
+  padding: 0;
+}
+
+.user-popup h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.user-popup .popup-actions {
+  margin: 0;
+  padding-top: 10px;
+}
+
+.logout-btn i {
+  margin-right: 8px;
 }
