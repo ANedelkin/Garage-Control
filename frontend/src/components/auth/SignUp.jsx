@@ -47,7 +47,7 @@ const SignUpPage = () => {
             <div className="container auth">
                 <div className="tile">
                     <h3 className="tile-header">Create Account</h3>
-                    <form onSubmit={(e) => handleSubmit(e, formData)} style={{ maxWidth: '450px' }}>
+                    <form onSubmit={(e) => handleSubmit(e, formData)}>
                         <div className="form-section">
                             <label>Username</label>
                             <input
