@@ -28,8 +28,8 @@
     flex-direction: column;
     height: 100%;
     /* Ensure full height */
-    overflow: hidden;
-    /* Prevent overflow */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .list-container {
@@ -210,3 +210,43 @@
     color: #e74c3c !important;
     /* font-weight: 600; */
 }
+
+/* Mobile Responsiveness for Parts Stockpile */
+.parts-stock .mobile-only {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .parts-stock .mobile-only {
+        display: flex !important;
+    }
+
+    .parts-stock .mobile-show-details .form-left {
+        display: none !important;
+    }
+    
+    .parts-stock .mobile-show-tree .form-right {
+        display: none !important;
+    }
+
+    .parts-stock .vertical-divider {
+        display: none !important;
+    }
+
+    .parts-stock .form-left,
+    .parts-stock .form-right {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (max-width: 500px) {
+    .parts-stock .details-grid {
+        grid-template-columns: 1fr;
+    }
+    .parts-stock .form-section-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}

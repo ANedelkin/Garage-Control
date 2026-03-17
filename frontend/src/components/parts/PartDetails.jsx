@@ -3,7 +3,7 @@ import { partApi } from '../../services/partApi';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
-const PartDetails = ({ part, onUpdate, onDelete }) => {
+const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
     const [formData, setFormData] = useState({
         name: '',
         partNumber: '',
@@ -101,7 +101,12 @@ const PartDetails = ({ part, onUpdate, onDelete }) => {
     return (
         <div className="part-details">
             <div className="section-header">
-                <h3>Part Details</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button className="icon-btn btn mobile-only" onClick={onBack} title="Back to list">
+                        <i className="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <h3 style={{ margin: 0 }}>Part Details</h3>
+                </div>
                 <div>
                     <button className="btn delete" onClick={() => { if (window.confirm('Delete this part?')) partApi.deletePart(part.id).then(onDelete); }}>
                         <i className="fa-solid fa-trash"></i> Delete

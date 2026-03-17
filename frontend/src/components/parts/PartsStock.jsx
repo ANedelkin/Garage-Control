@@ -78,7 +78,7 @@ const PartsStock = () => {
 
     return (
         <main className="main parts-stock">
-            <div className="tile">
+            <div className={`tile ${selectedPart ? 'mobile-show-details' : 'mobile-show-tree'}`}>
                 <div className="horizontal grow">
                     <div className="form-left">
                         <div className="section-header">
@@ -122,6 +122,7 @@ const PartsStock = () => {
                             part={selectedPart}
                             onUpdate={handleRefresh}
                             onDelete={() => { setSelectedPart(null); handleRefresh(); }}
+                            onBack={() => setSelectedPart(null)}
                         />
                     </div>
                 </div>
