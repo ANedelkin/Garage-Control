@@ -199,7 +199,7 @@ const OrderList = ({ mode = 'active' }) => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <Dropdown value={filter} onChange={e => setFilter(e.target.value)}>
+                <Dropdown className="dropdown" value={filter} onChange={e => setFilter(e.target.value)}>
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="inprogress">In Progress</option>
@@ -215,8 +215,8 @@ const OrderList = ({ mode = 'active' }) => {
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map(order => (
-                        <div 
-                            key={order.id} 
+                        <div
+                            key={order.id}
                             ref={el => orderRefs.current[order.id] = el}
                             className={`tile order-tile ${(orderId === order.id && !highlightJob) ? 'highlight-outline' : ''}`}
                             onClick={(e) => e.stopPropagation()}
@@ -231,12 +231,22 @@ const OrderList = ({ mode = 'active' }) => {
                                         {order.carName} • {order.carRegistrationNumber} • {order.kilometers} km
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button className="btn secondary icon-btn" onClick={() => openOrderDetailsPopup(order)} title="Order Details">
+                                <div className="order-actions desktop-only">
+                                    <button className="icon-btn btn" onClick={() => openOrderDetailsPopup(order)} title="Order Details">
                                         <i className="fa-solid fa-circle-info"></i>
                                     </button>
-                                    <button className="btn secondary icon-btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">
+                                    <button className="icon-btn btn delete" onClick={() => handleDeleteOrder(order.id)} title="Delete Order">
                                         <i className="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div className="order-actions mobile-only">
+                                    <button className="btn secondary" onClick={() => openOrderDetailsPopup(order)}>
+                                        <i className="fa-solid fa-circle-info"></i>
+                                        Info
+                                    </button>
+                                    <button className="btn delete" onClick={() => handleDeleteOrder(order.id)}>
+                                        <i className="fa-solid fa-trash"></i>
+                                        Delete
                                     </button>
                                 </div>
                             </div>
@@ -252,19 +262,19 @@ const OrderList = ({ mode = 'active' }) => {
                                             <thead>
                                                 <tr>
                                                     <th>Status</th>
-                                                    <th>Time</th>
+                                                    <th className="hide-md">Time</th>
                                                     <th>Type</th>
-                                                    <th>Mechanic</th>
-                                                    <th>Cost</th>
+                                                    <th className="hide-md">Mechanic</th>
+                                                    <th className="hide-sm">Cost</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {order.jobs.map(job => (
-                                                    <tr 
-                                                        key={job.id} 
+                                                    <tr
+                                                        key={job.id}
                                                         ref={el => jobRefs.current[job.id] = el}
-                                                        onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)} 
+                                                        onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)}
                                                         className={`clickable ${highlightJob === job.id ? 'highlight-outline' : ''}`}
                                                     >
                                                         <td>
@@ -272,15 +282,17 @@ const OrderList = ({ mode = 'active' }) => {
                                                                 <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
                                                                     job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                                     } job-status-${job.status} status-icon`}></i>
-                                                                {job.status === 'pending' ? 'Pending' :
-                                                                    job.status === 'inprogress' ? 'In Progress' : 'Done'
-                                                                }
+                                                                <span className="hide-sm">
+                                                                    {job.status === 'pending' ? 'Pending' :
+                                                                        job.status === 'inprogress' ? 'In Progress' : 'Done'
+                                                                    }
+                                                                </span>
                                                             </span>
                                                         </td>
-                                                        <td>{formatDate(job.startTime)}</td>
+                                                        <td className="hide-md">{formatDate(job.startTime)}</td>
                                                         <td>{job.type}</td>
-                                                        <td>{job.mechanicName}</td>
-                                                        <td>&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
+                                                        <td className="hide-md">{job.mechanicName}</td>
+                                                        <td className="hide-sm">&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
                                                         <td onClick={e => e.stopPropagation()}>
                                                             <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
                                                                 <i className="fa-solid fa-trash"></i>

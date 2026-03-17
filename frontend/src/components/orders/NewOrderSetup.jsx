@@ -39,8 +39,8 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
             return;
         }
         const filtered = cars.filter(c =>
-            c.registrationNumber.toLowerCase().includes(val.toLowerCase()) ||
-            (c.model && c.model.name.toLowerCase().includes(val.toLowerCase()))
+            c.registrationNumber?.toLowerCase().includes(val.toLowerCase()) ||
+            (c.model?.name?.toLowerCase().includes(val.toLowerCase()))
         );
         setSuggestions(filtered);
     };
@@ -91,9 +91,6 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     onFocus={() => handleCarSearch(carSearch)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                     onBlur={() => {
-                        if (suggestions.length > 0) {
-                            selectCar(suggestions[0]);
-                        }
                         setTimeout(() => setSuggestions([]), 200);
                     }}
                 />
@@ -106,7 +103,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     onClose={() => setSuggestions([])}
                     renderItem={(car) => (
                         <>
-                            <b>{car.registrationNumber}</b> - {car.model.make.name} {car.model.name}
+                            <b>{car.registrationNumber}</b> - {car.model?.make?.name} {car.model?.name}
                         </>
                     )}
                     maxHeight="200px"

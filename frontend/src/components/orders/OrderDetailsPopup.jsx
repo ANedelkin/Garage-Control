@@ -5,7 +5,7 @@ import '../../assets/css/orders.css';
 import FieldError from '../common/FieldError.jsx';
 
 const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
-    const [carSearch, setCarSearch] = useState(`${order.carRegistrationNumber} - ${order.carName}`);
+    const [carSearch, setCarSearch] = useState(order.carRegistrationNumber);
     const [selectedCarId, setSelectedCarId] = useState(order.carId);
     const [kilometers, setKilometers] = useState(order.kilometers);
     const [suggestions, setSuggestions] = useState([]);
@@ -19,8 +19,8 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
             return;
         }
         const filtered = cars.filter(c =>
-            c.registrationNumber.toLowerCase().includes(val.toLowerCase()) ||
-            (c.model && c.model.name.toLowerCase().includes(val.toLowerCase()))
+            c.registrationNumber?.toLowerCase().includes(val.toLowerCase()) ||
+            (c.model?.name?.toLowerCase().includes(val.toLowerCase()))
         );
         setSuggestions(filtered);
     };
@@ -41,7 +41,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
 
     return (
         <div className="order-details-form">
-            <div className="form-section">
+            <div className="form-section" style={{ position: 'relative' }}>
                 <label>Car:</label>
                 <input
                     type="text"
@@ -52,12 +52,8 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     onFocus={() => handleCarSearch(carSearch)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                     onBlur={() => {
-                        if (suggestions.length > 0) {
-                            selectCar(suggestions[0]);
-                        }
                         setTimeout(() => setSuggestions([]), 200);
                     }}
-                    style={{ position: 'relative' }}
                 />
                 <FieldError name="CarId" errors={errors} />
                 <Suggestions
@@ -68,7 +64,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     onClose={() => setSuggestions([])}
                     renderItem={(car) => (
                         <>
-                            {car.registrationNumber} - {car.model.make.name} {car.model.name}
+                            {car.registrationNumber} - {car.model?.make?.name} {car.model?.name}
                         </>
                     )}
                     maxHeight="150px"
