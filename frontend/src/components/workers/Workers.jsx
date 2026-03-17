@@ -72,10 +72,10 @@ const Workers = () => {
     }, [loading, workerId, workers, highlight]);
 
     useEffect(() => {
-        if (workerId === 'new') {
+        if (location.pathname.endsWith('/new')) {
             openEditWorker('new');
         }
-    }, [workerId]);
+    }, [location.pathname]);
 
     // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
     // const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));

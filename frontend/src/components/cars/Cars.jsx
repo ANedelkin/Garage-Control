@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { vehicleApi } from '../../services/vehicleApi';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
@@ -19,6 +19,7 @@ const Cars = () => {
     const rowRefs = useRef({});
     const [searchParams] = useSearchParams();
     const highlight = searchParams.get('highlight') === 'true';
+    const location = useLocation();
 
     const { addPopup, removeLastPopup } = usePopup();
 
@@ -110,10 +111,10 @@ const Cars = () => {
     }, [loading, carId, cars, highlight]);
 
     useEffect(() => {
-        if (carId === 'new') {
+        if (location.pathname.endsWith('/new')) {
             handleRowClick({});
         }
-    }, [carId]);
+    }, [location.pathname]);
 
     const handleSaveCar = async (carData) => {
         try {

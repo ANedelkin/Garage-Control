@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import '../../assets/css/common/list.css';
 import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
@@ -16,6 +16,7 @@ const Clients = () => {
     const rowRefs = useRef({});
     const [searchParams] = useSearchParams();
     const highlight = searchParams.get('highlight') === 'true';
+    const location = useLocation();
 
     useEffect(() => {
         fetchClients();
@@ -71,10 +72,10 @@ const Clients = () => {
     }, [loading, clientId, clients, highlight]);
 
     useEffect(() => {
-        if (clientId === 'new') {
+        if (location.pathname.endsWith('/new')) {
             openEditPopup('new');
         }
-    }, [clientId]);
+    }, [location.pathname]);
 
     const handlePopupSave = (id) => {
         fetchClients();
