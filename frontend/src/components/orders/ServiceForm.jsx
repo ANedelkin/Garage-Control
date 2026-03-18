@@ -24,6 +24,7 @@ const ServiceForm = ({
     const [partSearch, setPartSearch] = useState('');
     const [activePartIndex, setActivePartIndex] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
+    const [expandedParts, setExpandedParts] = useState({});
     const suggestionsRef = useRef(null);
     const { addPopup, removeLastPopup } = usePopup();
 
@@ -134,6 +135,13 @@ const ServiceForm = ({
         newParts[partIndex] = updatedPart;
         updateService(service.id, 'parts', newParts);
         removeLastPopup();
+    };
+
+    const togglePartExpand = (index) => {
+        setExpandedParts(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
     };
 
     const openTransferPopup = (partIndex) => {
@@ -386,45 +394,61 @@ const ServiceForm = ({
                                 const sentError = sent > planned;
                                 const usedError = used > sent;
 
+                                const isExpanded = !!expandedParts[i];
+
                                 return (
-                                    <tr key={i} style={{ position: 'relative' }}>
+                                    <tr key={i} className={isExpanded ? 'expanded-row' : ''} style={{ position: 'relative' }}>
                                         <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
-                                            <input
-                                                type="text"
-                                                value={p.name}
-                                                onInput={e => handlePartSearch(e.target.value, i)}
-                                                placeholder="Search Part..."
-                                                onFocus={() => {
-                                                    setActivePartIndex(i);
-                                                    handlePartSearch(p.name, i);
-                                                }}
-                                                onBlur={() => {
-                                                    if (activePartIndex === i && suggestions.length > 0) {
-                                                        addPart(suggestions[0]);
-                                                    }
-                                                    setTimeout(() => setActivePartIndex(null), 200);
-                                                }}
-                                                onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                                                disabled={service.status === 2}
-                                            />
-                                            <Suggestions
-                                                ref={suggestionsRef}
-                                                suggestions={activePartIndex === i ? suggestions : []}
-                                                isOpen={activePartIndex === i && suggestions.length > 0}
-                                                onSelect={addPart}
-                                                onClose={() => setActivePartIndex(null)}
-                                                renderItem={(part) => (
-                                                    <>
-                                                        <b>{part.name}</b> ({part.partNumber}) - ${part.price}
-                                                    </>
-                                                )}
-                                                maxHeight="150px"
-                                                style={{ width: '100%' }}
-                                            />
+                                            <div className="mobile-part-header">
+                                                <button 
+                                                    type="button" 
+                                                    className="btn icon-btn mobile-only expand-btn"
+                                                    onClick={() => togglePartExpand(i)}
+                                                >
+                                                    <i className={`fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+                                                </button>
+                                                <div style={{flex: 1}}>
+                                                    <input
+                                                        type="text"
+                                                        value={p.name}
+                                                        onInput={e => handlePartSearch(e.target.value, i)}
+                                                        placeholder="Search Part..."
+                                                        onFocus={() => {
+                                                            setActivePartIndex(i);
+                                                            handlePartSearch(p.name, i);
+                                                        }}
+                                                        onBlur={() => {
+                                                            if (activePartIndex === i && suggestions.length > 0) {
+                                                                addPart(suggestions[0]);
+                                                            }
+                                                            setTimeout(() => setActivePartIndex(null), 200);
+                                                        }}
+                                                        onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
+                                                        disabled={service.status === 2}
+                                                    />
+                                                    <Suggestions
+                                                        ref={suggestionsRef}
+                                                        suggestions={activePartIndex === i ? suggestions : []}
+                                                        isOpen={activePartIndex === i && suggestions.length > 0}
+                                                        onSelect={addPart}
+                                                        onClose={() => setActivePartIndex(null)}
+                                                        renderItem={(part) => (
+                                                            <>
+                                                                <b>{part.name}</b> ({part.partNumber}) - ${part.price}
+                                                            </>
+                                                        )}
+                                                        maxHeight="150px"
+                                                        style={{ width: '100%' }}
+                                                    />
+                                                </div>
+                                                <div className="mobile-only mobile-price">
+                                                    ${p.price.toFixed(2)}
+                                                </div>
+                                            </div>
                                             <FieldError name={`Parts[${i}].Name`} errors={errors} />
                                             <FieldError name={`Parts[${i}].PartId`} errors={errors} />
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible" data-label="Planned">
                                             <input
                                                 type="number"
                                                 name={`Parts[${i}].PlannedQuantity`}
@@ -437,7 +461,7 @@ const ServiceForm = ({
                                             />
                                             <FieldError name={`Parts[${i}].PlannedQuantity`} errors={errors} />
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible" data-label="Sent">
                                             <input
                                                 type="number"
                                                 name={`Parts[${i}].SentQuantity`}
@@ -451,7 +475,7 @@ const ServiceForm = ({
                                             />
                                             <FieldError name={`Parts[${i}].SentQuantity`} errors={errors} />
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible" data-label="Used">
                                             <input
                                                 type="number"
                                                 name={`Parts[${i}].UsedQuantity`}
@@ -464,7 +488,7 @@ const ServiceForm = ({
                                             />
                                             <FieldError name={`Parts[${i}].UsedQuantity`} errors={errors} />
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible" data-label="Requested">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                 <input
                                                     type="number"
@@ -488,16 +512,16 @@ const ServiceForm = ({
                                             </div>
                                             <FieldError name={`Parts[${i}].RequestedQuantity`} errors={errors} />
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible hide-sm" data-label="Unit Price">
                                             {p.price.toFixed(2)}
                                         </td>
-                                        <td>
-                                            {(p.plannedQuantity * p.price).toFixed(2)}
+                                        <td className="mobile-collapsible" data-label="Total Projected">
+                                            {((p.plannedQuantity || 0) * (p.price || 0)).toFixed(2)}
                                         </td>
-                                        <td>
-                                            {(p.usedQuantity * p.price).toFixed(2)}
+                                        <td className="mobile-collapsible" data-label="Total Spent">
+                                            {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
                                         </td>
-                                        <td>
+                                        <td className="mobile-collapsible" data-label="Actions">
                                             <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={service.status === 2}>
                                                 <i className="fa-solid fa-trash"></i>
                                             </button>

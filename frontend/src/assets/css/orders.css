@@ -32,7 +32,7 @@
 .form-row-4 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 1rem;
+    gap: 0 1rem;
     align-items: start;
 }
 
@@ -101,6 +101,11 @@
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 20px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
 }
 
 .order-details-form .form-footer .btn {
@@ -175,6 +180,10 @@
         display: none !important;
     }
 
+    .form-row-4 {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .main {
         padding: 15px;
     }
@@ -228,6 +237,108 @@
 
     .main {
         padding: 8px;
+    }
+
+    .form-row-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .edit-order .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .edit-order .section-header .order-actions {
+        width: 100%;
+        display: flex;
+        gap: 10px;
+    }
+
+    .edit-order .section-header .order-actions .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 0;
+    }
+
+    .parts-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 20px;
+    }
+
+    /* Mobile Collapsible Parts Table Setup */
+    .parts-table-wrapper table.table,
+    .parts-table-wrapper table.table tbody,
+    .parts-table-wrapper table.table th,
+    .parts-table-wrapper table.table td,
+    .parts-table-wrapper table.table tr {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .parts-table-wrapper table.table thead {
+        display: none;
+    }
+
+    .parts-table-wrapper table.table tbody tr {
+        height: auto;
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 10px;
+        position: relative;
+        background: var(--solid3);
+    }
+
+    .parts-table-wrapper table.table td {
+        padding: 8px 0 !important;
+        border: none;
+        overflow: visible;
+        white-space: normal;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .parts-table-wrapper table.table td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 600;
+        flex-shrink: 0;
+        color: var(--text-clr2);
+        font-size: 13px;
+    }
+
+    /* Name and price header area */
+    .mobile-part-header {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobile-price {
+        font-weight: bold;
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    .expand-btn {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .parts-table-wrapper table.table td.mobile-collapsible {
+        display: none;
+    }
+
+    /* Show collapsible fields when expanded */
+    .parts-table-wrapper table.table tr.expanded-row td.mobile-collapsible {
+        display: flex;
+        border-top: 1px dashed var(--border2);
     }
 
     .header {

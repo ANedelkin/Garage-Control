@@ -165,20 +165,38 @@ const EditJobPage = ({ mechanicView = false }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this job?")) return;
+
+        try {
+            await jobApi.deleteJob(jobId);
+            window.dispatchEvent(new CustomEvent('refresh-notifications'));
+            navigate(-1);
+        } catch (e) {
+            console.error("Failed to delete job", e);
+            alert("Error deleting job");
+        }
+    };
+
     if (loading) return <main className="main"><p>Loading...</p></main>;
     if (!job) return <main className="main"><p>Job not found</p></main>;
 
     return (
         <main className="main edit-order">
-            <div className="section-header">
+            <div className="section-header order-header">
                 <div className="order-context-info">
                     <h2>{isEdit ? 'Edit Job' : 'Add New Job'}</h2>
                     <p>{order?.clientName} • {order?.carName} ({order?.carRegistrationNumber})</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="order-actions">
                     <button className="btn secondary" onClick={() => navigate(-1)}>
                         Cancel
                     </button>
+                    {isEdit && !mechanicView && job?.status !== 2 && (
+                        <button className="btn delete" onClick={handleDelete}>
+                            Delete
+                        </button>
+                    )}
                     <button className="btn primary" onClick={handleSave}>
                         Save Job
                     </button>
@@ -189,7 +207,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 index={0}
                 service={job}
                 updateService={updateJob}
-                removeService={null} // Don't allow removal from here, use orders page
+                removeService={null}
                 jobTypes={jobTypes}
                 workers={workers}
                 allParts={allParts}
