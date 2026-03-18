@@ -249,4 +249,9 @@
         flex-direction: column;
         gap: 0;
     }
-}
+
+    .parts-stock .form-footer .btn {
+        width: 100%;
+    }
+}
+
