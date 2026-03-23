@@ -51,7 +51,7 @@ const Workers = () => {
 
     const openWorkhours = (id) => {
         addPopup(
-            "Edit Schedule",
+            "",
             <WorkhoursPopup id={id} onClose={() => { removeLastPopup(); navigate('/workers'); }} onSave={fetchWorkers} />,
             false,
             () => navigate('/workers')

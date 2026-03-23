@@ -209,8 +209,11 @@ const EditWorker = ({ id, onClose, onSave }) => {
 
         <div className="form-footer">
           {errors.general && <p className="form-error">{errors.general}</p>}
+          <button type="button" className="btn" onClick={onClose}>
+            Cancel
+          </button>
           <button type="submit" className="btn">
-            Save Worker
+            {isNew ? "Create Worker" : "Save Changes"}
           </button>
         </div>
       </form >

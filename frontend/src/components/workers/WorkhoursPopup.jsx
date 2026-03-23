@@ -83,62 +83,98 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
         setWorker({ ...worker, schedules: newSchedules });
     };
 
+    const [activeTab, setActiveTab] = useState("schedule");
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 800);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     if (loading) return <div>Loading...</div>;
     if (!worker) return <div>Worker not found</div>;
 
     return (
-        <div className="workhours">
-            {/* Schedule Section */}
-            <div className="schedule-section">
-                <ScheduleSelector
-                    schedules={worker.schedules}
-                    onChange={onChangeSchedule}
-                />
-            </div>
-
-            {/* Leaves Section */}
-            <div className="leaves-section">
-                <div className="section-header">
-                    <label>Leaves</label>
-                    <button type="button" className="btn" onClick={() => openLeavePopup()}>
-                        + Add Leave
+        <div className={`workhours ${isMobile ? "mobile-view" : "desktop-view"}`}>
+            {/* Tabs Header - Mobile only */}
+            {isMobile && (
+                <div className="popup-tabs">
+                    <button
+                        type="button"
+                        className={`tab-btn ${activeTab === "schedule" ? "active" : ""}`}
+                        onClick={() => setActiveTab("schedule")}
+                    >
+                        <i className="fa-solid fa-calendar-days"></i> Schedule
+                    </button>
+                    <button
+                        type="button"
+                        className={`tab-btn ${activeTab === "leaves" ? "active" : ""}`}
+                        onClick={() => setActiveTab("leaves")}
+                    >
+                        <i className="fa-solid fa-umbrella-beach"></i> Leaves
                     </button>
                 </div>
-                <div className="list-container max-height">
-                    {worker.leaves.length ? (
-                        worker.leaves.map((leave, i) => (
-                            <div
-                                key={i}
-                                className="list-item"
-                                onClick={() => openLeavePopup(leave, i)}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <span className="item-label">
-                                    {new Date(leave.startDate).toLocaleDateString()} -{" "}
-                                    {new Date(leave.endDate).toLocaleDateString()}
-                                </span>
-                                <button
-                                    type="button"
-                                    className="icon-btn delete btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteLeave(i);
-                                    }}
-                                >
-                                    <i className="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="list-empty">No leaves added</div>
-                    )}
-                </div>
+            )}
+
+            <div className="tab-content">
+                {/* Schedule Section - Show if desktop OR activeTab is schedule */}
+                {(!isMobile || activeTab === "schedule") && (
+                    <div className="schedule-section form-section">
+                        {!isMobile && <label className="desktop-section-label">Schedule</label>}
+                        <ScheduleSelector
+                            schedules={worker.schedules}
+                            onChange={onChangeSchedule}
+                        />
+                    </div>
+                )}
+
+                {/* Leaves Section - Show if desktop OR activeTab is leaves */}
+                {(!isMobile || activeTab === "leaves") && (
+                    <div className="leaves-section form-section">
+                        <div className="section-header">
+                            <label>Leaves</label>
+                            <button type="button" className="btn" onClick={() => openLeavePopup()}>
+                                + Add Leave
+                            </button>
+                        </div>
+                        <div className="list-container max-height">
+                            {worker.leaves.length ? (
+                                worker.leaves.map((leave, i) => (
+                                    <div
+                                        key={i}
+                                        className="list-item"
+                                        onClick={() => openLeavePopup(leave, i)}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        <span className="item-label">
+                                            {new Date(leave.startDate).toLocaleDateString()} -{" "}
+                                            {new Date(leave.endDate).toLocaleDateString()}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="icon-btn delete btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteLeave(i);
+                                            }}
+                                        >
+                                            <i className="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="list-empty">No leaves added</div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="form-footer" style={{ marginTop: '20px' }}>
+            <div className="form-footer">
                 {errors.general && <p className="form-error">{errors.general}</p>}
                 <button type="button" className="btn" onClick={handleSave}>
-                    Save Schedule
+                    Save Changes
                 </button>
             </div>
         </div>
