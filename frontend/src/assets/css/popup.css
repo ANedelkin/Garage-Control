@@ -5,6 +5,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* overflow-y: auto; handled by tile now on mobile */
+    padding: 20px;
+    z-index: 1000;
 }
 
 .popup-overlay.top {
@@ -19,6 +22,9 @@
 .popup {
     padding: 1.5rem;
     width: fit-content;
+    max-width: 100%;
+    max-height: 100%;
+    margin: auto;
 }
 
 .popup-content {
@@ -60,4 +66,20 @@
     border-radius: 4px;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
+}
+
+@media (max-width: 800px) {
+    .popup-overlay {
+        padding: 10px;
+        align-items: center; /* Center vertically again */
+        overflow: hidden; /* Prevent overlay from scrolling */
+    }
+    .popup.tile {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0;
+        padding: 15px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
 }

@@ -101,7 +101,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
 
   return (
     <div className="edit-worker">
-      <form onSubmit={handleSave} className="worker-form" style={{ width: '100%', maxWidth: '1000px' }}>
+      <form onSubmit={handleSave} className="worker-form">
         <div className="form-upper">
           <div className="form-column">
             <div className="form-section">

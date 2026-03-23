@@ -1,14 +1,36 @@
-.edit-worker .tile {
-  max-width: 900px;
-  margin: 0 auto;
+.popup.tile:has(.edit-worker) {
+  max-width: 1000px;
+  width: 95vw;
+}
+
+@media (max-width: 800px) {
+  .popup.tile:has(.edit-worker) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  @media (min-width: 501px) {
+    .popup.tile:has(.edit-worker) {
+      width: fit-content;
+      max-width: 95vw;
+    }
+  }
+}
+
+
+.edit-worker {
   width: 100%;
   height: fit-content;
 }
 
+/* .edit-worker .form-section {
+  margin-bottom: 0 !important;
+} */
+
 .worker-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  /* gap: 20px; */
   width: 100%;
 }
 
@@ -139,13 +161,17 @@
   background: var(--primary);
 }
 
-.leaves-section{
+.leaves-section {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
 }
 
-.edit-worker .popup {
-  width: 300px !important;
+/* Small popup override no longer needed here if handled globally or via specific classes */
+
+@media (min-width: 801px) {
+  .show-only-mobile {
+    display: none !important;
+  }
 }
 
 @media (max-width: 800px) {
@@ -154,11 +180,29 @@
   }
 
   .form-upper {
+    gap: 0;
     grid-template-columns: 1fr;
   }
 
-  .form-lower {
-    grid-template-columns: 1fr;
+  /* 500-800px range: fields are centered but fluidly fill the space up to 400px */
+  @media (min-width: 501px) {
+    .edit-worker .form-section {
+      width: 100%;
+    }
+
+    .worker-form input:not([type="checkbox"]),
+    .worker-form select,
+    .worker-form .select-wrapper,
+    .worker-form .list-container,
+    .worker-form .react-datepicker-wrapper,
+    .worker-form .react-datepicker__input-container,
+    .worker-form .react-datepicker__input-container input {
+      width: 100% !important;
+    }
+  }
+
+  .worker-form {
+    padding: 0;
   }
 
   .schedule-grid {
@@ -182,15 +226,28 @@
     gap: 10px;
   }
 
-  .header input, 
+  .header input,
   .header .btn {
     width: 100%;
     margin: 0;
   }
 
   /* Compact table padding */
-  th, td {
+  th,
+  td {
     padding: 8px 4px !important;
     font-size: 13px !important;
   }
+
+  .edit-worker .form-section {
+    margin-bottom: 15px;
+  }
+
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container,
+  .react-datepicker__input-container input {
+    width: 100%;
+  }
+
+
 }

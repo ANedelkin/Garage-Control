@@ -39,8 +39,8 @@
     display: flex;
     justify-content: right;
     align-items: center;
-    margin-top: 15px;
     gap: 10px;
+    margin-top: 0 !important;
 }
 
 label {
