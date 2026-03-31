@@ -200,43 +200,66 @@ const AdminMakesModels = () => {
         }
     };
 
+    const [activeTab, setActiveTab] = useState('existing');
+
     return (
-        <div className="main admin-makes-models container">
+        <div className="main admin-makes-models">
+            <div className="header">
+                <h1>Makes & Models</h1>
+            </div>
 
-            <div className="tile">
-                <div className="horizontal grow"></div>
-                <div className={`form-left`}>
-                    <div className="section-header">
-                        <h3>Suggested</h3>
-                        <button className="btn icon-btn" onClick={loadData} title="Refresh">
-                            <i className="fa-solid fa-rotate-right"></i>
-                        </button>
-                    </div>
-                    <div className="list-container grow">
-                        <ItemsTree
-                            groups={suggestions}
-                            fetchChildren={fetchSuggestedModels}
-                            actions={{}}
-                            renderActions={renderSuggestionActions}
-                        />
-                        {suggestions.length === 0 && <div className="list-empty">No suggestions</div>}
-                    </div>
-                </div>
+            <div className="popup-tabs mobile-only">
+                <button
+                    type="button"
+                    className={`tab-btn ${activeTab === 'suggested' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('suggested')}
+                >
+                    <i className="fa-solid fa-lightbulb"></i> Suggested
+                </button>
+                <button
+                    type="button"
+                    className={`tab-btn ${activeTab === 'existing' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('existing')}
+                >
+                    <i className="fa-solid fa-list-check"></i> Existing
+                </button>
+            </div>
 
-                <div className="vertical-divider"></div>
-
-                <div className={`form-right`}>
-                    <div className="section-header">
-                        <h3>Existing</h3>
-                        <button className="btn" onClick={handleAddMake}>+ Add Make</button>
+            <div className={`tile ${activeTab === 'suggested' ? 'mobile-show-suggested' : 'mobile-show-existing'}`}>
+                <div className="horizontal grow align-stretch">
+                    <div className="form-left">
+                        <div className="section-header">
+                            <h3>Suggested</h3>
+                            <button className="btn icon-btn" onClick={loadData} title="Refresh">
+                                <i className="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                        <div className="list-container grow">
+                            <ItemsTree
+                                groups={suggestions}
+                                fetchChildren={fetchSuggestedModels}
+                                actions={{}}
+                                renderActions={renderSuggestionActions}
+                            />
+                            {suggestions.length === 0 && <div className="list-empty">No suggestions</div>}
+                        </div>
                     </div>
-                    <div className="list-container grow">
-                        <ItemsTree
-                            groups={existing}
-                            fetchChildren={fetchModels}
-                            actions={existingActions}
-                            labels={existingLabels}
-                        />
+
+                    <div className="vertical-divider"></div>
+
+                    <div className="form-right">
+                        <div className="section-header">
+                            <h3>Existing</h3>
+                            <button className="btn" onClick={handleAddMake}>+ Add Make</button>
+                        </div>
+                        <div className="list-container grow">
+                            <ItemsTree
+                                groups={existing}
+                                fetchChildren={fetchModels}
+                                actions={existingActions}
+                                labels={existingLabels}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

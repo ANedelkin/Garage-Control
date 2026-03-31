@@ -255,6 +255,7 @@ const ItemsTreeNode = ({
                     menuPos={menuPos}
                     menuRef={menuRef}
                     labels={labels}
+                    onClose={() => setShowMenu(false)}
                 />
             )}
         </>

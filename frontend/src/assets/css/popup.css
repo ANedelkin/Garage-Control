@@ -67,7 +67,7 @@
     color: var(--text-primary);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 500px) {
     .popup-overlay {
         padding: 10px;
         align-items: center; /* Center vertically again */

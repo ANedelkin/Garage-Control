@@ -53,9 +53,6 @@ const MakesAndModels = () => {
             if (makeRefs.current[makeId]) {
                 makeRefs.current[makeId].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            if (!highlight && make && !modelId && (!editingItem || editingItem.id !== makeId)) {
-                handleOpenModal('make', make);
-            }
         }
     }, [makeId, makes, highlight, modelId]);
 
@@ -250,9 +247,9 @@ const MakesAndModels = () => {
     };
 
     return (
-        <main className="main makes-models container" onClick={handleContainerClick}>
-            <div className="tile" onClick={(e) => e.stopPropagation()}>
-                <div className="horizontal grow">
+        <main className="main makes-models" onClick={handleContainerClick}>
+            <div className={`tile ${selectedMake ? 'mobile-show-models' : 'mobile-show-makes'}`} onClick={(e) => e.stopPropagation()}>
+                <div className="horizontal grow align-stretch">
                     {/* Makes Pane */}
                     <div className="form-left">
                         <div className="section-header">
@@ -264,8 +261,8 @@ const MakesAndModels = () => {
                                 <div
                                     key={make.id}
                                     ref={el => makeRefs.current[make.id] = el}
-                                    className={`list-item ${selectedMake?.id === make.id ? 'active' : ''} ${makeId === make.id && !modelId ? 'highlight-outline' : ''}`}
-                                    onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${make.id}`); }}
+                                    className={`list-item ${selectedMake?.id === make.id ? 'active' : ''}`}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedMake(make); navigate(`/makes-and-models/${make.id}`); }}
                                 >
                                     <span className="item-label">{make.name}</span>
                                     <div>
@@ -284,7 +281,7 @@ const MakesAndModels = () => {
                                                 <i className="fa-solid fa-arrows-to-circle"></i>
                                             </button>
                                         )}
-                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${make.id}`); handleOpenModal('make', make); }}>
+                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
                                             <i className="fa-solid fa-pen"></i>
                                         </button>
                                         <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
@@ -301,7 +298,12 @@ const MakesAndModels = () => {
                     {/* Models Pane */}
                     <div className="form-right">
                         <div className="section-header">
-                            <h3>Models {selectedMake ? `for ${selectedMake.name}` : ''}</h3>
+                            <div className="horizontal align-center gap-10">
+                                <button className="btn icon-btn mobile-only" onClick={() => setSelectedMake(null)} title="Back to Makes">
+                                    <i className="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <h3>Models {selectedMake ? `for ${selectedMake.name}` : ''}</h3>
+                            </div>
                             {selectedMake && (
                                 <button className="btn" onClick={() => handleOpenModal('model')}>+ Add Model</button>
                             )}
@@ -316,7 +318,7 @@ const MakesAndModels = () => {
                                     <div 
                                         key={model.id} 
                                         ref={el => modelRefs.current[model.id] = el}
-                                        className={`list-item ${modelId === model.id ? 'highlight-outline' : ''}`}
+                                        className="list-item"
                                         onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${selectedMake.id}/model/${model.id}`); }}
                                     >
                                         <span className="item-label">{model.name}</span>
@@ -328,7 +330,7 @@ const MakesAndModels = () => {
                                                         try {
                                                             const globalModel = await modelApi.getModel(model.globalId);
                                                             if (globalModel) {
-                                                                handleOpenMerge('model', model, globalModel);
+                                                                 handleOpenMerge('model', model, globalModel);
                                                             }
                                                         } catch (error) {
                                                             console.error('Error fetching global model:', error);
@@ -354,8 +356,6 @@ const MakesAndModels = () => {
                     </div>
                 </div>
             </div>
-
-
         </main>
     );
 };

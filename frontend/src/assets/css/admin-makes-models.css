@@ -1,13 +1,80 @@
-.admin-makes-models .tile {
-    width: fit-content;
-    height: 700px;
+.admin-makes-models > .tile {
+    width: 100%;
+    height: 750px;
     display: flex;
+    overflow: hidden;
 }
 
 .admin-makes-models .form-left,
 .admin-makes-models .form-right {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    width: 400px;
+    width: 50%;
+    min-width: 0;
+}
+
+.admin-makes-models .horizontal {
+    width: 100%;
+}
+
+.admin-makes-models .list-container {
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.admin-makes-models .section-header {
+    min-height: 60px;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-makes-models .section-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--text-clr1);
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 800px) {
+    .admin-makes-models .mobile-only {
+        display: flex !important;
+    }
+
+    .admin-makes-models > .tile {
+        height: calc(100vh - 180px);
+    }
+
+    .admin-makes-models .mobile-show-suggested .form-right {
+        display: none !important;
+    }
+    
+    .admin-makes-models .mobile-show-existing .form-left {
+        display: none !important;
+    }
+
+    .admin-makes-models .vertical-divider {
+        display: none !important;
+    }
+
+    .admin-makes-models .form-left,
+    .admin-makes-models .form-right {
+        width: 100% !important;
+    }
+
+    .admin-makes-models .section-header {
+        padding: 10px 15px;
+    }
+}
+
+@media (max-width: 500px) {
+    .admin-makes-models > .tile {
+        height: calc(100vh - 200px);
+    }
+    
+    .admin-makes-models .popup-tabs {
+        margin-bottom: 10px;
+    }
 }

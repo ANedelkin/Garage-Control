@@ -1,13 +1,39 @@
 import React from 'react';
 
-const TreeContextMenu = ({ handleRename, handleAddGroup, handleAddItem, handleDelete, type, menuPos, menuRef, labels = {} }) => {
+const TreeContextMenu = ({ handleRename, handleAddGroup, handleAddItem, handleDelete, type, menuPos, menuRef, labels = {}, onClose }) => {
+    const [adjustedPos, setAdjustedPos] = React.useState({ x: menuPos.x, y: menuPos.y });
+
+    React.useLayoutEffect(() => {
+        if (!menuRef.current || window.innerWidth <= 500) return;
+
+        const rect = menuRef.current.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let { x, y } = menuPos;
+
+        // Bounds checking
+        if (x + rect.width > viewportWidth) {
+            x = viewportWidth - rect.width - 10;
+        }
+        if (y + rect.height > viewportHeight) {
+            y = viewportHeight - rect.height - 10;
+        }
+
+        setAdjustedPos({ x, y });
+    }, [menuPos, menuRef]);
+
+    const isMobile = window.innerWidth <= 500;
+
     return (
-        <div
-            className="context-menu tile"
-            style={{ top: menuPos.y, left: menuPos.x, position: 'fixed', zIndex: 1000 }} // Fixed needed because of recursion
-            ref={menuRef}
-            onClick={e => e.stopPropagation()}
-        >
+        <>
+            {isMobile && <div className="context-menu-overlay" onClick={onClose}></div>}
+            <div
+                className="context-menu tile"
+                style={!isMobile ? { top: adjustedPos.y, left: adjustedPos.x, position: 'fixed', zIndex: 1000 } : { position: 'fixed', zIndex: 1000 }}
+                ref={menuRef}
+                onClick={e => e.stopPropagation()}
+            >
             {type === 'group' && (
                 <>
                     {handleRename && (
@@ -42,14 +68,15 @@ const TreeContextMenu = ({ handleRename, handleAddGroup, handleAddItem, handleDe
                 </div>
             )}
 
-            {handleDelete && (
-                <div className="list-item" onClick={handleDelete}>
-                    <div className="item-label">
-                        <i className="fa-solid fa-trash"></i> {labels.delete || 'Delete'}
+                {handleDelete && (
+                    <div className="list-item" onClick={handleDelete}>
+                        <div className="item-label" style={{ color: 'var(--danger)' }}>
+                            <i className="fa-solid fa-trash"></i> {labels.delete || 'Delete'}
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </>
     )
 }
 
