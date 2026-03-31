@@ -127,7 +127,9 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
             ))}
           </nav>
         </div>
-        <ThemeToggle />
+        <div className="sidebar-footer">
+          <ThemeToggle />
+        </div>
       </aside>
     </>
   );
