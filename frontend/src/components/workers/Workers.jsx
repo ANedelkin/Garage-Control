@@ -158,7 +158,7 @@ const Workers = () => {
                                     <td className="hide-md">{new Date(w.hiredOn).toLocaleDateString()}</td>
 
                                     <td onClick={e => e.stopPropagation()}>
-                                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', position: 'relative' }}>
+                                        <div className="workers-table-actions" style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', position: 'relative' }}>
                                             <div className="desktop-only" style={{ display: 'flex', gap: '5px' }}>
                                                 <button className="btn edit icon-btn" onClick={() => openEditWorker(w.id)} title="Edit Worker">
                                                     <i className="fa-solid fa-pen"></i>

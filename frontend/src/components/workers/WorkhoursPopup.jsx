@@ -92,6 +92,15 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        const day = d.getDate().toString().padStart(2, '0');
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}.${month}.${year}`;
+    };
+
     if (loading) return <div>Loading...</div>;
     if (!worker) return <div>Worker not found</div>;
 
@@ -148,8 +157,8 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
                                         style={{ cursor: "pointer" }}
                                     >
                                         <span className="item-label">
-                                            {new Date(leave.startDate).toLocaleDateString()} -{" "}
-                                            {new Date(leave.endDate).toLocaleDateString()}
+                                            {formatDate(leave.startDate)} -{" "}
+                                            {formatDate(leave.endDate)}
                                         </span>
                                         <button
                                             type="button"

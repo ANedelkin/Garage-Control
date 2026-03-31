@@ -166,13 +166,7 @@
     box-sizing: border-box;
 }
 
-.desktop-only {
-    display: flex;
-}
-
-.mobile-only {
-    display: none;
-}
+/* .desktop-only and .mobile-only handled globally */
 
 /* Middle media: 500px to 800px */
 @media (max-width: 1300px) {
@@ -220,13 +214,7 @@
         padding: 10px 8px !important;
     }
 
-    .desktop-only {
-        display: none !important;
-    }
-
-    .mobile-only {
-        display: flex !important;
-    }
+/* .desktop-only and .mobile-only handled globally */
 
     /* Mobile Collapsible Parts Table Setup */
     .parts-table-wrapper table.table,

@@ -5,7 +5,6 @@ const Popup = ({ children, title }) => {
     return (
         <div
             className="popup tile"
-            style={{ width: 'fit-content' }}
             onClick={e => e.stopPropagation()}
         >
             {title && (

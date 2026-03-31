@@ -30,23 +30,7 @@ header {
   color: var(--text-clr2);
 }
 
-.desktop-only {
-  display: block;
-}
-
-.mobile-only {
-  display: none;
-}
-
-@media (max-width: 600px) {
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: block;
-  }
-}
+/* .desktop-only and .mobile-only handled globally in layout.css */
 
 .hamburger {
   display: none;

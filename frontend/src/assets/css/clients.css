@@ -1,24 +1,30 @@
-/* .edit-client .cars-section {
-    width: 600px;
-} */
+.popup.tile:has(.client-form) {
+    width: 750px;
+    max-width: 95vw;
+}
+
+.popup.tile:has(.car-form) {
+    width: 400px;
+    max-width: 95vw;
+}
 
 .client-form {
-    width: 600px;
+    width: 750px;
     box-sizing: border-box;
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    max-height: 85vh;
+    max-height: var(--popup-max-height);
     height: fit-content;
 }
 
 .car-form {
-    width: 600px;
+    width: 400px;
     box-sizing: border-box;
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    max-height: 85vh;
+    max-height: var(--popup-max-height);
     /* Standard popup max height */
 }
 
@@ -116,7 +122,8 @@
         width: 100% !important;
         max-width: 100% !important;
         height: 100% !important;
-        max-height: 100% !important; /* Override global 85vh */
+        max-height: 100% !important;
+        /* Override global 85vh */
         display: flex;
         flex-direction: column;
         margin: 0 !important;
@@ -146,7 +153,8 @@
         flex-direction: column;
         min-height: 0;
         height: 100% !important;
-        overflow: hidden; /* Prevent this column from scrolling, let children do it */
+        overflow: hidden;
+        /* Prevent this column from scrolling, let children do it */
     }
 
     .edit-client .cars-section {
@@ -169,7 +177,6 @@
     .edit-client .form-column:not(.cars-section) {
         flex: 0 1 50% !important;
         overflow-y: auto;
-        padding-right: 15px;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -178,13 +185,15 @@
     .client-form .cars-section,
     .edit-client .cars-section {
         flex: 1 1 50% !important;
-        position: relative; /* Base for absolute child */
+        position: relative;
+        /* Base for absolute child */
         min-height: 200px;
-        align-self: stretch; /* Match Info column height */
+        align-self: stretch;
+        /* Match Info column height */
     }
 
-    .client-form .cars-section > *,
-    .edit-client .cars-section > * {
+    .client-form .cars-section>*,
+    .edit-client .cars-section>* {
         position: absolute;
         inset: 0;
         display: flex;
@@ -236,7 +245,7 @@
 .edit-client .tile {
     display: flex;
     flex-direction: column;
-    max-height: 85vh;
+    max-height: var(--popup-max-height);
 }
 
 .edit-client .tile form {

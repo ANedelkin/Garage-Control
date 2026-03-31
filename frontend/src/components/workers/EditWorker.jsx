@@ -127,6 +127,13 @@ const EditWorker = ({ id, onClose, onSave }) => {
             >
               <i className="fa-solid fa-lock"></i> Access
             </button>
+            <button
+              type="button"
+              className={`tab-btn ${activeTab === 'jobtypes' ? 'active' : ''}`}
+              onClick={() => setActiveTab('jobtypes')}
+            >
+              <i className="fa-solid fa-briefcase"></i> Job Types
+            </button>
           </div>
         )}
 
@@ -188,56 +195,56 @@ const EditWorker = ({ id, onClose, onSave }) => {
           )}
 
           {(!isMobile || activeTab === 'access') && (
-            <>
-              <div className="form-column">
-                <div className="form-section max-height grow">
-                  <label>Access Roles</label>
-                  <div className="list-container max-height grow">
-                    {worker.accesses.map((access, idx) => (
-                      <div className="list-item" key={access.id}>
-                        <label className="checkbox-item">
-                          <input
-                            type="checkbox"
-                            checked={access.isSelected}
-                            onChange={(e) => {
-                              const updatedAccesses = [...worker.accesses];
-                              updatedAccesses[idx].isSelected = e.target.checked;
-                              setWorker({ ...worker, accesses: updatedAccesses });
-                            }}
-                          />
-                          {access.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+            <div className="form-column">
+              <div className="form-section max-height grow">
+                <label>Access Roles</label>
+                <div className="list-container max-height grow">
+                  {worker.accesses.map((access, idx) => (
+                    <div className="list-item" key={access.id}>
+                      <label className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={access.isSelected}
+                          onChange={(e) => {
+                            const updatedAccesses = [...worker.accesses];
+                            updatedAccesses[idx].isSelected = e.target.checked;
+                            setWorker({ ...worker, accesses: updatedAccesses });
+                          }}
+                        />
+                        {access.name}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="form-column">
-                <div className="form-section max-height grow">
-                  <label>Job Types</label>
-                  <div className="list-container max-height grow">
-                    {allJobTypes.map((jt) => (
-                      <div className="list-item" key={jt.id}>
-                        <label className="checkbox-item">
-                          <input
-                            type="checkbox"
-                            checked={worker.jobTypeIds.includes(jt.id)}
-                            onChange={(e) => {
-                              let updated = [...worker.jobTypeIds];
-                              if (e.target.checked) updated.push(jt.id);
-                              else updated = updated.filter((id) => id !== jt.id);
-                              setWorker({ ...worker, jobTypeIds: updated });
-                            }}
-                          />
-                          {jt.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+          {(!isMobile || activeTab === 'jobtypes') && (
+            <div className="form-column">
+              <div className="form-section max-height grow">
+                <label>Job Types</label>
+                <div className="list-container max-height grow">
+                  {allJobTypes.map((jt) => (
+                    <div className="list-item" key={jt.id}>
+                      <label className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={worker.jobTypeIds.includes(jt.id)}
+                          onChange={(e) => {
+                            let updated = [...worker.jobTypeIds];
+                            if (e.target.checked) updated.push(jt.id);
+                            else updated = updated.filter((id) => id !== jt.id);
+                            setWorker({ ...worker, jobTypeIds: updated });
+                          }}
+                        />
+                        {jt.name}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
 
