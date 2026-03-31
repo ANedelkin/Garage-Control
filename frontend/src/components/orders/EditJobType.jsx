@@ -19,6 +19,15 @@ const EditJobType = () => {
   const [errors, setErrors] = useState({});
   const suggestionsRef = useRef(null);
 
+  const [activeTab, setActiveTab] = useState('general');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 800);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     workerApi.getWorkers()
       .then(res => setWorkers(res))
@@ -106,13 +115,31 @@ const EditJobType = () => {
   return (
     <main className="main container job-type-edit">
       <div className="tile">
-        <h3 className="tile-header">Job Type Information</h3>
+        <h3 className="tile-header">{isNew ? "New Job Type" : "Edit Job Type"}</h3>
         <form onSubmit={handleFormSubmit} className="job-type-form">
-          <div className="horizontal grow">
+          {isMobile && (
+            <div className="popup-tabs">
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`}
+                onClick={() => setActiveTab('general')}
+              >
+                <i className="fa-solid fa-circle-info"></i> Info
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${activeTab === 'mechanics' ? 'active' : ''}`}
+                onClick={() => setActiveTab('mechanics')}
+              >
+                <i className="fa-solid fa-users"></i> Mechanics
+              </button>
+            </div>
+          )}
 
-            <div className="form-left">
-              <div className="horizontal">
-                <div className="form-section form-section-name grow">
+          <div className="tab-content horizontal">
+            {(!isMobile || activeTab === 'general') && (
+              <div className="form-column">
+                <div className="form-section">
                   <label htmlFor="name">Job Type Name</label>
                   <input
                     type="text"
@@ -123,113 +150,115 @@ const EditJobType = () => {
                     onChange={(e) =>
                       setJobTypeData({ ...jobTypeData, name: e.target.value })
                     }
+                    required
                   />
                   <FieldError name="Name" errors={errors} />
                 </div>
-              </div>
 
-              <div className="form-section max-height">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="Description"
-                  className="description"
-                  placeholder="Enter job type description"
-                  value={jobTypeData.description}
-                  onChange={(e) =>
-                    setJobTypeData({ ...jobTypeData, description: e.target.value })
-                  }
-                />
-                <FieldError name="Description" errors={errors} />
-              </div>
-            </div>
-
-            <div className="form-right">
-              <div className="form-section">
-                <label>Mechanics</label>
-
-                <div className="header suggestion-wrapper">
-                  <input
-                    type="text"
-                    placeholder="Enter mechanic name"
-                    value={newMechanic}
-                    onInput={(e) => handleMechanicSearch(e.target.value)}
-                    onFocus={() => handleMechanicSearch(newMechanic)}
-                    onBlur={() => {
-                      if (showSuggestions && mechanicSuggestions.length > 0) {
-                        handleAddMechanic(mechanicSuggestions[0]);
-                      }
-                      setTimeout(() => setShowSuggestions(false), 200);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (showSuggestions && mechanicSuggestions.length > 0) {
-                          suggestionsRef.current?.handleKeyDown(e);
-                        } else {
-                          handleAddMechanic();
-                        }
-                      } else {
-                        suggestionsRef.current?.handleKeyDown(e);
-                      }
-                    }}
+                <div className="form-section max-height grow">
+                  <label htmlFor="description">Description</label>
+                  <textarea
+                    id="description"
+                    name="Description"
+                    className="description"
+                    placeholder="Enter job type description"
+                    style={{ flex: 1, minHeight: '150px' }}
+                    value={jobTypeData.description}
+                    onChange={(e) =>
+                      setJobTypeData({ ...jobTypeData, description: e.target.value })
+                    }
                   />
-                  <Suggestions
-                    ref={suggestionsRef}
-                    suggestions={showSuggestions ? mechanicSuggestions : []}
-                    isOpen={showSuggestions && mechanicSuggestions.length > 0}
-                    onSelect={handleAddMechanic}
-                    onClose={() => setShowSuggestions(false)}
-                    renderItem={(worker) => worker.name}
-                    maxHeight="200px"
-                    style={{ width: '100%' }}
-                  />
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => handleAddMechanic()}
-                  >
-                    Add
-                  </button>
+                  <FieldError name="Description" errors={errors} />
                 </div>
+              </div>
+            )}
 
-              </div>
-              <div className="list-container max-height form-section">
-                {jobTypeData.mechanics.length === 0 ? (
-                  <div className="list-empty">
-                    No mechanics assigned
+            {(!isMobile || activeTab === 'mechanics') && (
+              <div className="form-column mechanics-section">
+                <div className="form-section max-height grow">
+                  <label>Allowed Mechanics</label>
+                  <div className="header suggestion-wrapper" style={{ marginBottom: '15px' }}>
+                    <input
+                      type="text"
+                      placeholder="Enter mechanic name"
+                      value={newMechanic}
+                      onInput={(e) => handleMechanicSearch(e.target.value)}
+                      onFocus={() => handleMechanicSearch(newMechanic)}
+                      onBlur={() => {
+                        if (showSuggestions && mechanicSuggestions.length > 0) {
+                          handleAddMechanic(mechanicSuggestions[0]);
+                        }
+                        setTimeout(() => setShowSuggestions(false), 200);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (showSuggestions && mechanicSuggestions.length > 0) {
+                            suggestionsRef.current?.handleKeyDown(e);
+                          } else {
+                            handleAddMechanic();
+                          }
+                        } else {
+                          suggestionsRef.current?.handleKeyDown(e);
+                        }
+                      }}
+                    />
+                    <Suggestions
+                      ref={suggestionsRef}
+                      suggestions={showSuggestions ? mechanicSuggestions : []}
+                      isOpen={showSuggestions && mechanicSuggestions.length > 0}
+                      onSelect={handleAddMechanic}
+                      onClose={() => setShowSuggestions(false)}
+                      renderItem={(worker) => worker.name}
+                      maxHeight="200px"
+                      style={{ width: '100%' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={() => handleAddMechanic()}
+                    >
+                      Add
+                    </button>
                   </div>
-                ) : (
-                  jobTypeData.mechanics.map((m, i) => {
-                    return (
-                      <div key={i} className="list-item">
-                        <span className="item-label">{m}</span>
-                        <button
-                          type="button"
-                          className="btn delete icon-btn"
-                          onClick={() => {
-                            const updated = jobTypeData.mechanics.filter(
-                              (_, idx) => idx !== i
-                            );
-                            setJobTypeData({ ...jobTypeData, mechanics: updated });
-                          }}
-                        >
-                          <i className="fa-solid fa-trash"></i>
-                        </button>
+
+                  <div className="list-container max-height max-width">
+                    {jobTypeData.mechanics.length === 0 ? (
+                      <div className="list-empty">
+                        No mechanics assigned
                       </div>
-                    );
-                  })
-                )}
+                    ) : (
+                      jobTypeData.mechanics.map((m, i) => {
+                        return (
+                          <div key={i} className="list-item">
+                            <span className="item-label">{m}</span>
+                            <button
+                              type="button"
+                              className="btn delete icon-btn"
+                              onClick={() => {
+                                const updated = jobTypeData.mechanics.filter(
+                                  (_, idx) => idx !== i
+                                );
+                                setJobTypeData({ ...jobTypeData, mechanics: updated });
+                              }}
+                            >
+                              <i className="fa-solid fa-trash"></i>
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-
           {/* Submit */}
-          <div className="form-footer" style={{ marginTop: '16px' }}>
+          <div className="form-footer" style={{ marginTop: '20px' }}>
             {errors.general && <p className="form-error">{errors.general}</p>}
             <button type="submit" className="btn">
-              Done
+              {isNew ? "Create Job Type" : "Save Changes"}
             </button>
           </div>
         </form>

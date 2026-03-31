@@ -7,16 +7,11 @@
 @media (max-width: 800px) {
   .popup.tile:has(.edit-worker),
   .popup.tile:has(.workhours) {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  @media (min-width: 501px) {
-    .popup.tile:has(.edit-worker),
-    .popup.tile:has(.workhours) {
-      width: fit-content;
-      max-width: 95vw;
-    }
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
   }
 }
 
@@ -103,11 +98,7 @@
   cursor: not-allowed;
 }
 
-.form-upper {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-}
+/* .form-upper removed in favor of .tab-content.horizontal */
 
 .workhours {
   display: flex;
@@ -179,6 +170,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.tab-content.horizontal {
+  flex-direction: row !important;
 }
 
 .tab-content > div {
@@ -258,10 +253,7 @@
     display: none !important;
   }
 
-  .form-upper {
-    gap: 0;
-    grid-template-columns: 1fr;
-  }
+/* .form-upper removed */
 
   /* 500-800px range: fields are centered but fluidly fill the space up to 400px */
   @media (min-width: 501px) {

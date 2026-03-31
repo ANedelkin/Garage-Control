@@ -123,7 +123,7 @@ const Workers = () => {
                         <colgroup>
                             <col style={{ width: '200px' }} />
                             <col className="hide-md" />
-                            <col className="hide-sm" style={{ width: '140px' }} />
+                            <col className="hide-md" style={{ width: '140px' }} />
                             <col style={{ width: '150px' }} />
                         </colgroup>
 
@@ -131,7 +131,7 @@ const Workers = () => {
                             <tr>
                                 <th>Name</th>
                                 <th className="hide-md">Access</th>
-                                <th className="hide-sm">Hired On</th>
+                                <th className="hide-md">Hired On</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -155,7 +155,7 @@ const Workers = () => {
                                         })()}
                                     </td>
 
-                                    <td className="hide-sm">{new Date(w.hiredOn).toLocaleDateString()}</td>
+                                    <td className="hide-md">{new Date(w.hiredOn).toLocaleDateString()}</td>
 
                                     <td onClick={e => e.stopPropagation()}>
                                         <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', position: 'relative' }}>

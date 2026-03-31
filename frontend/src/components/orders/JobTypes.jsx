@@ -63,28 +63,28 @@ const JobTypes = () => {
           <table>
             <colgroup>
               <col style={{ width: '250px' }} />
-              <col />
+              <col className="hide-md" />
               <col style={{ width: '70px' }} />
             </colgroup>
 
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Description</th>
+                <th className="hide-sm">Description</th>
                 <th></th>
               </tr>
             </thead>
 
             <tbody>
               {filteredJobTypes.map((jobType, index) => (
-                <tr 
-                  key={jobType.id || index} 
+                <tr
+                  key={jobType.id || index}
                   ref={el => rowRefs.current[jobType.id] = el}
                   onClick={(e) => { e.stopPropagation(); navigate(`/job-types/${jobType.id}`); }}
                   className={highlightId === jobType.id ? 'highlight-outline' : ''}
                 >
                   <td>{jobType.name}</td>
-                  <td className="description" title={jobType.description}>
+                  <td className="description hide-sm" title={jobType.description}>
                     {jobType.description}
                   </td>
                   <td onClick={e => e.stopPropagation()}>

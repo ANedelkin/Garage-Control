@@ -1,45 +1,63 @@
 /* Layout handled by common/table.css and common/layout.css */
 
 .job-type-form {
-  width: fit-content;
-  height: 450px;
+  width: 600px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
+  height: 400px;
 }
 
-.description {
-  height: calc(100% - 30px);
-  width: 480px;
+.tab-content.horizontal {
+  flex-direction: row !important;
+  display: flex !important;
+}
+
+@media (max-width: 800px) {
+  .job-type-edit.main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .job-type-edit .tile {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+  }
+
+  .job-type-form {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    flex: 1;
+  }
+
+  .tab-content.horizontal {
+    flex-direction: column !important;
+    flex: 1;
+  }
+}
+
+.job-type-form .description {
+  flex: 1;
+  width: 100%;
   resize: none;
+  min-height: 150px;
 }
 
-.color-button {
-  width: 100px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: .5px;
-}
-
-.color-button:hover {
-  opacity: 0.85;
-}
-
-.job-type-edit .form-left {
-  width: 480px;
-}
-
-.job-type-edit .form-left,
-.job-type-edit .form-right {
-  /* flex: 1; */
+.job-type-edit .form-column {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.job-type-edit .form-right {
-  width: 350px;
+.job-type-edit .mechanics-section {
+  position: relative;
 }
 
 @media (max-width: 700px) {

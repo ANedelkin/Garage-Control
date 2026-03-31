@@ -37,6 +37,15 @@ const EditWorker = ({ id, onClose, onSave }) => {
   const { addPopup, removeLastPopup } = usePopup();
   const [editingLeaveIndex, setEditingLeaveIndex] = useState(-1);
 
+  const [activeTab, setActiveTab] = useState('info');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 800);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -102,112 +111,137 @@ const EditWorker = ({ id, onClose, onSave }) => {
   return (
     <div className="edit-worker">
       <form onSubmit={handleSave} className="worker-form">
-        <div className="form-upper">
-          <div className="form-column">
-            <div className="form-section">
-              <label>Name</label>
-              <input
-                type="text"
-                name="Name"
-                value={worker.name}
-                onChange={(e) => setWorker({ ...worker, name: e.target.value })}
-                required
-              />
-              <FieldError name="Name" errors={errors} />
-            </div>
-            <div className="form-section">
-              <label>Username</label>
-              <input
-                type="text"
-                name="Username"
-                value={worker.username || ""}
-                onChange={(e) => setWorker({ ...worker, username: e.target.value })}
-                required
-              />
-              <FieldError name="Username" errors={errors} />
-            </div>
-            <div className="form-section">
-              <label>Password</label>
-              <input
-                type="password"
-                name="Password"
-                value={worker.password}
-                onChange={(e) => setWorker({ ...worker, password: e.target.value })}
-                required={isNew}
-              />
-              <FieldError name="Password" errors={errors} />
-            </div>
-            <div className="form-section">
-              <label>Email (Optional)</label>
-              <input
-                type="email"
-                name="Email"
-                value={worker.email || ""}
-                onChange={(e) => setWorker({ ...worker, email: e.target.value })}
-              />
-              <FieldError name="Email" errors={errors} />
-            </div>
-            <div className="form-section">
-              <label>Hired On</label>
-              <DatePicker
-                selected={worker.hiredOn}
-                onChange={(date) => setWorker({ ...worker, hiredOn: date })}
-              />
-              <FieldError name="HiredOn" errors={errors} />
-            </div>
+        {isMobile && (
+          <div className="popup-tabs">
+            <button
+              type="button"
+              className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+              onClick={() => setActiveTab('info')}
+            >
+              <i className="fa-solid fa-user"></i> Info
+            </button>
+            <button
+              type="button"
+              className={`tab-btn ${activeTab === 'access' ? 'active' : ''}`}
+              onClick={() => setActiveTab('access')}
+            >
+              <i className="fa-solid fa-lock"></i> Access
+            </button>
           </div>
+        )}
 
-          <div className="form-section">
-            <label>Access</label>
-            <div className="list-container grow">
-              {worker.accesses.map((access, idx) => (
-                <div className="list-item" key={access.id}>
-                  <label className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={access.isSelected}
-                      onChange={(e) => {
-                        const updatedAccesses = [...worker.accesses];
-                        updatedAccesses[idx].isSelected = e.target.checked;
-                        setWorker({ ...worker, accesses: updatedAccesses });
-                      }}
-                    />
-                    {access.name}
-                  </label>
-                </div>
-              ))}
+        <div className="tab-content horizontal">
+          {(!isMobile || activeTab === 'info') && (
+            <div className="form-column">
+              <div className="form-section">
+                <label>Name</label>
+                <input
+                  type="text"
+                  name="Name"
+                  value={worker.name}
+                  onChange={(e) => setWorker({ ...worker, name: e.target.value })}
+                  required
+                />
+                <FieldError name="Name" errors={errors} />
+              </div>
+              <div className="form-section">
+                <label>Username</label>
+                <input
+                  type="text"
+                  name="Username"
+                  value={worker.username || ""}
+                  onChange={(e) => setWorker({ ...worker, username: e.target.value })}
+                  required
+                />
+                <FieldError name="Username" errors={errors} />
+              </div>
+              <div className="form-section">
+                <label>Password</label>
+                <input
+                  type="password"
+                  name="Password"
+                  value={worker.password}
+                  onChange={(e) => setWorker({ ...worker, password: e.target.value })}
+                  required={isNew}
+                />
+                <FieldError name="Password" errors={errors} />
+              </div>
+              <div className="form-section">
+                <label>Email (Optional)</label>
+                <input
+                  type="email"
+                  name="Email"
+                  value={worker.email || ""}
+                  onChange={(e) => setWorker({ ...worker, email: e.target.value })}
+                />
+                <FieldError name="Email" errors={errors} />
+              </div>
+              <div className="form-section">
+                <label>Hired On</label>
+                <DatePicker
+                  selected={worker.hiredOn}
+                  onChange={(date) => setWorker({ ...worker, hiredOn: date })}
+                />
+                <FieldError name="HiredOn" errors={errors} />
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="form-section">
-            <label>Job Types</label>
-            <div className="list-container grow">
-              {allJobTypes.map((jt) => (
-                <div className="list-item" key={jt.id}>
-                  <label className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={worker.jobTypeIds.includes(jt.id)}
-                      onChange={(e) => {
-                        let updated = [...worker.jobTypeIds];
-                        if (e.target.checked) updated.push(jt.id);
-                        else updated = updated.filter((id) => id !== jt.id);
-                        setWorker({ ...worker, jobTypeIds: updated });
-                      }}
-                    />
-                    {jt.name}
-                  </label>
+          {(!isMobile || activeTab === 'access') && (
+            <>
+              <div className="form-column">
+                <div className="form-section max-height grow">
+                  <label>Access Roles</label>
+                  <div className="list-container max-height grow">
+                    {worker.accesses.map((access, idx) => (
+                      <div className="list-item" key={access.id}>
+                        <label className="checkbox-item">
+                          <input
+                            type="checkbox"
+                            checked={access.isSelected}
+                            onChange={(e) => {
+                              const updatedAccesses = [...worker.accesses];
+                              updatedAccesses[idx].isSelected = e.target.checked;
+                              setWorker({ ...worker, accesses: updatedAccesses });
+                            }}
+                          />
+                          {access.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+
+              <div className="form-column">
+                <div className="form-section max-height grow">
+                  <label>Job Types</label>
+                  <div className="list-container max-height grow">
+                    {allJobTypes.map((jt) => (
+                      <div className="list-item" key={jt.id}>
+                        <label className="checkbox-item">
+                          <input
+                            type="checkbox"
+                            checked={worker.jobTypeIds.includes(jt.id)}
+                            onChange={(e) => {
+                              let updated = [...worker.jobTypeIds];
+                              if (e.target.checked) updated.push(jt.id);
+                              else updated = updated.filter((id) => id !== jt.id);
+                              setWorker({ ...worker, jobTypeIds: updated });
+                            }}
+                          />
+                          {jt.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-        {/* 
-          <div className="form-lower">
-            
-          </div> */}
 
-        <div className="form-footer">
+        <div className="form-footer" style={{ marginTop: '20px' }}>
           {errors.general && <p className="form-error">{errors.general}</p>}
           <button type="button" className="btn" onClick={onClose}>
             Cancel
