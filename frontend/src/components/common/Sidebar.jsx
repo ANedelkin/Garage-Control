@@ -70,15 +70,11 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
   });
 
   const handlePopupOpen = (item) => {
-    if (item.label === 'Workshop Details') {
-      navigate('/workshop-details');
-    } else {
-      const PopupComponent = item.popupComponent;
-      addPopup(
-        item.label,
-        <PopupComponent onClose={removeLastPopup} />
-      );
-    }
+    const PopupComponent = item.popupComponent;
+    addPopup(
+      item.label,
+      <PopupComponent onClose={removeLastPopup} />
+    );
     onClose();
   };
 

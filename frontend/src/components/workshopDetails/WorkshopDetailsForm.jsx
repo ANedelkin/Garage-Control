@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FieldError from '../common/FieldError.jsx';
+import '../../assets/css/workshop-details.css';
 
 const WorkshopDetailsForm = ({ handleSubmit, initialData = null, errors = {} }) => {
     const [workshopData, setWorkshopData] = useState(initialData);

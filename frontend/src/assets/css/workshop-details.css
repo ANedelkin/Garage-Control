@@ -1,5 +1,12 @@
 .workshop-details-form {
-    width: 350px !important;
+    width: 500px !important;
     margin-right: auto;
     margin-left: auto;
+    max-width: 100%;
+}
+
+@media (max-width: 800px) {
+    .workshop-details-form {
+        width: 100% !important;
+    }
 }
