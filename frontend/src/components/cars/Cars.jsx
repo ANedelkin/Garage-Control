@@ -171,9 +171,9 @@ const Cars = () => {
                                 <th>Make</th>
                                 <th>Model</th>
                                 <th>Plate</th>
-                                <th>VIN</th>
-                                <th>KM</th>
-                                <th>Owner</th>
+                                <th className="hide-lg">VIN</th>
+                                <th className="hide-md">KM</th>
+                                <th className="hide-sm">Owner</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -186,12 +186,12 @@ const Cars = () => {
                                     style={{ cursor: 'pointer' }} 
                                     className={`clickable-row ${carId === c.id ? 'highlight-outline' : ''}`}
                                 >
-                                    <td>{makes[c.makeId] || c.makeId}</td>
+                                     <td>{makes[c.makeId] || c.makeId}</td>
                                     <td>{models[c.modelId] || c.modelId}</td>
                                     <td>{c.registrationNumber}</td>
-                                    <td>{c.vin || '-'}</td>
-                                    <td>{c.kilometers}</td>
-                                    <td>{c.ownerName}</td>
+                                    <td className="hide-lg">{c.vin || '-'}</td>
+                                    <td className="hide-md">{c.kilometers}</td>
+                                    <td className="hide-sm">{c.ownerName}</td>
                                     <td>
                                         <button className="btn delete icon-btn" onClick={(e) => handleDelete(e, c.id)}>
                                             <i className="fa-solid fa-trash"></i>
@@ -200,7 +200,7 @@ const Cars = () => {
                                 </tr>
                             ))}
                             {!loading && filteredCars.length === 0 && (
-                                <tr><td colSpan="6" style={{ textAlign: 'center' }}>No cars found.</td></tr>
+                                <tr><td colSpan="7" style={{ textAlign: 'center' }}>No cars found.</td></tr>
                             )}
                         </tbody>
                     </table>
