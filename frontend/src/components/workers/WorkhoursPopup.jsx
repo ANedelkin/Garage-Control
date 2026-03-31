@@ -75,6 +75,8 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
                 onConfirm={handleAddOrUpdateLeave}
                 currentLeave={leave || { startDate: new Date(), endDate: new Date() }}
                 isEditing={index >= 0}
+                existingLeaves={worker.leaves}
+                currentIndex={index}
             />
         );
     };
@@ -141,9 +143,12 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
                 {/* Leaves Section - Show if desktop OR activeTab is leaves */}
                 {(!isMobile || activeTab === "leaves") && (
                     <div className="leaves-section form-section">
-                        <div className="section-header">
+                        <div class="section-header">
                             <label>Leaves</label>
-                            <button type="button" className="btn" onClick={() => openLeavePopup()}>
+                            <button type="button" className="btn" onClick={(e) => {
+                                e.currentTarget.blur();
+                                openLeavePopup();
+                            }}>
                                 + Add Leave
                             </button>
                         </div>
