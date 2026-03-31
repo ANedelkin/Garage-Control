@@ -143,7 +143,7 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
                 {/* Leaves Section - Show if desktop OR activeTab is leaves */}
                 {(!isMobile || activeTab === "leaves") && (
                     <div className="leaves-section form-section">
-                        <div class="section-header">
+                        <div className="section-header">
                             <label>Leaves</label>
                             <button type="button" className="btn" onClick={(e) => {
                                 e.currentTarget.blur();
