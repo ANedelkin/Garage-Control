@@ -52,7 +52,7 @@ const Clients = () => {
     };
 
     const openEditPopup = (id) => {
-        addPopup("Edit Client", <ClientPopup
+        addPopup(null, <ClientPopup
             onClose={() => { removeLastPopup(); navigate('/clients'); }}
             onSave={handlePopupSave}
             clientId={id === 'new' ? null : id}
@@ -108,9 +108,9 @@ const Clients = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Phone</th>
-                                <th>Email</th>
-                                <th>Address</th>
+                                <th className="hide-sm">Phone</th>
+                                <th className="hide-md">Email</th>
+                                <th className="hide-lg">Address</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -124,9 +124,9 @@ const Clients = () => {
                                     className={`clickable-row ${clientId === c.id ? 'highlight-outline' : ''}`}
                                 >
                                     <td>{c.name}</td>
-                                    <td>{c.phoneNumber}</td>
-                                    <td>{c.email}</td>
-                                    <td>{c.address}</td>
+                                    <td className="hide-sm">{c.phoneNumber}</td>
+                                    <td className="hide-md">{c.email}</td>
+                                    <td className="hide-lg">{c.address}</td>
                                     <td onClick={e => e.stopPropagation()}>
                                         <button className="btn icon-btn" title="Edit client" onClick={() => openEditPopup(c.id)}>
                                             <i className="fa-solid fa-pen"></i>

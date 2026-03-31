@@ -33,6 +33,14 @@ const EditClient = () => {
     const [modelsMap, setModelsMap] = useState({}); // map[modelId] -> modelName
 
     const { addPopup, removeLastPopup } = usePopup();
+    const [activeTab, setActiveTab] = useState("info");
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 800);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // Initial Load
     useEffect(() => {
@@ -73,20 +81,56 @@ const EditClient = () => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
+            let savedClientId = id;
             if (isNew) {
-                await clientApi.create(client);
+                const res = await clientApi.create(client);
+                savedClientId = res.id;
             } else {
                 await clientApi.edit(id, client);
             }
+
+            // If we have local cars (temp IDs), save them now
+            const localCars = cars.filter(c => c.id.toString().startsWith('temp-'));
+            if (localCars.length > 0) {
+                await Promise.all(localCars.map(car => {
+                    const { id: carId, ...carDto } = car; // remove temp id
+                    return vehicleApi.create({ ...carDto, ownerId: savedClientId });
+                }));
+            }
+
             navigate(-1);
         } catch (error) {
             console.error('Error saving client info:', error);
             setErrors(parseValidationErrors(error));
-        } finally { }
+        }
     };
 
     const handleSaveCar = async (carData) => {
         try {
+            if (isNew) {
+                // Local mode (isNew client)
+                if (carData.id && carData.id.toString().startsWith('temp-')) {
+                    // Updating car in local list
+                    setCars(cars.map(c => c.id === carData.id ? { ...carData } : c));
+                } else {
+                    // Adding new car to local list
+                    const tempId = 'temp-' + Date.now();
+                    setCars([...cars, { ...carData, id: tempId }]);
+                }
+
+                // Update modelsMap for display
+                if (!modelsMap[carData.modelId]) {
+                    const mRes = await modelApi.getAll(carData.makeId);
+                    const updMap = { ...modelsMap };
+                    mRes.forEach(m => updMap[m.id] = m.name);
+                    setModelsMap(updMap);
+                }
+
+                removeLastPopup();
+                return;
+            }
+
+            // Remote mode (existing client)
             const carDto = {
                 ...carData,
                 ownerId: id // Ensure owner is set
@@ -104,7 +148,7 @@ const EditClient = () => {
 
             // Re-fetch models map if needed
             if (!modelsMap[carData.modelId]) {
-                const mRes = await modelApi.getModels(carData.makeId);
+                const mRes = await modelApi.getAll(carData.makeId);
                 const updMap = { ...modelsMap };
                 mRes.forEach(m => updMap[m.id] = m.name);
                 setModelsMap(updMap);
@@ -120,6 +164,10 @@ const EditClient = () => {
     const handleDeleteCar = async (carId) => {
         if (!window.confirm("Delete this car?")) return;
         try {
+            if (isNew || carId.toString().startsWith('temp-')) {
+                setCars(cars.filter(c => c.id !== carId));
+                return;
+            }
             await vehicleApi.delete(carId);
             setCars(cars.filter(c => c.id !== carId));
         } catch (error) {
@@ -147,8 +195,27 @@ const EditClient = () => {
             <div className="tile">
                 <h3 className="tile-header">{isNew ? "New Client" : "Edit Client"}</h3>
                 <form onSubmit={handleSave}>
-                    <div className="horizontal">
-                        <div className="form-column">
+                    {isMobile && (
+                        <div className="popup-tabs">
+                        <button
+                                type="button"
+                                className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('info')}
+                            >
+                                <i className="fa-solid fa-user"></i> Info
+                            </button>
+                            <button
+                                type="button"
+                                className={`tab-btn ${activeTab === 'cars' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('cars')}
+                            >
+                                <i className="fa-solid fa-car"></i> Cars
+                            </button>
+                        </div>
+                    )}
+                    <div className="tab-content horizontal">
+                        {(!isMobile || activeTab === 'info') && (
+                            <div className="form-column">
                             <div className="form-section">
                                 <label>Name</label>
                                 <input
@@ -202,39 +269,42 @@ const EditClient = () => {
                                 <FieldError name="RegistrationNumber" errors={errors} />
                             </div>
                         </div>
+                        )}
 
-                        <div className="form-column cars-section">
-                            <div className="form-section max-height">
-                                <div className="section-header">
-                                    <label>Cars</label>
-                                    <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
-                                </div>
-                                <div className="list-container max-width max-height">
-                                    {cars.length === 0 && <p className="list-empty">No cars added.</p>}
-                                    {cars.map(car => {
-                                        const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
-                                        const modelName = modelsMap[car.modelId] || "Unknown";
+                        {(!isMobile || activeTab === 'cars') && (
+                            <div className="form-column cars-section">
+                                <div className="form-section max-height">
+                                    <div className="section-header">
+                                        <label>Cars</label>
+                                        <button type="button" className="btn" onClick={() => openCarPopup()}>+ Add Car</button>
+                                    </div>
+                                    <div className="list-container max-width max-height">
+                                        {cars.length === 0 && <p className="list-empty">No cars added.</p>}
+                                        {cars.map(car => {
+                                            const makeName = makes.find(m => m.id === car.makeId)?.name || "Unknown";
+                                            const modelName = modelsMap[car.modelId] || "Unknown";
 
-                                        return (
-                                            <div key={car.id} className="list-item">
-                                                <div>
-                                                    <strong>{makeName} {modelName}</strong> <br />
-                                                    <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
+                                            return (
+                                                <div key={car.id} className="list-item">
+                                                    <div>
+                                                        <strong>{makeName} {modelName}</strong> <br />
+                                                        <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
+                                                    </div>
+                                                    <div>
+                                                        <button type="button" className="icon-btn btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
+                                                            <i className="fa-solid fa-pen"></i>
+                                                        </button>
+                                                        <button type="button" className="icon-btn delete btn" onClick={() => handleDeleteCar(car.id)}>
+                                                            <i className="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <button type="button" className="icon-btn btn" style={{ marginRight: '10px' }} onClick={() => openCarPopup(car)}>
-                                                        <i className="fa-solid fa-pen"></i>
-                                                    </button>
-                                                    <button type="button" className="icon-btn delete btn" onClick={() => handleDeleteCar(car.id)}>
-                                                        <i className="fa-solid fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
+                                            )
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="form-footer" style={{ marginTop: '20px' }}>

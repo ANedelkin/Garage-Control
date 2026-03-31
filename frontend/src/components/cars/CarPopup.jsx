@@ -39,59 +39,60 @@ const CarPopup = ({ onClose, onSave, car, makes }) => {
 
     const handleSave = () => {
         onSave(currentCar);
-        onClose();
     };
 
     return (
         <div className="car-form">
-            <div className="form-section">
-                <label>Make</label>
-                <Dropdown
-                    value={currentCar.makeId}
-                    onChange={e => setCurrentCar({ ...currentCar, makeId: e.target.value, modelId: "" })}
-                >
-                    <option value="">Select Make</option>
-                    {makes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </Dropdown>
-            </div>
+            <div className="form-body">
+                <div className="form-section">
+                    <label>Make</label>
+                    <Dropdown
+                        value={currentCar.makeId}
+                        onChange={e => setCurrentCar({ ...currentCar, makeId: e.target.value, modelId: "" })}
+                    >
+                        <option value="">Select Make</option>
+                        {makes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </Dropdown>
+                </div>
 
-            <div className="form-section">
-                <label>Model</label>
-                <Dropdown
-                    value={currentCar.modelId}
-                    onChange={e => setCurrentCar({ ...currentCar, modelId: e.target.value })}
-                    disabled={!currentCar.makeId}
-                >
-                    <option value="">Select Model</option>
-                    {popupModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </Dropdown>
-            </div>
+                <div className="form-section">
+                    <label>Model</label>
+                    <Dropdown
+                        value={currentCar.modelId}
+                        onChange={e => setCurrentCar({ ...currentCar, modelId: e.target.value })}
+                        disabled={!currentCar.makeId}
+                    >
+                        <option value="">Select Model</option>
+                        {popupModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </Dropdown>
+                </div>
 
-            <div className="form-section">
-                <label>Registration Number (Plate)</label>
-                <input
-                    type="text"
-                    value={currentCar.registrationNumber}
-                    onChange={e => setCurrentCar({ ...currentCar, registrationNumber: e.target.value })}
-                />
-            </div>
+                <div className="form-section">
+                    <label>Registration Number (Plate)</label>
+                    <input
+                        type="text"
+                        value={currentCar.registrationNumber}
+                        onChange={e => setCurrentCar({ ...currentCar, registrationNumber: e.target.value })}
+                    />
+                </div>
 
-            <div className="form-section">
-                <label>VIN (Optional)</label>
-                <input
-                    type="text"
-                    value={currentCar.vin || ''}
-                    onChange={e => setCurrentCar({ ...currentCar, vin: e.target.value })}
-                />
-            </div>
+                <div className="form-section">
+                    <label>VIN (Optional)</label>
+                    <input
+                        type="text"
+                        value={currentCar.vin || ''}
+                        onChange={e => setCurrentCar({ ...currentCar, vin: e.target.value })}
+                    />
+                </div>
 
-            <div className="form-section">
-                <label>Kilometers</label>
-                <input
-                    type="number"
-                    value={currentCar.kilometers}
-                    onChange={e => setCurrentCar({ ...currentCar, kilometers: parseInt(e.target.value) || 0 })}
-                />
+                <div className="form-section">
+                    <label>Kilometers</label>
+                    <input
+                        type="number"
+                        value={currentCar.kilometers}
+                        onChange={e => setCurrentCar({ ...currentCar, kilometers: parseInt(e.target.value) || 0 })}
+                    />
+                </div>
             </div>
 
             <div className="form-footer">

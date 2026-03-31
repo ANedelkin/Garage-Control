@@ -1,12 +1,247 @@
-.edit-client .cars-section{
-    width: 400px;
-    max-width: 95%;
-}
+/* .edit-client .cars-section {
+    width: 600px;
+} */
 
 .client-form {
-    width: 800px;
+    width: 600px;
+    box-sizing: border-box;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    height: fit-content;
 }
 
-.car-form{
-    width: 400px;
+.car-form {
+    width: 600px;
+    box-sizing: border-box;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    /* Standard popup max height */
+}
+
+.car-form .form-body {
+    padding: 10px 5px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Responsive Tables */
+@media (max-width: 1000px) {
+    .hide-lg {
+        display: none !important;
+    }
+}
+
+@media (max-width: 800px) {
+    .hide-md {
+        display: none !important;
+    }
+}
+
+@media (max-width: 550px) {
+    .hide-sm {
+        display: none !important;
+    }
+}
+
+/* Tab Styles for Popups */
+.popup-tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-clr2);
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--text-clr1);
+}
+
+.tab-btn.active {
+    color: var(--accent3);
+}
+
+.tab-btn.active::after {
+    content: "";
+    position: absolute;
+    bottom: -11px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent3);
+}
+
+/* Responsive Layouts */
+@media (max-width: 800px) {
+
+    /* Full height popup on mobile */
+    .popup-overlay:has(.client-form),
+    .popup-overlay:has(.car-form) {
+        padding: 0 !important;
+    }
+
+    .popup-overlay:has(.client-form) .popup.tile,
+    .popup-overlay:has(.car-form) .popup.tile {
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .client-form,
+    .car-form,
+    .edit-client .tile {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important; /* Override global 85vh */
+        display: flex;
+        flex-direction: column;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        flex: 1;
+    }
+
+    .client-form .tab-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .client-form .horizontal,
+    .edit-client .horizontal {
+        flex-direction: column !important;
+        gap: 0;
+        flex: 1;
+    }
+
+    .client-form .form-column,
+    .edit-client .form-column {
+        width: 100% !important;
+        flex: 1 !important;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100% !important;
+        overflow: hidden; /* Prevent this column from scrolling, let children do it */
+    }
+
+    .edit-client .cars-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 20px;
+    }
+}
+
+/* Restore Desktop Layout Side-by-Side */
+@media (min-width: 801px) {
+    .client-form .tab-content.horizontal {
+        flex-direction: row !important;
+        display: flex;
+        gap: 20px;
+    }
+
+    /* Desktop Details Master / List Slave Height Logic */
+    .client-form .form-column:not(.cars-section),
+    .edit-client .form-column:not(.cars-section) {
+        flex: 0 1 50% !important;
+        overflow-y: auto;
+        padding-right: 15px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .client-form .cars-section,
+    .edit-client .cars-section {
+        flex: 1 1 50% !important;
+        position: relative; /* Base for absolute child */
+        min-height: 200px;
+        align-self: stretch; /* Match Info column height */
+    }
+
+    .client-form .cars-section > *,
+    .edit-client .cars-section > * {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* Cars List Full Height and Scrollable */
+.cars-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+.cars-section .form-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.cars-section .list-container {
+    flex: 1;
+    min-height: 150px;
+    overflow-y: auto;
+}
+
+.client-form .horizontal,
+.client-form .tab-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.client-form .tab-content.horizontal {
+    flex-direction: row;
+    min-height: 0;
+    align-items: stretch;
+}
+
+@media (max-width: 800px) {
+    .client-form .tab-content.horizontal {
+        flex-direction: column;
+    }
+}
+
+.edit-client .tile {
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+
+.edit-client .tile form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }

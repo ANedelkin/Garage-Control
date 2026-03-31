@@ -1,4 +1,4 @@
-/* .popup-overlay {
+.popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -15,9 +15,4 @@
     padding: 22px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-} */
-
-/* .popup h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-} */
+}
