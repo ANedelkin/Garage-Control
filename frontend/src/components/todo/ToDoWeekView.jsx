@@ -71,7 +71,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
     };
 
     return (
-        <div className="week-workspace tile">
+        <div className="calendar-workspace week-view tile">
             <div className="calendar-controls">
                 <button className="btn icon-btn" onClick={() => handleWeekChange(-1)}>
                     <i className="fa-solid fa-chevron-left"></i>
@@ -84,13 +84,13 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
                 </button>
             </div>
 
-            <div className="week-table-wrapper">
-                <table className="week-table">
+            <div className="calendar-table-wrapper">
+                <table className="calendar-table">
                     <thead>
                         <tr>
                             <th className="hour-col"></th>
                             {dayColumns.map((day, idx) => (
-                                <th key={idx}>
+                                <th key={idx} className="calendar-th">
                                     <div className="day-weekday">{day.toLocaleDateString(undefined, { weekday: 'short' })}</div>
                                     <div className="day-date">{day.getDate()}</div>
                                 </th>
@@ -100,7 +100,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
                     <tbody>
                         {visibleHours.map(h => (
                             <tr key={h}>
-                                <td className="hour-label">{h.toString().padStart(2, '0')}:00</td>
+                                <td className="hour-label">{h.toString().padStart(2, '0')}<span className="hour-minutes">:00</span></td>
                                 {dayColumns.map((day, dayIdx) => {
                                     const dow = getDayOfWeek(day);
                                     const working = isWorking(dow, h);
@@ -119,7 +119,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
                                     return (
                                         <td
                                             key={dayIdx}
-                                            className={`week-cell ${isActuallyWorking ? 'working' : 'transparent'}`}
+                                            className={`calendar-td ${isActuallyWorking ? 'working' : 'transparent'}`}
                                         >
                                             {hourJobs.map(j => {
                                                 const jStart = new Date(j.startTime);
@@ -138,7 +138,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
                                                 return (
                                                     <div
                                                         key={j.id}
-                                                        className={`week-job tile glow job-status-${j.status}`}
+                                                        className={`week-job tile job-status-${j.status}`}
                                                         style={{
                                                             height: `calc(${durationHours * 100}% - 4px)`,
                                                             zIndex: 5

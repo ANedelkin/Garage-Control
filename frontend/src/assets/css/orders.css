@@ -330,21 +330,20 @@
     }
 
 
-    .header {
-        flex-direction: column;
-        align-items: stretch;
+    .main.orders-page .header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
     }
 
-    .header input {
-        width: 100%;
-    }
-
-    .header .dropdown,
-    .header .select-wrapper,
-    .header .select-wrapper select,
-    .header .btn.primary {
+    .main.orders-page .header input,
+    .main.orders-page .header .dropdown,
+    .main.orders-page .header .select-wrapper,
+    .main.orders-page .header .select-wrapper select,
+    .main.orders-page .header .btn.primary {
         width: 100% !important;
-        margin: 0;
+        margin: 0 !important;
     }
 
     .tile {

@@ -418,9 +418,7 @@ const ServiceForm = ({
                                                             handlePartSearch(p.name, i);
                                                         }}
                                                         onBlur={() => {
-                                                            if (activePartIndex === i && suggestions.length > 0) {
-                                                                addPart(suggestions[0]);
-                                                            }
+                                                            suggestionsRef.current?.selectHighlighted();
                                                             setTimeout(() => setActivePartIndex(null), 200);
                                                         }}
                                                         onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}

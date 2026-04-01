@@ -56,8 +56,17 @@ const Suggestions = forwardRef(({
         }
     };
 
+    const selectHighlighted = () => {
+        if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+            onSelect(suggestions[highlightedIndex]);
+            return true;
+        }
+        return false;
+    };
+
     useImperativeHandle(ref, () => ({
-        handleKeyDown
+        handleKeyDown,
+        selectHighlighted
     }));
 
     if (!isOpen || suggestions.length === 0) {
@@ -84,9 +93,11 @@ const Suggestions = forwardRef(({
                 <li
                     key={`${item.id || index}`}
                     className={`suggestion-item ${highlightedIndex === index ? 'highlighted' : ''}`}
-                    onClick={() => onSelect(item)}
+                    onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent input blur before selection
+                        onSelect(item);
+                    }}
                     onMouseEnter={() => setHighlightedIndex(index)}
-                    onMouseLeave={() => setHighlightedIndex(-1)}
                 >
                     {renderItem ? renderItem(item) : item.name || String(item)}
                 </li>

@@ -91,6 +91,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                     onFocus={() => handleCarSearch(carSearch)}
                     onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
                     onBlur={() => {
+                        suggestionsRef.current?.selectHighlighted();
                         setTimeout(() => setSuggestions([]), 200);
                     }}
                 />

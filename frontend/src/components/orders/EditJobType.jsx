@@ -185,9 +185,7 @@ const EditJobType = () => {
                       onInput={(e) => handleMechanicSearch(e.target.value)}
                       onFocus={() => handleMechanicSearch(newMechanic)}
                       onBlur={() => {
-                        if (showSuggestions && mechanicSuggestions.length > 0) {
-                          handleAddMechanic(mechanicSuggestions[0]);
-                        }
+                        suggestionsRef.current?.selectHighlighted();
                         setTimeout(() => setShowSuggestions(false), 200);
                       }}
                       onKeyDown={(e) => {

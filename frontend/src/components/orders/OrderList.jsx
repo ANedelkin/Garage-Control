@@ -191,7 +191,7 @@ const OrderList = ({ mode = 'active' }) => {
     };
 
     return (
-        <main className="main" onClick={handleContainerClick}>
+        <main className="main orders-page" onClick={handleContainerClick}>
             <div className="header">
                 <input
                     type="text"

@@ -37,14 +37,14 @@ const ToDoList = ({ jobs }) => {
                             <h3>{date}</h3>
                             <span>{dayJobs.length} {dayJobs.length === 1 ? 'task' : 'tasks'}</span>
                         </div>
-                        <div className="table">
+                        <div className="table" style={{ overflowX: 'auto' }}>
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Status</th>
                                         <th>Type</th>
-                                        <th>Car</th>
-                                        <th>Description</th>
+                                        <th className="hide-sm">Car</th>
+                                        <th className="hide-md">Description</th>
                                         <th>Time</th>
                                     </tr>
                                 </thead>
@@ -56,15 +56,17 @@ const ToDoList = ({ jobs }) => {
                                                     <i className={`fa-solid ${job.status === 'pending' ? 'fa-hourglass-start' :
                                                         job.status === 'inprogress' ? 'fa-screwdriver-wrench' : 'fa-check'
                                                         } job-status-${job.status} status-icon`}></i>
-                                                    {job.status === 'pending' ? 'Pending' : job.status === 'inprogress' ? 'In Progress' : 'Done'}
+                                                    <span className="hide-sm">
+                                                        {job.status === 'pending' ? ' Pending' : job.status === 'inprogress' ? ' In Progress' : ' Done'}
+                                                    </span>
                                                 </span>
                                             </td>
                                             <td>{job.typeName}</td>
-                                            <td>
+                                            <td className="hide-sm">
                                                 <div>{job.carName}</div>
                                                 <div className="car-reg">{job.carRegistrationNumber}</div>
                                             </td>
-                                            <td>{job.description}</td>
+                                            <td className="hide-md">{job.description}</td>
                                             <td className="job-time-meta">{new Date(job.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</td>
                                         </tr>
                                     ))}

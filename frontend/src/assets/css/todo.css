@@ -23,13 +23,12 @@
     font-weight: 600;
 }
 
-/* Month View Styles */
-.month-workspace {
+/* --- Shared Calendar System --- */
+.calendar-workspace {
     margin-top: 20px;
-    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 24px !important;
+    padding: 24px;
 }
 
 .calendar-controls {
@@ -47,15 +46,28 @@
     margin: 0;
 }
 
+.calendar-table-wrapper {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
 .calendar-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
-    flex: 1;
+    table-layout: fixed !important;
 }
 
-.calendar-table tbody {
+.calendar-table th,
+.calendar-table td {
+    border: 1px solid var(--border2);
+}
+
+.calendar-td {
+    position: relative;
     background: var(--solid3);
+    cursor: default;
+    min-width: 60px;
+    padding: 0;
 }
 
 .calendar-th {
@@ -66,32 +78,57 @@
     border-bottom: 1px solid var(--border2);
 }
 
-.calendar-cell {
-    border: 1px solid var(--border2);
+.calendar-workspace.month-view .calendar-table {
+    min-width: 560px;
+    /* 7 columns * 80px = 560px */
+}
+
+.calendar-workspace.month-view .calendar-th,
+.calendar-workspace.month-view .calendar-td {
+    width: 14.2857% !important;
+    min-width: 80px !important;
+}
+
+/* --- Month View Specific --- */
+.calendar-workspace.month-view .calendar-td {
     vertical-align: top;
+    height: 120px !important;
+    overflow: hidden;
+}
+
+.month-cell-wrapper {
+    display: flex;
+    flex-direction: column;
     height: 120px;
-    padding: 10px;
-    transition: background 0.2s;
-    cursor: default;
+    width: 100%;
+    overflow: hidden;
 }
 
-.calendar-cell:hover {
-    background: transparent !important;
+.month-cell-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-.calendar-table tr:hover {
-    background: transparent !important;
+.month-cell-content::-webkit-scrollbar {
+    width: 3px;
 }
 
-.calendar-cell.empty {
-    background: rgba(255, 255, 255, 0.02);
+.month-cell-content::-webkit-scrollbar-thumb {
+    background: var(--border2);
+    border-radius: 3px;
 }
 
 .day-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--solid3);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
 }
 
 .day-number {
@@ -113,18 +150,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    max-height: 80px;
-    overflow-y: auto;
-    padding-right: 2px;
-}
-
-.day-events::-webkit-scrollbar {
-    width: 3px;
-}
-
-.day-events::-webkit-scrollbar-thumb {
-    background: var(--border2);
-    border-radius: 3px;
+    flex: 1;
+    min-height: 0;
 }
 
 .calendar-event {
@@ -175,71 +202,37 @@
     color: #5cb85c;
 }
 
-@media (max-width: 1000px) {
-    .calendar-cell {
-        height: 80px;
-        padding: 5px;
-    }
-
-    .event-time {
-        display: none;
-    }
-}
-
-.main.calendar-layout {
-    padding-left: 2%;
-    padding-right: 2%;
-    max-width: none;
-}
-
-.main.calendar-layout .header h1 {
-    margin: 0;
-}
-
-/* Week View Styles */
-.week-workspace {
-    margin-top: 20px;
-    padding: 24px !important;
-    display: flex;
-    flex-direction: column;
-    min-height: 600px;
-}
-
-.week-table-wrapper {
-    margin-top: 20px;
-    overflow-x: auto;
-    flex: 1;
-}
-
-.week-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-
-.week-table th,
-.week-table td {
-    border: 1px solid var(--border2);
-    padding: 0;
-    position: relative;
+/* --- Week View Specific --- */
+.calendar-workspace.week-view .calendar-td {
     height: 50px;
-    background: var(--solid3);
     overflow: visible !important;
-    /* Ensure multi-hour jobs aren't clipped */
-    cursor: default;
+    /* Allow multi-hour jobs to span cells */
+}
+
+.calendar-workspace.week-view .calendar-table {
+    min-width: 640px;
+    /* 80px hour col + 7 days * 80px = 640px */
 }
 
 .hour-col {
     width: 80px;
+    min-width: 80px;
 }
 
 .hour-label {
     text-align: center;
     font-size: 0.8rem;
     color: var(--text-clr2);
-    background: transparent !important;
     font-family: monospace;
     padding: 0 10px;
+    width: 80px;
+    min-width: 80px;
+}
+
+.calendar-workspace.week-view .calendar-th,
+.calendar-workspace.week-view .calendar-td {
+    width: calc((100% - 80px) / 7);
+    min-width: 80px;
 }
 
 .day-weekday {
@@ -254,22 +247,20 @@
     margin-top: 2px;
 }
 
-.week-table thead th {
+.week-view .calendar-table thead th {
     padding: 10px 0;
     background: transparent;
 }
 
-
-/* Disabled row hover background styling for week view specifically */
-.week-table tr:hover {
+.week-view .calendar-table tr:hover {
     background: transparent !important;
 }
 
-.week-cell.working {
+.calendar-td.working {
     background: var(--solid3);
 }
 
-.week-cell.transparent {
+.calendar-td.transparent {
     background: transparent;
 }
 
@@ -279,22 +270,18 @@
     left: 2px;
     right: 2px;
     background: var(--accent);
-    /* border-radius: 4px; */
     padding: 4px;
     cursor: pointer;
     overflow: hidden;
     transition: filter 0.2s, transform 0.1s;
-    /* border: 1px solid rgba(255, 255, 255, 0.1); */
-    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); */
+    z-index: 5;
 }
-
 
 .job-inner {
     display: flex;
     flex-direction: column;
     height: 100%;
     font-size: 0.75rem;
-    /* color: white; */
 }
 
 .job-time {
@@ -308,4 +295,107 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Layout-wide overrides */
+.main.calendar-layout {
+    padding-left: 2%;
+    padding-right: 2%;
+    max-width: none;
+}
+
+.main.calendar-layout .header h1 {
+    margin: 0;
+}
+
+/* --- Responsiveness --- */
+@media (max-width: 800px) {
+    .main .header {
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .main .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .calendar-workspace {
+        padding: 5px !important;
+        margin-top: 5px;
+        height: auto;
+        min-height: auto;
+        flex: none;
+        overflow-y: visible;
+    }
+
+    .calendar-table-wrapper {
+        flex: none !important;
+        margin-top: 5px;
+    }
+
+    .calendar-title {
+        font-size: 1.2rem;
+        min-width: unset;
+    }
+
+    .month-view .calendar-td {
+        height: 120px !important;
+    }
+
+    .month-cell-content {
+        height: 120px;
+        padding: 5px;
+    }
+
+    .calendar-event {
+        padding: 2px;
+        font-size: 0.6rem;
+    }
+
+    .event-name {
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.1;
+    }
+
+    .hour-col,
+    .hour-label {
+        width: 25px !important;
+        min-width: 25px !important;
+    }
+
+    .hour-label {
+        font-size: 0.7rem;
+        padding: 0 2px;
+    }
+
+    .job-time,
+    .hour-minutes {
+        display: none;
+    }
+
+    .job-name {
+        white-space: normal;
+        line-height: 1.1;
+        font-size: 0.65rem;
+    }
+
+    .day-weekday {
+        font-size: 0.65rem;
+    }
+
+    .day-date {
+        font-size: 0.9rem;
+    }
+
+    .calendar-table {
+        min-width: unset;
+    }
+
+    @media (max-width: 800px) {
+        .event-time {
+            display: none;
+        }
+    }
 }
