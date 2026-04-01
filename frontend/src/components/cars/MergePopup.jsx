@@ -4,7 +4,7 @@ const MergePopup = ({ mergeType, customItem, globalItem, onMerge, onClose }) => 
     if (!customItem || !globalItem) return null;
 
     return (
-        <div className="form-section">
+        <div className="form-section merge-popup">
             <p>A global version of this {mergeType} has been created. Would you like to replace your custom version with the global one?</p>
 
             <div className="merge-comparison">
@@ -30,7 +30,7 @@ const MergePopup = ({ mergeType, customItem, globalItem, onMerge, onClose }) => 
 
             <div className="form-footer">
                 <button className="btn" onClick={onMerge}>
-                    <i className="fa-solid fa-code-merge"></i> Merge
+                    <i className="fa-solid fa-arrows-to-circle"></i> Merge
                 </button>
                 <button className="btn" onClick={onClose}>Cancel</button>
             </div>

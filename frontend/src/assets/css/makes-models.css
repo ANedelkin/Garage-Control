@@ -98,6 +98,57 @@
     .makes-models .section-header {
         padding: 10px 15px;
     }
+
+    /* Full height popup on mobile */
+    .popup-overlay:has(.merge-popup) {
+        padding: 0 !important;
+    }
+
+    .popup-overlay:has(.merge-popup) .popup.tile {
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .merge-popup {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        display: flex;
+        flex-direction: column;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        flex: 1;
+    }
+
+    /* Merge Popup Responsive */
+    .merge-comparison {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .merge-item {
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .merge-arrow {
+        transform: rotate(90deg);
+        margin: 5px 0;
+    }
+
+    .merge-warning {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
 }
 
 /* Merge button */
@@ -108,6 +159,14 @@
 .btn.icon-btn.merge:hover {
     background: var(--primary-clr);
     color: white;
+}
+
+.popup.tile:has(.merge-popup) {
+    width: 500px;
+}
+
+.merge-popup .form-footer {
+    margin-top: 2rem !important;
 }
 
 .merge-comparison {
