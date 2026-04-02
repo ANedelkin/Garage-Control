@@ -7,6 +7,7 @@ using System.Text;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Infrastructure.Data.Common;
+using GarageControl.Infrastructure.Interceptors;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using GarageControl.Core.Services.Jobs;
@@ -18,7 +19,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<GarageControlDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 builder.Services.AddScoped<IRepository, Repository>();
 

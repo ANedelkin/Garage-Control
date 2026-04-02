@@ -61,7 +61,7 @@ const OrderList = ({ mode = 'active' }) => {
         }
     };
 
-    const handleSaveOrderDetails = async (details) => {
+    const handleSaveOrderDetails = (orderId) => async (details) => {
         try {
             const payload = {
                 carId: details.carId,
@@ -69,7 +69,7 @@ const OrderList = ({ mode = 'active' }) => {
                 isDone: details.isDone
             };
 
-            await orderApi.updateOrder(editingOrder.id, payload);
+            await orderApi.updateOrder(orderId, payload);
             removeLastPopup();
             setErrors({});
             fetchOrders();
@@ -92,7 +92,7 @@ const OrderList = ({ mode = 'active' }) => {
                 order={order}
                 cars={cars}
                 onClose={handleClosePopup}
-                onSave={handleSaveOrderDetails}
+                onSave={handleSaveOrderDetails(order.id)}
                 errors={errors}
             />,
             false,

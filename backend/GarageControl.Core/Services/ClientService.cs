@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
+using GarageControl.Core.Models;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Clients;
 using GarageControl.Infrastructure.Data.Common;
@@ -71,10 +72,8 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(client);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"created client <a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Client",
+                new ActivityLogData("created", client.Id, client.Name));
         }
 
         public async Task Delete(string id, string userId)
@@ -86,10 +85,8 @@ namespace GarageControl.Core.Services
             await _repo.DeleteAsync<Client>(id);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"deleted client <b>{client.Name}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Client",
+                new ActivityLogData("deleted", null, client?.Name));
         }
 
         public async Task<ClientVM?> Details(string id)
@@ -118,30 +115,19 @@ namespace GarageControl.Core.Services
 
             if (changes.Count > 0)
             {
-                var actionHtml = BuildChangeLog(client, changes);
-
-                await _activityLogService.LogActionAsync(
-                    userId,
-                    workshopId,
-                    actionHtml);
+                await _activityLogService.LogActionAsync(userId, workshopId, "Client",
+                    new ActivityLogData("updated", client.Id, client.Name, Changes: changes));
             }
         }
 
-        private static List<string> GetChanges(Client client, ClientVM model)
+        private static List<ActivityPropertyChange> GetChanges(Client client, ClientVM model)
         {
-            var changes = new List<string>();
+            var changes = new List<ActivityPropertyChange>();
 
             void Track(string field, string? oldVal, string? newVal)
             {
-                if (oldVal == newVal) return;
-
-                string oldDisp = string.IsNullOrEmpty(oldVal) ? "[empty]" : oldVal;
-                string newDisp = string.IsNullOrEmpty(newVal) ? "[empty]" : newVal;
-
-                if (oldDisp.Length > 100 || newDisp.Length > 100)
-                    changes.Add(field);
-                else
-                    changes.Add($"{field} from <b>{oldDisp}</b> to <b>{newDisp}</b>");
+                if (oldVal != newVal)
+                    changes.Add(new ActivityPropertyChange(field, oldVal ?? "", newVal ?? ""));
             }
 
             Track("name", client.Name, model.Name);
@@ -151,19 +137,6 @@ namespace GarageControl.Core.Services
             Track("registration number", client.RegistrationNumber, model.RegistrationNumber);
 
             return changes;
-        }
-
-        private static string BuildChangeLog(Client client, List<string> changes)
-        {
-            string link = $"<a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>";
-
-            if (changes.Count == 1 && changes[0].Contains("from"))
-                return $"changed {changes[0]} of client {link}";
-
-            if (changes.All(c => !c.Contains("from")))
-                return $"updated details of client {link}";
-
-            return $"updated client {link}: {string.Join(", ", changes)}";
         }
     }
 

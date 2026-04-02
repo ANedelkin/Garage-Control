@@ -19,83 +19,52 @@ namespace GarageControl.Core.Services.Helpers
 
         public async Task LogPartCreatedAsync(string userId, string workshopId, string partId, string partName)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"created part <a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Part",
+                new ActivityLogData("created", partId, partName));
         }
 
         public async Task LogPartDeletedAsync(string userId, string workshopId, string partName)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"deleted part <b>{partName}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Part",
+                new ActivityLogData("deleted", null, partName));
         }
 
         public async Task LogPartUpdatedAsync(string userId, string workshopId, string partId, string partName, List<ActivityPropertyChange> changes)
         {
             if (changes == null || !changes.Any()) return;
 
-            var formattedChanges = changes.Select(c => 
-            {
-                string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
-                string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
-                
-                if (oldDisp.Length > 100 || newDisp.Length > 100)
-                    return c.FieldName;
-                    
-                return $"{c.FieldName} from <b>{oldDisp}</b> to <b>{newDisp}</b>";
-            }).ToList();
-
-            string partLink = $"<a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>";
-            string actionHtml = formattedChanges.Count == 1 && formattedChanges[0].Contains("from")
-                ? $"changed {formattedChanges[0]} of part {partLink}"
-                : formattedChanges.All(c => !c.Contains("from"))
-                    ? $"updated details of part {partLink}"
-                    : $"updated part {partLink}: {string.Join(", ", formattedChanges)}";
-
-            await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+            await _activityLogService.LogActionAsync(userId, workshopId, "Part",
+                new ActivityLogData("updated", partId, partName, Changes: changes));
         }
 
         public async Task LogFolderCreatedAsync(string userId, string workshopId, string folderName)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"created group of parts <b>{folderName}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Folder",
+                new ActivityLogData("created", null, folderName));
         }
 
         public async Task LogFolderDeletedAsync(string userId, string workshopId, string folderName)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"deleted group of parts <b>{folderName}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Folder",
+                new ActivityLogData("deleted", null, folderName));
         }
 
         public async Task LogFolderRenamedAsync(string userId, string workshopId, string oldName, string newName)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"renamed group of parts <b>{oldName}</b> to <b>{newName}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Folder",
+                new ActivityLogData("renamed", null, oldName, SecondaryEntityName: newName));
         }
 
         public async Task LogPartMovedAsync(string userId, string workshopId, string partId, string partName, string oldParent, string newParent)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"moved part <a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a> from <b>{oldParent}</b> to <b>{newParent}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Part",
+                new ActivityLogData("moved", partId, partName, SecondaryEntityId: newParent, SecondaryEntityName: oldParent));
         }
 
         public async Task LogFolderMovedAsync(string userId, string workshopId, string folderName, string oldParent, string newParent)
         {
-            await _activityLogService.LogActionAsync(
-                userId,
-                workshopId,
-                $"moved group of parts <b>{folderName}</b> from <b>{oldParent}</b> to <b>{newParent}</b>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Folder",
+                new ActivityLogData("moved", null, folderName, SecondaryEntityId: newParent, SecondaryEntityName: oldParent));
         }
     }
 }

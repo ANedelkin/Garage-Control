@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
@@ -13,5 +12,11 @@ namespace GarageControl.Infrastructure.Data.Models
         public string WorkshopId { get; set; } = null!;
         [Required]
         public string MessageHtml { get; set; } = null!;
+
+        /// <summary>Entity category, e.g. "Worker", "Client", "Job"…</summary>
+        public string? LogType { get; set; }
+
+        /// <summary>JSON-serialised <see cref="GarageControl.Core.Models.ActivityLogData"/> payload.</summary>
+        public string? LogData { get; set; }
     }
 }

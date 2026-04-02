@@ -18,24 +18,14 @@ namespace GarageControl.Core.Services
 
         public async Task LogOrderCreatedAsync(string userId, string workshopId, string orderId, string carInfo)
         {
-            string message = $"created {FormatOrderLink(orderId, carInfo)}";
-            await _activityLogService.LogActionAsync(userId, workshopId, message);
+            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
+                new ActivityLogData("created", orderId, carInfo));
         }
 
         public async Task LogOrderUpdatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)
         {
-            string actionHtml = $"updated {FormatOrderLink(orderId, carInfo)}";
-            
-            if (changes != null && changes.Any())
-            {
-                var formattedChanges = changes.Select(c => $"{c.FieldName} from <b>{c.OldValue}</b> to <b>{c.NewValue}</b>");
-                actionHtml += $": {string.Join(", ", formattedChanges)}";
-            }
-
-            await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
+                new ActivityLogData("updated", orderId, carInfo, Changes: changes));
         }
-
-        private string FormatOrderLink(string orderId, string carInfo) 
-            => $"<a href='/orders/{orderId}?highlight=true' class='log-link target-link'>order for {carInfo}</a>";
     }
 }

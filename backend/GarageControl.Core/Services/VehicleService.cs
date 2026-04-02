@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
+using GarageControl.Core.Models;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
 using GarageControl.Infrastructure.Data.Common;
@@ -115,8 +116,9 @@ namespace GarageControl.Core.Services
                 ? $"{carWithNames.Model.CarMake.Name} {carWithNames.Model.Name} ({carWithNames.RegistrationNumber})"
                 : "New Car";
 
-            await _activityLogService.LogActionAsync(userId, workshopId, 
-                $"added car <a href='/cars/{car.Id}?highlight=true' class='log-link target-link'>{carDisplayName}</a> to client <a href='/clients/{client.Id}?highlight=true' class='log-link target-link'>{client.Name}</a>");
+            await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
+                new ActivityLogData("added", car.Id, carDisplayName,
+                    SecondaryEntityId: client.Id, SecondaryEntityName: client.Name));
         }
 
         public async Task Edit(string id, VehicleVM model, string userId)
@@ -132,47 +134,40 @@ namespace GarageControl.Core.Services
 
             if (car != null)
             {
-                var changes = new List<string>();
-                void TrackChange(string fieldName, object? oldValue, object? newValue)
-                {
-                    string oldStr = oldValue?.ToString() ?? "";
-                    string newStr = newValue?.ToString() ?? "";
-                    if (oldStr != newStr)
-                    {
-                        changes.Add($"{fieldName} from <b>{(string.IsNullOrEmpty(oldStr) ? "[empty]" : oldStr)}</b> to <b>{(string.IsNullOrEmpty(newStr) ? "[empty]" : newStr)}</b>");
-                    }
-                }
+                var changes = new List<ActivityPropertyChange>();
 
                 if (car.ModelId != model.ModelId)
                 {
                     var oldModel = car.Model;
                     var newModel = await _repo.GetAllAsNoTracking<CarModel>().Include(m => m.CarMake).FirstOrDefaultAsync(m => m.Id == model.ModelId);
-                    changes.Add($"model from <b>{oldModel.CarMake.Name} {oldModel.Name}</b> to <b>{newModel?.CarMake.Name} {newModel?.Name}</b>");
+                    changes.Add(new ActivityPropertyChange("model",
+                        $"{oldModel.CarMake.Name} {oldModel.Name}",
+                        $"{newModel?.CarMake.Name} {newModel?.Name}"));
                 }
 
-                TrackChange("registration number", car.RegistrationNumber, model.RegistrationNumber);
-                TrackChange("VIN", car.VIN, model.VIN);
-                
-                if (car.Kilometers != model.Kilometers)
+                void Track(string field, string? oldVal, string? newVal)
                 {
-                    changes.Add($"kilometers from <b>{car.Kilometers}</b> to <b>{model.Kilometers}</b>");
+                    if (oldVal != newVal)
+                        changes.Add(new ActivityPropertyChange(field, oldVal ?? "", newVal ?? ""));
                 }
+
+                Track("registration number", car.RegistrationNumber, model.RegistrationNumber);
+                Track("VIN", car.VIN, model.VIN);
+                if (car.Kilometers != model.Kilometers)
+                    changes.Add(new ActivityPropertyChange("kilometers", car.Kilometers.ToString(), model.Kilometers.ToString()));
 
                 car.ModelId = model.ModelId;
                 car.RegistrationNumber = model.RegistrationNumber;
                 car.VIN = model.VIN;
                 car.Kilometers = model.Kilometers;
-                
+
                 await _repo.SaveChangesAsync();
 
                 if (changes.Count > 0)
                 {
-                    string carLink = $"<a href='/cars/{car.Id}?highlight=true' class='log-link target-link'>{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})</a>";
-                    string actionHtml = changes.Count == 1 && changes[0].Contains("from")
-                        ? $"changed {changes[0]} of car {carLink}"
-                        : $"updated car {carLink}: {string.Join(", ", changes)}";
-
-                    await _activityLogService.LogActionAsync(userId, workshopId, actionHtml);
+                    string carDisplayName = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
+                    await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
+                        new ActivityLogData("updated", car.Id, carDisplayName, Changes: changes));
                 }
             }
         }
@@ -193,7 +188,8 @@ namespace GarageControl.Core.Services
                 await _repo.DeleteAsync<Car>(id);
                 await _repo.SaveChangesAsync();
 
-                await _activityLogService.LogActionAsync(userId, workshopId, $"deleted car <b>{carDisplayName}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
+                    new ActivityLogData("deleted", null, carDisplayName));
             }
         }
 

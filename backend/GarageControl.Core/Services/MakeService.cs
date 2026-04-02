@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
+using GarageControl.Core.Models;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
 using GarageControl.Core.ViewModels.Shared;
@@ -39,7 +40,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"created custom make <a href='/makes-and-models/{make.Id}?highlight=true' class='log-link target-link'>{make.Name}</a>");
+                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
+                    new ActivityLogData("created", make.Id, make.Name));
             }
 
             return make.Id;
@@ -66,7 +68,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"deleted make <b>{makeName}</b>");
+                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
+                    new ActivityLogData("deleted", null, makeName));
             }
         }
 
@@ -220,7 +223,9 @@ namespace GarageControl.Core.Services
 
                 if (workshopId != null && oldName != model.Name)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, $"renamed make <b>{oldName}</b> to <a href='/makes-and-models/{make.Id}?highlight=true' class='log-link target-link'>{model.Name}</a>");
+                    await _activityLogService.LogActionAsync(userId, workshopId, "Make",
+                        new ActivityLogData("renamed", make.Id, oldName,
+                            SecondaryEntityName: model.Name));
                 }
             }
         }
@@ -390,7 +395,9 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, $"merged custom make <b>{customMakeName}</b> into <a href='/makes-and-models/{globalMakeId}?highlight=true' class='log-link target-link'>{globalMakeName}</a>");
+                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
+                    new ActivityLogData("merged", null, customMakeName,
+                        SecondaryEntityId: globalMakeId, SecondaryEntityName: globalMakeName));
             }
         }
 
