@@ -107,7 +107,20 @@ namespace GarageControl.Core.Services.Helpers
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created worker {link}";
+                {
+                    string html = $"{actorHtml} created worker {link}";
+                    var allChanges = d.Changes ?? new List<ActivityPropertyChange>();
+                    if (allChanges.Any())
+                    {
+                        var allStrings = allChanges.Select(c =>
+                        {
+                            if (c.NewValue == null) return c.FieldName;
+                            return $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}";
+                        });
+                        html += $": {string.Join(", ", allStrings)}";
+                    }
+                    return html;
+                }
 
                 case "fired":
                     return $"{actorHtml} fired {Bold(d.EntityName)}";

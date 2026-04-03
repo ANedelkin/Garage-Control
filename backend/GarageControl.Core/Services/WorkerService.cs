@@ -130,8 +130,11 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(worker);
             await _repo.SaveChangesAsync();
 
+            // Store relations (accesses, job types, schedules, leaves)
+            var changes = await UpdateWorkerRelations(worker.Id, model);
+
             await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
-                new ActivityLogData("created", worker.Id, worker.Name));
+                new ActivityLogData("created", worker.Id, worker.Name, Changes: changes.Any() ? changes : null));
 
             return new MethodResponseVM(true, "Worker created successfully");
         }
