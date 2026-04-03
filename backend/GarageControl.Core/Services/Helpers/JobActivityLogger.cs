@@ -68,9 +68,22 @@ namespace GarageControl.Core.Services.Jobs
                     SecondaryEntityId: orderId, SecondaryEntityName: carInfo));
         }
 
-        public string FormatPartAdded(string partName) => $"added part '<b>{partName}</b>'";
-        public string FormatPartRemoved(string partName) => $"removed part '<b>{partName}</b>'";
-        public string FormatPartQuantityChanged(string partName, string qtyType, string oldVal, string newVal) 
-            => $"changed {qtyType} qty of '<b>{partName}</b>' from <b>{oldVal}</b> to <b>{newVal}</b>";
+        public string FormatPartAdded(string partId, string partName)
+        {
+            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>" : $"<b>{partName}</b>";
+            return $"added part '{link}'";
+        }
+
+        public string FormatPartRemoved(string partId, string partName)
+        {
+            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>" : $"<b>{partName}</b>";
+            return $"removed part '{link}'";
+        }
+
+        public string FormatPartQuantityChanged(string partId, string partName, string qtyType, string oldVal, string newVal)
+        {
+            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>" : $"<b>{partName}</b>";
+            return $"changed {qtyType} qty of '{link}' from <b>{oldVal}</b> to <b>{newVal}</b>";
+        }
     }
 }

@@ -125,14 +125,23 @@ namespace GarageControl.Core.Services
                 jobType.Description = model.Description;
 
                 // Update workers
+                var oldWorkerNames = jobType.Workers.Select(w => w.Name).ToList();
+                var newWorkerNames = model.Mechanics ?? new List<string>();
+
+                var addedWorkers = newWorkerNames.Except(oldWorkerNames).ToList();
+                var removedWorkers = oldWorkerNames.Except(newWorkerNames).ToList();
+
+                foreach (var name in addedWorkers) changes.Add(new ActivityPropertyChange($"added worker <b>{name}</b>", "", null));
+                foreach (var name in removedWorkers) changes.Add(new ActivityPropertyChange($"removed worker <b>{name}</b>", "", null));
+
                 jobType.Workers.Clear();
-                var workers = await _repo.GetAll<Worker>()  // Remove AsNoTracking()
-                    .Where(w => w.WorkshopId == workshopId && model.Mechanics.Contains(w.Name))
+                var workers = await _repo.GetAll<Worker>()
+                    .Where(w => w.WorkshopId == workshopId && newWorkerNames.Contains(w.Name))
                     .ToListAsync();
 
                 foreach (var worker in workers)
                 {
-                    jobType.Workers.Add(worker);  // EF will track the workers properly now
+                    jobType.Workers.Add(worker);
                 }
 
                 await _repo.SaveChangesAsync();

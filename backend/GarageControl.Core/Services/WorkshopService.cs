@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels.Workshop;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using GarageControl.Core.Models;
 
 namespace GarageControl.Core.Services
 {
@@ -12,11 +13,13 @@ namespace GarageControl.Core.Services
     {
         private readonly IRepository _repository;
         private readonly IAuthService _authService;
+        private readonly IActivityLogService _activityLogService;
 
-        public WorkshopService(IRepository repository, IAuthService authService)
+        public WorkshopService(IRepository repository, IAuthService authService, IActivityLogService activityLogService)
         {
             _repository = repository;
             _authService = authService;
+            _activityLogService = activityLogService;
         }
 
         public async Task<LoginResponseVM> CreateWorkshop(string userId, WorkshopVM model)
@@ -90,12 +93,30 @@ namespace GarageControl.Core.Services
             var workshop = await _repository.GetByIdAsync<Workshop>(workshopId);
             if (workshop == null) throw new Exception("Workshop not found");
 
+            var changes = new List<ActivityPropertyChange>();
+            void TrackProperty(string field, string? oldV, string? newV)
+            {
+                if (oldV != newV) changes.Add(new ActivityPropertyChange(field, oldV ?? "", newV ?? ""));
+            }
+
+            TrackProperty("name", workshop.Name, model.Name);
+            TrackProperty("address", workshop.Address, model.Address);
+            TrackProperty("registration number", workshop.RegistrationNumber, model.RegistrationNumber);
+            TrackProperty("phone", workshop.PhoneNumber, model.PhoneNumber);
+            TrackProperty("email", workshop.Email, model.Email);
+
             workshop.Name = model.Name;
             workshop.Address = model.Address;
             workshop.RegistrationNumber = model.RegistrationNumber;
             workshop.PhoneNumber = model.PhoneNumber;
             workshop.Email = model.Email;
             await _repository.SaveChangesAsync();
+
+            if (changes.Any())
+            {
+                await _activityLogService.LogActionAsync(ownerId, workshopId, "Workshop",
+                    new ActivityLogData("updated", workshopId, workshop.Name, Changes: changes));
+            }
         }
         public async Task<string?> GetWorkshopId(string userId)
         {

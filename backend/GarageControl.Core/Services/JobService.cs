@@ -255,7 +255,7 @@ namespace GarageControl.Core.Services.Jobs
                 if (jp.Part != null)
                 {
                     jp.Part.Quantity += jp.SentQuantity - jp.UsedQuantity;
-                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Name));
+                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Id, jp.Part.Name));
                     affectedPartIds.Add(jp.PartId);
                 }
                 job.JobParts.Remove(jp);
@@ -275,10 +275,14 @@ namespace GarageControl.Core.Services.Jobs
                 {
                     if (existingJobPart.PlannedQuantity != partModel.PlannedQuantity &&
                         (hasStockAccess || isAssignedWorker))
+                    {
+                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
                         existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
+                    }
 
                     if (existingJobPart.SentQuantity != partModel.SentQuantity && hasStockAccess)
                     {
+                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
                         var diff = partModel.SentQuantity - existingJobPart.SentQuantity;
                         part.Quantity -= diff;
                         existingJobPart.SentQuantity = partModel.SentQuantity;
@@ -286,11 +290,17 @@ namespace GarageControl.Core.Services.Jobs
 
                     if (existingJobPart.UsedQuantity != partModel.UsedQuantity &&
                         (hasStockAccess || isAssignedWorker))
+                    {
+                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "used", existingJobPart.UsedQuantity.ToString(), partModel.UsedQuantity.ToString()));
                         existingJobPart.UsedQuantity = partModel.UsedQuantity;
+                    }
 
                     if (existingJobPart.RequestedQuantity != partModel.RequestedQuantity &&
                         (hasStockAccess || isAssignedWorker))
+                    {
+                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "requested", existingJobPart.RequestedQuantity.ToString(), partModel.RequestedQuantity.ToString()));
                         existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
+                    }
                 }
                 else
                 {
@@ -309,7 +319,7 @@ namespace GarageControl.Core.Services.Jobs
                     });
 
                     part.Quantity -= effectiveSent;
-                    changes.Add(_activityLogger.FormatPartAdded(part.Name));
+                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name));
                 }
 
                 affectedPartIds.Add(part.Id);

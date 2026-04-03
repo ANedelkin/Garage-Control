@@ -190,6 +190,19 @@ namespace GarageControl.Core.Services
             int oldMin = part.MinimumQuantity;
             var changes = TrackPartChanges(part, model);
             
+            if (part.Price != model.Price)
+            {
+                var activeJobParts = await _context.JobParts
+                    .Include(jp => jp.Job)
+                    .Where(jp => jp.PartId == part.Id && jp.Job.Status != GarageControl.Shared.Enums.JobStatus.Done)
+                    .ToListAsync();
+
+                foreach (var jp in activeJobParts)
+                {
+                    jp.Price = model.Price;
+                }
+            }
+
             part.Name = model.Name;
             part.PartNumber = model.PartNumber;
             part.Price = model.Price;

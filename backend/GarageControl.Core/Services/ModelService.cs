@@ -201,7 +201,7 @@ namespace GarageControl.Core.Services
                 {
                     await _activityLogService.LogActionAsync(userId, workshopId, "Model",
                         new ActivityLogData("renamed", carModel.Id, oldName,
-                            SecondaryEntityId: carModel.CarMakeId, SecondaryEntityName: model.Name));
+                            SecondaryEntityId: carModel.CarMakeId, SecondaryEntityName: carModel.CarMake.Name));
                 }
             }
         }

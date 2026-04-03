@@ -32,6 +32,7 @@ const PartsStock = () => {
                 }
             } catch (error) {
                 console.error("Error refreshing selected part", error);
+                setSelectedPart(null);
             }
         }
     };

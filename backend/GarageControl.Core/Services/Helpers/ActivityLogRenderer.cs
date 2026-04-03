@@ -22,6 +22,7 @@ namespace GarageControl.Core.Services.Helpers
                 "Job"      => BuildJobHtml(actorHtml, data),
                 "Part"     => BuildPartHtml(actorHtml, data),
                 "Folder"   => BuildFolderHtml(actorHtml, data),
+                "Workshop" => BuildWorkshopHtml(actorHtml, data),
                 _          => $"{actorHtml} performed action on {logType}"
             };
         }
@@ -87,20 +88,20 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildWorkerHtml(string actorHtml, ActivityLogData d)
         {
+            string link = d.EntityId != null
+                ? $"<a href='/workers/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created worker {Bold(d.EntityName)}";
+                    return $"{actorHtml} created worker {link}";
 
                 case "fired":
-                    return $"{actorHtml} fired {Bold(d.EntityName)}";
+                    return $"{actorHtml} fired {Bold(d.EntityName)}"; // Usually entity info is lost, keep bold
 
                 case "updated":
                 {
-                    string link = d.EntityId != null
-                        ? $"<a href='/workers/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
-                        : Bold(d.EntityName);
-
                     // Mix of relation changes (strings without from/to) and field changes
                     var allChanges = d.Changes ?? new List<ActivityPropertyChange>();
                     var allStrings = allChanges.Select(c =>
@@ -136,18 +137,20 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildClientHtml(string actorHtml, ActivityLogData d)
         {
+            string link = d.EntityId != null
+                ? $"<a href='/clients/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created client " +
-                           $"<a href='/clients/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>";
+                    return $"{actorHtml} created client {link}";
 
                 case "deleted":
                     return $"{actorHtml} deleted client {Bold(d.EntityName)}";
 
                 case "updated":
                 {
-                    string link = $"<a href='/clients/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>";
                     return BuildUpdatedHtml(actorHtml, "client", link, d.Changes);
                 }
 
@@ -158,11 +161,14 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildVehicleHtml(string actorHtml, ActivityLogData d)
         {
+            string carLink = d.EntityId != null
+                ? $"<a href='/cars/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+
             switch (d.Action)
             {
                 case "added":
                 {
-                    string carLink = $"<a href='/cars/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>";
                     string clientLink = d.SecondaryEntityId != null
                         ? $"<a href='/clients/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>"
                         : Bold(d.SecondaryEntityName);
@@ -174,7 +180,6 @@ namespace GarageControl.Core.Services.Helpers
 
                 case "updated":
                 {
-                    string carLink = $"<a href='/cars/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>";
                     var changes = d.Changes ?? new List<ActivityPropertyChange>();
                     var formatted = changes.Select(c =>
                     {
@@ -196,22 +201,27 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildMakeHtml(string actorHtml, ActivityLogData d)
         {
+            string makeLink = d.EntityId != null
+                ? $"<a href='/makes-and-models/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+            
+            string secMakeLink = d.SecondaryEntityId != null
+                ? $"<a href='/makes-and-models/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>"
+                : Bold(d.SecondaryEntityName);
+
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created custom make " +
-                           $"<a href='/makes-and-models/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>";
+                    return $"{actorHtml} created custom make {makeLink}";
 
                 case "deleted":
                     return $"{actorHtml} deleted make {Bold(d.EntityName)}";
 
                 case "renamed":
-                    return $"{actorHtml} renamed make {Bold(d.EntityName)} to " +
-                           $"<a href='/makes-and-models/{d.EntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>";
+                    return $"{actorHtml} renamed make {Bold(d.EntityName)} to {secMakeLink}"; // Note: SecondaryEntityId is incorrectly mapped on rename sometimes. It should just use ID.
 
                 case "merged":
-                    return $"{actorHtml} merged custom make {Bold(d.EntityName)} into " +
-                           $"<a href='/makes-and-models/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>";
+                    return $"{actorHtml} merged custom make {Bold(d.EntityName)} into {secMakeLink}";
 
                 default:
                     return $"{actorHtml} {d.Action} make {Bold(d.EntityName)}";
@@ -220,24 +230,31 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildModelHtml(string actorHtml, ActivityLogData d)
         {
+            string modelLink = (d.SecondaryEntityId != null && d.EntityId != null)
+                ? $"<a href='/makes-and-models/{d.SecondaryEntityId}/model/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+
+            string secMakeLink = d.SecondaryEntityId != null
+                ? $"<a href='/makes-and-models/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>"
+                : Bold(d.SecondaryEntityName);
+                
+            string secModelLink = (d.SecondaryEntityId != null && d.EntityId != null)
+                ? $"<a href='/makes-and-models/{d.SecondaryEntityId}/model/{d.EntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>"
+                : Bold(d.SecondaryEntityName);
+
             switch (d.Action)
             {
                 case "added":
-                    return $"{actorHtml} added model " +
-                           $"<a href='/makes-and-models/{d.SecondaryEntityId}/model/{d.EntityId}?highlight=true' class='log-link target-link'>{d.EntityName}</a> " +
-                           $"to make <a href='/makes-and-models/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>";
+                    return $"{actorHtml} added model {modelLink} to make {secMakeLink}";
 
                 case "deleted":
                     return $"{actorHtml} deleted model {Bold(d.EntityName)} from make {Bold(d.SecondaryEntityName)}";
 
                 case "renamed":
-                    return $"{actorHtml} renamed model {Bold(d.EntityName)} to " +
-                           $"<a href='/makes-and-models/{d.SecondaryEntityId}/model/{d.EntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a> " +
-                           $"(Make: <a href='/makes-and-models/{d.SecondaryEntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>)";
+                    return $"{actorHtml} renamed model {Bold(d.EntityName)} to {secModelLink} (Make: {secMakeLink})";
 
                 case "merged":
-                    return $"{actorHtml} merged custom model {Bold(d.EntityName)} into " +
-                           $"<a href='/makes-and-models/{d.SecondaryEntityId}/model/{d.EntityId}?highlight=true' class='log-link target-link'>{d.SecondaryEntityName}</a>";
+                    return $"{actorHtml} merged custom model {Bold(d.EntityName)} into {secModelLink}";
 
                 default:
                     return $"{actorHtml} {d.Action} model {Bold(d.EntityName)}";
@@ -287,7 +304,9 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildOrderHtml(string actorHtml, ActivityLogData d)
         {
-            string orderLink = $"<a href='/orders/{d.EntityId}?highlight=true' class='log-link target-link'>order for {d.EntityName}</a>";
+            string orderLink = d.EntityId != null
+                ? $"<a href='/orders/{d.EntityId}?highlight=true' class='log-link target-link'>order for {d.EntityName}</a>"
+                : $"order for {Bold(d.EntityName)}";
 
             switch (d.Action)
             {
@@ -299,7 +318,12 @@ namespace GarageControl.Core.Services.Helpers
                     string html = $"{actorHtml} updated {orderLink}";
                     if (d.Changes != null && d.Changes.Any())
                     {
-                        var formatted = d.Changes.Select(c => $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}");
+                        var formatted = d.Changes.Select(c =>
+                        {
+                            if (string.IsNullOrEmpty(c.OldValue) && string.IsNullOrEmpty(c.NewValue))
+                                return c.FieldName;
+                            return $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}";
+                        });
                         html += $": {string.Join(", ", formatted)}";
                     }
                     return html;
@@ -407,10 +431,14 @@ namespace GarageControl.Core.Services.Helpers
 
         private static string BuildFolderHtml(string actorHtml, ActivityLogData d)
         {
+            string link = d.EntityId != null
+                ? $"<a href='/parts?folderId={d.EntityId}' class='log-link target-link'>{d.EntityName}</a>"
+                : Bold(d.EntityName);
+
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created group of parts {Bold(d.EntityName)}";
+                    return $"{actorHtml} created group of parts {link}";
 
                 case "deleted":
                     return $"{actorHtml} deleted group of parts {Bold(d.EntityName)}";
@@ -419,11 +447,29 @@ namespace GarageControl.Core.Services.Helpers
                     return $"{actorHtml} renamed group of parts {Bold(d.EntityName)} to {Bold(d.SecondaryEntityName)}";
 
                 case "moved":
-                    return $"{actorHtml} moved group of parts {Bold(d.EntityName)} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
+                    return $"{actorHtml} moved group of parts {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     // SecondaryEntityName = oldParent, SecondaryEntityId = newParent
 
                 default:
-                    return $"{actorHtml} {d.Action} group of parts {Bold(d.EntityName)}";
+                    return $"{actorHtml} {d.Action} group of parts {link}";
+            }
+        }
+
+        private static string BuildWorkshopHtml(string actorHtml, ActivityLogData d)
+        {
+            // Usually EntityName is the Workshop name
+            string link = Bold(d.EntityName); 
+
+            switch (d.Action)
+            {
+                case "updated":
+                {
+                    if (d.Changes == null || !d.Changes.Any()) return $"{actorHtml} updated workshop details";
+                    var formatted = d.Changes.Select(c => $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}");
+                    return $"{actorHtml} updated workshop {link}: {string.Join(", ", formatted)}";
+                }
+                default:
+                    return $"{actorHtml} {d.Action} workshop {link}";
             }
         }
     }

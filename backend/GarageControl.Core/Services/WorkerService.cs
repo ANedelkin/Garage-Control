@@ -130,6 +130,9 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(worker);
             await _repo.SaveChangesAsync();
 
+            await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
+                new ActivityLogData("created", worker.Id, worker.Name));
+
             return new MethodResponseVM(true, "Worker created successfully");
         }
 
@@ -401,39 +404,44 @@ namespace GarageControl.Core.Services
 
             // Schedules
             var oldSchedules = worker.Schedules.ToList();
-            worker.Schedules.Clear();
+            bool scheduleChanged = false;
             
-            foreach(var s in model.Schedules)
+            if (model.Schedules.Count != oldSchedules.Count)
             {
-               var backendDayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7);
-               var startTime = TimeOnly.Parse(s.StartTime);
-               var endTime = TimeOnly.Parse(s.EndTime);
-
-               var existing = oldSchedules.FirstOrDefault(os => os.DayOfWeek == backendDayOfWeek);
-               if (existing != null)
-               {
-                   if (existing.StartTime != startTime || existing.EndTime != endTime)
-                   {
-                       changes.Add(new ActivityPropertyChange($"Updated schedule for <b>{backendDayOfWeek}</b> from <b>{existing.StartTime:HH:mm}-{existing.EndTime:HH:mm}</b> to <b>{startTime:HH:mm}-{endTime:HH:mm}</b>", "", null));
-                   }
-                   oldSchedules.Remove(existing);
-               }
-               else
-               {
-                   changes.Add(new ActivityPropertyChange($"added schedule for <b>{backendDayOfWeek}</b>: <b>{startTime:HH:mm}-{endTime:HH:mm}</b>", "", null));
-               }
-
-               worker.Schedules.Add(new WorkerSchedule
-               {
-                   WorkerId = workerId,
-                   DayOfWeek = backendDayOfWeek,
-                   StartTime = startTime,
-                   EndTime = endTime
-               });
+                scheduleChanged = true;
             }
-            foreach (var os in oldSchedules)
+            else
             {
-                changes.Add(new ActivityPropertyChange($"removed schedule for <b>{os.DayOfWeek}</b>", "", null));
+                foreach(var s in model.Schedules)
+                {
+                    var backendDayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7);
+                    var startTime = TimeOnly.Parse(s.StartTime);
+                    var endTime = TimeOnly.Parse(s.EndTime);
+
+                    var existing = oldSchedules.FirstOrDefault(os => os.DayOfWeek == backendDayOfWeek);
+                    if (existing == null || existing.StartTime != startTime || existing.EndTime != endTime)
+                    {
+                        scheduleChanged = true;
+                        break;
+                    }
+                }
+            }
+
+            if (scheduleChanged)
+            {
+                changes.Add(new ActivityPropertyChange("updated schedule", "", null));
+                
+                worker.Schedules.Clear();
+                foreach(var s in model.Schedules)
+                {
+                    worker.Schedules.Add(new WorkerSchedule
+                    {
+                        WorkerId = workerId,
+                        DayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7),
+                        StartTime = TimeOnly.Parse(s.StartTime),
+                        EndTime = TimeOnly.Parse(s.EndTime)
+                    });
+                }
             }
 
             // Leaves
