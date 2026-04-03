@@ -89,9 +89,10 @@ const TimeSlotPickerContent = ({
         if (!schedule) return 'unavailable';
 
         const [startH] = schedule.startTime.split(':').map(Number);
-        const [endH] = schedule.endTime.split(':').map(Number);
+        const [endH, endM] = schedule.endTime.split(':').map(Number);
+        const actualEndH = (endH === 23 && endM === 59) ? 24 : endH;
 
-        if (hour < startH || hour >= endH) return 'unavailable';
+        if (hour < startH || hour >= actualEndH) return 'unavailable';
 
         const currentSlotTime = new Date(date);
         currentSlotTime.setHours(hour, 0, 0, 0);
@@ -227,8 +228,9 @@ const TimeSlotPickerContent = ({
             if (!schedule) return false;
             
             const [startH] = schedule.startTime.split(':').map(Number);
-            const [endH] = schedule.endTime.split(':').map(Number);
-            const isWorkingHour = h >= startH && h < endH;
+            const [endH, endM] = schedule.endTime.split(':').map(Number);
+            const actualEndH = (endH === 23 && endM === 59) ? 24 : endH;
+            const isWorkingHour = h >= startH && h < actualEndH;
             
             if (!isWorkingHour) return false;
 
@@ -332,7 +334,8 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd, readon
         if (initialStart && initialEnd) {
             const start = new Date(initialStart);
             const end = new Date(initialEnd);
-            return `${start.toLocaleDateString()} ${start.getHours()}:00 - ${end.getHours()}:00`;
+            const endH = (end.getHours() === 0 && end.getMinutes() === 0 && end.getDate() !== start.getDate()) ? 24 : end.getHours();
+            return `${start.toLocaleDateString()} ${start.getHours()}:00 - ${endH}:00`;
         }
         return "Select Time";
     };
