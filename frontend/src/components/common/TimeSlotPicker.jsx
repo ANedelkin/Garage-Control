@@ -12,7 +12,16 @@ const TimeSlotPickerContent = ({
     onClose,
     onTimeSelect
 }) => {
-    const [viewDate, setViewDate] = useState(new Date());
+    const [viewDate, setViewDate] = useState(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (initialStart) {
+            const start = new Date(initialStart);
+            start.setHours(0, 0, 0, 0);
+            return start < today ? today : start;
+        }
+        return today;
+    });
     const [busySlots, setBusySlots] = useState([]);
     const [selectionStart, setSelectionStart] = useState(initialStart ? new Date(initialStart) : null);
     const [selectionEnd, setSelectionEnd] = useState(initialEnd ? new Date(initialEnd) : null);
@@ -104,12 +113,19 @@ const TimeSlotPickerContent = ({
     const handleDayChange = (offset) => {
         const newDate = new Date(viewDate);
         newDate.setDate(newDate.getDate() + offset);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (newDate < today) return;
+
         setViewDate(newDate);
     };
 
     const handleHourClick = (date, hour) => {
         const clickDate = new Date(date);
         clickDate.setHours(hour, 0, 0, 0);
+
+        if (clickDate < new Date()) return;
 
         const status = getSlotStatus(clickDate, hour);
         if (status !== 'available') return;
@@ -233,10 +249,21 @@ const TimeSlotPickerContent = ({
         });
     });
 
+    const isFirstDayToday = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return viewDate.getTime() <= today.getTime();
+    };
+
     return (
         <div className="time-picker-content tile">
             <div className="tp-header">
-                <button type="button" className="btn secondary icon-btn" onClick={() => handleDayChange(-1)}>
+                <button 
+                    type="button" 
+                    className="btn secondary icon-btn" 
+                    onClick={() => handleDayChange(-1)}
+                    disabled={isFirstDayToday()}
+                >
                     <i className="fa-solid fa-chevron-left"></i>
                 </button>
                 <span style={{ fontWeight: 600 }}>
