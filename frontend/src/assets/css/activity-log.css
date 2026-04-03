@@ -1,36 +1,354 @@
-.activity-sentence {
-    line-height: 1.5;
-    font-size: 1.1em;
+/* ── Page Layout ──────────────────────────────────────────────── */
+.activity-log-page,
+.activity-log-page * {
+    transition: none !important;
+}
+
+/* ── Header / Filters ─────────────────────────────────────────── */
+.activity-log-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Search box */
+.activity-search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+}
+
+.activity-search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-clr2);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.activity-search-input {
+    width: 100%;
+    padding-left: 36px !important;
+    box-sizing: border-box;
+}
+
+/* Date filter group */
+.activity-date-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.activity-date-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.activity-date-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-clr2);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.activity-date-input {
+    width: 150px;
+    height: 40px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    background: var(--solid3);
+    color: inherit;
+    font-size: 14px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.activity-clear-btn {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 13px;
+    color: var(--text-clr2);
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.activity-clear-btn:hover {
     color: var(--text-clr1);
 }
 
-.log-link {
+/* ── Entry count badge ────────────────────────────────────────── */
+.activity-count-badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-clr2);
+    background: var(--solid4);
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── Table layout ─────────────────────────────────────────────── */
+.activity-table-wrapper {
+    overflow-x: auto;
+}
+
+/* Column widths */
+.col-time {
+    width: 160px;
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+.col-action {
+    /* fill remaining space */
+}
+
+/* Time cell subtle color */
+.activity-time-cell {
+    color: var(--text-clr2);
+    font-size: 13px;
+}
+
+/* Clickable row */
+.activity-row {
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+/* Sentence inside table cell — truncate with ellipsis */
+.activity-sentence {
+    line-height: 1.5;
+    font-size: 14px;
+    color: var(--text-clr1);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 600px;
+}
+
+/* ── Links ────────────────────────────────────────────────────── */
+.log-link,
+.actor-link,
+.target-link,
+.actor-name {
     font-weight: 600;
     color: var(--link-clr);
     text-decoration: none;
 }
 
-.log-link:hover {
+.log-link:hover,
+.actor-link:hover,
+.target-link:hover,
+.actor-name:hover {
     text-decoration: underline;
-}
-
-.actor-link {
-    color: var(--link-clr);
-}
-
-.target-link {
-    color: var(--link-clr);
-}
-
-/* .action-text {
-    color: var(--text-clr1);
-} */
-
-.actor-name {
-    font-weight: 600;
-    color: var(--link-clr);
 }
 
 b {
     font-weight: 600;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+.activity-empty {
+    text-align: center;
+    padding: 40px 20px !important;
+    color: var(--text-clr2);
+}
+
+.activity-empty i {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+/* ── Loading ──────────────────────────────────────────────────── */
+.activity-log-loading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 30px 20px;
+    color: var(--text-clr2);
+    font-size: 15px;
+}
+
+/* ── Detail Popup ─────────────────────────────────────────────── */
+.activity-log-overlay {
+    padding: 20px;
+}
+
+.activity-detail-popup {
+    width: 520px;
+    max-width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-sizing: border-box;
+}
+
+.activity-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.activity-popup-title {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.activity-popup-time {
+    font-size: 12px;
+    color: var(--text-clr2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.activity-popup-close {
+    flex-shrink: 0;
+    margin-top: -4px;
+}
+
+/* Full message summary at the top of popup */
+.activity-popup-summary {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-clr1);
+    padding: 14px 16px;
+    background: var(--solid4);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+/* Changes section */
+.activity-popup-changes {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+.activity-popup-changes-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-clr2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+.activity-popup-changes-scroll {
+    overflow-y: auto;
+    flex: 1;
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.activity-change-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-clr1);
+    padding: 8px 12px;
+    background: var(--solid2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+}
+
+.activity-change-bullet {
+    color: var(--accent3);
+    font-size: 11px;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 700px) {
+    .activity-log-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .activity-date-filters {
+        justify-content: space-between;
+    }
+
+    .activity-date-group {
+        flex: 1;
+    }
+
+    .activity-date-input {
+        width: 100%;
+        flex: 1;
+    }
+
+    .activity-clear-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .col-time {
+        width: 110px;
+        min-width: 90px;
+    }
+
+    .activity-time-cell {
+        font-size: 12px;
+    }
+
+    .activity-sentence {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 500px) {
+    .activity-date-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .activity-date-group {
+        width: 100%;
+    }
+
+    .activity-date-input {
+        width: 100%;
+        flex: 1;
+    }
+
+    .activity-detail-popup {
+        max-height: calc(100vh - 40px);
+        width: 100%;
+    }
+
+    .activity-clear-label {
+        display: inline;
+    }
+
+    .col-time {
+        width: 90px;
+        min-width: 80px;
+    }
 }

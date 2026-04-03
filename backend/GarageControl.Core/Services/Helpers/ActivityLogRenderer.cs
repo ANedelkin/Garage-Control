@@ -54,9 +54,6 @@ namespace GarageControl.Core.Services.Helpers
             if (string.IsNullOrEmpty(d.ActorId)) 
                 return $"<span class='actor-name'>{d.ActorName ?? "[Unknown]"}</span>";
             
-            // Special case for Owner (non-worker)
-            if (d.ActorName == "Owner")
-                return $"<span class='actor-name'>Owner</span>";
 
             bool exists = liveNames != null && liveNames.ContainsKey(d.ActorId);
             if (!exists) return $"<span class='actor-name'>{d.ActorName ?? "Unknown"}</span>";

@@ -376,12 +376,13 @@ namespace GarageControl.Core.Services
             }
 
             // Check if Owner
-            var isOwner = await _repo.GetAllAsNoTracking<Workshop>().AnyAsync(s => s.BossId == userId);
-            if (isOwner)
-            {
-                var ownerAccesses = await _repo.GetAllAsNoTracking<Access>().Select(a => a.Name).ToListAsync();
-                return ownerAccesses;
-            }
+            // var isOwner = await _repo.GetAllAsNoTracking<Workshop>().AnyAsync(s => s.BossId == userId);
+            // if (isOwner)
+            // {
+            //     var ownerAccesses = await _repo.GetAllAsNoTracking<Access>().Select(a => a.Name).ToListAsync();
+            //     ownerAccesses.Add("To Do");
+            //     return ownerAccesses;
+            // }
 
             // Check if Worker
             var worker = await _repo.GetAllAsNoTracking<Worker>()
