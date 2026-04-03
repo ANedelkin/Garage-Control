@@ -3,6 +3,7 @@ import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
 import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
+import AdminUserPopup from './AdminUserPopup';
 import '../../assets/css/admin-users.css';
 
 const AdminUsers = () => {
@@ -129,20 +130,22 @@ const AdminUsers = () => {
                         <thead>
                             <tr>
                                 <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Workshop</th>
+                                <th className="hide-sm">Email</th>
+                                <th className="hide-sm">Role</th>
+                                <th className="hide-md">Workshop</th>
                                 <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredUsers.map(user => (
-                                <tr key={user.id}>
+                                <tr key={user.id} className="clickable-row" onClick={() => {
+                                    addPopup(null, <AdminUserPopup user={user} onClose={removeLastPopup} />);
+                                }}>
                                     <td>{user.userName}</td>
-                                    <td>{user.email}</td>
-                                    <td>{user.role}</td>
-                                    <td>{user.workshopName || '-'}</td>
-                                    <td style={{ textAlign: 'center', height: '61px' }}>
+                                    <td className="hide-sm">{user.email}</td>
+                                    <td className="hide-sm">{user.role}</td>
+                                    <td className="hide-md">{user.workshopName || '-'}</td>
+                                    <td style={{ textAlign: 'center', height: '61px' }} onClick={e => e.stopPropagation()}>
                                         {user.role !== 'Admin' && (
                                             <button
                                                 className={`status-btn btn ${user.isBlocked ? 'admin-blocked' : 'admin-active'}`}

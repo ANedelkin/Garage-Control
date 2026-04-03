@@ -3,6 +3,7 @@ import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
 import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
+import AdminWorkshopPopup from './AdminWorkshopPopup';
 import '../../assets/css/admin-users.css';
 
 const AdminWorkshops = () => {
@@ -117,20 +118,22 @@ const AdminWorkshops = () => {
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Contact Email</th>
-                                <th>Address</th>
+                                <th className="hide-md">Contact Email</th>
+                                <th className="hide-sm">Address</th>
                                 <th style={{ textAlign: 'center' }}>Workers</th>
                                 <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredWorkshops.map(w => (
-                                <tr key={w.id}>
+                                <tr key={w.id} className="clickable-row" onClick={() => {
+                                    addPopup(null, <AdminWorkshopPopup workshop={w} onClose={removeLastPopup} />);
+                                }}>
                                     <td>{w.name}</td>
-                                    <td>{w.contactEmail}</td>
-                                    <td>{w.address}</td>
+                                    <td className="hide-md">{w.contactEmail}</td>
+                                    <td className="hide-sm">{w.address}</td>
                                     <td style={{ textAlign: 'center' }}>{w.workersCount}</td>
-                                    <td style={{ textAlign: 'center', height: '61px' }}>
+                                    <td style={{ textAlign: 'center', height: '61px' }} onClick={e => e.stopPropagation()}>
                                         <button
                                             className={`status-btn btn ${w.isBlocked ? 'admin-blocked' : 'admin-active'}`}
                                             onClick={() => handleToggleBlock(w)}

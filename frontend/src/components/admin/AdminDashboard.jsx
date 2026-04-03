@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import '../../assets/css/common/tile.css';
+import '../../assets/css/dashboard.css';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -49,18 +50,18 @@ const AdminDashboard = () => {
                                 <thead>
                                     <tr>
                                         <th>Username</th>
-                                        <th>Email</th>
+                                        <th className="hide-sm">Email</th>
                                         <th>Role</th>
-                                        <th>Workshop</th>
+                                        <th className="hide-md">Workshop</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {stats.recentUsers.map(user => (
                                         <tr key={user.id}>
                                             <td>{user.userName}</td>
-                                            <td>{user.email}</td>
+                                            <td className="hide-sm">{user.email}</td>
                                             <td>{user.role}</td>
-                                            <td>{user.workshopName || '-'}</td>
+                                            <td className="hide-md">{user.workshopName || '-'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
