@@ -4,11 +4,13 @@ import '../../assets/css/parts-stock.css';
 
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
+import usePageTitle from '../../hooks/usePageTitle';
 
 import PartsTree from './PartsTree';
 import PartDetails from './PartDetails';
 
 const PartsStock = () => {
+    usePageTitle('Parts Stock');
     const [searchParams] = useSearchParams();
     const [selectedPart, setSelectedPart] = useState(null);
     const [selectedPath, setSelectedPath] = useState([]);

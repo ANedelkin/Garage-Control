@@ -7,8 +7,10 @@ import { usePopup } from '../../context/PopupContext';
 import MergePopup from './MergePopup';
 import AddEditItemModal from './AddEditItemModal';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const MakesAndModels = () => {
+    usePageTitle('Makes & Models');
     const { addPopup, removeLastPopup } = usePopup();
     const navigate = useNavigate();
     const { makeId, modelId } = useParams();

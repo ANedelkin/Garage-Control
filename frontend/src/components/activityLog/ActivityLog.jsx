@@ -4,8 +4,10 @@ import activityLogApi from '../../services/activityLogApi';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/common/table.css';
 import '../../assets/css/activity-log.css';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const ActivityLog = () => {
+    usePageTitle('Activity Log');
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');

@@ -5,8 +5,10 @@ import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
 import { usePopup } from '../../context/PopupContext';
 import ClientPopup from './ClientPopup';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Clients = () => {
+    usePageTitle('Clients');
     const navigate = useNavigate();
     const { clientId } = useParams();
     const [search, setSearch] = useState('');

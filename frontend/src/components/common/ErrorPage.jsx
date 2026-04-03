@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/css/common/error.css';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const ErrorPage = ({ title, message, type = 'error', details }) => {
     const is404 = type === '404';
+    usePageTitle(title || (is404 ? "Page Not Found" : "Error"));
     const navigate = useNavigate();
 
     useEffect(() => {

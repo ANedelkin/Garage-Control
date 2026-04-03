@@ -5,8 +5,10 @@ import WorkshopDetailsForm from './WorkshopDetailsForm.jsx';
 import { workshopApi } from '../../services/workshopApi.js';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import React, { useState } from 'react';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const WorkshopDetailsInitial = () => {
+    usePageTitle('Setup Workshop');
     const navigate = useNavigate();
     const { login } = useAuth();
     const [errors, setErrors] = useState({});

@@ -5,8 +5,10 @@ import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
 import AdminUserPopup from './AdminUserPopup';
 import '../../assets/css/admin-users.css';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const AdminUsers = () => {
+    usePageTitle('Admin Users');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

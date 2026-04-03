@@ -6,8 +6,10 @@ import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import CarPopup from './CarPopup';
 import '../../assets/css/clients.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Cars = () => {
+    usePageTitle('Cars');
     const navigate = useNavigate();
     const { carId } = useParams();
     const [cars, setCars] = useState([]);

@@ -13,8 +13,10 @@ import '../../assets/css/common/controls.css';
 import '../../assets/css/common/form.css';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/auth.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const LogInPage = () => {
+    usePageTitle('Log In');
     const navigate = useNavigate();
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);

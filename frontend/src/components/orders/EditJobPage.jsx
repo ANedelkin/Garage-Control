@@ -8,6 +8,7 @@ import ServiceForm from './ServiceForm';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const EditJobPage = ({ mechanicView = false }) => {
     const { orderId: paramOrderId, jobId } = useParams();
@@ -15,6 +16,8 @@ const EditJobPage = ({ mechanicView = false }) => {
     const queryOrderId = searchParams.get('orderId');
     const navigate = useNavigate();
     const isEdit = !!jobId;
+
+    usePageTitle(isEdit ? 'Edit Job' : 'Add New Job');
 
     const [job, setJob] = useState(null);
     const [order, setOrder] = useState(null);

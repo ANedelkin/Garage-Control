@@ -5,8 +5,10 @@ import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from './JustificationPopup';
 import AdminWorkshopPopup from './AdminWorkshopPopup';
 import '../../assets/css/admin-users.css';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const AdminWorkshops = () => {
+    usePageTitle('Admin Workshops');
     const [workshops, setWorkshops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

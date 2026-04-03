@@ -7,8 +7,10 @@ import '../../assets/css/workers.css';
 import { workerApi } from '../../services/workerApi';
 import EditWorker from './EditWorker';
 import WorkhoursPopup from './WorkhoursPopup';
+import usePageTitle from "../../hooks/usePageTitle";
 
 const Workers = () => {
+    usePageTitle('Workers');
     const { addPopup, removeLastPopup } = usePopup();
     const navigate = useNavigate();
     const { workerId } = useParams();

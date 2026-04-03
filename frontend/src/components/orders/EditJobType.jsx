@@ -6,10 +6,12 @@ import { jobTypeApi } from '../../services/jobTypeApi.js';
 import { workerApi } from '../../services/workerApi.js';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const EditJobType = () => {
   const { id } = useParams();
   const isNew = !id || id === 'new';
+  usePageTitle(isNew ? 'New Job Type' : 'Edit Job Type');
   const navigate = useNavigate();
   const [jobTypeData, setJobTypeData] = useState(null);
   const [newMechanic, setNewMechanic] = useState('');

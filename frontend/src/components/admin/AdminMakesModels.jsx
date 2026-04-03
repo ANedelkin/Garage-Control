@@ -6,8 +6,10 @@ import SuggestedModelPopup from './SuggestedModelPopup';
 import '../../assets/css/admin-makes-models.css';
 import '../../assets/css/popup.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const AdminMakesModels = () => {
+    usePageTitle('Admin Makes & Models');
     const [existing, setExisting] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [popupNode, setPopupNode] = useState(null);

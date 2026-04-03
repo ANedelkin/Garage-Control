@@ -11,6 +11,7 @@ import '../../assets/css/common/status.css';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/orders.css';
 import '../../assets/css/todo.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const ToDoPage = () => {
     const { workerId } = useParams();
@@ -19,6 +20,15 @@ const ToDoPage = () => {
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
     const [worker, setWorker] = useState(null);
+
+    const getPageTitleStr = () => {
+        if (workerId && worker) {
+            return `${worker.name}'s Jobs`;
+        }
+        return "My Jobs";
+    };
+
+    usePageTitle(getPageTitleStr());
 
     // Common navigation state for calendar/week
     const today = new Date();

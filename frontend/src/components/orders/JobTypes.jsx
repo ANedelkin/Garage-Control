@@ -4,8 +4,10 @@ import Dropdown from '../common/Dropdown';
 import '../../assets/css/common/table.css';
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
+import usePageTitle from '../../hooks/usePageTitle.js';
 
 const JobTypes = () => {
+  usePageTitle('Job Types');
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');

@@ -7,8 +7,10 @@ import '../../assets/css/dashboard.css';
 import '../../assets/css/common/glow.css';
 import '../../assets/css/common/status.css';
 import { dashboardApi } from '../../services/dashboardApi';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Dashboard = () => {
+    usePageTitle('Dashboard');
     const navigate = useNavigate();
     const jobsChartRef = useRef(null);
     const jobsChartInstanceRef = useRef(null);

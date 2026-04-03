@@ -7,8 +7,10 @@ import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import GoogleIcon from '../../assets/icons/google.svg';
 import MicrosoftIcon from '../../assets/icons/microsoft.svg';
 import '../../assets/css/auth.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const SignUpPage = () => {
+    usePageTitle('Sign Up');
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
