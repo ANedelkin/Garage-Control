@@ -27,7 +27,7 @@ namespace GarageControl.Core.Services
                     Message = n.Message,
                     Link = n.Link,
                     IsRead = n.IsRead,
-                    CreatedAt = n.CreatedAt
+                    CreatedAt = DateTime.SpecifyKind(n.CreatedAt, DateTimeKind.Utc)
                 })
                 .ToListAsync();
         }

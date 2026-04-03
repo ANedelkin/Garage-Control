@@ -30,7 +30,13 @@ const NotificationPopup = ({ notifications, onClose, onRefresh }) => {
     };
 
     const formatDate = (dateString) => {
-        const date = new Date(dateString);
+        if (!dateString) return '';
+        // If the date string doesn't have a timezone indicator, assume UTC
+        const normalizedString = (dateString.includes('Z') || dateString.includes('+')) 
+            ? dateString 
+            : dateString + 'Z';
+            
+        const date = new Date(normalizedString);
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
