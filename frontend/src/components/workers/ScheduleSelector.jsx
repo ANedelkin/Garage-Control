@@ -43,7 +43,9 @@ const ScheduleSelector = ({ schedules = [], onChange }) => {
     const getEndHour = (s) => {
         const time = extractTime(s, "end");
         if (!time) return 0;
-        return parseInt(time.split(":")[0], 10);
+        const [h, m] = time.split(":").map(Number);
+        if (h === 23 && m === 59) return 24;
+        return h;
     };
 
     // -------------------------
@@ -127,10 +129,11 @@ const ScheduleSelector = ({ schedules = [], onChange }) => {
         const startHour = Math.min(selectionStart.hour, hour);
         const endHour = Math.max(selectionStart.hour, hour);
 
+        const endHourVal = endHour + 1;
         const newEntry = {
             dayOfWeek: dayIndex,
             startTime: `${startHour.toString().padStart(2, "0")}:00`,
-            endTime: `${(endHour + 1).toString().padStart(2, "0")}:00`
+            endTime: endHourVal === 24 ? "23:59" : `${endHourVal.toString().padStart(2, "0")}:00`
         };
 
         const updated = mergeSchedules([...localSchedules, newEntry]);

@@ -46,8 +46,9 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
         return worker.schedules.some(s => {
             if (s.dayOfWeek !== dayIndex) return false;
             const [startH] = s.startTime.split(':').map(Number);
-            const [endH] = s.endTime.split(':').map(Number);
-            return hour >= startH && hour < endH;
+            const [endH, endM] = s.endTime.split(':').map(Number);
+            const actualEndH = (endH === 23 && endM === 59) ? 24 : endH;
+            return hour >= startH && hour < actualEndH;
         });
     };
 
