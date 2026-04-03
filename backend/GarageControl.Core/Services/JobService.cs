@@ -89,7 +89,7 @@ namespace GarageControl.Core.Services.Jobs
                 job.Id,
                 jobType.Name,
                 carInfo,
-                changes);
+                new List<string>()); // Don't show added parts in the log during creation
 
             return new MethodResponseVM(true, "Job created successfully", job.Id);
         }
@@ -336,7 +336,7 @@ namespace GarageControl.Core.Services.Jobs
                 changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName));
 
             if (job.WorkerId != model.WorkerId)
-                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, newWorkerName));
+                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, $"{newWorkerName}|{model.WorkerId}"));
 
             if (job.Status != model.Status)
                 changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));
@@ -352,7 +352,7 @@ namespace GarageControl.Core.Services.Jobs
 
             return changes;
         }
-        public async Task<MethodResponseVM> DeleteJobAsync(string userId, string jobId, string workshopId)
+        public async Task<MethodResponseVM> DeleteJobAsync(string userId, string jobId, string workshopId, bool skipLogging = false)
         {
             var job = await _context.Jobs
                 .Include(j => j.JobParts)
@@ -393,7 +393,10 @@ namespace GarageControl.Core.Services.Jobs
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
             // Log the deletion
-            await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo);
+            if (!skipLogging)
+            {
+                await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo);
+            }
 
             return new MethodResponseVM(true, "Job deleted successfully");
         }

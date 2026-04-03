@@ -24,6 +24,12 @@ namespace GarageControl.Core.Models
         string? SecondaryEntityName = null,
 
         /// <summary>Field-level changes, if any.</summary>
-        List<ActivityPropertyChange>? Changes = null
+        List<ActivityPropertyChange>? Changes = null,
+        
+        /// <summary>ID of the user who performed the action (actor).</summary>
+        string? ActorId = null,
+        
+        /// <summary>Name of the user who performed the action (actor).</summary>
+        string? ActorName = null
     );
 }

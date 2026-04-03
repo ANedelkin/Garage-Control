@@ -197,6 +197,8 @@ namespace GarageControl.Core.Services
             var order = await _context.Orders
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                .Include(o => o.Car.Model)
+                    .ThenInclude(m => m.CarMake)
                 .Include(o => o.Jobs)
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
@@ -205,11 +207,15 @@ namespace GarageControl.Core.Services
             // Use JobService to delete each job properly
             foreach (var job in order.Jobs.ToList())
             {
-                await _jobService.DeleteJobAsync(userId, job.Id, workshopId);
+                await _jobService.DeleteJobAsync(userId, job.Id, workshopId, skipLogging: true);
             }
+
+            string carInfo = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
 
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
+
+            await _activityLogger.LogOrderDeletedAsync(userId, workshopId, carInfo);
 
             return new MethodResponseVM(true, "Order deleted successfully.");
         }

@@ -27,5 +27,11 @@ namespace GarageControl.Core.Services
             await _activityLogService.LogActionAsync(userId, workshopId, "Order",
                 new ActivityLogData("updated", orderId, carInfo, Changes: changes));
         }
+
+        public async Task LogOrderDeletedAsync(string userId, string workshopId, string carInfo)
+        {
+            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
+                new ActivityLogData("deleted", null, carInfo));
+        }
     }
 }

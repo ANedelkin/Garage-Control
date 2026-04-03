@@ -31,7 +31,8 @@ public interface IJobService
     Task<MethodResponseVM> DeleteJobAsync(
         string userId,
         string jobId,
-        string workshopId);
+        string workshopId,
+        bool skipLogging = false);
 
     Task<List<BusySlotVM>> GetBusySlotsAsync(
         string workerId,
