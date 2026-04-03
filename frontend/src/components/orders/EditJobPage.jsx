@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
 import { partApi } from '../../services/partApi';
@@ -11,6 +11,8 @@ import '../../assets/css/orders.css';
 
 const EditJobPage = ({ mechanicView = false }) => {
     const { orderId: paramOrderId, jobId } = useParams();
+    const [searchParams] = useSearchParams();
+    const queryOrderId = searchParams.get('orderId');
     const navigate = useNavigate();
     const isEdit = !!jobId;
 
@@ -22,14 +24,14 @@ const EditJobPage = ({ mechanicView = false }) => {
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
 
-    // Derived orderId (either from params or fetched job)
+    // Derived orderId (either from params, query, or fetched job)
     const [fetchedOrderId, setFetchedOrderId] = useState(null);
-    const orderId = paramOrderId || fetchedOrderId;
+    const orderId = paramOrderId || queryOrderId || fetchedOrderId;
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                let currentOrderId = paramOrderId;  // Get the orderId from URL params
+                let currentOrderId = orderId;  // Use the derived orderId (path or query)
                 let jobData = null;
 
                 if (isEdit) {
@@ -106,7 +108,7 @@ const EditJobPage = ({ mechanicView = false }) => {
         };
 
         loadData();
-    }, [paramOrderId, jobId, isEdit]);
+    }, [paramOrderId, queryOrderId, jobId, isEdit]);
     const updateJob = (sid, field, value) => {
         setJob(prev => ({ ...prev, [field]: value }));
     };

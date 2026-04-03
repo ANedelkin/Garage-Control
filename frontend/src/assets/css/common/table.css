@@ -24,3 +24,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.actions-cell {
+    overflow: visible !important;
+}

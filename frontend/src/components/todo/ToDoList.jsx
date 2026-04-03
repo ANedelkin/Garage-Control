@@ -8,11 +8,7 @@ const ToDoList = ({ jobs }) => {
     const hasOrdersAccess = accesses.includes('Orders');
 
     const handleRowClick = (job) => {
-        if (hasOrdersAccess) {
-            navigate(`/orders/${job.orderId}/jobs/${job.id}`);
-        } else {
-            navigate(`/todo/${job.id}`);
-        }
+        navigate(`/jobs/${job.id}`);
     };
 
     // Group jobs by date (ignoring time)

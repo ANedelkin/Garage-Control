@@ -274,7 +274,7 @@ const OrderList = ({ mode = 'active' }) => {
                                                     <tr
                                                         key={job.id}
                                                         ref={el => jobRefs.current[job.id] = el}
-                                                        onClick={() => navigate(`/orders/${order.id}/jobs/${job.id}`)}
+                                                        onClick={() => navigate(`/jobs/${job.id}`)}
                                                         className={`clickable ${highlightJob === job.id ? 'highlight-outline' : ''}`}
                                                     >
                                                         <td>
@@ -307,7 +307,7 @@ const OrderList = ({ mode = 'active' }) => {
                             </div>
                             {mode === 'active' && (
                                 <div className="tile-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '10px' }}>
-                                    <button className="btn secondary small" onClick={() => navigate(`/orders/${order.id}/jobs/new`)}>
+                                    <button className="btn secondary small" onClick={() => navigate(`/jobs/new?orderId=${order.id}`)}>
                                         + Add Job
                                     </button>
                                 </div>

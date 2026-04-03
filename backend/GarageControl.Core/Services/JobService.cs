@@ -113,6 +113,26 @@ namespace GarageControl.Core.Services.Jobs
                                       .OrderBy(j => j.StartTime)
                                       .ToListAsync();
         }
+        
+        public async Task<List<JobToDoVM>> GetJobsByWorkerIdAsync(string workerId, string workshopId)
+        {
+            return await _context.Jobs.Where(j => j.WorkerId == workerId && j.Order.Car.Owner.WorkshopId == workshopId)
+                                      .Select(j => new JobToDoVM
+                                      {
+                                          Id = j.Id,
+                                          TypeName = j.JobType.Name,
+                                          Description = j.Description ?? "",
+                                          Status = j.Status.ToString().ToLower(),
+                                          StartTime = j.StartTime,
+                                          EndTime = j.EndTime,
+                                          OrderId = j.OrderId,
+                                          CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
+                                          CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                                          ClientName = j.Order.Car.Owner.Name
+                                      })
+                                      .OrderBy(j => j.StartTime)
+                                      .ToListAsync();
+        }
 
         public async Task<List<BusySlotVM>> GetBusySlotsAsync(string workerId, DateTime start, DateTime end, string? excludeJobId = null)
         {

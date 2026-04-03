@@ -15,11 +15,7 @@ const ToDoMonthView = ({ jobs, currentMonth, setCurrentMonth, currentYear, setCu
     ];
 
     const handleEventClick = (job) => {
-        if (hasOrdersAccess) {
-            navigate(`/orders/${job.orderId}/jobs/${job.id}`);
-        } else {
-            navigate(`/todo/${job.id}`);
-        }
+        navigate(`/jobs/${job.id}`);
     };
 
     const rows = [];

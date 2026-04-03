@@ -28,7 +28,7 @@ import AdminMakesModels from './components/admin/AdminMakesModels';
 
 import Header from './components/common/Header.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
-import PopupPortal from './components/common/PopupPortal.jsx'; 
+import PopupPortal from './components/common/PopupPortal.jsx';
 import ErrorPage from './components/common/ErrorPage.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 import GlobalErrorWatcher from './components/common/GlobalErrorWatcher.jsx';
@@ -57,6 +57,97 @@ const PrivateRoute = ({ children, access }) => {
   return children;
 };
 
+const routes = [
+  { path: '/', element: Dashboard, label: 'Home', icon: 'fa-house', accesses: ['Dashboard'] },
+  {
+    path: '/todo',
+    element: ToDoPage,
+    label: 'To Do',
+    icon: 'fa-clipboard-list',
+    accesses: ['To Do'],
+    children: [
+      { path: '/:jobId', element: EditJobPage, props: { mechanicView: true } }
+    ]
+  },
+  {
+    path: '/orders',
+    element: OrdersPage,
+    label: 'Orders',
+    icon: 'fa-screwdriver-wrench',
+    accesses: ['Orders'],
+    props: { mode: 'active' },
+    children: [
+      { path: '/:orderId', element: OrdersPage, props: { mode: 'active' } }
+    ]
+  },
+  {
+    path: '/jobs',
+    accesses: ['Orders', 'To Do'],
+    children: [
+      { path: '/new', element: EditJobPage },
+      { path: '/:jobId', element: EditJobPage }
+    ]
+  },
+  { path: '/parts', element: PartsStock, label: 'Parts Stock', icon: 'fa-boxes-stacked', accesses: ['Parts Stock'] },
+  {
+    path: '/workers',
+    element: Workers,
+    label: 'Workers',
+    icon: 'fa-users-gear',
+    accesses: ['Workers'],
+    children: [
+      { path: '/new', element: Workers },
+      { path: '/:workerId', element: Workers },
+      {
+        path: '/:workerId/todo',
+        element: ToDoPage,
+        children: [
+          { path: '/:jobId', element: EditJobPage, props: { mechanicView: true } }
+        ]
+      }
+    ]
+  },
+  {
+    path: '/clients',
+    element: Clients,
+    label: 'Clients',
+    icon: 'fa-user',
+    accesses: ['Clients'],
+    children: [
+      { path: '/new', element: Clients },
+      { path: '/:clientId', element: Clients }
+    ]
+  },
+  { path: '/cars', element: Cars, label: 'Cars', icon: 'fa-car', accesses: ['Cars'], children: [
+    { path: '/new', element: Cars },
+    { path: '/:carId', element: Cars }
+  ]},
+  { path: '/activity-log', element: ActivityLog, label: 'Activity Log', icon: 'fa-clock-rotate-left', accesses: ['Activity Log'] },
+  { divider: true, accesses: ['Done Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
+  { path: '/done-orders', element: OrdersPage, label: 'Done Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], props: { mode: 'completed' }, children: [
+    { path: '/:orderId', element: OrdersPage, props: { mode: 'completed' } }
+  ]},
+  { path: '/job-types', element: JobTypes, label: 'Job Types', icon: 'fa-gear', accesses: ['Job Types'], children: [
+    { path: '/new', element: EditJobType },
+    { path: '/:id', element: EditJobType }
+  ]},
+  { path: '/makes-and-models', element: MakesAndModels, label: 'Makes & models', icon: 'fa-industry', accesses: ['Makes and Models'], children: [
+    { path: '/:makeId', element: MakesAndModels },
+    { path: '/:makeId/model/:modelId', element: MakesAndModels }
+  ]},
+  {
+    label: 'Workshop Details',
+    icon: 'fa-circle-info',
+    accesses: ['Workshop Details'],
+    popup: true,
+    popupComponent: WorkshopDetails
+  },
+  { path: '/admin/dashboard', element: AdminDashboard, label: 'Dashboard', icon: 'fa-gauge', accesses: ['Admin'] },
+  { path: '/admin/makes-models', element: AdminMakesModels, label: 'Makes & Models', icon: 'fa-industry', accesses: ['Admin'] },
+  { path: '/admin/users', element: AdminUsers, label: 'Users', icon: 'fa-users', accesses: ['Admin'] },
+  { path: '/admin/workshops', element: AdminWorkshops, label: 'Workshops', icon: 'fa-shop', accesses: ['Admin'] },
+];
+
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { accesses, loading } = useAuth();
@@ -84,54 +175,37 @@ function App() {
     return null;
   }
 
-  const routes = [
-    { path: '/', element: <Dashboard />, children: [] },
-    {
-      path: '/todo', element: <ToDoPage />, access: 'To Do', children: [
-        { path: '/:jobId', element: <EditJobPage mechanicView={true} /> }
-      ]
-    },
-    {
-      path: '/orders', element: <OrdersPage mode="active" />, access: 'Orders', children: [
-        { path: '/:orderId/jobs/new', element: <EditJobPage /> },
-        { path: '/:orderId/jobs/:jobId', element: <EditJobPage /> },
-        { path: '/:orderId', element: <OrdersPage mode="active" /> } // Route for opening order details popup
-      ]
-    },
-    { path: '/done-orders', element: <OrdersPage mode="completed" />, access: 'Orders', children: [
-        { path: '/:orderId', element: <OrdersPage mode="completed" /> } // Route for opening done order details popup
-    ] },
-    { path: '/parts', element: <PartsStock />, children: [], access: 'Parts Stock' },
-    { path: '/workers', element: <Workers />, children: [
-        { path: '/new', element: <Workers /> },
-        { path: '/:workerId', element: <Workers /> } // Edit Worker popup -> Outline Target
-    ], access: 'Workers' },
-    {
-      path: '/job-types', element: <JobTypes />, access: 'Job Types', children: [
-        { path: '/new', element: <EditJobType /> },
-        { path: '/:id', element: <EditJobType /> }
-      ]
-    },
-    {
-      path: '/clients', element: <Clients />, access: 'Clients', children: [
-        { path: '/new', element: <Clients /> },
-        { path: '/:clientId', element: <Clients /> } // Edit Client popup
-      ]
-    },
-    { path: '/makes-and-models', element: <MakesAndModels />, children: [
-        { path: '/:makeId', element: <MakesAndModels /> },
-        { path: '/:makeId/model/:modelId', element: <MakesAndModels /> }
-    ], access: 'Makes and Models' },
-    { path: '/cars', element: <Cars />, children: [
-        { path: '/new', element: <Cars /> },
-        { path: '/:carId', element: <Cars /> } // Edit Car popup
-    ], access: 'Cars' },
-    { path: '/activity-log', element: <ActivityLog />, children: [], access: 'Activity Log' },
-    { path: '/admin/dashboard', element: <AdminDashboard />, children: [], access: 'Admin' },
-    { path: '/admin/makes-models', element: <AdminMakesModels />, children: [], access: 'Admin' },
-    { path: '/admin/users', element: <AdminUsers />, children: [], access: 'Admin' },
-    { path: '/admin/workshops', element: <AdminWorkshops />, children: [], access: 'Admin' },
-  ];
+  const renderRoutes = (routeList, parentPath = '') => {
+    return routeList.map((route, i) => {
+      if (!route.path) return null;
+      const fullPath = (parentPath + route.path).replace('//', '/');
+      const Element = route.element;
+      const routeProps = route.props || {};
+
+      return (
+        <Fragment key={fullPath}>
+          {Element && (
+            <Route
+              path={fullPath}
+              element={
+                <PrivateRoute access={route.access}>
+                  <LayoutWithHeader
+                    sidebarOpen={sidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                    accesses={accesses}
+                    routes={routes}
+                  >
+                    <Element {...routeProps} />
+                  </LayoutWithHeader>
+                </PrivateRoute>
+              }
+            />
+          )}
+          {route.children && renderRoutes(route.children, fullPath)}
+        </Fragment>
+      );
+    });
+  };
 
   return (
     <div className="app-container">
@@ -141,73 +215,36 @@ function App() {
           <GlobalErrorWatcher>
             <Routes>
               <Route path="/login" element={<LogInPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
 
-            <Route path="/access-denied" element={
-              <PrivateRoute>
-                 <ErrorPage title="Access Denied" message="You do not have permission to view this page." />
-              </PrivateRoute>
-            } />
+              <Route path="/access-denied" element={
+                <PrivateRoute>
+                  <ErrorPage title="Access Denied" message="You do not have permission to view this page." />
+                </PrivateRoute>
+              } />
 
-            <Route path="/workshop-details-initial" element={
-              <PrivateRoute>
-                <WorkshopDetailsInitial />
-              </PrivateRoute>
-            } />
-            <Route path="/workshop-details" element={
-              <PrivateRoute>
-                <LayoutWithHeader
-                  sidebarOpen={sidebarOpen}
-                  setSidebarOpen={setSidebarOpen}
-                  accesses={accesses}
-                >
-                  <Dashboard /> {/* Render dashboard behind the workshop details popup */}
-                </LayoutWithHeader>
-              </PrivateRoute>
-            } />
+              <Route path="/workshop-details-initial" element={
+                <PrivateRoute>
+                  <WorkshopDetailsInitial />
+                </PrivateRoute>
+              } />
+              
+              <Route path="/workshop-details" element={
+                <PrivateRoute>
+                  <LayoutWithHeader
+                    sidebarOpen={sidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                    accesses={accesses}
+                    routes={routes}
+                  >
+                    <Dashboard />
+                  </LayoutWithHeader>
+                </PrivateRoute>
+              } />
 
+              {renderRoutes(routes)}
 
-            {routes.map((route, i) => (
-              <Fragment key={route.path}>
-                <Route
-                  path={route.path}
-                  element={
-                    <PrivateRoute access={route.access}>
-                      <LayoutWithHeader
-                        sidebarOpen={sidebarOpen}
-                        setSidebarOpen={setSidebarOpen}
-                        accesses={accesses}
-                      >
-                        {route.element}
-                      </LayoutWithHeader>
-                    </PrivateRoute>
-                  }
-                />
-                {route.children.map(childRoute => (
-                  <Route
-                    key={route.path + childRoute.path}
-                    path={route.path + childRoute.path}
-                    element={
-                      <PrivateRoute access={route.access}>
-                        <LayoutWithHeader
-                          sidebarOpen={sidebarOpen}
-                          setSidebarOpen={setSidebarOpen}
-                          accesses={accesses}
-                        >
-                          {childRoute.element}
-                        </LayoutWithHeader>
-                      </PrivateRoute>
-                    }
-                  />
-                ))
-                }
-              </Fragment>
-
-            ))}
-
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<ErrorPage type="404" />} />
-
+              <Route path="*" element={<ErrorPage type="404" />} />
             </Routes>
           </GlobalErrorWatcher>
         </ErrorBoundary>
@@ -218,15 +255,15 @@ function App() {
 
 export default App;
 
-function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen, accesses }) {
+function LayoutWithHeader({ children, sidebarOpen, setSidebarOpen, accesses, routes }) {
   return (
     <>
-      {/* <PopupPortal /> */}
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div className="horizontal work-area">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} accesses={accesses} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} accesses={accesses} routes={routes} />
         {children}
       </div>
     </>
   );
 }
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { jobApi } from '../../services/jobApi';
 import { workerApi } from '../../services/workerApi';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +13,7 @@ import '../../assets/css/orders.css';
 import '../../assets/css/todo.css';
 
 const ToDoPage = () => {
+    const { workerId } = useParams();
     const [jobs, setJobs] = useState([]);
     const [viewMode, setViewMode] = useState(localStorage.getItem('myJobsViewMode') || 'list'); // 'list', 'calendar', or 'week'
     const [loading, setLoading] = useState(true);
@@ -26,14 +28,15 @@ const ToDoPage = () => {
 
     useEffect(() => {
         fetchJobs();
-        if (user?.workerId) {
-            fetchWorker();
+        const targetWorkerId = workerId || user?.workerId;
+        if (targetWorkerId) {
+            fetchWorker(targetWorkerId);
         }
-    }, [user?.workerId]);
+    }, [workerId, user?.workerId]);
 
-    const fetchWorker = async () => {
+    const fetchWorker = async (id) => {
         try {
-            const data = await workerApi.getWorker(user.workerId);
+            const data = await workerApi.getWorker(id);
             setWorker(data);
         } catch (error) {
             console.error("Failed to fetch worker details:", error);
@@ -42,7 +45,10 @@ const ToDoPage = () => {
 
     const fetchJobs = async () => {
         try {
-            const data = await jobApi.getMyJobs();
+            setLoading(true);
+            const data = workerId 
+                ? await jobApi.getWorkerJobs(workerId)
+                : await jobApi.getMyJobs();
             setJobs(data);
         } catch (error) {
             console.error(error);
@@ -51,10 +57,17 @@ const ToDoPage = () => {
         }
     };
 
+    const getPageTitle = () => {
+        if (workerId && worker) {
+            return `${worker.name}'s Jobs`;
+        }
+        return "My Jobs";
+    };
+
     return (
         <main className={`main ${viewMode !== 'list' ? 'calendar-layout' : ''}`}>
             <div className="header">
-                <h1>My Jobs</h1>
+                <h1>{getPageTitle()}</h1>
                 <Dropdown
                     value={viewMode}
                     onChange={e => {

@@ -1,12 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../../assets/css/sidebar.css';
 
 import ThemeToggle from './ThemeToggle';
 import { usePopup } from '../../context/PopupContext';
 import WorkshopDetails from '../workshopDetails/WorkshopDetails';
 
-const Sidebar = ({ open, onClose, accesses = [] }) => {
+const Sidebar = ({ open, onClose, accesses = [], routes = [] }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const { addPopup, removeLastPopup } = usePopup();
   const [lastActivePath, setLastActivePath] = useState(localStorage.getItem('lastActiveSidebarPath') || '/');
@@ -20,73 +20,60 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const navItems = [
-    { path: '/', icon: 'fa-house', label: 'Home', accesses: ['Dashboard'] },
-    { path: '/todo', icon: 'fa-clipboard-list', label: 'To Do', accesses: ['To Do'] },
-    { path: '/orders', icon: 'fa-screwdriver-wrench', label: 'Orders', accesses: ['Orders'] },
-    { path: '/parts', icon: 'fa-boxes-stacked', label: 'Parts Stock', accesses: ['Parts Stock'] },
-    { path: '/workers', icon: 'fa-users-gear', label: 'Workers', accesses: ['Workers'] },
-    { path: '/clients', icon: 'fa-user', label: 'Clients', accesses: ['Clients'] },
-    { path: '/cars', icon: 'fa-car', label: 'Cars', accesses: ['Cars'] },
-    { path: '/activity-log', icon: 'fa-clock-rotate-left', label: 'Activity Log', accesses: ['Activity Log'] },
-    { divider: true, accesses: ['Done Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
-    { path: '/done-orders', icon: 'fa-clipboard-check', label: 'Done Orders', accesses: ['Orders'] },
-    { path: '/job-types', icon: 'fa-gear', label: 'Job Types', accesses: ['Job Types'] },
-    { path: '/makes-and-models', icon: 'fa-industry', label: 'Makes & models', accesses: ['Makes and Models'] },
-    { icon: 'fa-circle-info', label: 'Workshop Details', accesses: ['Workshop Details'], popup: true, popupComponent: WorkshopDetails },
-    { path: '/admin/dashboard', icon: 'fa-gauge', label: 'Dashboard', accesses: ['Admin'] },
-    { path: '/admin/makes-models', icon: 'fa-industry', label: 'Makes & Models', accesses: ['Admin'] },
-    { path: '/admin/users', icon: 'fa-users', label: 'Users', accesses: ['Admin'] },
-    { path: '/admin/workshops', icon: 'fa-shop', label: 'Workshops', accesses: ['Admin'] },
-  ];
+  // Helper to recursively check if a path or any of its children match the current pathname
+  const isRouteMatching = (route, currentPath, parentPath = '') => {
+    if (!route.path) return false;
+    const fullPath = (parentPath + route.path).replace('//', '/');
+    
+    // Check exact match or if current path starts with this path (and it's not root)
+    if (currentPath === fullPath) return true;
+    if (fullPath !== '/' && currentPath.startsWith(fullPath)) return true;
+
+    if (route.children) {
+      return route.children.some(child => isRouteMatching(child, currentPath, fullPath));
+    }
+    return false;
+  };
+
+  const isPathActive = (navItem) => {
+    if (navItem.path) {
+      if (isRouteMatching(navItem, location.pathname)) return true;
+
+      // Fallback: If no sidebar item matches the current URL (e.g. /jobs/123),
+      // we check if this item matches the lastActivePath that was set.
+      const anyMatch = routes.some(r => r.path && r.label && isRouteMatching(r, location.pathname));
+      if (!anyMatch && navItem.path === lastActivePath) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   useEffect(() => {
-    // Check if current path matches any nav item exactly
-    let matchingItem = navItems.find(item => item.path && location.pathname === item.path);
-
-    // Fallback to startsWith (for nested routes like /workers/123)
-    if (!matchingItem) {
-      matchingItem = navItems.find(item => item.path && item.path !== '/' && location.pathname.startsWith(item.path));
-    }
-
-    if (matchingItem) {
+    if (!routes || routes.length === 0) return;
+    const matchingItem = routes.find(item => item.path && item.label && isRouteMatching(item, location.pathname));
+    if (matchingItem && matchingItem.path) {
       setLastActivePath(matchingItem.path);
       localStorage.setItem('lastActiveSidebarPath', matchingItem.path);
     }
-  }, [location.pathname]);
+  }, [location.pathname, routes]);
 
-  const isPathActive = (itemPath) => {
-    if (location.pathname === itemPath) return true;
-    if (itemPath !== '/' && location.pathname.startsWith(itemPath)) return true;
-
-    // If no navigation item matches, fallback to last known active
-    return itemPath === lastActivePath;
-  };
-
-  console.log(accesses);
-  const filteredNavItems = navItems.filter(item => {
+  const filteredNavItems = routes.filter(item => {
+    if (item.divider) return true;
+    if (!item.label) return false;
     if (!item.accesses) return true;
     return accesses.some(access => item.accesses.includes(access));
   });
 
-  const handlePopupOpen = (item) => {
-    const PopupComponent = item.popupComponent;
-    addPopup(
-      item.label,
-      <PopupComponent onClose={removeLastPopup} />
-    );
-    onClose();
-  };
-
   useEffect(() => {
     if (location.pathname === '/workshop-details' && !workshopPopupOpened.current) {
-        workshopPopupOpened.current = true;
-        addPopup(
-            'Workshop Details',
-            <WorkshopDetails onClose={() => { removeLastPopup(); navigate('/'); workshopPopupOpened.current = false; }} />,
-            false,
-            () => { navigate('/'); workshopPopupOpened.current = false; }
-        );
+      workshopPopupOpened.current = true;
+      addPopup(
+        'Workshop Details',
+        <WorkshopDetails onClose={() => { removeLastPopup(); navigate('/'); workshopPopupOpened.current = false; }} />,
+        false,
+        () => { navigate('/'); workshopPopupOpened.current = false; }
+      );
     }
   }, [location.pathname]);
 
@@ -96,39 +83,52 @@ const Sidebar = ({ open, onClose, accesses = [] }) => {
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="sidebar-nav">
           <nav>
-            {filteredNavItems.map((item, index) => (
-              item.divider ? //Divider
-                <div key={index} className="divider" style={{ margin: '6px 0' }}></div> :
-                item.popup ? ( //Popup
+            {filteredNavItems.map((item, index) => {
+              if (item.divider) {
+                return <div key={index} className="divider" style={{ margin: '10px 0', borderTop: '1px solid var(--border2)', opacity: 0.5 }}></div>;
+              }
+
+              if (item.popup) {
+                const PopupComponent = item.popupComponent;
+                return (
                   <div
                     key={index}
                     className="nav-item list-item"
-                    onClick={() => handlePopupOpen(item)}
-                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      onClose();
+                      addPopup(
+                        item.label,
+                        <PopupComponent onClose={removeLastPopup} />
+                      );
+                    }}
                   >
                     <div className="horizontal">
                       <i className={`fa-solid ${item.icon}`}></i>
                       <span>{item.label}</span>
                     </div>
                   </div>
-                ) : ( //Link
-                  <Link
-                    key={index}
-                    to={item.path}
-                    className={`nav-item list-item ${isPathActive(item.path) ? 'active' : ''}`}
-                    onClick={onClose}
-                  >
-                    <div className="horizontal">
-                      <i className={`fa-solid ${item.icon}`}></i>
-                      <span>{item.label}</span>
-                    </div>
-                  </Link>
-                )
-            ))}
+                );
+              }
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-item list-item ${isPathActive(item) ? 'active' : ''}`}
+                  onClick={onClose}
+                >
+                  <div className="horizontal">
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
           </nav>
         </div>
+
         <div className="sidebar-footer">
-          <ThemeToggle />
+          <ThemeToggle theme={theme} setTheme={setTheme} />
         </div>
       </aside>
     </>

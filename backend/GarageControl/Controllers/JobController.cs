@@ -43,6 +43,20 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        
+        [HttpGet("worker/{workerId}")]
+        public async Task<IActionResult> GetJobsByWorkerId(string workerId)
+        {
+            try
+            {
+                var jobs = await _jobService.GetJobsByWorkerIdAsync(workerId, GetWorkshopId());
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
         [HttpGet("{jobId}")]
         public async Task<IActionResult> GetJobById(string jobId)

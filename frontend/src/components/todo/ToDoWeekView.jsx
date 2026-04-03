@@ -10,11 +10,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
     if (!worker) return <p>Loading worker schedule...</p>;
 
     const handleEventClick = (job) => {
-        if (hasOrdersAccess) {
-            navigate(`/orders/${job.orderId}/jobs/${job.id}`);
-        } else {
-            navigate(`/todo/${job.id}`);
-        }
+        navigate(`/jobs/${job.id}`);
     };
 
     const getDayOfWeek = (date) => {
@@ -138,7 +134,7 @@ const ToDoWeekView = ({ jobs, worker, viewDate, setViewDate }) => {
                                                 return (
                                                     <div
                                                         key={j.id}
-                                                        className={`week-job tile job-status-${j.status}`}
+                                                        className={`week-job tile glow job-status-${j.status}`}
                                                         style={{
                                                             height: `calc(${durationHours * 100}% - 4px)`,
                                                             zIndex: 5

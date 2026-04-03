@@ -4,6 +4,9 @@ const jobApi = {
     getMyJobs: async () => {
         return await request('GET', 'job/my-jobs');
     },
+    getWorkerJobs: async (workerId) => {
+        return await request('GET', `job/worker/${workerId}`);
+    },
     getJob: async (jobId) => {
         return await request('GET', `job/${jobId}`);
     },

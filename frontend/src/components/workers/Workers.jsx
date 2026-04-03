@@ -124,7 +124,7 @@ const Workers = () => {
                             <col style={{ width: '200px' }} />
                             <col className="hide-md" />
                             <col className="hide-md" style={{ width: '140px' }} />
-                            <col style={{ width: '150px' }} />
+                            <col style={{ width: '190px' }} />
                         </colgroup>
 
                         <thead>
@@ -157,16 +157,24 @@ const Workers = () => {
 
                                     <td className="hide-md">{new Date(w.hiredOn).toLocaleDateString()}</td>
 
-                                    <td onClick={e => e.stopPropagation()}>
+                                    <td className="actions-cell" style={{ overflow: 'visible' }}>
                                         <div className="workers-table-actions" style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end', position: 'relative' }}>
                                             <div className="desktop-only" style={{ display: 'flex', gap: '5px' }}>
-                                                <button className="btn edit icon-btn" onClick={() => openEditWorker(w.id)} title="Edit Worker">
+                                                <button
+                                                    className="btn icon-btn"
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/workers/${w.id}/todo`); }}
+                                                    title="View To-Do List"
+                                                >
+                                                    <i className="fa-solid fa-clipboard-list"></i>
+                                                </button>
+                                                <button className="btn edit icon-btn" onClick={(e) => { e.stopPropagation(); openEditWorker(w.id); }} title="Edit Worker">
                                                     <i className="fa-solid fa-pen"></i>
                                                 </button>
-                                                <button className="btn schedule icon-btn" onClick={() => openWorkhours(w.id)} title="Edit Schedule">
+                                                <button className="btn schedule icon-btn" onClick={(e) => { e.stopPropagation(); openWorkhours(w.id); }} title="Edit Schedule">
                                                     <i className="fa-solid fa-calendar"></i>
                                                 </button>
-                                                <button className="btn delete icon-btn" onClick={async () => {
+                                                <button className="btn delete icon-btn" onClick={async (e) => {
+                                                    e.stopPropagation();
                                                     if (window.confirm('Delete worker?')) {
                                                         await workerApi.deleteWorker(w.id);
                                                         setWorkers(workers.filter(worker => worker.id !== w.id));
@@ -183,17 +191,23 @@ const Workers = () => {
                                                     <>
                                                         <div className="context-menu-overlay" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }}></div>
                                                         <div className="context-menu tile">
-                                                            <div className="list-item" onClick={() => { setActiveMenu(null); openEditWorker(w.id); }}>
+                                                            <div className="list-item" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); navigate(`/workers/${w.id}/todo`); }}>
+                                                                <div className="item-label">
+                                                                    <i className="fa-solid fa-clipboard-list"></i> View To-Do List
+                                                                </div>
+                                                            </div>
+                                                            <div className="list-item" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); openEditWorker(w.id); }}>
                                                                 <div className="item-label">
                                                                     <i className="fa-solid fa-pen"></i> Edit Worker
                                                                 </div>
                                                             </div>
-                                                            <div className="list-item" onClick={() => { setActiveMenu(null); openWorkhours(w.id); }}>
+                                                            <div className="list-item" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); openWorkhours(w.id); }}>
                                                                 <div className="item-label">
                                                                     <i className="fa-solid fa-calendar"></i> Edit Schedule
                                                                 </div>
                                                             </div>
-                                                            <div className="list-item" onClick={async () => {
+                                                            <div className="list-item" onClick={async (e) => {
+                                                                e.stopPropagation();
                                                                 setActiveMenu(null);
                                                                 if (window.confirm('Delete worker?')) {
                                                                     await workerApi.deleteWorker(w.id);
