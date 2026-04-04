@@ -1,0 +1,7 @@
+[
+  { "name": "Auto Masters", "specializations": [] },
+  { "name": "Quick Lube Pro", "specializations": ["Toyota", "Honda"] },
+  { "name": "Elite Garage", "specializations": [] },
+  { "name": "Downtown Auto Repair", "specializations": [] },
+  { "name": "Pinnacle Performance", "specializations": ["BMW", "Mercedes-Benz", "Porsche"] }
+]

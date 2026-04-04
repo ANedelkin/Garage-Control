@@ -1,0 +1,20 @@
+{
+  "folders": [ "Consumables", "Engine Parts", "Electrical", "Suspension", "Brakes" ],
+  "parts": [ 
+    "Brake Pad Set", 
+    "Oil Filter - Synthetic", 
+    "Air Filter", 
+    "Spark Plug Platinum", 
+    "Wiper Blades 22 inch", 
+    "Battery 12V", 
+    "Timing Belt", 
+    "Alternator", 
+    "Starter Motor", 
+    "Headlight Bulb H7", 
+    "Radiator Hose", 
+    "Thermostat", 
+    "Serpentine Belt", 
+    "Fuel Filter", 
+    "Cabin Air Filter" 
+  ]
+}

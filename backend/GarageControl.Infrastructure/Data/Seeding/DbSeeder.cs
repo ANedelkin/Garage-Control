@@ -54,7 +54,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
             }
 
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            var adminUser = await userManager.FindByEmailAsync(adminUsername);
+            var adminUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == adminUsername);
 
             if (adminUser == null)
             {
@@ -84,6 +84,9 @@ namespace GarageControl.Infrastructure.Data.Seeding
                         Console.WriteLine($"- {error.Description}");
                 }
             }
+
+            // Seed Dummy Data
+            await DummyDataSeeder.SeedAsync(context, serviceProvider);
 
             Console.WriteLine("Seeding completed successfully.");
         }

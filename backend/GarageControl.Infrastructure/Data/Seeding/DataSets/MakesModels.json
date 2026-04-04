@@ -1,0 +1,22 @@
+{
+  "Toyota": ["Camry", "Corolla", "RAV4", "Highlander", "Tacoma"],
+  "Ford": ["F-150", "Mustang", "Explorer", "Escape", "Focus"],
+  "Honda": ["Civic", "Accord", "CR-V", "Pilot", "Odyssey"],
+  "Chevrolet": ["Silverado", "Malibu", "Equinox", "Tahoe", "Camaro"],
+  "Nissan": ["Altima", "Sentra", "Rogue", "Pathfinder", "Maxima"],
+  "Hyundai": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Palisade"],
+  "Kia": ["Optima", "Sorento", "Sportage", "Telluride", "Soul"],
+  "BMW": ["3 Series", "5 Series", "X3", "X5", "M3"],
+  "Mercedes-Benz": ["C-Class", "E-Class", "GLC", "GLE", "S-Class"],
+  "Audi": ["A4", "A6", "Q5", "Q7", "A3"],
+  "Volkswagen": ["Jetta", "Passat", "Tiguan", "Atlas", "Golf"],
+  "Subaru": ["Outback", "Forester", "Crosstrek", "Impreza", "Legacy"],
+  "Lexus": ["RX", "ES", "NX", "IS", "GX"],
+  "Mazda": ["CX-5", "Mazda3", "CX-9", "Mazda6", "CX-30"],
+  "Jeep": ["Wrangler", "Grand Cherokee", "Cherokee", "Compass", "Gladiator"],
+  "Ram": ["1500", "2500", "3500", "ProMaster"],
+  "Dodge": ["Charger", "Challenger", "Durango", "Journey"],
+  "Chrysler": ["Pacifica", "300", "Voyager"],
+  "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan"],
+  "Volvo": ["XC90", "XC60", "S60", "V60", "XC40"]
+}
