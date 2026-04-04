@@ -32,10 +32,10 @@ const WorkshopDetailsInitial = () => {
     };
 
     return (
-        <div className="vertical" style={{ height: '100vh' }}>
+        <div className="vertical workshop-details-initial-page">
             <Header />
-            <main className="main" style={{ display: 'flex', alignItems: 'center' }}>
-                <div className="tile" style={{ width: 'fit-content', marginTop: '75px' }}>
+            <main className="main workshop-details-initial-main">
+                <div className="tile workshop-details-initial-tile">
                     <h3 className="tile-header">Workshop Information</h3>
                     <WorkshopDetailsForm handleSubmit={handleSubmit} errors={errors} />
                 </div>
