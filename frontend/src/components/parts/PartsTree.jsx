@@ -48,7 +48,7 @@ const PartItemLabel = ({ node, type, expanded }) => {
     );
 };
 
-const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
+const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [], autoExpandPath = [], onAutoExpandProcessed }) => {
 
     // Define Actions for the Parts Tree
     const actions = {
@@ -136,6 +136,8 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                 refreshTrigger={refreshTrigger}
                 selectedItemId={selectedPartId}
                 selectedPath={selectedPath}
+                autoExpandPath={autoExpandPath}
+                onAutoExpand={onAutoExpandProcessed}
                 currentPath={currentPath}
                 actions={actions}
                 labels={labels}

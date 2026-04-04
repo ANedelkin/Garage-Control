@@ -67,7 +67,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var part = await _partService.GetPartByIdAsync(id, GetWorkshopId());
+                var part = await _partService.GetPartWithPathAsync(id, GetWorkshopId());
                 if (part == null) return NotFound();
                 return Ok(part);
             }

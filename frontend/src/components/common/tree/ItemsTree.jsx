@@ -12,6 +12,8 @@ const ItemsTree = ({
     refreshTrigger,
     selectedItemId,
     selectedPath = [],
+    autoExpandPath = [],
+    onAutoExpand,
     currentPath = [],
     actions,
     labels,
@@ -34,6 +36,8 @@ const ItemsTree = ({
                     refreshTrigger={refreshTrigger}
                     selectedItemId={selectedItemId}
                     selectedPath={selectedPath}
+                    autoExpandPath={autoExpandPath}
+                    onAutoExpand={onAutoExpand}
                     currentPath={[...currentPath, group.id]}
                     actions={actions}
                     labels={labels}
@@ -55,6 +59,8 @@ const ItemsTree = ({
                     refreshTrigger={refreshTrigger}
                     selectedItemId={selectedItemId}
                     selectedPath={selectedPath}
+                    autoExpandPath={autoExpandPath}
+                    onAutoExpand={onAutoExpand}
                     currentPath={[...currentPath, item.id]}
                     actions={actions}
                     labels={labels}

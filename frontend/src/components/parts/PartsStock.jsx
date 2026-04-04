@@ -14,6 +14,7 @@ const PartsStock = () => {
     const [searchParams] = useSearchParams();
     const [selectedPart, setSelectedPart] = useState(null);
     const [selectedPath, setSelectedPath] = useState([]);
+    const [autoExpandPath, setAutoExpandPath] = useState([]);
     const [refreshTree, setRefreshTree] = useState(0);
     const [rootFolders, setRootFolders] = useState([]);
     const [rootParts, setRootParts] = useState([]);
@@ -21,6 +22,11 @@ const PartsStock = () => {
     const handlePartSelect = (part, path) => {
         setSelectedPart(part);
         setSelectedPath(path);
+        // Do NOT set autoExpandPath here, to avoid expanding tree on manual selection
+    };
+
+    const handleAutoExpandProcessed = (folderId) => {
+        setAutoExpandPath(prev => prev.filter(id => id !== folderId));
     };
 
     const handleRefresh = async () => {
@@ -48,6 +54,7 @@ const PartsStock = () => {
                     if (part) {
                         setSelectedPart(part);
                         setSelectedPath(part.path || []);
+                        setAutoExpandPath(part.path || []); // Trigger auto-expansion
                     }
                 } catch (error) {
                     console.error("Error loading linked part", error);
@@ -113,6 +120,8 @@ const PartsStock = () => {
                                     refreshTrigger={refreshTree}
                                     selectedPartId={selectedPart?.id}
                                     selectedPath={selectedPath}
+                                    autoExpandPath={autoExpandPath}
+                                    onAutoExpandProcessed={handleAutoExpandProcessed}
                                 />
                             </div>
                         </div>

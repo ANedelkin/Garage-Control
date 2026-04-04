@@ -11,6 +11,8 @@ const ItemsTreeNode = ({
     refreshTrigger,
     selectedItemId,
     selectedPath = [],
+    autoExpandPath = [],
+    onAutoExpand,
     currentPath = [],
     actions = {},
     labels = {},
@@ -29,8 +31,12 @@ const ItemsTreeNode = ({
     const menuRef = useRef(null);
 
     useEffect(() => {
-        // Auto-expand logic removed to respect user preference
-    }, []);
+        if (type === 'group' && autoExpandPath && autoExpandPath.includes(node.id) && !expanded) {
+            handleExpand().then(() => {
+                if (onAutoExpand) onAutoExpand(node.id);
+            });
+        }
+    }, [autoExpandPath, node.id, type]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -232,6 +238,8 @@ const ItemsTreeNode = ({
                         refreshTrigger={refreshTrigger}
                         selectedItemId={selectedItemId}
                         selectedPath={selectedPath}
+                        autoExpandPath={autoExpandPath}
+                        onAutoExpand={onAutoExpand}
                         currentPath={currentPath}
                         actions={actions}
                         labels={labels}
