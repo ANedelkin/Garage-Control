@@ -119,9 +119,11 @@ namespace GarageControl.Core.Services
                     Id = p.Id,
                     Name = p.Name,
                     CurrentQuantity = p.AvailabilityBalance,
-                    MinimumQuantity = p.MinimumQuantity
+                    MinimumQuantity = p.MinimumQuantity,
+                    DeficitStatus = p.DeficitStatus
                 })
-                .OrderBy(p => p.CurrentQuantity)
+                .OrderByDescending(p => p.DeficitStatus)
+                .ThenBy(p => p.CurrentQuantity)
                 .ToListAsync();
         }
 

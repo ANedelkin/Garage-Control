@@ -28,6 +28,15 @@ const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const jobTypes = React.useMemo(() => {
+        if (!dashboardData) return [];
+        const allJobTypes = new Set();
+        dashboardData.jobsCompletedByDay.forEach(day => {
+            Object.keys(day.jobTypesCounts).forEach(type => allJobTypes.add(type));
+        });
+        return Array.from(allJobTypes);
+    }, [dashboardData]);
+
     useEffect(() => {
         fetchDashboardData();
     }, []);
@@ -49,14 +58,6 @@ const Dashboard = () => {
 
         if (jobsChartInstanceRef.current) jobsChartInstanceRef.current.destroy();
 
-        // Extract unique job types
-        const allJobTypes = new Set();
-        dashboardData.jobsCompletedByDay.forEach(day => {
-            Object.keys(day.jobTypesCounts).forEach(type => allJobTypes.add(type));
-        });
-        const jobTypes = Array.from(allJobTypes);
-
-
         const datasets = jobTypes.map((type, index) => ({
             label: type,
             data: dashboardData.jobsCompletedByDay.map(day => day.jobTypesCounts[type] || 0),
@@ -75,10 +76,17 @@ const Dashboard = () => {
                 maintainAspectRatio: false,
                 scales: {
                     x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
+                    y: { 
+                        stacked: true, 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
                 },
                 plugins: {
-                    legend: { display: true, position: 'top' }
+                    legend: { display: false }
                 }
             }
         });
@@ -86,7 +94,7 @@ const Dashboard = () => {
         return () => {
             if (jobsChartInstanceRef.current) jobsChartInstanceRef.current.destroy();
         };
-    }, [dashboardData]);
+    }, [dashboardData, jobTypes]);
 
     // Pie chart for job type distribution
     useEffect(() => {
@@ -106,7 +114,7 @@ const Dashboard = () => {
             options: {
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true, position: 'right' }
+                    legend: { display: false }
                 }
             }
         });
@@ -142,7 +150,21 @@ const Dashboard = () => {
 
                 <div className="tile chart-card">
                     <h3 className="tile-header">Jobs completed — last 30 days</h3>
-                    <canvas ref={jobsChartRef} />
+                    
+                    <div className="custom-chart-legend">
+                        {jobTypes.map((type, index) => (
+                            <div key={type} className="legend-item">
+                                <span className="legend-marker" style={{ backgroundColor: colors[index % colors.length] }}></span>
+                                <span className="legend-label">{type}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="scrollable-content-wrapper grow">
+                        <div className="min-width-content" style={{ height: '100%' }}>
+                            <canvas ref={jobsChartRef} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="tile small-card">
@@ -157,7 +179,7 @@ const Dashboard = () => {
                             dashboardData.lowStockParts.map(p => (
                                 <div key={p.id} className="part-row" onClick={() => navigate(`/parts?id=${p.id}`)}>
                                     <span>{p.name}</span>
-                                    <span className={p.currentQuantity === 0 ? 'out-of-stock' : 'low-stock'}>
+                                    <span className={p.deficitStatus === 2 ? 'status-higher-deficit' : (p.deficitStatus === 1 ? 'status-lower-deficit' : '')}>
                                         {p.currentQuantity}/{p.minimumQuantity}
                                     </span>
                                 </div>
@@ -197,7 +219,17 @@ const Dashboard = () => {
 
                 <div className="tile small-card ">
                     <h3 className="tile-header">Finished jobs' types — last month</h3>
-                    <div>
+                    
+                    <div className="custom-chart-legend">
+                        {dashboardData.jobTypeDistribution.map((jt, index) => (
+                            <div key={jt.jobTypeName} className="legend-item">
+                                <span className="legend-marker" style={{ backgroundColor: colors[index % colors.length] }}></span>
+                                <span className="legend-label">{jt.jobTypeName} ({jt.count})</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ height: '300px', width: '100%' }}>
                         <canvas ref={pieChartRef} />
                     </div>
                 </div>
