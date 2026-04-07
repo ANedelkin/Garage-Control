@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../services/authApi.js';
 import ThemeToggle from '../common/ThemeToggle.jsx';
 import FieldError from '../common/FieldError.jsx';
@@ -12,6 +13,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 const SignUpPage = () => {
     usePageTitle('Sign Up');
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({ username: '', password: '' });
@@ -22,8 +24,10 @@ const SignUpPage = () => {
         setErrors({});
 
         try {
-            await authApi.register(formData.username, formData.password);
-            localStorage.setItem('HasWorkshop', 'false'); // Ensure popup shows up
+            const response = await authApi.register(formData.username, formData.password);
+            if (response) {
+                login(response);
+            }
             navigate('/');
         } catch (err) {
             setErrors(parseValidationErrors(err));
