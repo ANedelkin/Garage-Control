@@ -318,8 +318,9 @@ namespace GarageControl.Infrastructure.Data.Seeding
                     await context.Parts.AddRangeAsync(parts);
 
                     // Orders
-                    var orders = new List<Order>();
-                    for (int i = 0; i < 10; i++)
+                    // Orders
+                    var ordersToProcess = new List<(Order order, DateTime start)>();
+                    for (int i = 0; i < 15; i++)
                     {
                         var randomCar = dbCars[Rnd.Next(dbCars.Count)];
                         var order = new Order
@@ -329,13 +330,9 @@ namespace GarageControl.Infrastructure.Data.Seeding
                             IsDone = false,
                             Kilometers = Rnd.Next(5000, 150000)
                         };
-                        orders.Add(order);
 
-                        int jobCount = Rnd.Next(3, 7);
-                        var jobs = new List<Job>();
-                        
-                        // Pick a start date within the last 30 days or next 20 days
-                        var daysOffset = Rnd.Next(-30, 20);
+                        // Pick a start date within the last 30 days or next 15 days
+                        var daysOffset = Rnd.Next(-30, 15);
                         var carAvailability = DateTime.UtcNow.Date.AddDays(daysOffset).AddHours(9);
                         
                         // Ensure it's a weekday
@@ -343,7 +340,15 @@ namespace GarageControl.Infrastructure.Data.Seeding
                         {
                             carAvailability = carAvailability.AddDays(1);
                         }
-                        
+                        ordersToProcess.Add((order, carAvailability));
+                    }
+
+                    foreach (var (order, initialStart) in ordersToProcess.OrderBy(o => o.start))
+                    {
+                        var carAvailability = initialStart;
+                        int jobCount = Rnd.Next(3, 7);
+                        var jobs = new List<Job>();
+
                         for (int j = 0; j < jobCount; j++)
                         {
                             var randomJt = jobTypes[Rnd.Next(jobTypes.Count)];
@@ -363,6 +368,8 @@ namespace GarageControl.Infrastructure.Data.Seeding
                                 jobStart = jobStart.Date.AddDays(1).AddHours(9);
                             }
 
+                            var jobEnd = jobStart.AddHours(duration);
+
                             var status = Rnd.Next(0, 3) switch
                             {
                                 0 => JobStatus.Pending,
@@ -370,7 +377,15 @@ namespace GarageControl.Infrastructure.Data.Seeding
                                 _ => JobStatus.Done
                             };
 
-                            var jobEnd = jobStart.AddHours(duration);
+                            // Ensure status matches the timeline
+                            if (jobStart > DateTime.UtcNow)
+                            {
+                                status = JobStatus.Pending;
+                            }
+                            else if (jobEnd > DateTime.UtcNow && status == JobStatus.Done)
+                            {
+                                status = JobStatus.InProgress;
+                            }
 
                             var job = new Job
                             {
@@ -391,42 +406,46 @@ namespace GarageControl.Infrastructure.Data.Seeding
                             workerAvailability[randomWorker.Id] = jobEnd;
                             carAvailability = jobEnd;
 
-                            if (status != JobStatus.Pending)
+                            int jpCount = Rnd.Next(1, 5);
+                            var selectedParts = parts.OrderBy(x => Rnd.Next()).Take(jpCount).ToList();
+                            foreach(var randomPart in selectedParts)
                             {
-                                int jpCount = Rnd.Next(0, 3);
-                                var selectedParts = parts.OrderBy(x => Rnd.Next()).Take(jpCount).ToList();
-                                foreach(var randomPart in selectedParts)
+                                int planned = Rnd.Next(1, 6);
+                                int requested = 0;
+                                int sent = 0;
+                                int used = 0;
+
+                                if (status == JobStatus.Done)
                                 {
-                                    int planned = Rnd.Next(1, 6);
-                                    int requested = Rnd.Next(0, planned + 1);
-                                    int sent = 0;
-                                    int used = 0;
-
-                                    if (status == JobStatus.Done)
-                                    {
-                                        sent = planned;
-                                        used = planned;
-                                        requested = planned;
-                                    }
-                                    else if (status == JobStatus.InProgress)
-                                    {
-                                        sent = Rnd.Next(0, planned + 1);
-                                    }
-
-                                    randomPart.Quantity -= sent;
-                                    randomPart.AvailabilityBalance -= planned;
-                                    
-                                    job.JobParts.Add(new JobPart
-                                    {
-                                        Job = job,
-                                        Part = randomPart,
-                                        PlannedQuantity = planned,
-                                        RequestedQuantity = requested,
-                                        SentQuantity = sent,
-                                        UsedQuantity = used,
-                                        Price = randomPart.Price
-                                    });
+                                    planned = Rnd.Next(1, 4);
+                                    requested = planned;
+                                    sent = planned;
+                                    used = planned;
                                 }
+                                else if (status == JobStatus.InProgress)
+                                {
+                                    requested = Rnd.Next(0, planned + 1);
+                                    sent = Rnd.Next(0, requested + 1);
+                                    used = Rnd.Next(0, sent + 1);
+                                }
+                                else // Pending
+                                {
+                                    requested = Rnd.Next(0, 2) == 0 ? 0 : Rnd.Next(1, planned + 1);
+                                }
+
+                                randomPart.Quantity -= sent;
+                                randomPart.AvailabilityBalance -= planned;
+                                
+                                job.JobParts.Add(new JobPart
+                                {
+                                    Job = job,
+                                    Part = randomPart,
+                                    PlannedQuantity = planned,
+                                    RequestedQuantity = requested,
+                                    SentQuantity = sent,
+                                    UsedQuantity = used,
+                                    Price = randomPart.Price
+                                });
                             }
 
                             jobs.Add(job);
@@ -436,8 +455,8 @@ namespace GarageControl.Infrastructure.Data.Seeding
                         {
                             order.IsDone = true;
                         }
+                        context.Orders.Add(order);
                     }
-                    await context.Orders.AddRangeAsync(orders);
                 }
         }
 
