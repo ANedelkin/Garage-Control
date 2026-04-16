@@ -59,11 +59,25 @@ const Sidebar = ({ open, onClose, accesses = [], routes = [] }) => {
   }, [location.pathname, routes]);
 
   const filteredNavItems = routes.filter(item => {
-    if (item.divider) return true;
-    if (!item.label) return false;
+    if (!item.divider && !item.label) return false;
     if (!item.accesses) return true;
     return accesses.some(access => item.accesses.includes(access));
-  });
+  }).reduce((acc, current, idx, arr) => {
+    // Post-filter pass to remove redundant dividers
+    if (current.divider) {
+      // 1. Skip if it's the first item
+      if (acc.length === 0) return acc;
+      
+      // 2. Skip if it's the last item (will handle below)
+      if (idx === arr.length - 1) return acc;
+
+      // 3. Skip if there's already a divider at the end of acc (consecutive)
+      if (acc[acc.length - 1].divider) return acc;
+    }
+    
+    acc.push(current);
+    return acc;
+  }, []);
 
   useEffect(() => {
     if (location.pathname === '/workshop-details' && !workshopPopupOpened.current) {
