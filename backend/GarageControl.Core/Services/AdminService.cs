@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
         public async Task<List<UserAdminVM>> GetUsersAsync()
         {
             var users = await _userManager.Users
-                .Select(u => new { u.Id, u.UserName, u.Email, u.LockoutEnd })
+                .Select(u => new { u.Id, u.UserName, u.Email, u.LockoutEnd, u.LastLogin })
                 .ToListAsync();
 
             var adminUser = await _userManager.GetUsersInRoleAsync("Admin");
@@ -53,22 +53,24 @@ namespace GarageControl.Core.Services
 
                 if (user.Id == adminId)
                 {
-                    userVM.Role = "Admin";
+                    continue; // Do not show the admin in both users tables
                 }
                 else
                 {
                     var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
                     if (worker != null)
                     {
-                        userVM.Role = "Worker";
+                        userVM.Role = "User";
                         userVM.WorkshopName = worker.WorkshopName;
                     }
                     else
                     {
-                        userVM.Role = "Owner";
+                        userVM.Role = "User";
                         userVM.WorkshopName = workshops.FirstOrDefault(w => w.BossId == user.Id)?.Name ?? "Unknown";
                     }
                 }
+                
+                userVM.LastLogin = user.LastLogin;
 
                 result.Add(userVM);
             }
@@ -138,39 +140,37 @@ namespace GarageControl.Core.Services
             var totalWorkshops = await _repo.GetAllAsNoTracking<Workshop>().CountAsync();
             var totalOrders = await _repo.GetAllAsNoTracking<Order>().CountAsync();
 
-            var recentUsersList = await _userManager.Users
-                .OrderByDescending(u => u.Id)
-                .Take(10)
-                .ToListAsync();
+            var recentUsersListFiltered = new List<User>();
+            var allUsers = await _userManager.Users.OrderByDescending(u => u.LastLogin).ToListAsync();
+
+            foreach (var user in allUsers)
+            {
+                if (recentUsersListFiltered.Count >= 10) break;
+                var roles = await _userManager.GetRolesAsync(user);
+                if (!roles.Contains("Admin"))
+                {
+                    recentUsersListFiltered.Add(user);
+                }
+            }
 
             var recentUsersVM = new List<UserAdminVM>();
             var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
             var workers = await _repo.GetAllAsNoTracking<Worker>().Include(w => w.Workshop).ToListAsync();
 
-            foreach (var user in recentUsersList)
+            foreach (var user in recentUsersListFiltered)
             {
-                var roles = await _userManager.GetRolesAsync(user);
-                string role = "Worker";
+                string role = "User";
                 string? workshopName = null;
 
-                if (roles.Contains("Admin"))
+                var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
+                if (worker != null)
                 {
-                    role = "Admin";
+                    workshopName = worker.Workshop?.Name;
                 }
                 else
                 {
-                    var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
-                    if (worker != null)
-                    {
-                        role = "Worker";
-                        workshopName = worker.Workshop?.Name;
-                    }
-                    else
-                    {
-                        role = "Owner";
-                        var ownerWorkshop = workshops.FirstOrDefault(w => w.BossId == user.Id);
-                        workshopName = ownerWorkshop?.Name;
-                    }
+                    var ownerWorkshop = workshops.FirstOrDefault(w => w.BossId == user.Id);
+                    workshopName = ownerWorkshop?.Name;
                 }
 
                 recentUsersVM.Add(new UserAdminVM
@@ -180,7 +180,8 @@ namespace GarageControl.Core.Services
                     Email = user.Email ?? "",
                     IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
                     Role = role,
-                    WorkshopName = workshopName ?? "-"
+                    WorkshopName = workshopName ?? "-",
+                    LastLogin = user.LastLogin
                 });
             }
 

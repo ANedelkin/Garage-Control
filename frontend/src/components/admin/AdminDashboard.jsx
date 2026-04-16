@@ -24,9 +24,20 @@ const AdminDashboard = () => {
         fetchStats();
     }, []);
 
+    const formatDate = (dateString) => {
+        if (!dateString || dateString === '0001-01-01T00:00:00') return 'Never';
+        const date = new Date(dateString);
+        return date.toLocaleString([], { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
+
     return (
         <div className="main">
-            {loading ? <div>Loading stats...</div> : !stats ? <div>Failed to load stats.</div> :
+            {loading ? <div className="tile">Loading stats...</div> : !stats ? <div className="tile">Failed to load stats.</div> :
                 <>
                     <h1>Admin Dashboard</h1>
 
@@ -53,8 +64,8 @@ const AdminDashboard = () => {
                                     <tr>
                                         <th>Username</th>
                                         <th className="hide-sm">Email</th>
-                                        <th>Role</th>
                                         <th className="hide-md">Workshop</th>
+                                        <th>Last Login</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -62,8 +73,8 @@ const AdminDashboard = () => {
                                         <tr key={user.id}>
                                             <td>{user.userName}</td>
                                             <td className="hide-sm">{user.email}</td>
-                                            <td>{user.role}</td>
                                             <td className="hide-md">{user.workshopName || '-'}</td>
+                                            <td>{formatDate(user.lastLogin)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

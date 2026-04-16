@@ -13,7 +13,6 @@ const AdminUsers = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
-    const [roleFilter, setRoleFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
     const { addPopup, removeLastPopup } = usePopup();
 
@@ -73,12 +72,11 @@ const AdminUsers = () => {
         const matchesSearch = user.email.toLowerCase().includes(search.toLowerCase()) ||
             user.userName.toLowerCase().includes(search.toLowerCase()) ||
             (user.workshopName && user.workshopName.toLowerCase().includes(search.toLowerCase()));
-        const matchesRole = roleFilter === 'All' || user.role === roleFilter;
         const matchesStatus = statusFilter === 'All' ||
             (statusFilter === 'Active' && !user.isBlocked) ||
             (statusFilter === 'Blocked' && user.isBlocked);
 
-        return matchesSearch && matchesRole && matchesStatus;
+        return matchesSearch && matchesStatus;
     });
 
 
@@ -108,14 +106,6 @@ const AdminUsers = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
                 <Dropdown
-                    value={roleFilter}
-                    onChange={e => setRoleFilter(e.target.value)}
-                >
-                    {roles.map(role => (
-                        <option key={role} value={role}>{role}</option>
-                    ))}
-                </Dropdown>
-                <Dropdown
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
                 >
@@ -133,20 +123,20 @@ const AdminUsers = () => {
                             <tr>
                                 <th>Username</th>
                                 <th className="hide-sm">Email</th>
-                                <th className="hide-sm">Role</th>
                                 <th className="hide-md">Workshop</th>
+                                <th>Last Login</th>
                                 <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredUsers.map(user => (
                                 <tr key={user.id} className="clickable-row" onClick={() => {
-                                    addPopup(null, <AdminUserPopup user={user} onClose={removeLastPopup} />);
+                                    addPopup('User Details', <AdminUserPopup user={user} onClose={removeLastPopup} />);
                                 }}>
                                     <td>{user.userName}</td>
                                     <td className="hide-sm">{user.email}</td>
-                                    <td className="hide-sm">{user.role}</td>
                                     <td className="hide-md">{user.workshopName || '-'}</td>
+                                    <td>{new Date(user.lastLogin).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) === 'Invalid Date' || user.lastLogin === '0001-01-01T00:00:00' ? 'Never' : new Date(user.lastLogin).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                     <td style={{ textAlign: 'center', height: '61px' }} onClick={e => e.stopPropagation()}>
                                         {user.role !== 'Admin' && (
                                             <button

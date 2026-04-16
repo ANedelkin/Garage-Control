@@ -3,6 +3,10 @@ import ItemsTree from '../common/tree/ItemsTree';
 import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
 import SuggestedModelPopup from './SuggestedModelPopup';
+import PromoteMakePopup from './PromoteMakePopup';
+import SimpleInputPopup from './SimpleInputPopup';
+import RenamePopup from './RenamePopup';
+import { usePopup } from '../../context/PopupContext';
 import '../../assets/css/admin-makes-models.css';
 import '../../assets/css/popup.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
@@ -12,8 +16,10 @@ const AdminMakesModels = () => {
     usePageTitle('Admin Makes & Models');
     const [existing, setExisting] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
-    const [popupNode, setPopupNode] = useState(null);
     const [errors, setErrors] = useState({});
+    const [activeTab, setActiveTab] = useState('existing');
+
+    const { addPopup, removeLastPopup } = usePopup();
 
     const loadData = async () => {
         try {
@@ -29,13 +35,12 @@ const AdminMakesModels = () => {
                 className: 'make-node'
             })));
 
-            setSuggestions(suggestionsData.map((s, index) => ({
+            setSuggestions(suggestionsData.map((s) => ({
                 id: s.name,
                 name: s.name,
                 count: s.count,
                 isExisting: s.isExisting,
-                type: 'group',
-                className: s.isExisting ? 'suggestion-node existing' : 'suggestion-node'
+                type: 'group'
             })));
 
         } catch (error) {
@@ -61,7 +66,7 @@ const AdminMakesModels = () => {
         return {
             items: models.map(m => ({
                 ...m,
-                id: `SUGG_MOD_${m.name}`, //TODO: names are already unique, no need  for prefix
+                id: m.name,
                 type: 'item',
                 makeName: makeName,
                 className: 'suggestion-model-node'
@@ -72,28 +77,42 @@ const AdminMakesModels = () => {
 
     const existingActions = {
         onAddItem: async (node, onSuccess) => {
-            const name = prompt("Enter model name:");
-            if (!name) return;
-            try {
-                await modelApi.createModel({ name, makeId: node.id });
-                onSuccess();
-            } catch (e) {
-                alert("Failed to create model");
-            }
+            addPopup('Add Model', (
+                <SimpleInputPopup 
+                    label="Model Name" 
+                    onConfirm={async (name) => {
+                        try {
+                            await modelApi.createModel({ name, makeId: node.id });
+                            removeLastPopup();
+                            onSuccess();
+                        } catch (e) {
+                            alert("Failed to create model");
+                        }
+                    }}
+                    onClose={removeLastPopup}
+                />
+            ));
         },
         onRename: async (node, type, onSuccess) => {
-            const newName = prompt("Enter new name:", node.name);
-            if (!newName) return;
-            try {
-                if (type === 'group') {
-                    await makeApi.editMake(node.id, { name: newName });
-                } else {
-                    await modelApi.editModel(node.id, { name: newName, makeId: node.carMakeId });
-                }
-                onSuccess();
-            } catch (e) {
-                alert("Failed to rename");
-            }
+            addPopup('Rename', (
+                <RenamePopup 
+                    node={node}
+                    onConfirm={async (newName) => {
+                        try {
+                            if (type === 'group') {
+                                await makeApi.editMake(node.id, { name: newName });
+                            } else {
+                                await modelApi.editModel(node.id, { name: newName, makeId: node.carMakeId });
+                            }
+                            removeLastPopup();
+                            onSuccess();
+                        } catch (e) {
+                            alert("Failed to rename");
+                        }
+                    }}
+                    onClose={removeLastPopup}
+                />
+            ));
         },
         onDelete: async (node, type, onSuccess) => {
             if (!window.confirm(`Delete coverage for ${node.name}?`)) return;
@@ -110,7 +129,6 @@ const AdminMakesModels = () => {
         }
     };
 
-
     const existingLabels = {
         addItem: "Add Model",
         delete: "Delete",
@@ -125,43 +143,51 @@ const AdminMakesModels = () => {
 
         const parentMake = existing.find(m => m.name.toUpperCase() === node.makeName?.toUpperCase());
 
-        setPopupNode({
-            ...node,
-            makeName: node.makeName,
-            isMakeExisting: !!parentMake
-        });
+        addPopup('Add Suggested Model', 
+            <SuggestedModelPopup
+                node={{ ...node, isMakeExisting: !!parentMake }}
+                onClose={removeLastPopup}
+                onConfirm={(makeName, modelName) => handleConfirmModelAdd(node, makeName, modelName)}
+                errors={errors}
+            />
+        );
     };
 
-    const handlePromote = async (node) => {
-        const newName = prompt("Enter name for the new Make:", node.name);
-        if (!newName) return;
+    const handlePromote = (node) => {
+        addPopup('Promote Make', <PromoteMakePopup node={node} onClose={removeLastPopup} onConfirm={(newName) => handlePromoteConfirm(node, newName)} />);
+    };
 
+    const handlePromoteConfirm = async (node, newName) => {
         const normalized = newName.trim().toUpperCase();
         const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
 
         if (duplicate) {
             const confirmed = window.confirm(`Make "${duplicate.name}" already exists. Do you want to use the existing one instead? (Cancels creation)`);
-            if (confirmed) return;
+            if (confirmed) {
+                removeLastPopup();
+                return;
+            }
         }
 
         try {
             await makeApi.promote({ name: node.name, newName });
+            removeLastPopup();
             loadData();
         } catch (e) {
             alert("Failed to promote");
         }
     };
 
-    const handleConfirmModelAdd = async (makeName, modelName) => {
+    const handleConfirmModelAdd = async (originalNode, makeName, modelName) => {
         try {
             await makeApi.promoteModel({
-                makeName: popupNode.makeName,
-                newMakeName: makeName !== popupNode.makeName ? makeName : null,
-                modelName: popupNode.name,
-                newModelName: modelName !== popupNode.name ? modelName : null
+                makeName: originalNode.makeName,
+                newMakeName: makeName !== originalNode.makeName ? makeName : null,
+                modelName: originalNode.name,
+                newModelName: modelName !== originalNode.name ? modelName : null
             });
 
-            setPopupNode(null);
+            removeLastPopup();
             setErrors({});
             loadData();
         } catch (e) {
@@ -175,7 +201,7 @@ const AdminMakesModels = () => {
 
         return (
             <button
-                className="icon-btn btn success-text"
+                className="icon-btn btn"
                 title="Add to system"
                 onClick={(e) => { e.stopPropagation(); handleOpenPopup(node); }}
             >
@@ -184,25 +210,33 @@ const AdminMakesModels = () => {
         );
     };
 
-    const handleAddMake = async () => {
-        const name = prompt("Enter new make name:");
-        if (!name) return;
+    const handleAddMake = () => {
+        addPopup('Add Make', (
+            <SimpleInputPopup 
+                label="Make Name"
+                onConfirm={async (name) => {
+                    const normalized = name.trim().toUpperCase();
+                    const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
+                    if (duplicate) {
+                        if (window.confirm(`Make "${duplicate.name}" already exists. Continue?`)) {
+                            // Proceed
+                        } else {
+                            return;
+                        }
+                    }
 
-        const normalized = name.trim().toUpperCase();
-        const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
-        if (duplicate) {
-            if (window.confirm(`Make "${duplicate.name}" already exists. Continue?`)) return;
-        }
-
-        try {
-            await makeApi.createMake({ name });
-            loadData();
-        } catch (e) {
-            alert("Failed to create make");
-        }
+                    try {
+                        await makeApi.createMake({ name });
+                        removeLastPopup();
+                        loadData();
+                    } catch (e) {
+                        alert("Failed to create make");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        ));
     };
-
-    const [activeTab, setActiveTab] = useState('existing');
 
     return (
         <div className="main admin-makes-models">
@@ -228,7 +262,7 @@ const AdminMakesModels = () => {
             </div>
 
             <div className={`tile ${activeTab === 'suggested' ? 'mobile-show-suggested' : 'mobile-show-existing'}`}>
-                <div className="horizontal grow align-stretch">
+                <div className="horizontal grow">
                     <div className="form-left">
                         <div className="section-header">
                             <h3>Suggested</h3>
@@ -265,15 +299,6 @@ const AdminMakesModels = () => {
                     </div>
                 </div>
             </div>
-
-            {popupNode && (
-                <SuggestedModelPopup
-                    node={popupNode}
-                    onClose={() => setPopupNode(null)}
-                    onConfirm={handleConfirmModelAdd}
-                    errors={errors}
-                />
-            )}
         </div>
     );
 };

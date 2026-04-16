@@ -164,6 +164,7 @@ namespace GarageControl.Core.Services
 
             user.RefreshToken = GenerateRefreshToken();
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(14);
+            user.LastLogin = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(user);
 
@@ -205,6 +206,7 @@ namespace GarageControl.Core.Services
         {
             user.RefreshToken = GenerateRefreshToken();
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(14);
+            user.LastLogin = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(user);
 

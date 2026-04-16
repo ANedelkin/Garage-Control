@@ -212,7 +212,12 @@ namespace GarageControl.Infrastructure.Data.Seeding
                     {
                         string fn = firstNames[Rnd.Next(firstNames.Length)];
                         string ln = lastNames[Rnd.Next(lastNames.Length)];
-                        var workerUser = new User { UserName = $"{fn.ToLower()}.{ln.ToLower()}{RandomNumber(100)}@worker.com", Email = $"{fn.ToLower()}.{ln.ToLower()}{RandomNumber(100)}@worker.com" };
+                        var workerUser = new User 
+                        { 
+                            UserName = $"{fn.ToLower()}.{ln.ToLower()}{RandomNumber(100)}@worker.com", 
+                            Email = $"{fn.ToLower()}.{ln.ToLower()}{RandomNumber(100)}@worker.com",
+                            LastLogin = DateTime.UtcNow.AddMinutes(-Rnd.Next(0, 20000)) // Random login in last 2 weeks
+                        };
                         await userManager.CreateAsync(workerUser, "Password123!");
 
                         int numAccesses = Rnd.Next(2, regularAccesses.Count);

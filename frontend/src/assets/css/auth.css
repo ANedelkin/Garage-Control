@@ -20,11 +20,7 @@
   text-transform: uppercase;
 }
 
-.vertical-divider {
-  width: 1px;
-  background: var(--border2);
-  margin: 0 20px;
-}
+
 
 .auth-buttons {
   display: flex;

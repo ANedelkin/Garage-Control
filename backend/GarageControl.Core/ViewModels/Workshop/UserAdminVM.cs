@@ -9,5 +9,6 @@ namespace GarageControl.Core.ViewModels.Workshop
         public string WorkshopName { get; set; } = null!;
         public bool IsBlocked { get; set; }
         public string? Role { get; set; }
+        public DateTime LastLogin { get; set; }
     }
 }

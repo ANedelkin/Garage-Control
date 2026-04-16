@@ -129,7 +129,7 @@ const AdminWorkshops = () => {
                         <tbody>
                             {filteredWorkshops.map(w => (
                                 <tr key={w.id} className="clickable-row" onClick={() => {
-                                    addPopup(null, <AdminWorkshopPopup workshop={w} onClose={removeLastPopup} />);
+                                    addPopup('Workshop Details', <AdminWorkshopPopup workshop={w} onClose={removeLastPopup} />);
                                 }}>
                                     <td>{w.name}</td>
                                     <td className="hide-md">{w.contactEmail}</td>

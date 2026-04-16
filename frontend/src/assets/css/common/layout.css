@@ -107,6 +107,12 @@
     margin-bottom: 15px;
 }
 
+.vertical-divider {
+    width: 1px;
+    background: var(--border2);
+    margin: 0 20px;
+}
+
 .header {
     display: flex;
     flex-direction: row;
