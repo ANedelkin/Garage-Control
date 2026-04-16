@@ -13,7 +13,7 @@ const RenamePopup = ({ node, width = '300px', onClose, onConfirm }) => {
     return (
         <form onSubmit={handleSubmit} style={{ width: width }}>
             <div className="form-section">
-                <label className="popup-label">New Name</label>
+                <label>New Name</label>
                 <input
                     type="text"
                     value={newName}
@@ -23,7 +23,7 @@ const RenamePopup = ({ node, width = '300px', onClose, onConfirm }) => {
                 />
             </div>
 
-            <div className="form-footer mt-15">
+            <div className="form-footer">
                 <button type="button" className="btn" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn">Rename</button>
             </div>

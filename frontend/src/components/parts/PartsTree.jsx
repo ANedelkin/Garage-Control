@@ -2,6 +2,9 @@ import React from 'react';
 import ItemsTree from '../common/tree/ItemsTree';
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
+import { usePopup } from '../../context/PopupContext';
+import RenamePopup from '../admin/RenamePopup';
+import SimpleInputPopup from '../admin/SimpleInputPopup';
 
 // Custom label renderer for parts tree with deficit status visualization
 const PartItemLabel = ({ node, type, expanded }) => {
@@ -43,29 +46,36 @@ const PartItemLabel = ({ node, type, expanded }) => {
     return (
         <div className={`item-label ${statusClass}`}>
             {getIcon()}
-            <span>{node.name} {node.count !== undefined && <span className='text-muted'>({node.count})</span>}</span>
+            <span>{node.name} {node.count !== undefined && <span style={{ color: 'var(--text-clr2)' }}>({node.count})</span>}</span>
         </div>
     );
 };
 
 const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [], autoExpandPath = [], onAutoExpandProcessed }) => {
+    const { addPopup, removeLastPopup } = usePopup();
 
     // Define Actions for the Parts Tree
     const actions = {
         onRename: async (node, type, onSuccess) => {
-            const newName = prompt("Enter new name:", node.name);
-            if (newName) {
-                try {
-                    if (type === 'group') {
-                        await partApi.renameFolder(node.id, newName);
-                    } else {
-                        await partApi.renamePart(node.id, newName);
-                    }
-                    onSuccess();
-                } catch (error) {
-                    alert("Failed to rename");
-                }
-            }
+            addPopup('Rename', (
+                <RenamePopup 
+                    node={node}
+                    onConfirm={async (newName) => {
+                        try {
+                            if (type === 'group') {
+                                await partApi.renameFolder(node.id, newName);
+                            } else {
+                                await partApi.renamePart(node.id, newName);
+                            }
+                            removeLastPopup();
+                            onSuccess();
+                        } catch (error) {
+                            alert("Failed to rename");
+                        }
+                    }}
+                    onClose={removeLastPopup}
+                />
+            ));
         },
         onDelete: async (node, type, onSuccess) => {
             if (!window.confirm(`Delete ${type === 'group' ? 'folder' : 'part'} ${node.name}?`)) return;
@@ -75,13 +85,17 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                 } else {
                     await partApi.deletePart(node.id);
                 }
-                onSuccess();
+                if (type === 'item' && node.id === selectedPartId) {
+                    onRefresh(true);
+                } else {
+                    onRefresh();
+                }
             } catch (error) {
                 alert("Failed to delete");
             }
         },
         onAddGroup: async (node, onSuccess) => {
-            handleAddFolder(node.id, onSuccess);
+            handleAddFolder(node.id, addPopup, removeLastPopup, onSuccess);
         },
         onAddItem: async (node, onSuccess) => {
             const newPart = await handleAddPart(node.id, onSuccess);

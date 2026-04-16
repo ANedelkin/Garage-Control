@@ -8,16 +8,18 @@ import usePageTitle from '../../hooks/usePageTitle';
 
 import PartsTree from './PartsTree';
 import PartDetails from './PartDetails';
+import { usePopup } from '../../context/PopupContext';
 
 const PartsStock = () => {
     usePageTitle('Parts Stock');
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedPart, setSelectedPart] = useState(null);
     const [selectedPath, setSelectedPath] = useState([]);
     const [autoExpandPath, setAutoExpandPath] = useState([]);
     const [refreshTree, setRefreshTree] = useState(0);
     const [rootFolders, setRootFolders] = useState([]);
     const [rootParts, setRootParts] = useState([]);
+    const { addPopup, removeLastPopup } = usePopup();
 
     const handlePartSelect = (part, path) => {
         setSelectedPart(part);
@@ -29,9 +31,9 @@ const PartsStock = () => {
         setAutoExpandPath(prev => prev.filter(id => id !== folderId));
     };
 
-    const handleRefresh = async () => {
+    const handleRefresh = async (skipDetails = false) => {
         setRefreshTree(prev => prev + 1);
-        if (selectedPart) {
+        if (selectedPart && !skipDetails) {
             try {
                 const updatedPart = await partApi.getPart(selectedPart.id);
                 if (updatedPart) {
@@ -100,11 +102,11 @@ const PartsStock = () => {
                                     <button className="btn icon-btn" title="Refresh" onClick={() => handleRefresh()}>
                                         <i className="fa-solid fa-sync"></i>
                                     </button>
-                                    <button className="btn icon-btn" title="Add Folder" onClick={() => handleAddFolder(null, handleRefresh)}>
+                                    <button className="btn icon-btn" title="Add Folder" onClick={() => handleAddFolder(null, addPopup, removeLastPopup, () => handleRefresh(true))}>
                                         <i className="fa-solid fa-folder-plus"></i>
                                     </button>
                                     <button className="btn icon-btn" title="Add Part" onClick={async () => {
-                                        const newPart = await handleAddPart(null, handleRefresh);
+                                        const newPart = await handleAddPart(null, () => handleRefresh(true));
                                         if (newPart) handlePartSelect(newPart, [newPart.id]);
                                     }}>
                                         <i className="fa-solid fa-plus"></i>
@@ -116,7 +118,14 @@ const PartsStock = () => {
                                     parts={rootParts}
                                     onSelectPart={handlePartSelect}
                                     fetchContent={fetchFolderContent}
-                                    onRefresh={handleRefresh}
+                                    onRefresh={(skipDetails) => {
+                                        if (skipDetails) {
+                                            setSelectedPart(null);
+                                            setSelectedPath([]);
+                                            setSearchParams({});
+                                        }
+                                        handleRefresh(skipDetails);
+                                    }}
                                     refreshTrigger={refreshTree}
                                     selectedPartId={selectedPart?.id}
                                     selectedPath={selectedPath}
@@ -132,9 +141,14 @@ const PartsStock = () => {
                     <div className="form-right">
                         <PartDetails
                             part={selectedPart}
-                            onUpdate={handleRefresh}
-                            onDelete={() => { setSelectedPart(null); handleRefresh(); }}
-                            onBack={() => setSelectedPart(null)}
+                            onUpdate={() => handleRefresh()}
+                            onDelete={() => { 
+                                setSelectedPart(null); 
+                                setSelectedPath([]);
+                                setSearchParams({});
+                                handleRefresh(true); 
+                            }}
+                            onBack={() => { setSelectedPart(null); setSelectedPath([]); setSearchParams({}); }}
                         />
                     </div>
                 </div>

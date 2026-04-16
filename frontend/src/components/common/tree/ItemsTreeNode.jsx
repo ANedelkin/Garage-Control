@@ -207,7 +207,7 @@ const ItemsTreeNode = ({
                         {renderIcon ? renderIcon(node, type, expanded) : (
                             type === 'group' ? <i className={`fa-solid ${expanded ? 'fa-folder-open' : 'fa-folder'}`}></i> : <i className="fa-solid fa-gear"></i>
                         )}
-                        <span>{node.name} {node.count !== undefined && <span className='text-muted'>({node.count})</span>}</span>
+                        <span>{node.name} {node.count !== undefined && <span style={{ color: 'var(--text-clr2)' }}>({node.count})</span>}</span>
                     </div>
                 )}
 

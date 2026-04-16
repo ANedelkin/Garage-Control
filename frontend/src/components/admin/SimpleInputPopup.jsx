@@ -13,7 +13,7 @@ const SimpleInputPopup = ({ title, label, initialValue = '', width = '300px', on
     return (
         <form onSubmit={handleSubmit} style={{ width: width }}>
             <div className="form-section">
-                <label className="popup-label">{label}</label>
+                <label>{label}</label>
                 <input
                     type="text"
                     value={value}
@@ -23,7 +23,7 @@ const SimpleInputPopup = ({ title, label, initialValue = '', width = '300px', on
                 />
             </div>
 
-            <div className="form-footer mt-15">
+            <div className="form-footer">
                 <button type="button" className="btn" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn">Add</button>
             </div>

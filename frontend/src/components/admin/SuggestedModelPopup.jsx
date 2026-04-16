@@ -14,7 +14,7 @@ const SuggestedModelPopup = ({ node, onClose, onConfirm, errors = {} }) => {
     return (
         <form onSubmit={handleSubmit} style={{ width: '300px' }}>
             <div className="form-section">
-                <label className="popup-label">Make Name</label>
+                <label>Make Name</label>
                 <input
                     type="text"
                     name="MakeName"
@@ -26,7 +26,7 @@ const SuggestedModelPopup = ({ node, onClose, onConfirm, errors = {} }) => {
             </div>
 
             <div className="form-section">
-                <label className="popup-label">Model Name</label>
+                <label>Model Name</label>
                 <input
                     type="text"
                     name="ModelName"

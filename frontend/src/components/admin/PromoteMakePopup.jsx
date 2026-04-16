@@ -13,7 +13,7 @@ const PromoteMakePopup = ({ node, onClose, onConfirm }) => {
     return (
         <form onSubmit={handleSubmit} style={{ width: '300px' }}>
             <div className="form-section">
-                <label className="popup-label">Make Name</label>
+                <label>Make Name</label>
                 <input
                     type="text"
                     value={newName}
