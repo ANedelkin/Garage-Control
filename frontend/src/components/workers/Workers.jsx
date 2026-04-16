@@ -7,6 +7,7 @@ import '../../assets/css/workers.css';
 import { workerApi } from '../../services/workerApi';
 import EditWorker from './EditWorker';
 import WorkhoursPopup from './WorkhoursPopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import usePageTitle from "../../hooks/usePageTitle";
 
 const Workers = () => {
@@ -175,12 +176,22 @@ const Workers = () => {
                                                 <button className="btn schedule icon-btn" onClick={(e) => { e.stopPropagation(); openWorkhours(w.id); }} title="Edit Schedule">
                                                     <i className="fa-solid fa-calendar"></i>
                                                 </button>
-                                                <button className="btn delete icon-btn" onClick={async (e) => {
+                                                <button className="btn delete icon-btn" onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (window.confirm('Delete worker?')) {
-                                                        await workerApi.deleteWorker(w.id);
-                                                        setWorkers(workers.filter(worker => worker.id !== w.id));
-                                                    }
+                                                    addPopup(
+                                                        'Delete Worker',
+                                                        <ConfirmationPopup 
+                                                            message={`Are you sure you want to delete worker ${w.name}?`}
+                                                            confirmText="Delete"
+                                                            isDanger={true}
+                                                            onConfirm={async () => {
+                                                                await workerApi.deleteWorker(w.id);
+                                                                setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                                removeLastPopup();
+                                                            }}
+                                                            onClose={removeLastPopup}
+                                                        />
+                                                    );
                                                 }} title="Delete Worker">
                                                     <i className="fa-solid fa-trash"></i>
                                                 </button>
@@ -208,13 +219,23 @@ const Workers = () => {
                                                                     <i className="fa-solid fa-calendar"></i> Edit Schedule
                                                                 </div>
                                                             </div>
-                                                            <div className="list-item" onClick={async (e) => {
+                                                            <div className="list-item" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setActiveMenu(null);
-                                                                if (window.confirm('Delete worker?')) {
-                                                                    await workerApi.deleteWorker(w.id);
-                                                                    setWorkers(workers.filter(worker => worker.id !== w.id));
-                                                                }
+                                                                addPopup(
+                                                                    'Delete Worker',
+                                                                    <ConfirmationPopup 
+                                                                        message={`Are you sure you want to delete worker ${w.name}?`}
+                                                                        confirmText="Delete"
+                                                                        isDanger={true}
+                                                                        onConfirm={async () => {
+                                                                            await workerApi.deleteWorker(w.id);
+                                                                            setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                                            removeLastPopup();
+                                                                        }}
+                                                                        onClose={removeLastPopup}
+                                                                    />
+                                                                );
                                                             }}>
                                                                 <div className="item-label" style={{ color: 'var(--danger)' }}>
                                                                     <i className="fa-solid fa-trash"></i> Delete Worker

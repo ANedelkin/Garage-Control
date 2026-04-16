@@ -5,6 +5,7 @@ import '../../assets/css/clients.css';
 import { clientApi } from '../../services/clientApi';
 import { usePopup } from '../../context/PopupContext';
 import ClientPopup from './ClientPopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import usePageTitle from '../../hooks/usePageTitle';
 
 const Clients = () => {
@@ -42,15 +43,26 @@ const Clients = () => {
     );
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete client?')) {
-            try {
-                await clientApi.delete(id);
-                setClients(clients.filter(c => c.id !== id));
-            } catch (error) {
-                console.error("Failed to delete client", error);
-                alert("Failed to delete client.");
-            }
-        }
+        const client = clients.find(c => c.id === id);
+        addPopup(
+            'Delete Client',
+            <ConfirmationPopup 
+                message={`Are you sure you want to delete client "${client?.name}"?`}
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        await clientApi.delete(id);
+                        setClients(clients.filter(c => c.id !== id));
+                        removeLastPopup();
+                    } catch (error) {
+                        console.error("Failed to delete client", error);
+                        alert("Failed to delete client.");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const openEditPopup = (id) => {

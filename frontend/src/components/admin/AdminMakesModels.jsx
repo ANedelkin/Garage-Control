@@ -6,6 +6,7 @@ import SuggestedModelPopup from './SuggestedModelPopup';
 import PromoteMakePopup from './PromoteMakePopup';
 import SimpleInputPopup from './SimpleInputPopup';
 import RenamePopup from './RenamePopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import { usePopup } from '../../context/PopupContext';
 import '../../assets/css/admin-makes-models.css';
 import '../../assets/css/popup.css';
@@ -115,17 +116,28 @@ const AdminMakesModels = () => {
             ));
         },
         onDelete: async (node, type, onSuccess) => {
-            if (!window.confirm(`Delete coverage for ${node.name}?`)) return;
-            try {
-                if (type === 'group') {
-                    await makeApi.deleteMake(node.id);
-                } else {
-                    await modelApi.deleteModel(node.id);
-                }
-                onSuccess();
-            } catch (e) {
-                alert("Failed to delete");
-            }
+            addPopup(
+                'Delete Coverage',
+                <ConfirmationPopup 
+                    message={`Are you sure you want to delete coverage for ${node.name}?`}
+                    confirmText="Delete"
+                    isDanger={true}
+                    onConfirm={async () => {
+                        try {
+                            if (type === 'group') {
+                                await makeApi.deleteMake(node.id);
+                            } else {
+                                await modelApi.deleteModel(node.id);
+                            }
+                            removeLastPopup();
+                            onSuccess();
+                        } catch (e) {
+                            alert("Failed to delete");
+                        }
+                    }}
+                    onClose={removeLastPopup}
+                />
+            );
         }
     };
 
@@ -162,11 +174,19 @@ const AdminMakesModels = () => {
         const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
 
         if (duplicate) {
-            const confirmed = window.confirm(`Make "${duplicate.name}" already exists. Do you want to use the existing one instead? (Cancels creation)`);
-            if (confirmed) {
-                removeLastPopup();
-                return;
-            }
+            addPopup(
+                'Duplicate Make',
+                <ConfirmationPopup 
+                    message={`Make "${duplicate.name}" already exists. Do you want to use the existing one instead? (Cancels creation)`}
+                    confirmText="Use Existing"
+                    onConfirm={() => {
+                        removeLastPopup(); // Close duplicate popup
+                        removeLastPopup(); // Close promotion popup
+                    }}
+                    onClose={removeLastPopup}
+                />
+            );
+            return;
         }
 
         try {
@@ -218,11 +238,25 @@ const AdminMakesModels = () => {
                     const normalized = name.trim().toUpperCase();
                     const duplicate = existing.find(m => m.name.toUpperCase() === normalized);
                     if (duplicate) {
-                        if (window.confirm(`Make "${duplicate.name}" already exists. Continue?`)) {
-                            // Proceed
-                        } else {
-                            return;
-                        }
+                        addPopup(
+                            'Make Already Exists',
+                            <ConfirmationPopup 
+                                message={`Make "${duplicate.name}" already exists. Continue anyway?`}
+                                confirmText="Continue"
+                                onConfirm={async () => {
+                                    removeLastPopup(); // Close duplicate warning
+                                    try {
+                                        await makeApi.createMake({ name });
+                                        removeLastPopup(); // Close Add Make popup
+                                        loadData();
+                                    } catch (e) {
+                                        alert("Failed to create make");
+                                    }
+                                }}
+                                onClose={removeLastPopup}
+                            />
+                        );
+                        return;
                     }
 
                     try {

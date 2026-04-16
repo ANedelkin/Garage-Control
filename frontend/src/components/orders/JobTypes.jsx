@@ -5,10 +5,13 @@ import '../../assets/css/common/table.css';
 import '../../assets/css/job-types.css';
 import { jobTypeApi } from '../../services/jobTypeApi.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
+import { usePopup } from '../../context/PopupContext';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 
 const JobTypes = () => {
-  usePageTitle('Job Types');
-  const navigate = useNavigate();
+    const { addPopup, removeLastPopup } = usePopup();
+    usePageTitle('Job Types');
+    const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [jobTypes, setJobTypes] = useState([]);
@@ -90,11 +93,21 @@ const JobTypes = () => {
                     {jobType.description}
                   </td>
                   <td onClick={e => e.stopPropagation()}>
-                    <button className="btn delete icon-btn" onClick={async (e) => {
-                      if (window.confirm('Delete job type?')) {
-                        await jobTypeApi.deleteJobType(jobType.id);
-                        setJobTypes(jobTypes.filter(jt => jt.id !== jobType.id));
-                      }
+                    <button className="btn delete icon-btn" onClick={(e) => {
+                      addPopup(
+                        'Delete Job Type',
+                        <ConfirmationPopup 
+                          message={`Are you sure you want to delete job type "${jobType.name}"?`}
+                          confirmText="Delete"
+                          isDanger={true}
+                          onConfirm={async () => {
+                            await jobTypeApi.deleteJobType(jobType.id);
+                            setJobTypes(jobTypes.filter(jt => jt.id !== jobType.id));
+                            removeLastPopup();
+                          }}
+                          onClose={removeLastPopup}
+                        />
+                      );
                     }}>
                       <i className="fa-solid fa-trash"></i>
                     </button>

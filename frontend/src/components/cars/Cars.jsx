@@ -5,6 +5,7 @@ import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import CarPopup from './CarPopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/clients.css';
 import usePageTitle from '../../hooks/usePageTitle';
 
@@ -74,15 +75,30 @@ const Cars = () => {
 
     const handleDelete = async (e, id) => {
         e.stopPropagation(); // prevent row click
-        if (window.confirm("Are you sure you want to delete this car?")) {
-            try {
-                await vehicleApi.delete(id);
-                setCars(cars.filter(c => c.id !== id));
-            } catch (error) {
-                console.error("Failed to delete car", error);
-                alert("Failed to delete car");
-            }
-        }
+        const car = cars.find(c => c.id === id);
+        const carTitle = car ? 
+            `${makes[car.makeId] || ''} ${models[car.modelId] || ''} (${car.registrationNumber})` : 
+            'this car';
+
+        addPopup(
+            'Delete Car',
+            <ConfirmationPopup 
+                message={`Are you sure you want to delete ${carTitle}?`}
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        await vehicleApi.delete(id);
+                        setCars(cars.filter(c => c.id !== id));
+                        removeLastPopup();
+                    } catch (error) {
+                        console.error("Failed to delete car", error);
+                        alert("Failed to delete car");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const handleRowClick = (car) => {

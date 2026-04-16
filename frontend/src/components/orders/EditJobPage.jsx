@@ -6,11 +6,14 @@ import { partApi } from '../../services/partApi';
 import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import { usePopup } from '../../context/PopupContext';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 import usePageTitle from '../../hooks/usePageTitle';
 
 const EditJobPage = ({ mechanicView = false }) => {
+    const { addPopup, removeLastPopup } = usePopup();
     const { orderId: paramOrderId, jobId } = useParams();
     const [searchParams] = useSearchParams();
     const queryOrderId = searchParams.get('orderId');
@@ -171,16 +174,26 @@ const EditJobPage = ({ mechanicView = false }) => {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm("Are you sure you want to delete this job?")) return;
-
-        try {
-            await jobApi.deleteJob(jobId);
-            window.dispatchEvent(new CustomEvent('refresh-notifications'));
-            navigate(-1);
-        } catch (e) {
-            console.error("Failed to delete job", e);
-            alert("Error deleting job");
-        }
+        addPopup(
+            'Delete Job',
+            <ConfirmationPopup 
+                message="Are you sure you want to delete this job?"
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        await jobApi.deleteJob(jobId);
+                        window.dispatchEvent(new CustomEvent('refresh-notifications'));
+                        removeLastPopup();
+                        navigate(-1);
+                    } catch (e) {
+                        console.error("Failed to delete job", e);
+                        alert("Error deleting job");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     if (loading) return <main className="main"><p>Loading...</p></main>;

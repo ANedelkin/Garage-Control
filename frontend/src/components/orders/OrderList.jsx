@@ -7,6 +7,7 @@ import { usePopup } from '../../context/PopupContext';
 import Dropdown from '../common/Dropdown';
 import OrderDetailsPopup from './OrderDetailsPopup';
 import NewOrderSetup from './NewOrderSetup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/orders.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
@@ -148,26 +149,46 @@ const OrderList = ({ mode = 'active' }) => {
     };
 
     const handleDeleteJob = async (orderId, jobId) => {
-        if (!confirm('Are you sure you want to delete this job?')) return;
-
-        try {
-            await jobApi.deleteJob(jobId);
-            fetchOrders();
-        } catch (error) {
-            console.error('Failed to delete job:', error);
-        }
+        addPopup(
+            'Delete Job',
+            <ConfirmationPopup 
+                message="Are you sure you want to delete this job?"
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        await jobApi.deleteJob(jobId);
+                        removeLastPopup();
+                        fetchOrders();
+                    } catch (error) {
+                        console.error('Failed to delete job:', error);
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const handleDeleteOrder = async (orderId) => {
-        if (!confirm('Are you sure you want to delete this entire order and all its jobs? This cannot be undone.')) return;
-
-        try {
-            await orderApi.deleteOrder(orderId);
-            fetchOrders();
-        } catch (error) {
-            console.error('Failed to delete order:', error);
-            alert("Error deleting order");
-        }
+        addPopup(
+            'Delete Order',
+            <ConfirmationPopup 
+                message="Are you sure you want to delete this entire order and all its jobs? This cannot be undone."
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        await orderApi.deleteOrder(orderId);
+                        removeLastPopup();
+                        fetchOrders();
+                    } catch (error) {
+                        console.error('Failed to delete order:', error);
+                        alert("Error deleting order");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const filteredOrders = orders.map(order => {

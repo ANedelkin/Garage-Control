@@ -6,6 +6,7 @@ import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import MergePopup from './MergePopup';
 import AddEditItemModal from './AddEditItemModal';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
 
@@ -185,20 +186,32 @@ const MakesAndModels = () => {
     };
 
     const handleDelete = async (type, id) => {
-        if (!window.confirm("Are you sure?")) return;
-        try {
-            if (type === 'make') {
-                await makeApi.deleteMake(id);
-                if (selectedMake && selectedMake.id === id) setSelectedMake(null);
-                fetchMakes();
-            } else {
-                await modelApi.deleteModel(id);
-                fetchModels(selectedMake.id);
-            }
-        } catch (error) {
-            console.error("Error deleting", error);
-            alert("Failed to delete. It might be in use.");
-        }
+        const item = type === 'make' ? makes.find(m => m.id === id) : models.find(m => m.id === id);
+        addPopup(
+            `Delete ${type === 'make' ? 'Make' : 'Model'}`,
+            <ConfirmationPopup 
+                message={`Are you sure you want to delete ${type === 'make' ? 'make' : 'model'} "${item?.name}"?`}
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        if (type === 'make') {
+                            await makeApi.deleteMake(id);
+                            if (selectedMake && selectedMake.id === id) setSelectedMake(null);
+                            fetchMakes();
+                        } else {
+                            await modelApi.deleteModel(id);
+                            fetchModels(selectedMake.id);
+                        }
+                        removeLastPopup();
+                    } catch (error) {
+                        console.error("Error deleting", error);
+                        alert("Failed to delete. It might be in use.");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const handleOpenMerge = (type, custom, global) => {

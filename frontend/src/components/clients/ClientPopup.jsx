@@ -7,6 +7,7 @@ import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import Popup from '../common/Popup';
 import CarPopup from '../cars/CarPopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
@@ -182,18 +183,35 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
     };
 
     const handleDeleteCar = async (carId) => {
-        if (!window.confirm("Delete this car?")) return;
-        try {
-            if (isNew || carId.toString().startsWith('temp-')) {
-                setCars(cars.filter(c => c.id !== carId));
-                return;
-            }
-            await vehicleApi.delete(carId);
-            setCars(cars.filter(c => c.id !== carId));
-        } catch (error) {
-            console.error("Error deleting car", error);
-            alert("Failed to delete car.");
-        }
+        const car = cars.find(c => c.id === carId);
+        const carTitle = car ? 
+            `${makes.find(m => m.id === car.makeId)?.name || ''} ${modelsMap[car.modelId] || ''} (${car.registrationNumber})` : 
+            'this car';
+
+        addPopup(
+            'Delete Car',
+            <ConfirmationPopup 
+                message={`Are you sure you want to delete ${carTitle}?`}
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        if (isNew || carId.toString().startsWith('temp-')) {
+                            setCars(cars.filter(c => c.id !== carId));
+                            removeLastPopup();
+                            return;
+                        }
+                        await vehicleApi.delete(carId);
+                        setCars(cars.filter(c => c.id !== carId));
+                        removeLastPopup();
+                    } catch (error) {
+                        console.error("Error deleting car", error);
+                        alert("Failed to delete car.");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
     };
 
     const openCarPopup = (car = null) => {

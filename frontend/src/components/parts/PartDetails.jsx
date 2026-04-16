@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { partApi } from '../../services/partApi';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import { usePopup } from '../../context/PopupContext';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 
 const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
+    const { addPopup, removeLastPopup } = usePopup();
     const [formData, setFormData] = useState({
         name: '',
         partNumber: '',
@@ -108,7 +111,23 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                     <h3 style={{ margin: 0 }}>Part Details</h3>
                 </div>
                 <div>
-                    <button className="btn delete" onClick={() => { if (window.confirm('Delete this part?')) partApi.deletePart(part.id).then(onDelete); }}>
+                    <button className="btn delete" onClick={() => { 
+                        addPopup(
+                            'Delete Part',
+                            <ConfirmationPopup 
+                                message={`Are you sure you want to delete part "${part.name}"?`}
+                                confirmText="Delete"
+                                isDanger={true}
+                                onConfirm={() => {
+                                    partApi.deletePart(part.id).then(() => {
+                                        removeLastPopup();
+                                        onDelete();
+                                    });
+                                }}
+                                onClose={removeLastPopup}
+                            />
+                        );
+                    }}>
                         <i className="fa-solid fa-trash"></i> Delete
                     </button>
                 </div>

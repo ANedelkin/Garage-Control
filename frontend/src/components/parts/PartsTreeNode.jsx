@@ -3,8 +3,12 @@ import { partApi } from '../../services/partApi';
 import ContextMenu from './ContextMenu';
 import PartsTree from './PartsTree';
 import { handleAddFolder, handleAddPart } from './helpers';
+import { usePopup } from '../../context/PopupContext';
+import ConfirmationPopup from '../common/ConfirmationPopup';
+import RenamePopup from '../admin/RenamePopup';
 
 const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
+    const { addPopup, removeLastPopup } = usePopup();
     const [expanded, setExpanded] = useState(false);
     const [children, setChildren] = useState({ subFolders: [], parts: [] });
     const [loaded, setLoaded] = useState(false);
@@ -60,34 +64,51 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
 
     // Actions
     const handleRename = async () => {
-        const newName = prompt("Enter new name:", node.name);
-        if (newName) {
-            try {
-                if (type === 'folder') {
-                    await partApi.renameFolder(node.id, newName);
-                } else {
-                    await partApi.renamePart(node.id, newName);
-                }
-                onRefresh();
-            } catch (error) {
-                alert("Failed to rename");
-            }
-        }
+        addPopup('Rename', (
+            <RenamePopup 
+                node={node}
+                onConfirm={async (newName) => {
+                    try {
+                        if (type === 'folder') {
+                            await partApi.renameFolder(node.id, newName);
+                        } else {
+                            await partApi.renamePart(node.id, newName);
+                        }
+                        removeLastPopup();
+                        onRefresh();
+                    } catch (error) {
+                        alert("Failed to rename");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        ));
         setShowMenu(false);
     };
 
     const handleDelete = async () => {
-        if (!window.confirm(`Delete ${type} ${node.name}?`)) return;
-        try {
-            if (type === 'folder') {
-                await partApi.deleteFolder(node.id);
-            } else {
-                await partApi.deletePart(node.id);
-            }
-            onRefresh();
-        } catch (error) {
-            alert("Failed to delete");
-        }
+        addPopup(
+            'Confirm Deletion',
+            <ConfirmationPopup 
+                message={`Are you sure you want to delete ${type} "${node.name}"?`}
+                confirmText="Delete"
+                isDanger={true}
+                onConfirm={async () => {
+                    try {
+                        if (type === 'folder') {
+                            await partApi.deleteFolder(node.id);
+                        } else {
+                            await partApi.deletePart(node.id);
+                        }
+                        removeLastPopup();
+                        onRefresh();
+                    } catch (error) {
+                        alert("Failed to delete");
+                    }
+                }}
+                onClose={removeLastPopup}
+            />
+        );
         setShowMenu(false);
     };
 

@@ -5,6 +5,7 @@ import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
 import RenamePopup from '../admin/RenamePopup';
 import SimpleInputPopup from '../admin/SimpleInputPopup';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 
 // Custom label renderer for parts tree with deficit status visualization
 const PartItemLabel = ({ node, type, expanded }) => {
@@ -78,21 +79,35 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
             ));
         },
         onDelete: async (node, type, onSuccess) => {
-            if (!window.confirm(`Delete ${type === 'group' ? 'folder' : 'part'} ${node.name}?`)) return;
-            try {
-                if (type === 'group') {
-                    await partApi.deleteFolder(node.id);
-                } else {
-                    await partApi.deletePart(node.id);
-                }
-                if (type === 'item' && node.id === selectedPartId) {
-                    onRefresh(true);
-                } else {
-                    onRefresh();
-                }
-            } catch (error) {
-                alert("Failed to delete");
-            }
+            const deleteMsg = `Are you sure you want to delete ${type === 'group' ? 'folder' : 'part'} "${node.name}"?`;
+            
+            addPopup(
+                'Confirm Deletion',
+                <ConfirmationPopup 
+                    message={deleteMsg}
+                    confirmText="Delete"
+                    isDanger={true}
+                    onConfirm={async () => {
+                        try {
+                            if (type === 'group') {
+                                await partApi.deleteFolder(node.id);
+                            } else {
+                                await partApi.deletePart(node.id);
+                            }
+                            removeLastPopup();
+                            
+                            if (type === 'item' && node.id === selectedPartId) {
+                                onRefresh(true);
+                            } else {
+                                onRefresh();
+                            }
+                        } catch (error) {
+                            alert("Failed to delete");
+                        }
+                    }}
+                    onClose={removeLastPopup}
+                />
+            );
         },
         onAddGroup: async (node, onSuccess) => {
             handleAddFolder(node.id, addPopup, removeLastPopup, onSuccess);
