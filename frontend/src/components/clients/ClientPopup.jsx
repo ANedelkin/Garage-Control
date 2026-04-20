@@ -184,13 +184,13 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
 
     const handleDeleteCar = async (carId) => {
         const car = cars.find(c => c.id === carId);
-        const carTitle = car ? 
-            `${makes.find(m => m.id === car.makeId)?.name || ''} ${modelsMap[car.modelId] || ''} (${car.registrationNumber})` : 
+        const carTitle = car ?
+            `${makes.find(m => m.id === car.makeId)?.name || ''} ${modelsMap[car.modelId] || ''} (${car.registrationNumber})` :
             'this car';
 
         addPopup(
             'Delete Car',
-            <ConfirmationPopup 
+            <ConfirmationPopup
                 message={`Are you sure you want to delete ${carTitle}?`}
                 confirmText="Delete"
                 isDanger={true}
@@ -239,69 +239,69 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                             <i className="fa-solid fa-user"></i> Info
                         </button>
                         <button
-                                type="button"
-                                className={`tab-btn ${activeTab === 'cars' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('cars')}
-                            >
-                                <i className="fa-solid fa-car"></i> Cars
-                            </button>
+                            type="button"
+                            className={`tab-btn ${activeTab === 'cars' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('cars')}
+                        >
+                            <i className="fa-solid fa-car"></i> Cars
+                        </button>
                     </div>
                 )}
                 <div className="tab-content horizontal">
                     {(!isMobile || activeTab === 'info') && (
                         <div className="form-column">
-                        <div className="form-section">
-                            <label>Name</label>
-                            <input
-                                type="text"
-                                name="Name"
-                                value={client.name}
-                                onChange={e => setClient({ ...client, name: e.target.value })}
-                                required
-                            />
-                            <FieldError name="Name" errors={errors} />
-                        </div>
-                        <div className="form-section">
-                            <label>Phone Number</label>
-                            <input
-                                type="text"
-                                name="PhoneNumber"
-                                value={client.phoneNumber}
-                                onChange={e => setClient({ ...client, phoneNumber: e.target.value })}
-                                required
-                            />
-                            <FieldError name="PhoneNumber" errors={errors} />
-                        </div>
-                        <div className="form-section">
-                            <label>Email</label>
-                            <input
-                                type="email"
-                                name="Email"
-                                value={client.email}
-                                onChange={e => setClient({ ...client, email: e.target.value })}
-                            />
-                            <FieldError name="Email" errors={errors} />
-                        </div>
-                        <div className="form-section">
-                            <label>Address</label>
-                            <input
-                                type="text"
-                                name="Address"
-                                value={client.address}
-                                onChange={e => setClient({ ...client, address: e.target.value })}
-                            />
-                            <FieldError name="Address" errors={errors} />
-                        </div>
-                        <div className="form-section">
-                            <label>Registration Number (Personal)</label>
-                            <input
-                                type="text"
-                                name="RegistrationNumber"
-                                value={client.registrationNumber}
-                                onChange={e => setClient({ ...client, registrationNumber: e.target.value })}
-                            />
-                            <FieldError name="RegistrationNumber" errors={errors} />
-                        </div>
+                            <div className="form-section">
+                                <label>Name</label>
+                                <input
+                                    type="text"
+                                    name="Name"
+                                    value={client.name}
+                                    onChange={e => setClient({ ...client, name: e.target.value })}
+                                    required
+                                />
+                                <FieldError name="Name" errors={errors} />
+                            </div>
+                            <div className="form-section">
+                                <label>Phone Number</label>
+                                <input
+                                    type="text"
+                                    name="PhoneNumber"
+                                    value={client.phoneNumber}
+                                    onChange={e => setClient({ ...client, phoneNumber: e.target.value })}
+                                    required
+                                />
+                                <FieldError name="PhoneNumber" errors={errors} />
+                            </div>
+                            <div className="form-section">
+                                <label>Email</label>
+                                <input
+                                    type="email"
+                                    name="Email"
+                                    value={client.email}
+                                    onChange={e => setClient({ ...client, email: e.target.value })}
+                                />
+                                <FieldError name="Email" errors={errors} />
+                            </div>
+                            <div className="form-section">
+                                <label>Address</label>
+                                <input
+                                    type="text"
+                                    name="Address"
+                                    value={client.address}
+                                    onChange={e => setClient({ ...client, address: e.target.value })}
+                                />
+                                <FieldError name="Address" errors={errors} />
+                            </div>
+                            <div className="form-section">
+                                <label>Registration Number (Personal)</label>
+                                <input
+                                    type="text"
+                                    name="RegistrationNumber"
+                                    value={client.registrationNumber}
+                                    onChange={e => setClient({ ...client, registrationNumber: e.target.value })}
+                                />
+                                <FieldError name="RegistrationNumber" errors={errors} />
+                            </div>
                         </div>
                     )}
 
@@ -321,7 +321,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                                         return (
                                             <div key={car.id} className="list-item">
                                                 <div>
-                                                    <strong>{makeName} {modelName}</strong> <br />
+                                                    <strong className="car-title">{makeName} {modelName}</strong>
                                                     <span style={{ fontSize: '0.9em' }}>{car.registrationNumber}</span>
                                                 </div>
                                                 <div>

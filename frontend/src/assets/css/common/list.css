@@ -25,8 +25,21 @@
     padding-left: 8px;
     border-radius: 8px;
     cursor: pointer;
-    height: 40px;
     min-height: 40px;
+    flex-shrink: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.list-item>div:first-child:not(.icon-btn),
+.list-item>span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.list-item>div:last-child {
     flex-shrink: 0;
 }
 

@@ -18,6 +18,19 @@
     height: fit-content;
 }
 
+.car-title {
+    display: block;
+    /* or inline-block */
+    white-space: nowrap;
+    /* prevent new line */
+    overflow: hidden;
+    /* hide overflow */
+    text-overflow: ellipsis;
+    /* show ... */
+    max-width: 100%;
+    /* adjust based on your layout */
+}
+
 .car-form {
     width: 400px;
     box-sizing: border-box;
