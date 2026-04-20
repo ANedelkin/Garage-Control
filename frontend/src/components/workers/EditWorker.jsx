@@ -139,7 +139,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
 
         <div className="tab-content horizontal">
           {(!isMobile || activeTab === 'info') && (
-            <div className="form-column">
+            <div className="form-column info-column">
               <div className="form-section">
                 <label>Name</label>
                 <input
@@ -195,9 +195,9 @@ const EditWorker = ({ id, onClose, onSave }) => {
           )}
 
           {(!isMobile || activeTab === 'access') && (
-            <div className="form-column">
+            <div className="form-column list-column">
               <div className="form-section max-height grow">
-                <label>Access Roles</label>
+                <label>Access</label>
                 <div className="list-container max-height grow">
                   {worker.accesses.map((access, idx) => (
                     <div className="list-item" key={access.id}>
@@ -221,7 +221,7 @@ const EditWorker = ({ id, onClose, onSave }) => {
           )}
 
           {(!isMobile || activeTab === 'jobtypes') && (
-            <div className="form-column">
+            <div className="form-column list-column">
               <div className="form-section max-height grow">
                 <label>Job Types</label>
                 <div className="list-container max-height grow">
