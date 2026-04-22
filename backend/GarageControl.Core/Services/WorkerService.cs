@@ -458,9 +458,13 @@ namespace GarageControl.Core.Services
                 var startDate = DateOnly.FromDateTime(l.StartDate.AddHours(12));
                 var endDate = DateOnly.FromDateTime(l.EndDate.AddHours(12));
                 
-                var existing = oldLeaves.FirstOrDefault(ol => ol.StartDate == startDate && ol.EndDate == endDate);
+                var existing = !string.IsNullOrEmpty(l.Id) 
+                    ? oldLeaves.FirstOrDefault(ol => ol.Id == l.Id)
+                    : oldLeaves.FirstOrDefault(ol => ol.StartDate == startDate && ol.EndDate == endDate);
                 if (existing != null)
                 {
+                    existing.StartDate = startDate;
+                    existing.EndDate = endDate;
                     oldLeaves.Remove(existing);
                 }
                 else

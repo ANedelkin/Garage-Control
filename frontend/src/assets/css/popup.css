@@ -8,6 +8,7 @@
     /* overflow-y: auto; handled by tile now on mobile */
     padding: 20px;
     z-index: 1000;
+    transition: none;
 }
 
 .popup-overlay.top {

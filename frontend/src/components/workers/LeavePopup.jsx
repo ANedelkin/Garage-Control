@@ -31,6 +31,11 @@ const LeavePopup = ({ onClose, onConfirm, currentLeave, isEditing, existingLeave
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 999);
 
+        if (start > end) {
+            setError("Start date cannot be later than end date.");
+            return;
+        }
+
         const isOverlap = existingLeaves.some((existing, idx) => {
             if (idx === currentIndex) return false; // Skip the one we are editing
 

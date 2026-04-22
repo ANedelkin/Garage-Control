@@ -45,21 +45,43 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
         }
     };
 
-    const handleAddOrUpdateLeave = (leave) => {
+    const handleAddOrUpdateLeave = async (leave, index) => {
         let updatedLeaves = [...worker.leaves];
-        if (editingLeaveIndex >= 0) {
-            updatedLeaves[editingLeaveIndex] = leave;
+        if (index >= 0) {
+            updatedLeaves[index] = leave;
         } else {
             updatedLeaves.push(leave);
         }
-        setWorker({ ...worker, leaves: updatedLeaves });
+        
+        const updatedWorker = { ...worker, leaves: updatedLeaves };
+        setWorker(updatedWorker);
         setEditingLeaveIndex(-1);
+
+        // Immediate persistence
+        try {
+            await workerApi.edit(id, updatedWorker);
+            setErrors({});
+        } catch (error) {
+            console.error("Error persisting leave", error);
+            setErrors(parseValidationErrors(error));
+        }
     };
 
-    const deleteLeave = (index) => {
-        const updated = [...worker.leaves];
-        updated.splice(index, 1);
-        setWorker({ ...worker, leaves: updated });
+    const deleteLeave = async (index) => {
+        const updatedLeaves = [...worker.leaves];
+        updatedLeaves.splice(index, 1);
+        
+        const updatedWorker = { ...worker, leaves: updatedLeaves };
+        setWorker(updatedWorker);
+
+        // Immediate persistence
+        try {
+            await workerApi.edit(id, updatedWorker);
+            setErrors({});
+        } catch (error) {
+            console.error("Error deleting leave", error);
+            setErrors(parseValidationErrors(error));
+        }
     };
 
     const openLeavePopup = (leave = null, index = -1) => {
@@ -72,7 +94,7 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
             index >= 0 ? "Edit Leave" : "Add Leave",
             <LeavePopup
                 onClose={removeLastPopup}
-                onConfirm={handleAddOrUpdateLeave}
+                onConfirm={(updatedLeave) => handleAddOrUpdateLeave(updatedLeave, index)}
                 currentLeave={leave || { startDate: new Date(), endDate: new Date() }}
                 isEditing={index >= 0}
                 existingLeaves={worker.leaves}
