@@ -103,19 +103,9 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
         try {
             let savedClientId = clientId;
             if (isNew) {
-                const res = await clientApi.create(client);
-                savedClientId = res.id;
+                await clientApi.create({ ...client, cars });
             } else {
                 await clientApi.edit(clientId, client);
-            }
-
-            // If we have local cars (temp IDs), save them now
-            const localCars = cars.filter(c => c.id.toString().startsWith('temp-'));
-            if (localCars.length > 0) {
-                await Promise.all(localCars.map(car => {
-                    const { id, ...carDto } = car; // remove temp id
-                    return vehicleApi.create({ ...carDto, ownerId: savedClientId });
-                }));
             }
 
             onSave();

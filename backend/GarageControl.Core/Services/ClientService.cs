@@ -70,6 +70,23 @@ namespace GarageControl.Core.Services
             };
 
             await _repo.AddAsync(client);
+            
+            if (model.Cars != null && model.Cars.Any())
+            {
+                foreach (var carVM in model.Cars)
+                {
+                    var car = new Car
+                    {
+                        ModelId = carVM.ModelId,
+                        RegistrationNumber = carVM.RegistrationNumber,
+                        Kilometers = carVM.Kilometers,
+                        VIN = carVM.VIN,
+                        OwnerId = client.Id // client.Id is already generated at line 12 of Client entity
+                    };
+                    await _repo.AddAsync(car);
+                }
+            }
+
             await _repo.SaveChangesAsync();
 
             await _activityLogService.LogActionAsync(userId, workshopId, "Client",

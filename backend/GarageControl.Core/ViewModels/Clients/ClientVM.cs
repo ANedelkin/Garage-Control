@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using GarageControl.Shared.Constants;
+using GarageControl.Core.ViewModels.Vehicles;
 
 namespace GarageControl.Core.ViewModels.Clients
 {
     public class ClientVM
     {
         public string? Id { get; set; }
+        
+        public List<VehicleVM>? Cars { get; set; }
 
         [Required]
         [StringLength(ClientConstants.nameMaxLength, MinimumLength = ClientConstants.nameMinLength)]
