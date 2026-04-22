@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import '../../assets/css/common/popup.css';
 
-const UserPopup = ({ user, onLogout, onClose }) => {
+const UserProfilePopup = ({ user, onLogout, onClose }) => {
     const popupRef = useRef(null);
 
     useEffect(() => {
@@ -33,4 +33,4 @@ const UserPopup = ({ user, onLogout, onClose }) => {
     );
 };
 
-export default UserPopup;
+export default UserProfilePopup;

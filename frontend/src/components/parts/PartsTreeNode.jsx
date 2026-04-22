@@ -5,7 +5,7 @@ import PartsTree from './PartsTree';
 import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
-import RenamePopup from '../admin/RenamePopup';
+import RenamePopup from '../common/RenamePopup';
 
 const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
     const { addPopup, removeLastPopup } = usePopup();

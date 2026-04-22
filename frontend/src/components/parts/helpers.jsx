@@ -1,6 +1,6 @@
 import { partApi } from "../../services/partApi";
 
-import SimpleInputPopup from "../admin/SimpleInputPopup";
+import SimpleInputPopup from "../common/SimpleInputPopup";
 
 export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuccess) => {
     addPopup('Add Folder', (

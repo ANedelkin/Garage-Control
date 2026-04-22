@@ -159,12 +159,7 @@ const Clients = () => {
                 </div>
             </div>
 
-            {/* <ClientPopup
-                isOpen={showPopup}
-                onClose={handlePopupClose}
-                onSave={handlePopupSave}
-                clientId={selectedClientId}
-            /> */}
+
 
             <footer>GarageFlow — Clients Management</footer>
         </main>

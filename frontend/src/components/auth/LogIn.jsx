@@ -113,16 +113,6 @@ const LogInPage = () => {
                 </div>
             </div>
         </main>
-        // <AuthTemplate
-        //     title="Welcome Back"
-        //     handlers={{ handleSubmit }}
-        //     errors={errors}
-        // >
-        //     <p className="lnk">No account yet? <Link to="/signup">Create one!</Link></p>
-        //     <button type="submit" className="btn" disabled={loading}>
-        //         {loading ? 'Logging In...' : 'Log In'}
-        //     </button>
-        // </AuthTemplate>
     );
 };
 

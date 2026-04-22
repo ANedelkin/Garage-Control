@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../services/adminApi';
 import Dropdown from '../common/Dropdown';
 import { usePopup } from '../../context/PopupContext';
-import JustificationPopup from './JustificationPopup';
+import JustificationPopup from '../common/JustificationPopup';
 import AdminUserPopup from './AdminUserPopup';
 import '../../assets/css/admin-users.css';
 import usePageTitle from '../../hooks/usePageTitle.js';

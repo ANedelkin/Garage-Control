@@ -3,8 +3,8 @@ import ItemsTree from '../common/tree/ItemsTree';
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
-import RenamePopup from '../admin/RenamePopup';
-import SimpleInputPopup from '../admin/SimpleInputPopup';
+import RenamePopup from '../common/RenamePopup';
+import SimpleInputPopup from '../common/SimpleInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 
 // Custom label renderer for parts tree with deficit status visualization

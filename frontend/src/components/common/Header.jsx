@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { notificationApi } from '../../services/notificationApi';
 import NotificationPopup from './NotificationPopup';
-import UserPopup from './UserPopup';
+import UserProfilePopup from './UserProfilePopup';
 
 import '../../assets/css/common/controls.css';
 import '../../assets/css/header.css';
@@ -99,7 +99,7 @@ const Header = ({ onToggleSidebar }) => {
         />
       )}
       {showUserPopup && (
-        <UserPopup
+        <UserProfilePopup
           user={user}
           onLogout={handleLogout}
           onClose={() => setShowUserPopup(false)}

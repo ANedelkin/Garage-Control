@@ -14,7 +14,6 @@ import EditJobType from './components/orders/EditJobType.jsx';
 import MakesAndModels from './components/cars/MakesAndModels.jsx';
 import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
-import EditClient from './components/clients/EditClient.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import OrdersPage from './components/orders/OrdersPage.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
