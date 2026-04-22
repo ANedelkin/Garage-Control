@@ -310,6 +310,7 @@ const AdminMakesModels = () => {
                                 fetchChildren={fetchSuggestedModels}
                                 actions={{}}
                                 renderActions={renderSuggestionActions}
+                                onRefresh={loadData}
                             />
                             {suggestions.length === 0 && <div className="list-empty">No suggestions</div>}
                         </div>
@@ -328,6 +329,7 @@ const AdminMakesModels = () => {
                                 fetchChildren={fetchModels}
                                 actions={existingActions}
                                 labels={existingLabels}
+                                onRefresh={loadData}
                             />
                         </div>
                     </div>

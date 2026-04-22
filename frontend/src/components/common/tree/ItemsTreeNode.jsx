@@ -89,12 +89,12 @@ const ItemsTreeNode = ({
 
     // Wrapper Actions
     const handleRenameWrapper = () => {
-        if (actions.onRename) actions.onRename(node, type, () => onRefresh());
+        if (actions.onRename) actions.onRename(node, type, () => onRefresh && typeof onRefresh === 'function' ? onRefresh() : null);
         setShowMenu(false);
     };
 
     const handleDeleteWrapper = () => {
-        if (actions.onDelete) actions.onDelete(node, type, () => onRefresh());
+        if (actions.onDelete) actions.onDelete(node, type, () => onRefresh && typeof onRefresh === 'function' ? onRefresh() : null);
         setShowMenu(false);
     };
 
@@ -103,7 +103,10 @@ const ItemsTreeNode = ({
             actions.onAddGroup(node, () => {
                 setLoaded(false);
                 setExpanded(true);
-                refreshNodeContent().then(() => setLoaded(true));
+                refreshNodeContent().then(() => {
+                    setLoaded(true);
+                    if (onRefresh && typeof onRefresh === 'function') onRefresh();
+                });
             });
         }
         setShowMenu(false);
@@ -116,6 +119,7 @@ const ItemsTreeNode = ({
                     setLoaded(true);
                     setExpanded(true);
                     if (newItem && onSelectItem) onSelectItem(newItem, [...currentPath, newItem.id]);
+                    if (onRefresh && typeof onRefresh === 'function') onRefresh();
                 });
             });
         }
