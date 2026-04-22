@@ -55,7 +55,7 @@ const LeavePopup = ({ onClose, onConfirm, currentLeave, isEditing, existingLeave
     today.setHours(0, 0, 0, 0);
 
     return (
-        <div style={{ padding: '10px' }}>
+        <div>
             <div className="form-section">
                 <label>Start Date</label>
                 <DatePicker
@@ -80,7 +80,7 @@ const LeavePopup = ({ onClose, onConfirm, currentLeave, isEditing, existingLeave
                     dateFormat="dd.MM.yyyy"
                 />
             </div>
-            {error && <p className="form-error" style={{ margin: '10px 0' }}>{error}</p>}
+            {error && <p className="form-error">{error}</p>}
             <div className="form-footer">
                 <button type="button" className="btn" onClick={handleSave}>Save</button>
                 <button type="button" className="btn" onClick={onClose}>Cancel</button>
