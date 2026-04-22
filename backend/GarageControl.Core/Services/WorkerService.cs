@@ -52,6 +52,7 @@ namespace GarageControl.Core.Services
                 .Include(w => w.Activities)
                 .Include(w => w.Schedules)
                 //.Include(w => w.Leaves) // Assuming leaves need separate fetch or include if configured
+                .AsSplitQuery()
                 .ToListAsync();
 
             // Fetch leaves efficiently if not auto-included (or just ensure navigation property works)
@@ -207,6 +208,7 @@ namespace GarageControl.Core.Services
                 .Include(w => w.Accesses)
                 .Include(w => w.Schedules)
                 .Include(w => w.Activities) // JobTypes
+                .AsSplitQuery()
                 .FirstOrDefaultAsync();
                 
             if (worker == null) return null;
@@ -370,6 +372,7 @@ namespace GarageControl.Core.Services
                 .Include(w => w.Activities) // JobTypes
                 .Include(w => w.Schedules)
                 .Include(w => w.Leaves)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
             if (worker == null) return changes;

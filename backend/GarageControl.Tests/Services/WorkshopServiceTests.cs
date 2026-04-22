@@ -20,6 +20,7 @@ namespace GarageControl.Tests.Services
         private readonly IRepository _repo;
         private readonly WorkshopService _service;
         private readonly Mock<IAuthService> _mockAuthService;
+        private readonly Mock<IActivityLogService> _mockActivityLogService;
 
         public WorkshopServiceTests()
         {
@@ -30,13 +31,14 @@ namespace GarageControl.Tests.Services
             _context = new GarageControlDbContext(options);
             _repo = new Repository(_context);
             _mockAuthService = new Mock<IAuthService>();
+            _mockActivityLogService = new Mock<IActivityLogService>();
             
             // Setup mock to return a successful token response
             _mockAuthService
                 .Setup(x => x.GenerateTokenForUser(It.IsAny<string>()))
                 .ReturnsAsync(new LoginResponseVM(true, "Token generated", "test-token", "refresh-token", new List<string>(), true, "u1", "w1"));
 
-            _service = new WorkshopService(_repo, _mockAuthService.Object);
+            _service = new WorkshopService(_repo, _mockAuthService.Object, _mockActivityLogService.Object);
         }
 
         [Fact]

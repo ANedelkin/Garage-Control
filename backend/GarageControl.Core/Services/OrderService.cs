@@ -128,6 +128,7 @@ namespace GarageControl.Core.Services
                     .ThenInclude(c => c.Owner)
                 .Include(o => o.Car.Model.CarMake)
                 .Include(o => o.Car.Model)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null)
@@ -159,6 +160,7 @@ namespace GarageControl.Core.Services
             return await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Id == id)
+                .AsSplitQuery()
                 .Select(o => new OrderInvoiceVM
                 {
                     OrderId = o.Id,
@@ -200,6 +202,7 @@ namespace GarageControl.Core.Services
                 .Include(o => o.Car.Model)
                     .ThenInclude(m => m.CarMake)
                 .Include(o => o.Jobs)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
             if (order == null) return new MethodResponseVM(false, "Order not found or access denied.");
