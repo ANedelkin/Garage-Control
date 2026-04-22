@@ -1,15 +1,15 @@
 import { partApi } from "../../services/partApi";
 
-import SimpleInputPopup from "../common/SimpleInputPopup";
+import GenericInputPopup from "../common/GenericInputPopup";
 
 export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuccess) => {
     addPopup('Add Folder', (
-        <SimpleInputPopup 
+        <GenericInputPopup 
             label="Folder Name"
+            confirmText="Add"
             onConfirm={async (name) => {
                 try {
                     await partApi.createFolder({ name, parentId });
-                    removeLastPopup();
                     onSuccess();
                 } catch (e) {
                     console.error(e);

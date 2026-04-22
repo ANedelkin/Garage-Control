@@ -5,7 +5,7 @@ import PartsTree from './PartsTree';
 import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
-import RenamePopup from '../common/RenamePopup';
+import GenericInputPopup from '../common/GenericInputPopup';
 
 const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
     const { addPopup, removeLastPopup } = usePopup();
@@ -65,8 +65,10 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     // Actions
     const handleRename = async () => {
         addPopup('Rename', (
-            <RenamePopup 
-                node={node}
+            <GenericInputPopup 
+                label="Rename to"
+                initialValue={node.name}
+                confirmText="Rename"
                 onConfirm={async (newName) => {
                     try {
                         if (type === 'folder') {

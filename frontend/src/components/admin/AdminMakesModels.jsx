@@ -4,8 +4,7 @@ import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
 import SuggestedModelPopup from './SuggestedModelPopup';
 import PromoteMakePopup from './PromoteMakePopup';
-import SimpleInputPopup from '../common/SimpleInputPopup';
-import RenamePopup from '../common/RenamePopup';
+import GenericInputPopup from '../common/GenericInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import { usePopup } from '../../context/PopupContext';
 import '../../assets/css/admin-makes-models.css';
@@ -79,8 +78,9 @@ const AdminMakesModels = () => {
     const existingActions = {
         onAddItem: async (node, onSuccess) => {
             addPopup('Add Model', (
-                <SimpleInputPopup 
+                <GenericInputPopup 
                     label="Model Name" 
+                    confirmText="Add"
                     onConfirm={async (name) => {
                         try {
                             await modelApi.createModel({ name, makeId: node.id });
@@ -96,8 +96,10 @@ const AdminMakesModels = () => {
         },
         onRename: async (node, type, onSuccess) => {
             addPopup('Rename', (
-                <RenamePopup 
-                    node={node}
+                <GenericInputPopup 
+                    label="Rename to"
+                    initialValue={node.name}
+                    confirmText="Rename"
                     onConfirm={async (newName) => {
                         try {
                             if (type === 'group') {
@@ -232,8 +234,9 @@ const AdminMakesModels = () => {
 
     const handleAddMake = () => {
         addPopup('Add Make', (
-            <SimpleInputPopup 
+            <GenericInputPopup 
                 label="Make Name"
+                confirmText="Add"
                 onConfirm={async (name) => {
                     const normalized = name.trim().toUpperCase();
                     const duplicate = existing.find(m => m.name.toUpperCase() === normalized);

@@ -3,8 +3,8 @@ import ItemsTree from '../common/tree/ItemsTree';
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
-import RenamePopup from '../common/RenamePopup';
-import SimpleInputPopup from '../common/SimpleInputPopup';
+
+import GenericInputPopup from '../common/GenericInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 
 // Custom label renderer for parts tree with deficit status visualization
@@ -59,8 +59,10 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
     const actions = {
         onRename: async (node, type, onSuccess) => {
             addPopup('Rename', (
-                <RenamePopup 
-                    node={node}
+                <GenericInputPopup 
+                    label="Rename to"
+                    initialValue={node.name}
+                    confirmText="Rename"
                     onConfirm={async (newName) => {
                         try {
                             if (type === 'group') {

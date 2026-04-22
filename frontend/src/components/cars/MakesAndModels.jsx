@@ -5,7 +5,7 @@ import { makeApi } from '../../services/makeApi';
 import { modelApi } from '../../services/modelApi';
 import { usePopup } from '../../context/PopupContext';
 import MergePopup from './MergePopup';
-import AddEditItemModal from './AddEditItemModal';
+import GenericInputPopup from '../common/GenericInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
@@ -147,9 +147,10 @@ const MakesAndModels = () => {
 
         addPopup(
             `${item ? 'Edit' : 'Add'} ${type === 'make' ? 'Make' : 'Model'}`,
-            <AddEditItemModal
-                itemType={type}
-                currentName={item ? item.name : ''}
+            <GenericInputPopup
+                label="Name"
+                initialValue={item ? item.name : ''}
+                confirmText={item ? 'Save' : 'Add'}
                 onClose={() => { removeLastPopup(); navigate('/makes-and-models'); }}
                 onConfirm={(name) => handleSaveModal(type, item, name)}
                 errors={errors}
