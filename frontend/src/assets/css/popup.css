@@ -70,9 +70,12 @@
 @media (max-width: 500px) {
     .popup-overlay {
         padding: 10px;
-        align-items: center; /* Center vertically again */
-        overflow: hidden; /* Prevent overlay from scrolling */
+        align-items: center;
+        /* Center vertically again */
+        overflow: hidden;
+        /* Prevent overlay from scrolling */
     }
+
     .popup.tile {
         width: 100% !important;
         max-width: 100% !important;

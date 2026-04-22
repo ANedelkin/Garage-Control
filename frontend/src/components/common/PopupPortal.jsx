@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { usePopup } from "../../context/PopupContext";
 import "../../assets/css/popup.css";
@@ -9,20 +9,32 @@ const modalRoot = document.getElementById("modal-root");
 const PopupPortal = () => {
   const { stack, removeLastPopup } = usePopup();
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const popupRefs = useRef([]);
+
+  useEffect(() => {
+    if (stack.length > 0) {
+      const topIdx = stack.length - 1;
+      const topPopup = popupRefs.current[topIdx];
+      if (topPopup) {
+        topPopup.focus();
+      }
+    }
+  }, [stack.length]);
 
   if (!modalRoot) return null;
 
   return ReactDOM.createPortal(
     <>
-      {console.log(stack)}
       {stack.map((params, index) => {
         const isTop = index === stack.length - 1;
 
         return (
           <div
             key={index}
+            ref={(el) => (popupRefs.current[index] = el)}
+            tabIndex="-1"
             className={`popup-overlay ${isTop ? "top" : ""}`}
-            style={{ zIndex: 1000 + index }}
+            style={{ zIndex: 1000 + index, outline: 'none' }}
             onMouseDown={(e) => {
               if (isTop && e.target.classList.contains("popup-overlay")) {
                 setIsMouseDown(true);
