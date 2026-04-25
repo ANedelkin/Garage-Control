@@ -7,12 +7,14 @@ import { request } from '../../Utilities/request';
 import ServiceForm from './ServiceForm';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import { usePopup } from '../../context/PopupContext';
+import { useAuth } from '../../context/AuthContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 import usePageTitle from '../../hooks/usePageTitle';
 
 const EditJobPage = ({ mechanicView = false }) => {
+
     const { addPopup, removeLastPopup } = usePopup();
     const { orderId: paramOrderId, jobId } = useParams();
     const [searchParams] = useSearchParams();
@@ -176,7 +178,7 @@ const EditJobPage = ({ mechanicView = false }) => {
     const handleDelete = async () => {
         addPopup(
             'Delete Job',
-            <ConfirmationPopup 
+            <ConfirmationPopup
                 message="Are you sure you want to delete this job?"
                 confirmText="Delete"
                 isDanger={true}
