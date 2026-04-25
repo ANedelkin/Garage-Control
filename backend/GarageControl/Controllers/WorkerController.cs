@@ -57,16 +57,13 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
+            var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var response = await _workerService.Edit(id, model, actingUserId!);
+            if (response.Success)
             {
-                var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                await _workerService.Edit(id, model, actingUserId!);
-                return Ok(new { message = "Worker updated successfully" });
+                return Ok(response);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            else return BadRequest(response);
         }
 
         [HttpGet("accesses")]

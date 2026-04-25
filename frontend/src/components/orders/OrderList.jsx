@@ -15,14 +15,12 @@ const OrderList = ({ mode = 'active' }) => {
     const navigate = useNavigate();
     const { orderId } = useParams();
     const [searchParams] = useSearchParams();
-    const { addPopup, removeLastPopup } = usePopup();
+    const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
     const [orders, setOrders] = useState([]);
     const [cars, setCars] = useState([]);
     const [filter, setFilter] = useState(searchParams.get('status') || 'all');
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [editingOrder, setEditingOrder] = useState(null);
-    const [errors, setErrors] = useState({});
     const orderRefs = useRef({});
     const jobRefs = useRef({});
     const highlightJob = searchParams.get('highlightJob');
@@ -62,7 +60,7 @@ const OrderList = ({ mode = 'active' }) => {
         }
     };
 
-    const handleSaveOrderDetails = (orderId) => async (details) => {
+    const handleSaveOrderDetails = (order) => async (details) => {
         try {
             const payload = {
                 carId: details.carId,
@@ -70,13 +68,21 @@ const OrderList = ({ mode = 'active' }) => {
                 isDone: details.isDone
             };
 
-            await orderApi.updateOrder(orderId, payload);
+            await orderApi.updateOrder(order.id, payload);
             removeLastPopup();
-            setErrors({});
             fetchOrders();
         } catch (error) {
             console.error("Failed to update order:", error);
-            setErrors(parseValidationErrors(error));
+            const errors = parseValidationErrors(error);
+            updateLastPopup(
+                <OrderDetailsPopup
+                    order={order}
+                    cars={cars}
+                    onClose={handleClosePopup}
+                    onSave={handleSaveOrderDetails(order)}
+                    errors={errors}
+                />
+            );
         }
     };
 
@@ -86,15 +92,14 @@ const OrderList = ({ mode = 'active' }) => {
     };
 
     const openOrderDetailsPopup = (order) => {
-        setEditingOrder(order);
         addPopup(
             'Order Details',
             <OrderDetailsPopup
                 order={order}
                 cars={cars}
                 onClose={handleClosePopup}
-                onSave={handleSaveOrderDetails(order.id)}
-                errors={errors}
+                onSave={handleSaveOrderDetails(order)}
+                errors={{}}
             />,
             false,
             () => navigate(mode === 'completed' ? '/done-orders' : '/orders')
@@ -109,7 +114,7 @@ const OrderList = ({ mode = 'active' }) => {
             }
             if (!highlight && !highlightJob) {
                 const order = orders.find(o => o.id === orderId);
-                if (order && (!editingOrder || editingOrder.id !== orderId)) {
+                if (order) {
                     openOrderDetailsPopup(order);
                 }
             }

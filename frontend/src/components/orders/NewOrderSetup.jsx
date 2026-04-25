@@ -14,6 +14,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
     const [selectedCar, setSelectedCar] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
     const [kilometers, setKilometers] = useState(0);
+    const [minKilometers, setMinKilometers] = useState(0);
     const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState({});
     const suggestionsRef = useRef(null);
@@ -49,6 +50,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
         setSelectedCar(car);
         setCarSearch(car.registrationNumber);
         setKilometers(car.kilometers || 0);
+        setMinKilometers(car.kilometers || 0);
         setSuggestions([]);
     };
 
@@ -117,14 +119,18 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
                 <input
                     type="number"
                     name="Kilometers"
+                    min={minKilometers}
                     value={kilometers}
                     onChange={e => setKilometers(e.target.value)}
                 />
                 <FieldError name="Kilometers" errors={errors} />
+                {errors.general && errors.general.toLowerCase().includes('kilometers') && (
+                    <p className="field-error">{errors.general}</p>
+                )}
             </div>
 
             <div className="form-footer" style={{ marginTop: '20px' }}>
-                {errors.general && <p className="form-error">{errors.general}</p>}
+                {errors.general && !errors.general.toLowerCase().includes('kilometers') && <p className="form-error">{errors.general}</p>}
                 <button className="btn primary" onClick={handleCreateOrder} disabled={!selectedCar}>
                     Create Order
                 </button>

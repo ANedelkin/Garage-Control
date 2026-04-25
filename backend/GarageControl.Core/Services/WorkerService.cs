@@ -334,6 +334,17 @@ namespace GarageControl.Core.Services
 
                 if (!string.IsNullOrEmpty(model.Password))
                 {
+                    // Validate the new password BEFORE removing the old one to prevent a broken account state
+                    foreach (var validator in _userManager.PasswordValidators)
+                    {
+                        var validationResult = await validator.ValidateAsync(_userManager, user, model.Password);
+                        if (!validationResult.Succeeded)
+                        {
+                            var errors = IdentityResultHelper.ProcessIdentityResult(validationResult);
+                            return new MethodResponseVM(false, "Invalid password", errors: errors);
+                        }
+                    }
+
                     var removeResult = await _userManager.RemovePasswordAsync(user);
                     if (!removeResult.Succeeded)
                     {

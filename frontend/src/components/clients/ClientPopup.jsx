@@ -31,7 +31,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
     const [makes, setMakes] = useState([]);
     const [modelsMap, setModelsMap] = useState({});
 
-    const { addPopup, removeLastPopup } = usePopup();
+    const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
     const [activeTab, setActiveTab] = useState("info");
     const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
 
@@ -168,7 +168,16 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
             removeLastPopup();
         } catch (error) {
             console.error("Error saving car", error);
-            alert("Failed to save car.");
+            const errors = parseValidationErrors(error);
+            updateLastPopup(
+                <CarPopup
+                    onClose={removeLastPopup}
+                    onSave={handleSaveCar}
+                    car={carData}
+                    makes={makes}
+                    errors={errors}
+                />
+            );
         }
     };
 

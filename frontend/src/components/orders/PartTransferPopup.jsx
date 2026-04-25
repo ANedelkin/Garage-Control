@@ -7,7 +7,7 @@ const PartTransferPopup = ({ onClose, onConfirm, maxQuantity, partName }) => {
         setQuantity(maxQuantity);
     }, [maxQuantity]);
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         const val = parseFloat(quantity);
         if (isNaN(val) || val <= 0) {
             alert('Please enter a valid quantity.');
@@ -17,8 +17,11 @@ const PartTransferPopup = ({ onClose, onConfirm, maxQuantity, partName }) => {
             alert('Cannot transfer more than requested.');
             return;
         }
-        onConfirm(val);
-        onClose();
+        try {
+            await onConfirm(val);
+        } catch (e) {
+            // Error handling expected in onConfirm
+        }
     };
 
     return (

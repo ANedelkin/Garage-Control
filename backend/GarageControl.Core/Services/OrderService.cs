@@ -99,6 +99,12 @@ namespace GarageControl.Core.Services
 
             if (car == null) throw new Exception("Car not found or access denied.");
 
+            if (model.Kilometers < 0)
+                throw new ArgumentException("Kilometers cannot be negative.");
+
+            if (model.Kilometers < car.Kilometers)
+                throw new ArgumentException($"Kilometers cannot be decreased. Current car value is {car.Kilometers}.");
+
             var order = new Order
             {
                 CarId = model.CarId,
@@ -135,6 +141,35 @@ namespace GarageControl.Core.Services
                 return new MethodResponseVM(false, "Order not found.");
 
             var changes = new List<ActivityPropertyChange>();
+
+            if (model.Kilometers < 0)
+                return new MethodResponseVM(false, "Kilometers cannot be negative.");
+
+            if (model.Kilometers < order.Kilometers)
+                return new MethodResponseVM(false, $"Kilometers cannot be decreased. Current value is {order.Kilometers}.");
+
+            if (order.CarId != model.CarId)
+            {
+                var newCar = await _context.Cars
+                    .Include(c => c.Model)
+                        .ThenInclude(m => m.CarMake)
+                    .FirstOrDefaultAsync(c => c.Id == model.CarId && c.Owner.WorkshopId == workshopId);
+                
+                if (newCar != null)
+                {
+                    changes.Add(new ActivityPropertyChange("car", 
+                        $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
+                        $"{newCar.Model.CarMake.Name} {newCar.Model.Name} ({newCar.RegistrationNumber})"));
+                    
+                    order.CarId = model.CarId;
+                    // When changing car, we should also update the new car's kilometers if order's kilometers are higher
+                    if (model.Kilometers > newCar.Kilometers)
+                    {
+                        newCar.Kilometers = model.Kilometers;
+                    }
+                }
+            }
+
             if (order.Kilometers != model.Kilometers)
                 changes.Add(new ActivityPropertyChange("kilometers", order.Kilometers.ToString(), model.Kilometers.ToString()));
             if (order.IsDone != model.IsDone)

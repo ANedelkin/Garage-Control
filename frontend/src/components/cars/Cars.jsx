@@ -8,6 +8,7 @@ import CarPopup from './CarPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/clients.css';
 import usePageTitle from '../../hooks/usePageTitle';
+import { parseValidationErrors } from '../../Utilities/formErrors.js';
 
 const Cars = () => {
     usePageTitle('Cars');
@@ -24,7 +25,7 @@ const Cars = () => {
     const highlight = searchParams.get('highlight') === 'true';
     const location = useLocation();
 
-    const { addPopup, removeLastPopup } = usePopup();
+    const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -109,6 +110,7 @@ const Cars = () => {
                 onSave={handleSaveCar}
                 car={car}
                 makes={makesList}
+                errors={{}}
             />,
             false,
             () => navigate('/cars')
@@ -142,11 +144,6 @@ const Cars = () => {
             const updatedCars = cars.map(c => c.id === carData.id ? { ...c, ...carData } : c);
             setCars(updatedCars);
 
-            // if model changed, ensure we failover to ID or fetch name (simpler to just show ID until refresh or we could fetch name here)
-            // But realistically, user might just close popup. 
-            // Ideally we should update the models hashmap if a new model is introduced that we haven't seen.
-            // But since we can't easily fetch just one model name without API call...
-            // Let's just create a quick fetch to update the map if it's missing.
             if (carData.modelId && !models[carData.modelId]) {
                 const mRes = await modelApi.getModels(carData.makeId);
                 const newModel = mRes.find(m => m.id === carData.modelId);
@@ -159,7 +156,17 @@ const Cars = () => {
             navigate('/cars');
         } catch (error) {
             console.error("Failed to save car", error);
-            alert("Failed to save changes");
+            const errors = parseValidationErrors(error);
+            // Re-render popup with errors by updating it in place
+            updateLastPopup(
+                <CarPopup
+                    onClose={() => { removeLastPopup(); navigate('/cars'); }}
+                    onSave={handleSaveCar}
+                    car={carData}
+                    makes={makesList}
+                    errors={errors}
+                />
+            );
         }
     };
 

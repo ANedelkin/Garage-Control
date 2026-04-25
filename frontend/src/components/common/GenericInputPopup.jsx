@@ -18,7 +18,6 @@ const GenericInputPopup = ({
         setLoading(true);
         try {
             await onConfirm(value);
-            if (onClose) onClose();
         } catch (error) {
             console.error("Submission error:", error);
             // Error handling is expected to be managed via the 'errors' prop passed from parent

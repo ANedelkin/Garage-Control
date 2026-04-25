@@ -19,7 +19,7 @@ const LeavePopup = ({ onClose, onConfirm, currentLeave, isEditing, existingLeave
         }
     }, [currentLeave]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!leave.startDate || !leave.endDate) {
             setError("Both start and end dates are required.");
             return;
@@ -52,8 +52,11 @@ const LeavePopup = ({ onClose, onConfirm, currentLeave, isEditing, existingLeave
             return;
         }
 
-        onConfirm(leave);
-        onClose();
+        try {
+            await onConfirm(leave);
+        } catch (e) {
+            // Error handling expected in onConfirm
+        }
     };
 
     const today = new Date();

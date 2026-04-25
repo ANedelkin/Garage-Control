@@ -8,6 +8,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
     const [carSearch, setCarSearch] = useState(order.carRegistrationNumber);
     const [selectedCarId, setSelectedCarId] = useState(order.carId);
     const [kilometers, setKilometers] = useState(order.kilometers);
+    const [minKilometers, setMinKilometers] = useState(order.kilometers);
     const [suggestions, setSuggestions] = useState([]);
     const [isDone, setIsDone] = useState(order.isDone);
     const suggestionsRef = useRef(null);
@@ -28,6 +29,8 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
     const selectCar = (car) => {
         setSelectedCarId(car.id);
         setCarSearch(car.registrationNumber);
+        setKilometers(car.kilometers || 0);
+        setMinKilometers(car.kilometers || 0);
         setSuggestions([]);
     };
 
@@ -76,10 +79,14 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                 <input
                     type="number"
                     name="Kilometers"
+                    min={minKilometers}
                     value={kilometers}
                     onChange={(e) => setKilometers(e.target.value)}
                 />
                 <FieldError name="Kilometers" errors={errors} />
+                {errors.general && errors.general.toLowerCase().includes('kilometers') && (
+                    <p className="field-error">{errors.general}</p>
+                )}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
                 <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
@@ -116,7 +123,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
             </div>
             <div className="divider"></div>
             <div className="form-footer">
-                {errors.general && <p className="form-error">{errors.general}</p>}
+                {errors.general && !errors.general.toLowerCase().includes('kilometers') && <p className="form-error">{errors.general}</p>}
                 <button className="btn" onClick={handleSave}>Save Changes</button>
                 <button className="btn" onClick={onClose}>Cancel</button>
             </div>

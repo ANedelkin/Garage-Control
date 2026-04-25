@@ -61,9 +61,11 @@ const WorkhoursPopup = ({ id, onClose, onSave }) => {
         try {
             await workerApi.edit(id, updatedWorker);
             setErrors({});
+            removeLastPopup();
         } catch (error) {
             console.error("Error persisting leave", error);
             setErrors(parseValidationErrors(error));
+            throw error;
         }
     };
 

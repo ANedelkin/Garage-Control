@@ -21,9 +21,20 @@ export const PopupProvider = ({ children }) => {
     });
   }, []);
 
+  // Updates the children of the topmost popup without triggering onCloseCallback
+  const updateLastPopup = useCallback((newChildren) => {
+    setStack(prev => {
+        if (prev.length === 0) return prev;
+        const updated = [...prev];
+        updated[updated.length - 1] = { ...updated[updated.length - 1], children: newChildren };
+        return updated;
+    });
+  }, []);
+
   return (
-    <PopupContext.Provider value={{ stack, addPopup, removeLastPopup }}>
+    <PopupContext.Provider value={{ stack, addPopup, removeLastPopup, updateLastPopup }}>
       {children}
     </PopupContext.Provider>
   );
 };
+

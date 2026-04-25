@@ -11,6 +11,7 @@ export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuc
                 try {
                     await partApi.createFolder({ name, parentId });
                     onSuccess();
+                    removeLastPopup();
                 } catch (e) {
                     console.error(e);
                     alert("Failed to create folder");
