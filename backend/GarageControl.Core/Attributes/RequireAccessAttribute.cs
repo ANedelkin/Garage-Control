@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using GarageControl.Core.Contracts;
+using System.Security.Claims;
 
 namespace GarageControl.Core.Attributes
 {
@@ -13,16 +15,18 @@ namespace GarageControl.Core.Attributes
         }
     }
 
-    public class RequireAccessFilter : IAuthorizationFilter
+    public class RequireAccessFilter : IAsyncAuthorizationFilter
     {
         private readonly string[] _accessNames;
+        private readonly IAuthService _authService;
 
-        public RequireAccessFilter(string[] accessNames)
+        public RequireAccessFilter(string[] accessNames, IAuthService authService)
         {
             _accessNames = accessNames;
+            _authService = authService;
         }
 
-        public void OnAuthorization(AuthorizationFilterContext context)
+        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             var user = context.HttpContext.User;
 
@@ -36,10 +40,19 @@ namespace GarageControl.Core.Attributes
             if (_accessNames == null || _accessNames.Length == 0)
                 return;
 
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            var accesses = await _authService.GetUserAccess(userId);
+
             bool hasAccess = false;
             foreach (var access in _accessNames)
             {
-                if (user.HasClaim("Access", access))
+                if (accesses.Contains(access))
                 {
                     hasAccess = true;
                     break;

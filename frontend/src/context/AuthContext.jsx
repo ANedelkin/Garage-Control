@@ -117,6 +117,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    useEffect(() => {
+        const handle403 = () => refreshAuth();
+        window.addEventListener('api-403', handle403);
+        return () => window.removeEventListener('api-403', handle403);
+    }, []);
+
     return (
         <AuthContext.Provider value={{ accesses, user, loggedIn, loading, login, logout, refreshAuth }}>
             {children}

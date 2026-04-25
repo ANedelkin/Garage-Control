@@ -35,6 +35,10 @@ export async function request(method, url, body = null, options = {}) {
             return new Promise(() => {}); // Never resolve/reject so components don't show alerts during redirect
         }
 
+        if (response.status === 403) {
+            window.dispatchEvent(new CustomEvent('api-403'));
+        }
+
         const errorMessage = data?.message || data?.error || data?.title || response.statusText || 'Request failed';
         const error = new Error(errorMessage);
         error.status = response.status;
