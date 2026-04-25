@@ -99,6 +99,9 @@ namespace GarageControl.Core.Services
 
         public async Task<MethodResponseVM> Create(WorkerVM model, string userId)
         {
+            var leaveError = ValidateLeaves(model.Leaves);
+            if (leaveError != null) return new MethodResponseVM(false, leaveError);
+
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null)
             {
@@ -258,6 +261,9 @@ namespace GarageControl.Core.Services
 
         public async Task<MethodResponseVM> Edit(string id, WorkerVM model, string userId)
         {
+            var leaveError = ValidateLeaves(model.Leaves);
+            if (leaveError != null) return new MethodResponseVM(false, leaveError);
+
             var worker = await _repo.GetByIdAsync<Worker>(id);
             if (worker == null)
             {
@@ -488,5 +494,30 @@ namespace GarageControl.Core.Services
             return changes;
         }
 
+        private string? ValidateLeaves(List<WorkerLeaveVM>? leaves)
+        {
+            if (leaves == null) return null;
+            
+            for (int i = 0; i < leaves.Count; i++)
+            {
+                var l1 = leaves[i];
+                var start1 = DateOnly.FromDateTime(l1.StartDate.AddHours(12));
+                var end1 = DateOnly.FromDateTime(l1.EndDate.AddHours(12));
+
+                if (start1 > end1)
+                    return "Start date cannot be later than end date.";
+                    
+                for (int j = i + 1; j < leaves.Count; j++)
+                {
+                    var l2 = leaves[j];
+                    var start2 = DateOnly.FromDateTime(l2.StartDate.AddHours(12));
+                    var end2 = DateOnly.FromDateTime(l2.EndDate.AddHours(12));
+
+                    if (start1 <= end2 && end1 >= start2)
+                        return "Leave dates overlap with another leave.";
+                }
+            }
+            return null;
+        }
     }
 }
