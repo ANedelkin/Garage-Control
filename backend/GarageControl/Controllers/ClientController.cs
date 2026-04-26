@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Clients;
@@ -67,8 +68,15 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _clientService.Delete(id, userId!);
-            return Ok();
+            try
+            {
+                await _clientService.Delete(id, userId!);
+                return Ok();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This client has associated orders or vehicles and cannot be deleted." });
+            }
         }
     }
 }

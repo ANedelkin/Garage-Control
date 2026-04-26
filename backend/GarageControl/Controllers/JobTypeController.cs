@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Jobs;
@@ -61,8 +62,15 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _jobTypeService.Delete(id, userId);
-            return Ok(new { message = "Job type deleted successfully" });
+            try
+            {
+                await _jobTypeService.Delete(id, userId);
+                return Ok(new { message = "Job type deleted successfully" });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This job type is in use by one or more jobs and cannot be deleted." });
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
@@ -101,6 +102,10 @@ namespace GarageControl.Controllers
             catch (UnauthorizedAccessException)
             {
                 return Forbid();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This make is used by existing vehicles or models and cannot be deleted." });
             }
         }
 

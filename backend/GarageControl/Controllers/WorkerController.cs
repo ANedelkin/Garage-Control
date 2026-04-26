@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Workers;
@@ -78,8 +79,15 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             var actingUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _workerService.Delete(id, actingUserId!);
-            return Ok(new { message = "Worker deleted successfully" });
+            try
+            {
+                await _workerService.Delete(id, actingUserId!);
+                return Ok(new { message = "Worker deleted successfully" });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This worker is referenced by existing records and cannot be deleted." });
+            }
         }
     }
 }

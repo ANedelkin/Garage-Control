@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const ConfirmationPopup = ({ 
     title = 'Confirm Action', 
@@ -9,9 +9,34 @@ const ConfirmationPopup = ({
     onClose,
     isDanger = false 
 }) => {
-    const handleConfirm = () => {
-        onConfirm();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleConfirm = async () => {
+        setLoading(true);
+        try {
+            await onConfirm();
+        } catch (err) {
+            setError(err?.message || 'An unexpected error occurred.');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (error) {
+        return (
+            <div style={{ width: '300px' }}>
+                <div className="form-section">
+                    <p style={{ margin: 0, lineHeight: '1.5' }}>{error}</p>
+                </div>
+                <div className="form-footer">
+                    <button type="button" className="btn" onClick={onClose}>
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ width: '300px' }}>
@@ -24,13 +49,15 @@ const ConfirmationPopup = ({
                     type="button" 
                     className={`btn ${isDanger ? 'delete' : ''}`} 
                     onClick={handleConfirm}
+                    disabled={loading}
                 >
-                    {confirmText}
+                    {loading ? 'Processing...' : confirmText}
                 </button>
                 <button 
                     type="button" 
                     className="btn" 
                     onClick={onClose}
+                    disabled={loading}
                 >
                     {cancelText}
                 </button>
