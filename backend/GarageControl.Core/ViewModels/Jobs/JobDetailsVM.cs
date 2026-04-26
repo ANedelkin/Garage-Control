@@ -16,6 +16,8 @@ namespace GarageControl.Core.ViewModels.Jobs
         public string ClientName { get; set; } = null!;
         public string CarName { get; set; } = null!;
         public string CarRegistrationNumber { get; set; } = null!;
+        public string? JobTypeName { get; set; }
+        public string? MechanicName { get; set; }
         public List<JobPartDetailsVM> Parts { get; set; } = new List<JobPartDetailsVM>();
     }
 }

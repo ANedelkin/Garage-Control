@@ -15,8 +15,10 @@ import MakesAndModels from './components/cars/MakesAndModels.jsx';
 import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
-import OrdersPage from './components/orders/OrdersPage.jsx';
+import ActiveOrdersPage from './components/orders/ActiveOrdersPage.jsx';
+import DoneOrdersPage from './components/orders/DoneOrdersPage.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
+import DoneJobPage from './components/orders/DoneJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
 import ActivityLog from './components/activityLog/ActivityLog.jsx';
 
@@ -70,13 +72,12 @@ const routes = [
   },
   {
     path: '/orders',
-    element: OrdersPage,
+    element: ActiveOrdersPage,
     label: 'Orders',
     icon: 'fa-screwdriver-wrench',
     accesses: ['Orders'],
-    props: { mode: 'active' },
     children: [
-      { path: '/:orderId', element: OrdersPage, props: { mode: 'active' } }
+      { path: '/:orderId', element: ActiveOrdersPage }
     ]
   },
   {
@@ -85,6 +86,13 @@ const routes = [
     children: [
       { path: '/new', element: EditJobPage },
       { path: '/:jobId', element: EditJobPage }
+    ]
+  },
+  {
+    path: '/done-jobs',
+    accesses: ['Orders'],
+    children: [
+      { path: '/:jobId', element: DoneJobPage }
     ]
   },
   { path: '/parts', element: PartsStock, label: 'Parts Stock', icon: 'fa-boxes-stacked', accesses: ['Parts Stock'] },
@@ -123,8 +131,8 @@ const routes = [
   ]},
   { path: '/activity-log', element: ActivityLog, label: 'Activity Log', icon: 'fa-clock-rotate-left', accesses: ['Activity Log'] },
   { divider: true, accesses: ['Done Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
-  { path: '/done-orders', element: OrdersPage, label: 'Done Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], props: { mode: 'completed' }, children: [
-    { path: '/:orderId', element: OrdersPage, props: { mode: 'completed' } }
+  { path: '/done-orders', element: DoneOrdersPage, label: 'Done Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], children: [
+    { path: '/:orderId', element: DoneOrdersPage }
   ]},
   { path: '/job-types', element: JobTypes, label: 'Job Types', icon: 'fa-gear', accesses: ['Job Types'], children: [
     { path: '/new', element: EditJobType },

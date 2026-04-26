@@ -10,6 +10,9 @@ const jobApi = {
     getJob: async (jobId) => {
         return await request('GET', `job/${jobId}`);
     },
+    getCompletedJob: async (jobId) => {
+        return await request('GET', `job/completed/${jobId}`);
+    },
     getJobsByOrderId: async (orderId) => {
         return await request('GET', `job/order/${orderId}`);
     },

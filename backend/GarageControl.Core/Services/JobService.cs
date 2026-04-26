@@ -168,6 +168,8 @@ namespace GarageControl.Core.Services.Jobs
                     ClientName = j.Order.Car.Owner.Name,
                     CarName = j.Order.Car.Model.CarMake.Name + " " + j.Order.Car.Model.Name,
                     CarRegistrationNumber = j.Order.Car.RegistrationNumber,
+                    JobTypeName = j.JobType.Name,
+                    MechanicName = j.Worker.Name,
                     Parts = j.JobParts.Select(jp => new JobPartDetailsVM
                     {
                         PartId = jp.PartId,
@@ -182,9 +184,44 @@ namespace GarageControl.Core.Services.Jobs
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<JobDetailsVM?> GetCompletedJobByIdAsync(string jobId, string workshopId)
+        {
+            return await _context.CompletedJobs
+                .AsNoTracking()
+                .Where(j => j.Id == jobId && j.CompletedOrder.WorkshopId == workshopId)
+                .Select(j => new JobDetailsVM
+                {
+                    Id = j.Id,
+                    JobTypeId = j.JobTypeId ?? "",
+                    WorkerId = j.WorkerId ?? "",
+                    Description = j.Description ?? "",
+                    Status = JobStatus.Done,
+                    LaborCost = j.LaborCost,
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
+                    OrderId = j.CompletedOrderId,
+                    ClientName = j.CompletedOrder.ClientName,
+                    CarName = j.CompletedOrder.CarName,
+                    CarRegistrationNumber = j.CompletedOrder.CarRegistrationNumber,
+                    JobTypeName = j.JobTypeName,
+                    MechanicName = j.MechanicName,
+                    Parts = j.CompletedJobParts.Select(jp => new JobPartDetailsVM
+                    {
+                        PartId = jp.PartId ?? "",
+                        PartName = jp.PartName,
+                        PlannedQuantity = 0,
+                        SentQuantity = 0,
+                        UsedQuantity = jp.UsedQuantity,
+                        RequestedQuantity = 0,
+                        Price = jp.Price
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<JobListVM>> GetJobsByOrderIdAsync(string orderId, string workshopId)
         {
-            return await _context.Jobs
+            var activeJobs = await _context.Jobs
                 .AsNoTracking()
                 .Where(j => j.OrderId == orderId && j.Order.Car.Owner.WorkshopId == workshopId)
                 .Select(j => new JobListVM
@@ -198,6 +235,25 @@ namespace GarageControl.Core.Services.Jobs
                     EndTime = j.EndTime,
                     LaborCost = j.LaborCost,
                     PartsCost = j.JobParts.Sum(jp => (decimal)jp.PlannedQuantity * jp.Price)
+                })
+                .ToListAsync();
+
+            if (activeJobs.Any()) return activeJobs;
+
+            return await _context.CompletedJobs
+                .AsNoTracking()
+                .Where(j => j.CompletedOrderId == orderId && j.CompletedOrder.WorkshopId == workshopId)
+                .Select(j => new JobListVM
+                {
+                    Id = j.Id,
+                    Type = j.JobTypeName,
+                    Description = j.Description ?? "",
+                    Status = "done",
+                    MechanicName = j.MechanicName,
+                    StartTime = j.StartTime,
+                    EndTime = j.EndTime,
+                    LaborCost = j.LaborCost,
+                    PartsCost = j.CompletedJobParts.Sum(jp => (decimal)jp.UsedQuantity * jp.Price)
                 })
                 .ToListAsync();
         }

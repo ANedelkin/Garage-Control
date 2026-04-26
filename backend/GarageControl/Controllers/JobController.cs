@@ -73,6 +73,21 @@ namespace GarageControl.Controllers
             }
         }
 
+        [HttpGet("completed/{jobId}")]
+        public async Task<IActionResult> GetCompletedJobById(string jobId)
+        {
+            try
+            {
+                var job = await _jobService.GetCompletedJobByIdAsync(jobId, GetWorkshopId());
+                if (job == null) return NotFound();
+                return Ok(job);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("order/{orderId}")]
         public async Task<IActionResult> GetJobsByOrderId(string orderId)
         {

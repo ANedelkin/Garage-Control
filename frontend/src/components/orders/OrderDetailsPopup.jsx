@@ -3,14 +3,16 @@ import { request } from '../../Utilities/request';
 import Suggestions from '../common/Suggestions';
 import '../../assets/css/orders.css';
 import FieldError from '../common/FieldError.jsx';
+import { usePopup } from '../../context/PopupContext';
+import ConfirmationPopup from '../common/ConfirmationPopup';
 
 const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
+    const { addPopup, removeLastPopup } = usePopup();
     const [carSearch, setCarSearch] = useState(order.carRegistrationNumber);
     const [selectedCarId, setSelectedCarId] = useState(order.carId);
     const [kilometers, setKilometers] = useState(order.kilometers);
     const [minKilometers, setMinKilometers] = useState(order.kilometers);
     const [suggestions, setSuggestions] = useState([]);
-    const [isDone, setIsDone] = useState(order.isDone);
     const suggestionsRef = useRef(null);
 
     const handleCarSearch = (val) => {
@@ -34,11 +36,11 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
         setSuggestions([]);
     };
 
-    const handleSave = () => {
+    const handleSave = (markDone = false) => {
         onSave({
             carId: selectedCarId,
             kilometers: parseInt(kilometers) || 0,
-            isDone: isDone
+            isDone: markDone
         });
     };
 
@@ -57,12 +59,13 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     onBlur={() => {
                         setTimeout(() => setSuggestions([]), 200);
                     }}
+                    disabled={order.isDone}
                 />
                 <FieldError name="CarId" errors={errors} />
                 <Suggestions
                     ref={suggestionsRef}
                     suggestions={suggestions}
-                    isOpen={suggestions.length > 0}
+                    isOpen={suggestions.length > 0 && !order.isDone}
                     onSelect={selectCar}
                     onClose={() => setSuggestions([])}
                     renderItem={(car) => (
@@ -82,6 +85,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     min={minKilometers}
                     value={kilometers}
                     onChange={(e) => setKilometers(e.target.value)}
+                    disabled={order.isDone}
                 />
                 <FieldError name="Kilometers" errors={errors} />
                 {errors.general && errors.general.toLowerCase().includes('kilometers') && (
@@ -89,11 +93,30 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                 )}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                <button className="btn secondary" style={{ flex: 1 }} onClick={() => setIsDone(!isDone)}>
-                    {isDone ? 'Mark as Not Done' : 'Mark as Done'}
-                </button>
+                {!order.isDone && (
+                    <button
+                        className="btn"
+                        onClick={() => {
+                            addPopup(
+                                'Confirm Completion',
+                                <ConfirmationPopup
+                                    message="Are you sure you want to mark this order as complete? This action is permanent and will archive the order."
+                                    confirmText="Mark as Done"
+                                    isDanger={false}
+                                    onConfirm={() => {
+                                        removeLastPopup();
+                                        handleSave(true);
+                                    }}
+                                    onClose={removeLastPopup}
+                                />
+                            );
+                        }}
+                    >
+                        Save & Mark as Done
+                    </button>
+                )}
                 <button
-                    className="btn secondary"
+                    className="btn"
                     style={{ flex: 1 }}
                     onClick={async () => {
                         try {
@@ -124,8 +147,10 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
             <div className="divider"></div>
             <div className="form-footer">
                 {errors.general && !errors.general.toLowerCase().includes('kilometers') && <p className="form-error">{errors.general}</p>}
-                <button className="btn" onClick={handleSave}>Save Changes</button>
-                <button className="btn" onClick={onClose}>Cancel</button>
+                {!order.isDone && (
+                    <button className="btn" onClick={() => handleSave(false)}>Save Changes</button>
+                )}
+                <button className="btn" onClick={onClose}>{order.isDone ? 'Close' : 'Cancel'}</button>
             </div>
         </div>
     );

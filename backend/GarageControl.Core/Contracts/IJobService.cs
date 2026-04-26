@@ -20,6 +20,10 @@ public interface IJobService
         string jobId,
         string workshopId);
 
+    Task<JobDetailsVM?> GetCompletedJobByIdAsync(
+        string jobId,
+        string workshopId);
+
     Task<List<JobToDoVM>> GetMyJobsAsync(
         string userId,
         string workshopId);

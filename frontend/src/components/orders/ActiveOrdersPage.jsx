@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams, Link, useParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
 import { request } from '../../Utilities/request';
@@ -10,8 +10,10 @@ import NewOrderSetup from './NewOrderSetup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/orders.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import usePageTitle from '../../hooks/usePageTitle';
 
-const OrderList = ({ mode = 'active' }) => {
+const ActiveOrdersPage = () => {
+    usePageTitle('Orders');
     const navigate = useNavigate();
     const { orderId } = useParams();
     const [searchParams] = useSearchParams();
@@ -29,20 +31,16 @@ const OrderList = ({ mode = 'active' }) => {
     useEffect(() => {
         fetchOrders();
         fetchCars();
-    }, [mode]);
+    }, []);
 
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const data = mode === 'completed'
-                ? await orderApi.getCompletedOrders()
-                : await orderApi.getActiveOrders();
-
+            const data = await orderApi.getActiveOrders();
             const ordersWithJobs = await Promise.all(data.map(async (order) => {
                 const jobs = await jobApi.getJobsByOrderId(order.id);
                 return { ...order, jobs };
             }));
-
             setOrders(ordersWithJobs);
         } catch (error) {
             console.error(error);
@@ -88,7 +86,7 @@ const OrderList = ({ mode = 'active' }) => {
 
     const handleClosePopup = () => {
         removeLastPopup();
-        navigate(mode === 'completed' ? '/done-orders' : '/orders');
+        navigate('/orders');
     };
 
     const openOrderDetailsPopup = (order) => {
@@ -102,7 +100,7 @@ const OrderList = ({ mode = 'active' }) => {
                 errors={{}}
             />,
             false,
-            () => navigate(mode === 'completed' ? '/done-orders' : '/orders')
+            () => navigate('/orders')
         );
     };
 
@@ -212,7 +210,7 @@ const OrderList = ({ mode = 'active' }) => {
 
     const handleContainerClick = () => {
         if (orderId || highlightJob) {
-            navigate(mode === 'completed' ? '/done-orders' : '/orders', { replace: true });
+            navigate('/orders', { replace: true });
         }
     };
 
@@ -221,7 +219,7 @@ const OrderList = ({ mode = 'active' }) => {
             <div className="header">
                 <input
                     type="text"
-                    placeholder={`Search ${mode} orders...`}
+                    placeholder="Search active orders..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
@@ -229,15 +227,15 @@ const OrderList = ({ mode = 'active' }) => {
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="inprogress">In Progress</option>
-                    <option value="finished">Finished</option>
+                    <option value="done">Done</option>
                 </Dropdown>
-                {mode === 'active' && <button className="btn primary" onClick={openNewOrderPopup}>+ New Order</button>}
+                <button className="btn primary" onClick={openNewOrderPopup}>+ New Order</button>
             </div>
 
             {loading ? (
                 <p>Loading...</p>
             ) : filteredOrders.length === 0 ? (
-                <p className="list-empty">No {mode} orders found.</p>
+                <p className="list-empty">No active orders found.</p>
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map(order => (
@@ -251,7 +249,6 @@ const OrderList = ({ mode = 'active' }) => {
                                 <div className="order-car-info">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <h4>{order.clientName}</h4>
-                                        {order.isDone && <span className="badge success">Done</span>}
                                     </div>
                                     <div className="order-car-details">
                                         {order.carName} • {order.carRegistrationNumber} • {order.kilometers} km
@@ -331,21 +328,12 @@ const OrderList = ({ mode = 'active' }) => {
                                     )}
                                 </div>
                             </div>
-                            {mode === 'active' && (
-                                <div className="tile-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '10px' }}>
-                                    <button className="btn secondary small" onClick={() => navigate(`/jobs/new?orderId=${order.id}`)}>
-                                        + Add Job
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>
             )}
-
-
         </main>
     );
 };
 
-export default OrderList;
+export default ActiveOrdersPage;

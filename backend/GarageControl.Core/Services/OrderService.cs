@@ -39,41 +39,71 @@ namespace GarageControl.Core.Services
         }
         public async Task<List<OrderListVM>> GetOrdersAsync(string workshopId, bool? isDone = null)
         {
-            var query = _context.Orders
-                .AsNoTracking()
-                .Where(o => o.Car.Owner.WorkshopId == workshopId);
+            var activeOrders = new List<OrderListVM>();
+            var completedOrders = new List<OrderListVM>();
 
-            if (isDone.HasValue)
-                query = query.Where(o => o.IsDone == isDone.Value);
-
-            var rawData = await query
-                .Select(o => new
-                {
-                    o.Id,
-                    o.CarId,
-                    CarMakeName = o.Car.Model.CarMake.Name,
-                    CarModelName = o.Car.Model.Name,
-                    o.Car.RegistrationNumber,
-                    o.Car.Owner.Name,
-                    o.Kilometers,
-                    o.IsDone
-                })
-                .ToListAsync();
-
-            return rawData.Select(o => new OrderListVM
+            if (isDone == null || isDone == false)
             {
-                Id = o.Id,
-                CarId = o.CarId,
-                CarName = $"{o.CarMakeName} {o.CarModelName}",
-                CarRegistrationNumber = o.RegistrationNumber,
-                ClientName = o.Name,
-                Kilometers = o.Kilometers,
-                IsDone = o.IsDone
-            }).ToList();
+                var rawData = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => o.Car.Owner.WorkshopId == workshopId)
+                    .Select(o => new
+                    {
+                        o.Id,
+                        o.CarId,
+                        CarMakeName = o.Car.Model.CarMake.Name,
+                        CarModelName = o.Car.Model.Name,
+                        o.Car.RegistrationNumber,
+                        o.Car.Owner.Name,
+                        o.Kilometers,
+                        o.IsDone
+                    })
+                    .ToListAsync();
+
+                activeOrders = rawData.Select(o => new OrderListVM
+                {
+                    Id = o.Id,
+                    CarId = o.CarId,
+                    CarName = $"{o.CarMakeName} {o.CarModelName}",
+                    CarRegistrationNumber = o.RegistrationNumber,
+                    ClientName = o.Name,
+                    Kilometers = o.Kilometers,
+                    IsDone = o.IsDone
+                }).ToList();
+            }
+
+            if (isDone == null || isDone == true)
+            {
+                var rawCompleted = await _context.CompletedOrders
+                    .AsNoTracking()
+                    .Where(o => o.WorkshopId == workshopId)
+                    .Select(o => new
+                    {
+                        o.Id,
+                        CarName = o.CarName,
+                        CarRegistrationNumber = o.CarRegistrationNumber,
+                        ClientName = o.ClientName,
+                        o.Kilometers
+                    })
+                    .ToListAsync();
+
+                completedOrders = rawCompleted.Select(o => new OrderListVM
+                {
+                    Id = o.Id,
+                    CarId = "", // We don't have the active car ID reference stored directly or it's not strictly needed for the list
+                    CarName = o.CarName,
+                    CarRegistrationNumber = o.CarRegistrationNumber,
+                    ClientName = o.ClientName,
+                    Kilometers = o.Kilometers,
+                    IsDone = true
+                }).ToList();
+            }
+
+            return activeOrders.Concat(completedOrders).ToList();
         }
         public async Task<OrderDetailsVM?> GetOrderByIdAsync(string id, string workshopId)
         {
-            return await _context.Orders
+            var activeOrder = await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId)
                 .Select(o => new OrderDetailsVM
@@ -85,6 +115,23 @@ namespace GarageControl.Core.Services
                     ClientName = o.Car.Owner.Name,
                     Kilometers = o.Kilometers,
                     IsDone = o.IsDone
+                })
+                .FirstOrDefaultAsync();
+
+            if (activeOrder != null) return activeOrder;
+
+            return await _context.CompletedOrders
+                .AsNoTracking()
+                .Where(o => o.Id == id && o.WorkshopId == workshopId)
+                .Select(o => new OrderDetailsVM
+                {
+                    Id = o.Id,
+                    CarId = "", // Not needed for completed
+                    CarName = o.CarName,
+                    CarRegistrationNumber = o.CarRegistrationNumber,
+                    ClientName = o.ClientName,
+                    Kilometers = o.Kilometers,
+                    IsDone = true
                 })
                 .FirstOrDefaultAsync();
         }
@@ -130,8 +177,14 @@ namespace GarageControl.Core.Services
             var order = await _context.Orders
                 .Include(o => o.Jobs)
                     .ThenInclude(j => j.JobParts)
+                        .ThenInclude(jp => jp.Part)
+                .Include(o => o.Jobs)
+                    .ThenInclude(j => j.JobType)
+                .Include(o => o.Jobs)
+                    .ThenInclude(j => j.Worker)
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
+                        .ThenInclude(owner => owner.Workshop)
                 .Include(o => o.Car.Model.CarMake)
                 .Include(o => o.Car.Model)
                 .AsSplitQuery()
@@ -172,11 +225,73 @@ namespace GarageControl.Core.Services
 
             if (order.Kilometers != model.Kilometers)
                 changes.Add(new ActivityPropertyChange("kilometers", order.Kilometers.ToString(), model.Kilometers.ToString()));
-            if (order.IsDone != model.IsDone)
-                changes.Add(new ActivityPropertyChange("status", order.IsDone ? "done" : "open", model.IsDone ? "done" : "open"));
+            if (model.IsDone && !order.IsDone)
+            {
+                // Migate to CompletedOrder
+                var completedOrder = new CompletedOrder
+                {
+                    Id = order.Id,
+                    WorkshopId = order.Car.Owner.WorkshopId,
+                    CompletionDate = DateTime.UtcNow,
+                    WorkshopName = order.Car.Owner.Workshop.Name,
+                    WorkshopAddress = order.Car.Owner.Workshop.Address,
+                    WorkshopPhone = order.Car.Owner.Workshop.PhoneNumber,
+                    WorkshopEmail = order.Car.Owner.Workshop.Email ?? "",
+                    WorkshopRegistrationNumber = order.Car.Owner.Workshop.RegistrationNumber ?? "",
+                    CarName = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name}",
+                    CarRegistrationNumber = order.Car.RegistrationNumber,
+                    ClientName = order.Car.Owner.Name,
+                    Kilometers = model.Kilometers
+                };
 
-            order.Kilometers = model.Kilometers;
-            order.IsDone = model.IsDone;
+                foreach (var job in order.Jobs)
+                {
+                    var completedJob = new CompletedJob
+                    {
+                        Id = job.Id,
+                        CompletedOrderId = completedOrder.Id,
+                        JobTypeId = job.JobTypeId,
+                        WorkerId = job.WorkerId,
+                        JobTypeName = job.JobType.Name,
+                        Description = job.Description,
+                        MechanicName = job.Worker.Name,
+                        LaborCost = job.LaborCost,
+                        StartTime = job.StartTime,
+                        EndTime = job.EndTime
+                    };
+
+                    foreach (var jp in job.JobParts)
+                    {
+                        completedJob.CompletedJobParts.Add(new CompletedJobPart
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            CompletedJobId = completedJob.Id,
+                            PartId = jp.PartId,
+                            PartName = jp.Part.Name,
+                            UsedQuantity = jp.UsedQuantity,
+                            Price = jp.Price
+                        });
+                    }
+
+                    completedOrder.CompletedJobs.Add(completedJob);
+                }
+
+                _context.CompletedOrders.Add(completedOrder);
+
+                // Use JobService to delete each job properly to satisfy FK restrict constraints
+                foreach (var job in order.Jobs.ToList())
+                {
+                    await _jobService.DeleteJobAsync(userId, job.Id, workshopId, skipLogging: true);
+                }
+
+                _context.Orders.Remove(order);
+                changes.Add(new ActivityPropertyChange("status", "open", "done"));
+            }
+            else
+            {
+                order.Kilometers = model.Kilometers;
+                order.IsDone = model.IsDone;
+            }
 
             // Sync car kilometers
             order.Car.Kilometers = model.Kilometers;
@@ -192,6 +307,44 @@ namespace GarageControl.Core.Services
 
         public async Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id)
         {
+            var completedInvoice = await _context.CompletedOrders
+                .AsNoTracking()
+                .Where(o => o.Id == id)
+                .AsSplitQuery()
+                .Select(o => new OrderInvoiceVM
+                {
+                    OrderId = o.Id,
+                    WorkshopName = o.WorkshopName,
+                    WorkshopAddress = o.WorkshopAddress,
+                    WorkshopPhone = o.WorkshopPhone,
+                    WorkshopEmail = o.WorkshopEmail,
+                    WorkshopRegistrationNumber = o.WorkshopRegistrationNumber,
+                    CarName = o.CarName,
+                    CarRegistrationNumber = o.CarRegistrationNumber,
+                    ClientName = o.ClientName,
+                    Kilometers = o.Kilometers,
+                    Jobs = o.CompletedJobs.Select(j => new JobInvoiceVM
+                    {
+                        JobTypeName = j.JobTypeName,
+                        Description = j.Description ?? "",
+                        MechanicName = j.MechanicName,
+                        LaborCost = j.LaborCost,
+                        Parts = j.CompletedJobParts.Select(jp => new JobPartDetailsVM
+                        {
+                            PartId = jp.PartId ?? "",
+                            PartName = jp.PartName,
+                            PlannedQuantity = 0,
+                            SentQuantity = 0,
+                            UsedQuantity = jp.UsedQuantity,
+                            RequestedQuantity = 0,
+                            Price = jp.Price
+                        }).ToList()
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (completedInvoice != null) return completedInvoice;
+
             return await _context.Orders
                 .AsNoTracking()
                 .Where(o => o.Id == id)
@@ -203,7 +356,7 @@ namespace GarageControl.Core.Services
                     WorkshopAddress = o.Car.Owner.Workshop.Address,
                     WorkshopPhone = o.Car.Owner.Workshop.PhoneNumber,
                     WorkshopEmail = o.Car.Owner.Workshop.Email ?? "Not provided.",
-                    WorkshopRegistrationNumber = o.Car.Owner.Workshop.RegistrationNumber ?? "Not rovided",
+                    WorkshopRegistrationNumber = o.Car.Owner.Workshop.RegistrationNumber ?? "Not provided.",
                     CarName = o.Car.Model.CarMake.Name + " " + o.Car.Model.Name,
                     CarRegistrationNumber = o.Car.RegistrationNumber,
                     ClientName = o.Car.Owner.Name,
@@ -231,7 +384,7 @@ namespace GarageControl.Core.Services
 
         public async Task<MethodResponseVM> DeleteOrderAsync(string userId, string id, string workshopId)
         {
-            var order = await _context.Orders
+            var activeOrder = await _context.Orders
                 .Include(o => o.Car)
                     .ThenInclude(c => c.Owner)
                 .Include(o => o.Car.Model)
@@ -240,22 +393,40 @@ namespace GarageControl.Core.Services
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
 
-            if (order == null) return new MethodResponseVM(false, "Order not found or access denied.");
-
-            // Use JobService to delete each job properly
-            foreach (var job in order.Jobs.ToList())
+            if (activeOrder != null)
             {
-                await _jobService.DeleteJobAsync(userId, job.Id, workshopId, skipLogging: true);
+                // Use JobService to delete each job properly
+                foreach (var job in activeOrder.Jobs.ToList())
+                {
+                    await _jobService.DeleteJobAsync(userId, job.Id, workshopId, skipLogging: true);
+                }
+
+                string carInfo = $"{activeOrder.Car.Model.CarMake.Name} {activeOrder.Car.Model.Name} ({activeOrder.Car.RegistrationNumber})";
+
+                _context.Orders.Remove(activeOrder);
+                await _context.SaveChangesAsync();
+
+                await _activityLogger.LogOrderDeletedAsync(userId, workshopId, carInfo);
+
+                return new MethodResponseVM(true, "Order deleted successfully.");
             }
 
-            string carInfo = $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})";
+            var completedOrder = await _context.CompletedOrders
+                .Include(o => o.CompletedJobs)
+                    .ThenInclude(j => j.CompletedJobParts)
+                .FirstOrDefaultAsync(o => o.Id == id && o.WorkshopId == workshopId);
 
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync();
+            if (completedOrder != null)
+            {
+                _context.CompletedOrders.Remove(completedOrder);
+                await _context.SaveChangesAsync();
 
-            await _activityLogger.LogOrderDeletedAsync(userId, workshopId, carInfo);
+                await _activityLogger.LogOrderDeletedAsync(userId, workshopId, $"{completedOrder.CarName} ({completedOrder.CarRegistrationNumber})");
 
-            return new MethodResponseVM(true, "Order deleted successfully.");
+                return new MethodResponseVM(true, "Completed order deleted successfully.");
+            }
+
+            return new MethodResponseVM(false, "Order not found or access denied.");
         }
     }
 }

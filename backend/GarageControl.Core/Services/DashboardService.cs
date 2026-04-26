@@ -69,13 +69,26 @@ namespace GarageControl.Core.Services
             const int daysPeriod = 30;
             var thirtyDaysAgo = now.AddDays(-daysPeriod).Date;
 
-            var grouped = await JobsForWorkshop(workshopId)
+            var activeJobs = await JobsForWorkshop(workshopId)
                 .Where(j => j.Status == JobStatus.Done && j.EndTime >= thirtyDaysAgo)
                 .Select(j => new
                 {
                     Date = (j.EndTime > now ? now : j.EndTime).Date,
                     JobTypeName = j.JobType.Name
                 })
+                .ToListAsync();
+
+            var completedJobs = await _context.CompletedJobs
+                .AsNoTracking()
+                .Where(j => j.CompletedOrder.WorkshopId == workshopId && j.EndTime >= thirtyDaysAgo)
+                .Select(j => new
+                {
+                    Date = (j.EndTime > now ? now : j.EndTime).Date,
+                    JobTypeName = j.JobTypeName
+                })
+                .ToListAsync();
+
+            var grouped = activeJobs.Concat(completedJobs)
                 .GroupBy(j => new { j.Date, j.JobTypeName })
                 .Select(g => new
                 {
@@ -83,7 +96,7 @@ namespace GarageControl.Core.Services
                     g.Key.JobTypeName,
                     Count = g.Count()
                 })
-                .ToListAsync();
+                .ToList();
 
             var result = grouped
                 .GroupBy(x => x.Date)
@@ -132,30 +145,54 @@ namespace GarageControl.Core.Services
             const int daysPeriod = 30;
             var oneMonthAgo = now.AddDays(-daysPeriod);
 
-            return await JobsForWorkshop(workshopId)
+            var activeJobs = await JobsForWorkshop(workshopId)
                 .Where(j => j.Status == JobStatus.Done && j.EndTime >= oneMonthAgo)
-                .GroupBy(j => j.JobType.Name)
+                .Select(j => new { JobTypeName = j.JobType.Name })
+                .ToListAsync();
+
+            var completedJobs = await _context.CompletedJobs
+                .AsNoTracking()
+                .Where(j => j.CompletedOrder.WorkshopId == workshopId && j.EndTime >= oneMonthAgo)
+                .Select(j => new { JobTypeName = j.JobTypeName })
+                .ToListAsync();
+
+            return activeJobs.Concat(completedJobs)
+                .GroupBy(j => j.JobTypeName)
                 .Select(g => new JobTypeDistributionVM
                 {
                     JobTypeName = g.Key,
                     Count = g.Count()
                 })
                 .OrderByDescending(x => x.Count)
-                .ToListAsync();
+                .ToList();
         }
 
         private async Task<List<WorkerPerformanceVM>> GetWorkerPerformanceAsync(string workshopId)
         {
-            var jobs = await JobsForWorkshop(workshopId)
+            var activeJobs = await JobsForWorkshop(workshopId)
                 .Where(j => j.Status == JobStatus.Done)
                 .Select(j => new
                 {
-                    j.WorkerId,
+                    WorkerId = j.WorkerId,
                     WorkerName = j.Worker.Name,
                     JobTypeName = j.JobType.Name,
                     HoursWorked = (j.EndTime - j.StartTime).TotalHours
                 })
                 .ToListAsync();
+
+            var completedJobs = await _context.CompletedJobs
+                .AsNoTracking()
+                .Where(j => j.CompletedOrder.WorkshopId == workshopId)
+                .Select(j => new
+                {
+                    WorkerId = j.WorkerId ?? "",
+                    WorkerName = j.MechanicName,
+                    JobTypeName = j.JobTypeName,
+                    HoursWorked = (j.EndTime - j.StartTime).TotalHours
+                })
+                .ToListAsync();
+
+            var jobs = activeJobs.Concat(completedJobs).ToList();
 
             return jobs
                 .GroupBy(j => new { j.WorkerId, j.WorkerName })
