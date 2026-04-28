@@ -9,6 +9,8 @@ import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/clients.css';
 import usePageTitle from '../../hooks/usePageTitle';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const Cars = () => {
     usePageTitle('Cars');
@@ -185,6 +187,11 @@ const Cars = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button className="btn" onClick={() => navigate("/cars/new")}>+ New Car</button>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <ExcelExportButton endpoint="export/cars" />
+                    <PdfExportButton endpoint="export/cars" />
+                </div>
             </div>
 
             <div className="tile">

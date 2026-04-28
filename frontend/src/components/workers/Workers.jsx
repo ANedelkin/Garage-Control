@@ -9,6 +9,9 @@ import EditWorker from './EditWorker';
 import WorkhoursPopup from './WorkhoursPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import usePageTitle from "../../hooks/usePageTitle";
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
+import WorkerExportPopup from './WorkerExportPopup';
 
 const Workers = () => {
     usePageTitle('Workers');
@@ -95,8 +98,14 @@ const Workers = () => {
         if (workerId) {
             navigate('/workers', { replace: true });
         }
+    };    const handleExportClick = (e) => {
+        e.stopPropagation();
+        addPopup(
+            'Export Workers to Excel',
+            <WorkerExportPopup onClose={removeLastPopup} />,
+            false
+        );
     };
-
     return (
         <main className="main" onClick={handleContainerClick}>
             {/* Header: search + filter + new worker */}
@@ -116,6 +125,10 @@ const Workers = () => {
                 </Dropdown> */}
 
                 <button className="btn" onClick={(e) => { e.stopPropagation(); navigate("/workers/new"); }}>+ New Worker</button>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <ExcelExportButton onClick={handleExportClick} />
+                    <PdfExportButton onClick={handleExportClick} />
+                </div>
             </div>
 
             {/* Workers table */}

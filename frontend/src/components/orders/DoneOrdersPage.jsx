@@ -7,6 +7,8 @@ import { usePopup } from '../../context/PopupContext';
 import OrderDetailsPopup from './OrderDetailsPopup';
 import '../../assets/css/orders.css';
 import usePageTitle from '../../hooks/usePageTitle';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const DoneOrdersPage = () => {
     usePageTitle('Done Orders');
@@ -123,6 +125,8 @@ const DoneOrdersPage = () => {
         }
     };
 
+
+
     return (
         <main className="main orders-page" onClick={handleContainerClick}>
             <div className="header">
@@ -132,6 +136,10 @@ const DoneOrdersPage = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <ExcelExportButton endpoint="export/orders?isDone=true" />
+                    <PdfExportButton endpoint="export/orders?isDone=true" />
+                </div>
             </div>
 
             {loading ? (

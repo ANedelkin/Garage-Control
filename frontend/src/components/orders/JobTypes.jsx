@@ -7,6 +7,8 @@ import { jobTypeApi } from '../../services/jobTypeApi.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const JobTypes = () => {
     const { addPopup, removeLastPopup } = usePopup();
@@ -59,6 +61,10 @@ const JobTypes = () => {
           onChange={e => setSearch(e.target.value)}
         />
         <Link className="btn" to="/job-types/new">+ New Job Type</Link>
+        <div style={{ display: 'flex', gap: '5px' }}>
+          <ExcelExportButton endpoint="export/job-types" />
+          <PdfExportButton endpoint="export/job-types" />
+        </div>
       </div>
 
       {/* Job Types table */}

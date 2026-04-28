@@ -12,6 +12,7 @@ import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/job-time-picker.css';
 import '../../assets/css/orders.css';
 import usePageTitle from '../../hooks/usePageTitle';
+import ExcelExportButton from '../common/ExcelExportButton';
 
 const EditJobPage = ({ mechanicView = false }) => {
 
@@ -212,6 +213,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                     <button className="btn secondary" onClick={() => navigate(-1)}>
                         Cancel
                     </button>
+                    {isEdit && <ExcelExportButton endpoint={`export/job/${jobId}`} />}
                     {isEdit && !mechanicView && job?.status !== 2 && (
                         <button className="btn delete" onClick={handleDelete}>
                             Delete

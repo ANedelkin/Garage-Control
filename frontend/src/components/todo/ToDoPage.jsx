@@ -12,6 +12,8 @@ import '../../assets/css/common/tile.css';
 import '../../assets/css/orders.css';
 import '../../assets/css/todo.css';
 import usePageTitle from '../../hooks/usePageTitle';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const ToDoPage = () => {
     const { workerId } = useParams();
@@ -78,18 +80,24 @@ const ToDoPage = () => {
         <main className={`main ${viewMode !== 'list' ? 'calendar-layout' : ''}`}>
             <div className="header">
                 <h1>{getPageTitle()}</h1>
-                <Dropdown
-                    value={viewMode}
-                    onChange={e => {
-                        const newMode = e.target.value;
-                        setViewMode(newMode);
-                        localStorage.setItem('myJobsViewMode', newMode);
-                    }}
-                >
-                    <option value="list">List View</option>
-                    <option value="week">Week View</option>
-                    <option value="calendar">Month View</option>
-                </Dropdown>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <Dropdown
+                        value={viewMode}
+                        onChange={e => {
+                            const newMode = e.target.value;
+                            setViewMode(newMode);
+                            localStorage.setItem('myJobsViewMode', newMode);
+                        }}
+                    >
+                        <option value="list">List View</option>
+                        <option value="week">Week View</option>
+                        <option value="calendar">Month View</option>
+                    </Dropdown>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <ExcelExportButton endpoint={`export/todo${workerId ? `?workerId=${workerId}` : ''}`} />
+                        <PdfExportButton endpoint={`export/todo${workerId ? `?workerId=${workerId}` : ''}`} />
+                    </div>
+                </div>
             </div>
 
             {loading ? <p>Loading...</p> : (

@@ -11,6 +11,8 @@ import ConfirmationPopup from '../common/ConfirmationPopup';
 import '../../assets/css/orders.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const ActiveOrdersPage = () => {
     usePageTitle('Orders');
@@ -214,6 +216,8 @@ const ActiveOrdersPage = () => {
         }
     };
 
+
+
     return (
         <main className="main orders-page" onClick={handleContainerClick}>
             <div className="header">
@@ -230,6 +234,10 @@ const ActiveOrdersPage = () => {
                     <option value="done">Done</option>
                 </Dropdown>
                 <button className="btn primary" onClick={openNewOrderPopup}>+ New Order</button>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <ExcelExportButton endpoint="export/orders?isDone=false" />
+                    <PdfExportButton endpoint="export/orders?isDone=false" />
+                </div>
             </div>
 
             {loading ? (

@@ -5,10 +5,13 @@ import '../../assets/css/parts-stock.css';
 import { partApi } from '../../services/partApi';
 import { handleAddFolder, handleAddPart } from './helpers';
 import usePageTitle from '../../hooks/usePageTitle';
+import { exportToExcel } from '../../Utilities/exportToExcel';
 
 import PartsTree from './PartsTree';
 import PartDetails from './PartDetails';
 import { usePopup } from '../../context/PopupContext';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const PartsStock = () => {
     usePageTitle('Parts Stock');
@@ -88,6 +91,10 @@ const PartsStock = () => {
         }
     };
 
+    const handleExport = async () => {
+        exportToExcel('export/parts');
+    };
+
     return (
         <main className="main parts-stock">
             <div className={`tile ${selectedPart ? 'mobile-show-details' : 'mobile-show-tree'}`}>
@@ -95,6 +102,10 @@ const PartsStock = () => {
                     <div className="form-left">
                         <div className="section-header">
                             <h3>Parts Stock</h3>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <ExcelExportButton endpoint="export/parts" />
+                                <PdfExportButton endpoint="export/parts" />
+                            </div>
                         </div>
                         <div className="list-container grow">
                             <div className="parts-tree">

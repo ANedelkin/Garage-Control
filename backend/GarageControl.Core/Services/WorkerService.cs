@@ -79,6 +79,7 @@ namespace GarageControl.Core.Services
                 Email = w.User.Email,
                 HiredOn = w.HiredOn,
                 JobTypeIds = w.Activities.Select(a => a.Id).ToList(),
+                JobTypeNames = w.Activities.Select(a => a.Name).ToList(),
                 Schedules = w.Schedules.Select(s => new WorkerScheduleVM
                 {
                     Id = s.Id,
@@ -242,6 +243,7 @@ namespace GarageControl.Core.Services
                 HiredOn = worker.HiredOn,
                 Accesses = accessesVm,
                 JobTypeIds = worker.Activities.Select(a => a.Id).ToList(),
+                JobTypeNames = worker.Activities.Select(a => a.Name).ToList(),
                 Schedules = worker.Schedules.Select(s => new WorkerScheduleVM
                 {
                     Id = s.Id,

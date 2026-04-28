@@ -416,3 +416,22 @@
     display: flex !important;
   }
 }
+
+/* .worker-export-popup {
+  padding: 10px 5px;
+}
+
+.worker-export-popup p {
+  margin-bottom: 20px;
+  color: var(--text-clr2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.worker-export-popup .form-footer {
+  margin-top: 25px;
+}
+
+.worker-export-popup .form-footer i {
+  margin-right: 8px;
+} */

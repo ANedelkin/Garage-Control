@@ -7,6 +7,8 @@ import { usePopup } from '../../context/PopupContext';
 import ClientPopup from './ClientPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import usePageTitle from '../../hooks/usePageTitle';
+import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const Clients = () => {
     usePageTitle('Clients');
@@ -103,6 +105,8 @@ const Clients = () => {
         }
     };
 
+
+
     return (
         <main className="main" onClick={handleContainerClick}>
             <div className="header">
@@ -113,6 +117,10 @@ const Clients = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
                 <button className="btn" onClick={() => navigate("/clients/new")}>+ New Client</button>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <ExcelExportButton endpoint="export/clients" />
+                    <PdfExportButton endpoint="export/clients" />
+                </div>
             </div>
 
             <div className="tile">

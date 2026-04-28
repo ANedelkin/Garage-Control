@@ -10,6 +10,7 @@ import CarPopup from '../cars/CarPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
+import ExcelExportButton from '../common/ExcelExportButton';
 
 const ClientPopup = ({ onClose, onSave, clientId }) => {
     const isNew = !clientId;
@@ -225,6 +226,8 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
         );
     };
 
+
+
     return (
         <>
             <form className="client-form" onSubmit={handleSave}>
@@ -343,6 +346,9 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                 <div className="form-footer">
                     {errors.general && <p className="form-error">{errors.general}</p>}
                     <button type="submit" className="btn">Save Client</button>
+                    {!isNew && (
+                        <ExcelExportButton endpoint={`export/client/${clientId}`} />
+                    )}
                     <button type="button" className="btn" onClick={onClose}>Cancel</button>
                 </div>
             </form>

@@ -172,11 +172,12 @@ namespace GarageControl.Core.Services
             var workshopId = await GetUserWorkshopId(user.Id);
             var accesses = await GetUserAccess(user.Id);
 
-            string newAccess = GenerateAccessToken(user, roles, workshopId);
-
-            bool hasWorkshop = await UserHasWorkshop(user.Id);
             var workerId = (await _repo.GetAllAsNoTracking<Worker>()
                 .FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
+
+            string newAccess = GenerateAccessToken(user, roles, workshopId, workerId);
+
+            bool hasWorkshop = await UserHasWorkshop(user.Id);
 
             return new LoginResponseVM(true, "Token refreshed", newAccess, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
@@ -214,12 +215,12 @@ namespace GarageControl.Core.Services
             var roles = await _userManager.GetRolesAsync(user);
             var accesses = await GetUserAccess(user.Id);
 
-            string token = GenerateAccessToken(user, roles, workshopId);
-
-            bool hasWorkshop = await UserHasWorkshop(user.Id);
-
             var workerId = (await _repo.GetAllAsNoTracking<Worker>()
                 .FirstOrDefaultAsync(w => w.UserId == user.Id))?.Id;
+
+            string token = GenerateAccessToken(user, roles, workshopId, workerId);
+
+            bool hasWorkshop = await UserHasWorkshop(user.Id);
 
             return new LoginResponseVM(true, "Successful login", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
@@ -243,7 +244,7 @@ namespace GarageControl.Core.Services
             return username;
         }
 
-        private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null)
+        private string GenerateAccessToken(User user, IList<string> roles, string? workshopId = null, string? workerId = null)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
@@ -259,6 +260,9 @@ namespace GarageControl.Core.Services
 
             if (!string.IsNullOrEmpty(workshopId))
                 claims.Add(new Claim("WorkshopId", workshopId));
+            
+            if (!string.IsNullOrEmpty(workerId))
+                claims.Add(new Claim("WorkerId", workerId));
 
             var token = handler.CreateToken(new SecurityTokenDescriptor
             {
@@ -409,9 +413,9 @@ namespace GarageControl.Core.Services
             var workshopId = await GetUserWorkshopId(userId);
             var roles = await _userManager.GetRolesAsync(user);
             var accesses = await GetUserAccess(userId);
-            string token = GenerateAccessToken(user, roles, workshopId);
-            bool hasWorkshop = await UserHasWorkshop(userId);
             var workerId = (await _repo.GetAllAsNoTracking<Worker>().FirstOrDefaultAsync(w => w.UserId == userId))?.Id;
+            string token = GenerateAccessToken(user, roles, workshopId, workerId);
+            bool hasWorkshop = await UserHasWorkshop(userId);
 
             return new LoginResponseVM(true, "Token generated", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }

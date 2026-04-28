@@ -26,6 +26,7 @@ namespace GarageControl.Core.ViewModels.Workers
 
         public List<AccessVM> Accesses { get; set; } = new List<AccessVM>();
         public List<string> JobTypeIds { get; set; } = new List<string>(); // IDs of JobTypes this worker can perform
+        public List<string> JobTypeNames { get; set; } = new List<string>();
         public List<WorkerScheduleVM> Schedules { get; set; } = new List<WorkerScheduleVM>();
         public List<WorkerLeaveVM> Leaves { get; set; } = new List<WorkerLeaveVM>();
     }
