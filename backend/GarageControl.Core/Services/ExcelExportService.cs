@@ -28,17 +28,22 @@ namespace GarageControl.Core.Services
             IReadOnlyList<string> headers,
             IEnumerable<IReadOnlyList<object?>> rows)
         {
+            var borderColor = XLColor.FromArgb(255, 100, 0);
+
             for (int col = 0; col < headers.Count; col++)
             {
                 var cell = ws.Cell(1, col + 1);
                 cell.Value = headers[col];
                 cell.Style.Font.Bold = true;
-                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#D9E1F2");
+                cell.Style.Font.FontColor = XLColor.Black;
+                cell.Style.Fill.BackgroundColor = XLColor.FromArgb(255, 204, 153);
             }
 
             int rowIndex = 2;
             foreach (var row in rows)
             {
+                bool isAlternate = rowIndex % 2 != 0;
+
                 for (int col = 0; col < row.Count; col++)
                 {
                     var value = row[col];
@@ -51,9 +56,20 @@ namespace GarageControl.Core.Services
                         case int i:      cell.Value = i;           break;
                         default:         cell.Value = value?.ToString() ?? ""; break;
                     }
+
+                    if (isAlternate)
+                    {
+                        cell.Style.Fill.BackgroundColor = XLColor.FromArgb(255, 245, 235);
+                    }
                 }
                 rowIndex++;
             }
+            
+            var dataRange = ws.Range(1, 1, rowIndex - 1, headers.Count);
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorderColor = borderColor;
+            dataRange.Style.Border.OutsideBorderColor = borderColor;
 
             ws.Columns().AdjustToContents();
         }

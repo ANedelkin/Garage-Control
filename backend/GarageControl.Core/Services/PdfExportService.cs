@@ -598,9 +598,9 @@ namespace GarageControl.Core.Services
             row.HeadingFormat = true;
             row.Format.Font.Bold = true;
             row.Format.Font.Color = new Color(0, 0, 0);
+            row.Shading.Color = new Color(255, 204, 153);
             for (int i = 0; i < row.Cells.Count; i++)
             {
-                row.Cells[i].Shading.Color = new Color(255, 204, 153);
                 row.Cells[i].Format.Alignment = ParagraphAlignment.Center;
                 row.Cells[i].VerticalAlignment = VerticalAlignment.Center;
                 row.Cells[i].Format.SpaceBefore = "0.15cm";
@@ -616,6 +616,7 @@ namespace GarageControl.Core.Services
                 {
                     if (element is Table table)
                     {
+                        table.Borders.Width = 0.5;
                         table.Borders.Color = new Color(255, 100, 0);
                         table.LeftPadding = "0.15cm";
                         table.RightPadding = "0.15cm";
