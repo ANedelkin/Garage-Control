@@ -58,7 +58,7 @@ const ToDoPage = () => {
     const fetchJobs = async () => {
         try {
             setLoading(true);
-            const data = workerId 
+            const data = workerId
                 ? await jobApi.getWorkerJobs(workerId)
                 : await jobApi.getMyJobs();
             setJobs(data);
@@ -78,7 +78,7 @@ const ToDoPage = () => {
 
     return (
         <main className={`main ${viewMode !== 'list' ? 'calendar-layout' : ''}`}>
-            <div className="header">
+            <div className="section-header">
                 <h1>{getPageTitle()}</h1>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <Dropdown
