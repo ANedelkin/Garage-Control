@@ -446,7 +446,7 @@ namespace GarageControl.Core.Services.Jobs
             var car = job.Order.Car;
 
             // Check for null values to prevent null reference exceptions
-            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} {car.RegistrationNumber}";
+            string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
 
             var userAccesses = await _authService.GetUserAccess(userId);
 

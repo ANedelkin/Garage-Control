@@ -274,7 +274,7 @@ namespace GarageControl.Core.Services.Helpers
         private static string BuildOrderHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string orderLink = GetLink(d.EntityId, d.EntityName, "/orders/{id}?highlight=true", liveNames);
-            if (orderLink == Bold(d.EntityName)) orderLink = $"order for {Bold(d.EntityName)}";
+            orderLink = $"order for {orderLink}";
 
             switch (d.Action)
             {
@@ -305,7 +305,7 @@ namespace GarageControl.Core.Services.Helpers
         private static string BuildJobHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string orderLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/orders/{id}?highlight=true", liveNames);
-            if (orderLink == Bold(d.SecondaryEntityName)) orderLink = $"order for {Bold(d.SecondaryEntityName)}";
+            orderLink = $"order for {orderLink}";
 
             string jobLink = GetLink(d.EntityId, d.EntityName, "/orders/" + d.SecondaryEntityId + "?highlightJob={id}", liveNames);
 

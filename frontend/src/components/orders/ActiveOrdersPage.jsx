@@ -336,6 +336,17 @@ const ActiveOrdersPage = () => {
                                     )}
                                 </div>
                             </div>
+                            <div className="order-tile-footer">
+                                <button
+                                    className="btn primary"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/jobs/new?orderId=${order.id}`);
+                                    }}
+                                >
+                                    <i className="fa-solid fa-plus"></i> Add Job
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

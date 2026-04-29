@@ -102,9 +102,8 @@
 
 /* Column widths */
 .col-time {
-    width: 160px;
-    min-width: 140px;
-    white-space: nowrap;
+    width: 180px;
+    min-width: 180px;
 }
 
 .col-action {
@@ -128,10 +127,9 @@
     line-height: 1.5;
     font-size: 14px;
     color: var(--text-clr1);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 600px;
+    /* Allow text to wrap nicely instead of cutting off */
+    white-space: normal;
+    word-break: break-word;
 }
 
 /* ── Links ────────────────────────────────────────────────────── */
@@ -310,8 +308,8 @@ b {
     }
 
     .col-time {
-        width: 110px;
-        min-width: 90px;
+        width: 120px;
+        min-width: 120px;
     }
 
     .activity-time-cell {
@@ -348,7 +346,7 @@ b {
     }
 
     .col-time {
-        width: 90px;
-        min-width: 80px;
+        width: 110px;
+        min-width: 110px;
     }
 }
