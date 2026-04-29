@@ -108,13 +108,13 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                     <button className="icon-btn btn mobile-only" onClick={onBack} title="Back to list">
                         <i className="fa-solid fa-arrow-left"></i>
                     </button>
-                    <h3 style={{ margin: 0 }}>Part Details</h3>
+                    <h3>Part Details</h3>
                 </div>
                 <div>
-                    <button className="btn delete" onClick={() => { 
+                    <button className="btn delete" onClick={() => {
                         addPopup(
                             'Delete Part',
-                            <ConfirmationPopup 
+                            <ConfirmationPopup
                                 message={`Are you sure you want to delete part "${part.name}"?`}
                                 confirmText="Delete"
                                 isDanger={true}
