@@ -20,7 +20,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
             
             table.AddColumn("3cm"); // Client
             table.AddColumn("3cm"); // Car
@@ -92,7 +92,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
 
             table.AddColumn("4cm"); // Name
             table.AddColumn("3cm"); // Phone
@@ -132,7 +132,7 @@ namespace GarageControl.Core.Services
                 section.AddParagraph("Workers Details").Format.Font.Size = 14;
                 section.AddParagraph().Format.SpaceAfter = "0.2cm";
                 var table = section.AddTable();
-                table.Borders.Width = 0.5;
+
                 table.AddColumn("4cm");
                 table.AddColumn("4cm");
                 table.AddColumn("5cm");
@@ -172,7 +172,7 @@ namespace GarageControl.Core.Services
                 section.AddParagraph("Workers Schedules").Format.Font.Size = 14;
                 section.AddParagraph().Format.SpaceAfter = "0.2cm";
                 var table = section.AddTable();
-                table.Borders.Width = 0.5;
+
                 table.AddColumn("6cm");
                 table.AddColumn("4cm");
                 table.AddColumn("4cm");
@@ -205,7 +205,7 @@ namespace GarageControl.Core.Services
                 section.AddParagraph("Workers Leaves").Format.Font.Size = 14;
                 section.AddParagraph().Format.SpaceAfter = "0.2cm";
                 var table = section.AddTable();
-                table.Borders.Width = 0.5;
+
                 table.AddColumn("8cm");
                 table.AddColumn("4cm");
                 table.AddColumn("4cm");
@@ -238,7 +238,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
 
             table.AddColumn("3cm"); // Client
             table.AddColumn("3cm"); // Car
@@ -282,7 +282,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
 
             table.AddColumn("6cm"); // Name
             table.AddColumn("3.5cm"); // Part Number
@@ -323,7 +323,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
 
             table.AddColumn("6cm"); // Name
             table.AddColumn("13cm"); // Description
@@ -351,7 +351,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Client Info").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableInfo = section.AddTable();
-            tableInfo.Borders.Width = 0.5;
+
             tableInfo.AddColumn("6cm");
             tableInfo.AddColumn("3.5cm");
             tableInfo.AddColumn("5.5cm");
@@ -377,7 +377,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Cars").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableCars = section.AddTable();
-            tableCars.Borders.Width = 0.5;
+
             tableCars.AddColumn("6cm");
             tableCars.AddColumn("6cm");
             tableCars.AddColumn("6cm");
@@ -411,7 +411,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Schedule").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableSchedule = section.AddTable();
-            tableSchedule.Borders.Width = 0.5;
+
             tableSchedule.AddColumn("6cm");
             tableSchedule.AddColumn("6cm");
             tableSchedule.AddColumn("6cm");
@@ -434,7 +434,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Leaves").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableLeaves = section.AddTable();
-            tableLeaves.Borders.Width = 0.5;
+
             tableLeaves.AddColumn("6cm");
             tableLeaves.AddColumn("6cm");
 
@@ -461,7 +461,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Details").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableInfo = section.AddTable();
-            tableInfo.Borders.Width = 0.5;
+
             tableInfo.AddColumn("3cm");
             tableInfo.AddColumn("3cm");
             tableInfo.AddColumn("2.5cm");
@@ -499,7 +499,7 @@ namespace GarageControl.Core.Services
             section.AddParagraph("Parts Used").Format.Font.Size = 14;
             section.AddParagraph().Format.SpaceAfter = "0.2cm";
             var tableParts = section.AddTable();
-            tableParts.Borders.Width = 0.5;
+
             tableParts.AddColumn("6cm");
             tableParts.AddColumn("2.5cm");
             tableParts.AddColumn("2.5cm");
@@ -539,7 +539,7 @@ namespace GarageControl.Core.Services
             var section = doc.LastSection;
 
             var table = section.AddTable();
-            table.Borders.Width = 0.5;
+
 
             table.AddColumn("4cm"); // Make
             table.AddColumn("4cm"); // Model
@@ -571,32 +571,128 @@ namespace GarageControl.Core.Services
         private Document CreateDocument(string title)
         {
             var doc = new Document();
+            var style = doc.Styles["Normal"];
+            style.Font.Name = "Arial";
+            style.Font.Size = 10;
+
             var section = doc.AddSection();
             section.PageSetup.PageFormat = PageFormat.A4;
             section.PageSetup.Orientation = Orientation.Landscape;
+            section.PageSetup.TopMargin = "1.5cm";
+            section.PageSetup.BottomMargin = "1.5cm";
+            section.PageSetup.LeftMargin = "1.5cm";
+            section.PageSetup.RightMargin = "1.5cm";
 
             var header = section.AddParagraph(title);
             header.Format.Font.Size = 18;
             header.Format.Font.Bold = true;
-            header.Format.SpaceAfter = "0.5cm";
+            header.Format.SpaceAfter = "0.8cm";
             header.Format.Alignment = ParagraphAlignment.Center;
+            header.Format.Font.Color = new Color(0, 0, 0);
 
             return doc;
         }
 
         private void StyleHeader(Row row)
         {
+            row.HeadingFormat = true;
             row.Format.Font.Bold = true;
+            row.Format.Font.Color = new Color(0, 0, 0);
             for (int i = 0; i < row.Cells.Count; i++)
             {
-                row.Cells[i].Shading.Color = new Color(217, 225, 242);
+                row.Cells[i].Shading.Color = new Color(255, 204, 153);
                 row.Cells[i].Format.Alignment = ParagraphAlignment.Center;
                 row.Cells[i].VerticalAlignment = VerticalAlignment.Center;
+                row.Cells[i].Format.SpaceBefore = "0.15cm";
+                row.Cells[i].Format.SpaceAfter = "0.15cm";
             }
         }
 
         private byte[] Render(Document doc)
         {
+            foreach (Section section in doc.Sections)
+            {
+                foreach (DocumentObject element in section.Elements)
+                {
+                    if (element is Table table)
+                    {
+                        table.Borders.Color = new Color(255, 100, 0);
+                        table.LeftPadding = "0.15cm";
+                        table.RightPadding = "0.15cm";
+                        table.TopPadding = "0.15cm";
+                        table.BottomPadding = "0.15cm";
+                        
+                        double totalWidth = 0;
+                        foreach (Column column in table.Columns)
+                        {
+                            totalWidth += column.Width.Centimeter;
+                        }
+
+                        if (totalWidth > 0)
+                        {
+                            double targetWidth = 26.7; 
+                            double ratio = targetWidth / totalWidth;
+                            foreach (Column column in table.Columns)
+                            {
+                                column.Width = MigraDocCore.DocumentObjectModel.Unit.FromCentimeter(column.Width.Centimeter * ratio);
+                            }
+                        }
+
+                        int rowIndex = 0;
+                        foreach (Row row in table.Rows)
+                        {
+                            if (row.HeadingFormat) continue;
+
+                            if (rowIndex % 2 != 0)
+                            {
+                                row.Shading.Color = new Color(255, 245, 235);
+                            }
+                            row.VerticalAlignment = VerticalAlignment.Center;
+                            rowIndex++;
+
+                            // Force text wrapping for long words without spaces
+                            foreach (Cell cell in row.Cells)
+                            {
+                                foreach (DocumentObject cellElement in cell.Elements)
+                                {
+                                    if (cellElement is Paragraph paragraph)
+                                    {
+                                        foreach (DocumentObject paraElement in paragraph.Elements)
+                                        {
+                                            if (paraElement is Text textObj)
+                                            {
+                                                if (!string.IsNullOrEmpty(textObj.Content))
+                                                {
+                                                    var words = textObj.Content.Split(' ');
+                                                    for (int w = 0; w < words.Length; w++)
+                                                    {
+                                                        if (words[w].Length > 10)
+                                                        {
+                                                            var sb = new System.Text.StringBuilder();
+                                                            for (int c = 0; c < words[w].Length; c++)
+                                                            {
+                                                                sb.Append(words[w][c]);
+                                                                // Insert zero-width space every 10 characters to allow breaking long words
+                                                                if ((c + 1) % 10 == 0 && c < words[w].Length - 1)
+                                                                {
+                                                                    sb.Append('\u200B');
+                                                                }
+                                                            }
+                                                            words[w] = sb.ToString();
+                                                        }
+                                                    }
+                                                    textObj.Content = string.Join(" ", words);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             var renderer = new PdfDocumentRenderer(true) { Document = doc };
             renderer.RenderDocument();
             using var ms = new MemoryStream();
