@@ -98,11 +98,10 @@ const Workers = () => {
         if (workerId) {
             navigate('/workers', { replace: true });
         }
-    };    const handleExportClick = (e) => {
-        e.stopPropagation();
+    };    const handleExportClick = (format) => {
         addPopup(
-            'Export Workers to Excel',
-            <WorkerExportPopup onClose={removeLastPopup} />,
+            `Export Workers to ${format === 'excel' ? 'Excel' : 'PDF'}`,
+            <WorkerExportPopup onClose={removeLastPopup} format={format} />,
             false
         );
     };
@@ -126,8 +125,8 @@ const Workers = () => {
 
                 <button className="btn" onClick={(e) => { e.stopPropagation(); navigate("/workers/new"); }}>+ New Worker</button>
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    <ExcelExportButton onClick={handleExportClick} />
-                    <PdfExportButton onClick={handleExportClick} />
+                    <ExcelExportButton onClick={() => handleExportClick('excel')} />
+                    <PdfExportButton onClick={() => handleExportClick('pdf')} />
                 </div>
             </div>
 

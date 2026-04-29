@@ -22,32 +22,65 @@ namespace GarageControl.Core.Services
             var table = section.AddTable();
             table.Borders.Width = 0.5;
             
-            table.AddColumn("2cm"); // ID
-            table.AddColumn("4cm"); // Client
-            table.AddColumn("4cm"); // Car
-            table.AddColumn("3cm"); // Plate
-            table.AddColumn("3cm"); // Date
-            table.AddColumn("3cm"); // Status
+            table.AddColumn("3cm"); // Client
+            table.AddColumn("3cm"); // Car
+            table.AddColumn("2.5cm"); // Reg #
+            table.AddColumn("1.5cm"); // Km
+            table.AddColumn("2.5cm"); // Job Type
+            table.AddColumn("2.5cm"); // Mechanic
+            table.AddColumn("2cm"); // Status
+            table.AddColumn("2.5cm"); // Start Time
+            table.AddColumn("1.8cm"); // Labor Cost
+            table.AddColumn("1.8cm"); // Parts Cost
+            table.AddColumn("1.8cm"); // Total Cost
 
             var header = table.AddRow();
             header.HeadingFormat = true;
-            header.Format.Font.Bold = true;
-            header.Cells[0].AddParagraph("ID");
-            header.Cells[1].AddParagraph("Client");
-            header.Cells[2].AddParagraph("Car");
-            header.Cells[3].AddParagraph("Plate");
-            header.Cells[4].AddParagraph("Date");
-            header.Cells[5].AddParagraph("Status");
+            StyleHeader(header);
+            header.Cells[0].AddParagraph("Client");
+            header.Cells[1].AddParagraph("Car");
+            header.Cells[2].AddParagraph("Reg #");
+            header.Cells[3].AddParagraph("Km");
+            header.Cells[4].AddParagraph("Job Type");
+            header.Cells[5].AddParagraph("Mechanic");
+            header.Cells[6].AddParagraph("Status");
+            header.Cells[7].AddParagraph("Start Time");
+            header.Cells[8].AddParagraph("Labor (€)");
+            header.Cells[9].AddParagraph("Parts (€)");
+            header.Cells[10].AddParagraph("Total (€)");
 
             foreach (var (order, jobs) in ordersWithJobs)
             {
-                var row = table.AddRow();
-                row.Cells[0].AddParagraph(order.Id.Substring(0, 8));
-                row.Cells[1].AddParagraph(order.ClientName);
-                row.Cells[2].AddParagraph(order.CarName);
-                row.Cells[3].AddParagraph(order.CarRegistrationNumber);
-                row.Cells[4].AddParagraph(order.Date.ToString("dd.MM.yyyy"));
-                row.Cells[5].AddParagraph(order.IsDone ? "Done" : "Active");
+                if (jobs.Count == 0)
+                {
+                    var row = table.AddRow();
+                    row.Cells[0].AddParagraph(order.ClientName);
+                    row.Cells[1].AddParagraph(order.CarName);
+                    row.Cells[2].AddParagraph(order.CarRegistrationNumber);
+                    row.Cells[3].AddParagraph(order.Kilometers.ToString());
+                }
+                else
+                {
+                    foreach (var job in jobs)
+                    {
+                        var row = table.AddRow();
+                        row.Cells[0].AddParagraph(order.ClientName);
+                        row.Cells[1].AddParagraph(order.CarName);
+                        row.Cells[2].AddParagraph(order.CarRegistrationNumber);
+                        row.Cells[3].AddParagraph(order.Kilometers.ToString());
+                        row.Cells[4].AddParagraph(job.Type);
+                        row.Cells[5].AddParagraph(job.MechanicName ?? "-");
+                        row.Cells[6].AddParagraph(job.Status switch {
+                            "pending" => "Pending",
+                            "inprogress" => "In Progress",
+                            _ => "Done"
+                        });
+                        row.Cells[7].AddParagraph(job.StartTime == default ? "" : job.StartTime.ToString("dd/MM/yyyy HH:mm"));
+                        row.Cells[8].AddParagraph(job.LaborCost.ToString("F2"));
+                        row.Cells[9].AddParagraph(job.PartsCost.ToString("F2"));
+                        row.Cells[10].AddParagraph((job.LaborCost + job.PartsCost).ToString("F2"));
+                    }
+                }
             }
 
             return Task.FromResult(Render(doc));
@@ -64,15 +97,17 @@ namespace GarageControl.Core.Services
             table.AddColumn("4cm"); // Name
             table.AddColumn("3cm"); // Phone
             table.AddColumn("5cm"); // Email
-            table.AddColumn("7cm"); // Address
+            table.AddColumn("5cm"); // Address
+            table.AddColumn("4cm"); // Registration #
 
             var header = table.AddRow();
             header.HeadingFormat = true;
-            header.Format.Font.Bold = true;
+            StyleHeader(header);
             header.Cells[0].AddParagraph("Name");
             header.Cells[1].AddParagraph("Phone");
             header.Cells[2].AddParagraph("Email");
             header.Cells[3].AddParagraph("Address");
+            header.Cells[4].AddParagraph("Registration #");
 
             foreach (var client in clients)
             {
@@ -81,6 +116,7 @@ namespace GarageControl.Core.Services
                 row.Cells[1].AddParagraph(client.PhoneNumber ?? "-");
                 row.Cells[2].AddParagraph(client.Email ?? "-");
                 row.Cells[3].AddParagraph(client.Address ?? "-");
+                row.Cells[4].AddParagraph(client.RegistrationNumber ?? "-");
             }
 
             return Task.FromResult(Render(doc));
@@ -94,27 +130,101 @@ namespace GarageControl.Core.Services
             if (exportTypes.Contains("details"))
             {
                 section.AddParagraph("Workers Details").Format.Font.Size = 14;
+                section.AddParagraph().Format.SpaceAfter = "0.2cm";
                 var table = section.AddTable();
                 table.Borders.Width = 0.5;
                 table.AddColumn("4cm");
                 table.AddColumn("4cm");
-                table.AddColumn("6cm");
+                table.AddColumn("5cm");
                 table.AddColumn("4cm");
+                table.AddColumn("4cm");
+                table.AddColumn("3cm");
 
                 var header = table.AddRow();
-                header.Format.Font.Bold = true;
+                StyleHeader(header);
                 header.Cells[0].AddParagraph("Name");
                 header.Cells[1].AddParagraph("Username");
                 header.Cells[2].AddParagraph("Email");
-                header.Cells[3].AddParagraph("Hired On");
+                header.Cells[3].AddParagraph("Access");
+                header.Cells[4].AddParagraph("Job Types");
+                header.Cells[5].AddParagraph("Hired On");
 
                 foreach (var w in workers)
                 {
+                    var selected = w.Accesses.Where(a => a.IsSelected).ToList();
+                    var accessLabel = selected.Count == 0 ? "-"
+                                    : selected.Count == w.Accesses.Count ? "Full"
+                                    : string.Join(", ", selected.Select(a => a.Name));
+
                     var row = table.AddRow();
                     row.Cells[0].AddParagraph(w.Name);
                     row.Cells[1].AddParagraph(w.Username);
                     row.Cells[2].AddParagraph(w.Email ?? "-");
-                    row.Cells[3].AddParagraph(w.HiredOn.ToString("dd.MM.yyyy"));
+                    row.Cells[3].AddParagraph(accessLabel);
+                    row.Cells[4].AddParagraph(string.Join(", ", w.JobTypeNames));
+                    row.Cells[5].AddParagraph(w.HiredOn.ToString("dd.MM.yyyy"));
+                }
+                section.AddParagraph().Format.SpaceAfter = "1cm";
+            }
+
+            if (exportTypes.Contains("schedules"))
+            {
+                section.AddParagraph("Workers Schedules").Format.Font.Size = 14;
+                section.AddParagraph().Format.SpaceAfter = "0.2cm";
+                var table = section.AddTable();
+                table.Borders.Width = 0.5;
+                table.AddColumn("6cm");
+                table.AddColumn("4cm");
+                table.AddColumn("4cm");
+                table.AddColumn("4cm");
+
+                var header = table.AddRow();
+                StyleHeader(header);
+                header.Cells[0].AddParagraph("Worker");
+                header.Cells[1].AddParagraph("Day");
+                header.Cells[2].AddParagraph("Start Time");
+                header.Cells[3].AddParagraph("End Time");
+
+                var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+                foreach (var worker in workers)
+                {
+                    foreach (var s in worker.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime))
+                    {
+                        var row = table.AddRow();
+                        row.Cells[0].AddParagraph(worker.Name);
+                        row.Cells[1].AddParagraph(days[s.DayOfWeek]);
+                        row.Cells[2].AddParagraph(s.StartTime);
+                        row.Cells[3].AddParagraph(s.EndTime);
+                    }
+                }
+                section.AddParagraph().Format.SpaceAfter = "1cm";
+            }
+
+            if (exportTypes.Contains("leaves"))
+            {
+                section.AddParagraph("Workers Leaves").Format.Font.Size = 14;
+                section.AddParagraph().Format.SpaceAfter = "0.2cm";
+                var table = section.AddTable();
+                table.Borders.Width = 0.5;
+                table.AddColumn("8cm");
+                table.AddColumn("4cm");
+                table.AddColumn("4cm");
+
+                var header = table.AddRow();
+                StyleHeader(header);
+                header.Cells[0].AddParagraph("Worker");
+                header.Cells[1].AddParagraph("Start Date");
+                header.Cells[2].AddParagraph("End Date");
+
+                foreach (var worker in workers)
+                {
+                    foreach (var l in worker.Leaves.OrderBy(l => l.StartDate))
+                    {
+                        var row = table.AddRow();
+                        row.Cells[0].AddParagraph(worker.Name);
+                        row.Cells[1].AddParagraph(l.StartDate.ToString("dd.MM.yyyy"));
+                        row.Cells[2].AddParagraph(l.EndDate.ToString("dd.MM.yyyy"));
+                    }
                 }
                 section.AddParagraph().Format.SpaceAfter = "1cm";
             }
@@ -132,29 +242,35 @@ namespace GarageControl.Core.Services
 
             table.AddColumn("3cm"); // Client
             table.AddColumn("3cm"); // Car
+            table.AddColumn("2.5cm"); // Plate
             table.AddColumn("3cm"); // Type
             table.AddColumn("2.5cm"); // Status
             table.AddColumn("3cm"); // Start
-            table.AddColumn("4.5cm"); // Description
+            table.AddColumn("3cm"); // End
+            table.AddColumn("4cm"); // Description
 
             var header = table.AddRow();
-            header.Format.Font.Bold = true;
+            StyleHeader(header);
             header.Cells[0].AddParagraph("Client");
             header.Cells[1].AddParagraph("Car");
-            header.Cells[2].AddParagraph("Type");
-            header.Cells[3].AddParagraph("Status");
-            header.Cells[4].AddParagraph("Start");
-            header.Cells[5].AddParagraph("Description");
+            header.Cells[2].AddParagraph("Plate");
+            header.Cells[3].AddParagraph("Job Type");
+            header.Cells[4].AddParagraph("Status");
+            header.Cells[5].AddParagraph("Start");
+            header.Cells[6].AddParagraph("End");
+            header.Cells[7].AddParagraph("Description");
 
             foreach (var j in jobs)
             {
                 var row = table.AddRow();
                 row.Cells[0].AddParagraph(j.ClientName);
                 row.Cells[1].AddParagraph(j.CarName);
-                row.Cells[2].AddParagraph(j.TypeName);
-                row.Cells[3].AddParagraph(j.Status);
-                row.Cells[4].AddParagraph(j.StartTime.ToString("dd.MM HH:mm"));
-                row.Cells[5].AddParagraph(j.Description);
+                row.Cells[2].AddParagraph(j.CarRegistrationNumber);
+                row.Cells[3].AddParagraph(j.TypeName);
+                row.Cells[4].AddParagraph(j.Status);
+                row.Cells[5].AddParagraph(j.StartTime.ToString("dd.MM HH:mm"));
+                row.Cells[6].AddParagraph(j.EndTime.ToString("dd.MM HH:mm"));
+                row.Cells[7].AddParagraph(j.Description);
             }
 
             return Task.FromResult(Render(doc));
@@ -168,25 +284,34 @@ namespace GarageControl.Core.Services
             var table = section.AddTable();
             table.Borders.Width = 0.5;
 
-            table.AddColumn("8cm"); // Name
-            table.AddColumn("3cm"); // Quantity
-            table.AddColumn("3cm"); // Price
-            table.AddColumn("5cm"); // Category
+            table.AddColumn("6cm"); // Name
+            table.AddColumn("3.5cm"); // Part Number
+            table.AddColumn("2.5cm"); // Current Qty
+            table.AddColumn("2.5cm"); // Avail. Balance
+            table.AddColumn("2.5cm"); // Pts to Client
+            table.AddColumn("2.5cm"); // Min Qty
+            table.AddColumn("3cm"); // Unit Price
 
             var header = table.AddRow();
-            header.Format.Font.Bold = true;
+            StyleHeader(header);
             header.Cells[0].AddParagraph("Name");
-            header.Cells[1].AddParagraph("Quantity");
-            header.Cells[2].AddParagraph("Price");
-            header.Cells[3].AddParagraph("Category");
+            header.Cells[1].AddParagraph("Part Number");
+            header.Cells[2].AddParagraph("Current Qty");
+            header.Cells[3].AddParagraph("Avail. Balance");
+            header.Cells[4].AddParagraph("Pts to Client");
+            header.Cells[5].AddParagraph("Min Qty");
+            header.Cells[6].AddParagraph("Unit Price (€)");
 
             foreach (var p in parts)
             {
                 var row = table.AddRow();
                 row.Cells[0].AddParagraph(p.Name);
-                row.Cells[1].AddParagraph(p.Quantity.ToString());
-                row.Cells[2].AddParagraph(p.Price.ToString("C"));
-                row.Cells[3].AddParagraph(p.PartNumber ?? "-");
+                row.Cells[1].AddParagraph(p.PartNumber ?? "-");
+                row.Cells[2].AddParagraph(p.Quantity.ToString());
+                row.Cells[3].AddParagraph(p.AvailabilityBalance.ToString());
+                row.Cells[4].AddParagraph(p.PartsToSend.ToString());
+                row.Cells[5].AddParagraph(p.MinimumQuantity.ToString());
+                row.Cells[6].AddParagraph(p.Price.ToString("F2"));
             }
 
             return Task.FromResult(Render(doc));
@@ -204,7 +329,7 @@ namespace GarageControl.Core.Services
             table.AddColumn("13cm"); // Description
 
             var header = table.AddRow();
-            header.Format.Font.Bold = true;
+            StyleHeader(header);
             header.Cells[0].AddParagraph("Name");
             header.Cells[1].AddParagraph("Description");
 
@@ -213,6 +338,196 @@ namespace GarageControl.Core.Services
                 var row = table.AddRow();
                 row.Cells[0].AddParagraph(jt.Name);
                 row.Cells[1].AddParagraph(jt.Description ?? "-");
+            }
+
+            return Task.FromResult(Render(doc));
+        }
+
+        public Task<byte[]> ExportClientDetailsAsync(ClientVM client)
+        {
+            var doc = CreateDocument($"Client: {client.Name}");
+            var section = doc.LastSection;
+
+            section.AddParagraph("Client Info").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableInfo = section.AddTable();
+            tableInfo.Borders.Width = 0.5;
+            tableInfo.AddColumn("6cm");
+            tableInfo.AddColumn("3.5cm");
+            tableInfo.AddColumn("5.5cm");
+            tableInfo.AddColumn("6cm");
+            tableInfo.AddColumn("4cm");
+
+            var headerInfo = tableInfo.AddRow();
+            StyleHeader(headerInfo);
+            headerInfo.Cells[0].AddParagraph("Name");
+            headerInfo.Cells[1].AddParagraph("Phone");
+            headerInfo.Cells[2].AddParagraph("Email");
+            headerInfo.Cells[3].AddParagraph("Address");
+            headerInfo.Cells[4].AddParagraph("Registration #");
+
+            var rowInfo = tableInfo.AddRow();
+            rowInfo.Cells[0].AddParagraph(client.Name);
+            rowInfo.Cells[1].AddParagraph(client.PhoneNumber ?? "-");
+            rowInfo.Cells[2].AddParagraph(client.Email ?? "-");
+            rowInfo.Cells[3].AddParagraph(client.Address ?? "-");
+            rowInfo.Cells[4].AddParagraph(client.RegistrationNumber ?? "-");
+
+            section.AddParagraph().Format.SpaceAfter = "1cm";
+            section.AddParagraph("Cars").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableCars = section.AddTable();
+            tableCars.Borders.Width = 0.5;
+            tableCars.AddColumn("6cm");
+            tableCars.AddColumn("6cm");
+            tableCars.AddColumn("6cm");
+            tableCars.AddColumn("4cm");
+
+            var headerCars = tableCars.AddRow();
+            StyleHeader(headerCars);
+            headerCars.Cells[0].AddParagraph("Make");
+            headerCars.Cells[1].AddParagraph("Model");
+            headerCars.Cells[2].AddParagraph("Registration #");
+            headerCars.Cells[3].AddParagraph("Kilometers");
+
+            foreach (var c in client.Cars ?? new())
+            {
+                var row = tableCars.AddRow();
+                row.Cells[0].AddParagraph(c.MakeName ?? "-");
+                row.Cells[1].AddParagraph(c.ModelName ?? "-");
+                row.Cells[2].AddParagraph(c.RegistrationNumber ?? "-");
+                row.Cells[3].AddParagraph(c.Kilometers.ToString());
+            }
+
+            return Task.FromResult(Render(doc));
+        }
+
+        public Task<byte[]> ExportWorkerScheduleAsync(WorkerVM worker)
+        {
+            var doc = CreateDocument($"Schedule: {worker.Name}");
+            var section = doc.LastSection;
+            string[] dayNames = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+            section.AddParagraph("Schedule").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableSchedule = section.AddTable();
+            tableSchedule.Borders.Width = 0.5;
+            tableSchedule.AddColumn("6cm");
+            tableSchedule.AddColumn("6cm");
+            tableSchedule.AddColumn("6cm");
+
+            var headerSchedule = tableSchedule.AddRow();
+            StyleHeader(headerSchedule);
+            headerSchedule.Cells[0].AddParagraph("Day");
+            headerSchedule.Cells[1].AddParagraph("Start Time");
+            headerSchedule.Cells[2].AddParagraph("End Time");
+
+            foreach (var s in worker.Schedules)
+            {
+                var row = tableSchedule.AddRow();
+                row.Cells[0].AddParagraph(s.DayOfWeek >= 0 && s.DayOfWeek < dayNames.Length ? dayNames[s.DayOfWeek] : s.DayOfWeek.ToString());
+                row.Cells[1].AddParagraph(s.StartTime);
+                row.Cells[2].AddParagraph(s.EndTime);
+            }
+
+            section.AddParagraph().Format.SpaceAfter = "1cm";
+            section.AddParagraph("Leaves").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableLeaves = section.AddTable();
+            tableLeaves.Borders.Width = 0.5;
+            tableLeaves.AddColumn("6cm");
+            tableLeaves.AddColumn("6cm");
+
+            var headerLeaves = tableLeaves.AddRow();
+            StyleHeader(headerLeaves);
+            headerLeaves.Cells[0].AddParagraph("Start Date");
+            headerLeaves.Cells[1].AddParagraph("End Date");
+
+            foreach (var l in worker.Leaves)
+            {
+                var row = tableLeaves.AddRow();
+                row.Cells[0].AddParagraph(l.StartDate.ToString("dd.MM.yyyy"));
+                row.Cells[1].AddParagraph(l.EndDate.ToString("dd.MM.yyyy"));
+            }
+
+            return Task.FromResult(Render(doc));
+        }
+
+        public Task<byte[]> ExportJobAsync(JobDetailsVM job)
+        {
+            var doc = CreateDocument($"Job Details: {job.JobTypeName}");
+            var section = doc.LastSection;
+
+            section.AddParagraph("Details").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableInfo = section.AddTable();
+            tableInfo.Borders.Width = 0.5;
+            tableInfo.AddColumn("3cm");
+            tableInfo.AddColumn("3cm");
+            tableInfo.AddColumn("2.5cm");
+            tableInfo.AddColumn("3cm");
+            tableInfo.AddColumn("3cm");
+            tableInfo.AddColumn("2cm");
+            tableInfo.AddColumn("2.5cm");
+            tableInfo.AddColumn("2.5cm");
+            tableInfo.AddColumn("4cm");
+
+            var headerInfo = tableInfo.AddRow();
+            StyleHeader(headerInfo);
+            headerInfo.Cells[0].AddParagraph("Client");
+            headerInfo.Cells[1].AddParagraph("Car");
+            headerInfo.Cells[2].AddParagraph("Reg #");
+            headerInfo.Cells[3].AddParagraph("Job Type");
+            headerInfo.Cells[4].AddParagraph("Mechanic");
+            headerInfo.Cells[5].AddParagraph("Labor (€)");
+            headerInfo.Cells[6].AddParagraph("Start Time");
+            headerInfo.Cells[7].AddParagraph("End Time");
+            headerInfo.Cells[8].AddParagraph("Description");
+
+            var rowInfo = tableInfo.AddRow();
+            rowInfo.Cells[0].AddParagraph(job.ClientName);
+            rowInfo.Cells[1].AddParagraph(job.CarName);
+            rowInfo.Cells[2].AddParagraph(job.CarRegistrationNumber);
+            rowInfo.Cells[3].AddParagraph(job.JobTypeName ?? "");
+            rowInfo.Cells[4].AddParagraph(job.MechanicName ?? "");
+            rowInfo.Cells[5].AddParagraph(job.LaborCost.ToString("F2"));
+            rowInfo.Cells[6].AddParagraph(job.StartTime == default ? "" : job.StartTime.ToString("dd/MM/yyyy HH:mm"));
+            rowInfo.Cells[7].AddParagraph(job.EndTime == default ? "" : job.EndTime.ToString("dd/MM/yyyy HH:mm"));
+            rowInfo.Cells[8].AddParagraph(job.Description);
+
+            section.AddParagraph().Format.SpaceAfter = "1cm";
+            section.AddParagraph("Parts Used").Format.Font.Size = 14;
+            section.AddParagraph().Format.SpaceAfter = "0.2cm";
+            var tableParts = section.AddTable();
+            tableParts.Borders.Width = 0.5;
+            tableParts.AddColumn("6cm");
+            tableParts.AddColumn("2.5cm");
+            tableParts.AddColumn("2.5cm");
+            tableParts.AddColumn("2.5cm");
+            tableParts.AddColumn("2.5cm");
+            tableParts.AddColumn("2.5cm");
+            tableParts.AddColumn("2.5cm");
+
+            var headerParts = tableParts.AddRow();
+            StyleHeader(headerParts);
+            headerParts.Cells[0].AddParagraph("Part Name");
+            headerParts.Cells[1].AddParagraph("Planned Qty");
+            headerParts.Cells[2].AddParagraph("Sent Qty");
+            headerParts.Cells[3].AddParagraph("Used Qty");
+            headerParts.Cells[4].AddParagraph("Req. Qty");
+            headerParts.Cells[5].AddParagraph("Price (€)");
+            headerParts.Cells[6].AddParagraph("Total (€)");
+
+            foreach (var p in job.Parts)
+            {
+                var row = tableParts.AddRow();
+                row.Cells[0].AddParagraph(p.PartName);
+                row.Cells[1].AddParagraph(p.PlannedQuantity.ToString());
+                row.Cells[2].AddParagraph(p.SentQuantity.ToString());
+                row.Cells[3].AddParagraph(p.UsedQuantity.ToString());
+                row.Cells[4].AddParagraph(p.RequestedQuantity.ToString());
+                row.Cells[5].AddParagraph(p.Price.ToString("F2"));
+                row.Cells[6].AddParagraph(((decimal)p.UsedQuantity * p.Price).ToString("F2"));
             }
 
             return Task.FromResult(Render(doc));
@@ -228,16 +543,16 @@ namespace GarageControl.Core.Services
 
             table.AddColumn("4cm"); // Make
             table.AddColumn("4cm"); // Model
-            table.AddColumn("3cm"); // Plate
-            table.AddColumn("5cm"); // VIN
-            table.AddColumn("3cm"); // Owner
+            table.AddColumn("4cm"); // Registration #
+            table.AddColumn("3cm"); // Kilometers
+            table.AddColumn("6cm"); // Owner
 
             var header = table.AddRow();
-            header.Format.Font.Bold = true;
+            StyleHeader(header);
             header.Cells[0].AddParagraph("Make");
             header.Cells[1].AddParagraph("Model");
-            header.Cells[2].AddParagraph("Plate");
-            header.Cells[3].AddParagraph("VIN");
+            header.Cells[2].AddParagraph("Registration #");
+            header.Cells[3].AddParagraph("Kilometers");
             header.Cells[4].AddParagraph("Owner");
 
             foreach (var c in cars)
@@ -246,7 +561,7 @@ namespace GarageControl.Core.Services
                 row.Cells[0].AddParagraph(c.MakeName ?? "-");
                 row.Cells[1].AddParagraph(c.ModelName ?? "-");
                 row.Cells[2].AddParagraph(c.RegistrationNumber);
-                row.Cells[3].AddParagraph(c.VIN ?? "-");
+                row.Cells[3].AddParagraph(c.Kilometers.ToString());
                 row.Cells[4].AddParagraph(c.OwnerName ?? "-");
             }
 
@@ -258,7 +573,7 @@ namespace GarageControl.Core.Services
             var doc = new Document();
             var section = doc.AddSection();
             section.PageSetup.PageFormat = PageFormat.A4;
-            section.PageSetup.Orientation = Orientation.Portrait;
+            section.PageSetup.Orientation = Orientation.Landscape;
 
             var header = section.AddParagraph(title);
             header.Format.Font.Size = 18;
@@ -267,6 +582,17 @@ namespace GarageControl.Core.Services
             header.Format.Alignment = ParagraphAlignment.Center;
 
             return doc;
+        }
+
+        private void StyleHeader(Row row)
+        {
+            row.Format.Font.Bold = true;
+            for (int i = 0; i < row.Cells.Count; i++)
+            {
+                row.Cells[i].Shading.Color = new Color(217, 225, 242);
+                row.Cells[i].Format.Alignment = ParagraphAlignment.Center;
+                row.Cells[i].VerticalAlignment = VerticalAlignment.Center;
+            }
         }
 
         private byte[] Render(Document doc)

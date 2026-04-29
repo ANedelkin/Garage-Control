@@ -4,6 +4,7 @@ import { jobApi } from '../../services/jobApi';
 import usePageTitle from '../../hooks/usePageTitle';
 import '../../assets/css/orders.css';
 import ExcelExportButton from '../common/ExcelExportButton';
+import PdfExportButton from '../common/PdfExportButton';
 
 const DoneJobPage = () => {
     const { jobId } = useParams();
@@ -60,10 +61,11 @@ const DoneJobPage = () => {
                     <p>{job.clientName} • {job.carName} ({job.carRegistrationNumber})</p>
                 </div>
                 <div className="order-actions">
-                    <ExcelExportButton endpoint={`export/job/${jobId}`} />
                     <button className="btn secondary" onClick={() => navigate(-1)}>
                         Back
                     </button>
+                    <ExcelExportButton endpoint={`export/job/${jobId}`} />
+                    <PdfExportButton endpoint={`export/job/${jobId}`} />
                 </div>
             </div>
 

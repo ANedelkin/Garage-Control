@@ -14,6 +14,9 @@ namespace GarageControl.Core.Contracts
         Task<byte[]> ExportWorkersAsync(IEnumerable<WorkerVM> workers, List<string> exportTypes);
         Task<byte[]> ExportToDoAsync(IEnumerable<JobToDoVM> jobs, string workerName);
         Task<byte[]> ExportPartsAsync(List<PartVM> parts);
+        Task<byte[]> ExportClientDetailsAsync(ClientVM client);
+        Task<byte[]> ExportWorkerScheduleAsync(WorkerVM worker);
+        Task<byte[]> ExportJobAsync(JobDetailsVM job);
         Task<byte[]> ExportJobTypesAsync(IEnumerable<JobTypeVM> jobTypes);
         Task<byte[]> ExportCarsAsync(IEnumerable<VehicleVM> cars);
     }

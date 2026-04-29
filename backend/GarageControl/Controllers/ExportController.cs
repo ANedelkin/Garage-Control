@@ -99,34 +99,43 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet("client/{id}")]
-        public async Task<IActionResult> ExportClientDetails(string id)
+        public async Task<IActionResult> ExportClientDetails(string id, [FromQuery] string format = "excel")
         {
             var client = await _clientService.Details(id);
             if (client == null) return NotFound();
 
-            var bytes = await _exportService.ExportClientDetailsAsync(client);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Client_{client.Name}.xlsx");
+            var bytes = format.ToLower() == "pdf"
+                ? await _pdfService.ExportClientDetailsAsync(client)
+                : await _exportService.ExportClientDetailsAsync(client);
+
+            return ExportFile(bytes, $"Client_{client.Name}", format);
         }
 
         [HttpGet("worker/{id}/schedule")]
-        public async Task<IActionResult> ExportWorkerSchedule(string id)
+        public async Task<IActionResult> ExportWorkerSchedule(string id, [FromQuery] string format = "excel")
         {
             var worker = await _workerService.Details(id);
             if (worker == null) return NotFound();
 
-            var bytes = await _exportService.ExportWorkerScheduleAsync(worker);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Schedule_{worker.Name}.xlsx");
+            var bytes = format.ToLower() == "pdf"
+                ? await _pdfService.ExportWorkerScheduleAsync(worker)
+                : await _exportService.ExportWorkerScheduleAsync(worker);
+
+            return ExportFile(bytes, $"Schedule_{worker.Name}", format);
         }
 
         [HttpGet("job/{id}")]
-        public async Task<IActionResult> ExportJob(string id)
+        public async Task<IActionResult> ExportJob(string id, [FromQuery] string format = "excel")
         {
             var job = await _jobService.GetCompletedJobByIdAsync(id, GetWorkshopId());
             if (job == null) job = await _jobService.GetJobByIdAsync(id, GetWorkshopId());
             if (job == null) return NotFound();
 
-            var bytes = await _exportService.ExportJobAsync(job);
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Job_{job.JobTypeName}.xlsx");
+            var bytes = format.ToLower() == "pdf"
+                ? await _pdfService.ExportJobAsync(job)
+                : await _exportService.ExportJobAsync(job);
+
+            return ExportFile(bytes, $"Job_{job.JobTypeName}", format);
         }
 
         [HttpGet("job-types")]

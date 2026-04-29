@@ -111,10 +111,10 @@ namespace GarageControl.Core.Services
             var ws = wb.Worksheets.Add("Clients");
 
             WriteTable(ws,
-                new[] { "Name", "Phone", "Email", "Address" },
+                new[] { "Name", "Phone", "Email", "Address", "Registration #" },
                 clients.Select(c => (IReadOnlyList<object?>)new object?[]
                 {
-                    c.Name, c.PhoneNumber, c.Email ?? "", c.Address ?? ""
+                    c.Name, c.PhoneNumber, c.Email ?? "", c.Address ?? "", c.RegistrationNumber ?? ""
                 }));
 
             return Task.FromResult(ToBytes(wb));
@@ -210,10 +210,10 @@ namespace GarageControl.Core.Services
             var ws = wb.Worksheets.Add("Parts Stock");
 
             WriteTable(ws,
-                new[] { "Name", "Part Number", "Current Qty", "Min Qty", "Unit Price (€)" },
+                new[] { "Name", "Part Number", "Current Qty", "Availability Balance", "Parts to Client", "Min Qty", "Unit Price (€)" },
                 parts.Select(p => (IReadOnlyList<object?>)new object?[]
                 {
-                    p.Name, p.PartNumber, p.Quantity, p.MinimumQuantity, p.Price
+                    p.Name, p.PartNumber, p.Quantity, p.AvailabilityBalance, p.PartsToSend, p.MinimumQuantity, p.Price
                 }));
 
             return Task.FromResult(ToBytes(wb));
@@ -225,12 +225,12 @@ namespace GarageControl.Core.Services
 
             var wsInfo = wb.Worksheets.Add("Client Info");
             WriteTable(wsInfo,
-                new[] { "Name", "Phone", "Email", "Address" },
+                new[] { "Name", "Phone", "Email", "Address", "Registration #" },
                 new[]
                 {
                     (IReadOnlyList<object?>)new object?[]
                     {
-                        client.Name, client.PhoneNumber, client.Email ?? "", client.Address ?? ""
+                        client.Name, client.PhoneNumber, client.Email ?? "", client.Address ?? "", client.RegistrationNumber ?? ""
                     }
                 });
 
@@ -293,11 +293,14 @@ namespace GarageControl.Core.Services
 
             var wsParts = wb.Worksheets.Add("Parts Used");
             WriteTable(wsParts,
-                new[] { "Part Name", "Used Qty", "Unit Price (€)", "Total (€)" },
+                new[] { "Part Name", "Planned Qty", "Sent Qty", "Used Qty", "Requested Qty", "Unit Price (€)", "Total (€)" },
                 job.Parts.Select(p => (IReadOnlyList<object?>)new object?[]
                 {
                     p.PartName,
+                    p.PlannedQuantity,
+                    p.SentQuantity,
                     p.UsedQuantity,
+                    p.RequestedQuantity,
                     p.Price,
                     (decimal)p.UsedQuantity * p.Price
                 }));
