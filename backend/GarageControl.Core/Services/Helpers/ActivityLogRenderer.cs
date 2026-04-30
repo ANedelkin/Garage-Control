@@ -45,7 +45,8 @@ namespace GarageControl.Core.Services.Helpers
 
         // ── Helpers ────────────────────────────────────────────────────────────
 
-        private static string Bold(string? value) => $"<b>{value}</b>";
+        private static string Bold(string? value) => $"**{value}**";
+        private static string Link(string text, string url) => $"[{text}]({url})";
 
         private static string Humanize(string? value)
         {
@@ -75,22 +76,22 @@ namespace GarageControl.Core.Services.Helpers
 
             string url = urlTemplate.Replace("{id}", id).Replace("{name}", displayName);
             
-            return $"<a href='{url}' class='log-link target-link'>{prefix}<b>{displayName}</b></a>";
+            return Link($"{prefix}**{displayName}**", url);
         }
 
         private static string BuildActorHtml(ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             if (string.IsNullOrEmpty(d.ActorId)) 
-                return $"<span class='actor-name'>{d.ActorName ?? "[Unknown]"}</span>";
+                return Bold(d.ActorName ?? "[Unknown]");
             
 
             bool exists = liveNames != null && liveNames.ContainsKey(d.ActorId);
-            if (!exists) return $"<span class='actor-name'>{d.ActorName ?? "Unknown"}</span>";
+            if (!exists) return Bold(d.ActorName ?? "Unknown");
 
             string displayName = liveNames![d.ActorId] ?? d.ActorName ?? "Unknown";
             string url = $"/workers/{d.ActorId}?highlight=true";
             
-            return $"<a href='{url}' class='log-link actor-link'>{displayName}</a>";
+            return Link(displayName, url);
         }
 
         private static ActivityLogRendererResult BuildUpdatedHtml(

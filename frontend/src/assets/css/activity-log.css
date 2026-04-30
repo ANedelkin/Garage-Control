@@ -122,14 +122,21 @@
     transition: background 0.12s;
 }
 
-/* Sentence inside table cell — truncate with ellipsis */
+/* Sentence inside table cell */
 .activity-sentence {
     line-height: 1.5;
     font-size: 14px;
     color: var(--text-clr1);
-    /* Allow text to wrap nicely instead of cutting off */
     white-space: normal;
     word-break: break-word;
+}
+
+.activity-sentence-truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ── Links ────────────────────────────────────────────────────── */

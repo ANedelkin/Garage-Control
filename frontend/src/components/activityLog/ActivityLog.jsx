@@ -5,6 +5,7 @@ import '../../assets/css/common/tile.css';
 import '../../assets/css/common/table.css';
 import '../../assets/css/activity-log.css';
 import usePageTitle from '../../hooks/usePageTitle.js';
+import { parseMarkup, stripMarkup, renderAst } from '../../Utilities/markupHelper';
 
 const ActivityLog = () => {
     usePageTitle('Activity Log');
@@ -46,46 +47,10 @@ const ActivityLog = () => {
         });
     };
 
-    const stripHtml = (html) => {
-        const div = document.createElement('div');
-        div.innerHTML = html;
-        return div.textContent || div.innerText || '';
-    };
 
-    const truncateHtml = (html, maxLength) => {
-        const div = document.createElement('div');
-        div.innerHTML = html;
-        let currentLength = 0;
-        let truncated = false;
-
-        const traverse = (node) => {
-            if (truncated) return;
-            if (node.nodeType === Node.TEXT_NODE) {
-                if (currentLength + node.textContent.length > maxLength) {
-                    node.textContent = node.textContent.slice(0, maxLength - currentLength) + '...';
-                    truncated = true;
-                } else {
-                    currentLength += node.textContent.length;
-                }
-            } else {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    traverse(node.childNodes[i]);
-                    if (truncated) {
-                        while (node.childNodes.length > i + 1) {
-                            node.removeChild(node.lastChild);
-                        }
-                        break;
-                    }
-                }
-            }
-        };
-
-        traverse(div);
-        return div.innerHTML;
-    };
 
     const filteredLogs = logs.filter(log => {
-        const plainText = stripHtml(log.messageHtml || '').toLowerCase();
+        const plainText = stripMarkup(log.messageHtml || '').toLowerCase();
         const searchLower = search.toLowerCase();
         const matchesSearch = !search || plainText.includes(searchLower);
 
@@ -222,10 +187,9 @@ const ActivityLog = () => {
                                             {formatTimestampShort(log.timestamp)}
                                         </td>
                                         <td className="col-action">
-                                            <div
-                                                className="activity-sentence"
-                                                dangerouslySetInnerHTML={{ __html: truncateHtml(log.messageHtml, 125) }}
-                                            />
+                                            <div className="activity-sentence activity-sentence-truncate">
+                                                {renderAst(parseMarkup(log.messageHtml), `msg-${log.id}`)}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -262,10 +226,9 @@ const ActivityLog = () => {
                                 <i className="fa-solid fa-xmark"></i>
                             </button>
                         </div>
-                        <div
-                            className="activity-popup-summary"
-                            dangerouslySetInnerHTML={{ __html: selectedLog.messageHtml }}
-                        />
+                        <div className="activity-popup-summary">
+                            {renderAst(parseMarkup(selectedLog.messageHtml), 'popup-msg')}
+                        </div>
                         <div className="activity-popup-changes">
                             <div className="activity-popup-changes-label">
                                 <i className="fa-solid fa-list-check"></i>
@@ -277,7 +240,7 @@ const ActivityLog = () => {
                                         <span className="activity-change-bullet">
                                             <i className="fa-solid fa-circle-dot"></i>
                                         </span>
-                                        <span dangerouslySetInnerHTML={{ __html: line }}></span>
+                                        <span>{renderAst(parseMarkup(line), `change-${i}`)}</span>
                                     </div>
                                 ))}
                             </div>
