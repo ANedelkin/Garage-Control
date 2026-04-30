@@ -16,10 +16,10 @@ namespace GarageControl.Core.Services
             _activityLogService = activityLogService;
         }
 
-        public async Task LogOrderCreatedAsync(string userId, string workshopId, string orderId, string carInfo)
+        public async Task LogOrderCreatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange>? changes = null)
         {
             await _activityLogService.LogActionAsync(userId, workshopId, "Order",
-                new ActivityLogData("created", orderId, carInfo));
+                new ActivityLogData("created", orderId, carInfo, Changes: changes));
         }
 
         public async Task LogOrderUpdatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)

@@ -128,11 +128,24 @@ namespace GarageControl.Core.Services
                 var oldWorkerNames = jobType.Workers.Select(w => w.Name).ToList();
                 var newWorkerNames = model.Mechanics ?? new List<string>();
 
-                var addedWorkers = newWorkerNames.Except(oldWorkerNames).ToList();
-                var removedWorkers = oldWorkerNames.Except(newWorkerNames).ToList();
+                var addedWorkersNames = newWorkerNames.Except(oldWorkerNames).ToList();
+                var removedWorkersNames = oldWorkerNames.Except(newWorkerNames).ToList();
 
-                foreach (var name in addedWorkers) changes.Add(new ActivityPropertyChange($"added worker <b>{name}</b>", "", null));
-                foreach (var name in removedWorkers) changes.Add(new ActivityPropertyChange($"removed worker <b>{name}</b>", "", null));
+                var allWorkshopWorkers = await _repo.GetAllAsNoTracking<Worker>()
+                    .Where(w => w.WorkshopId == workshopId)
+                    .Select(w => new { w.Id, w.Name })
+                    .ToListAsync();
+
+                foreach (var name in addedWorkersNames)
+                {
+                    var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
+                    changes.Add(new ActivityPropertyChange("added worker", "", w != null ? $"{w.Name}|{w.Id}" : name));
+                }
+                foreach (var name in removedWorkersNames)
+                {
+                    var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
+                    changes.Add(new ActivityPropertyChange("removed worker", "", w != null ? $"{w.Name}|{w.Id}" : name));
+                }
 
                 jobType.Workers.Clear();
                 var workers = await _repo.GetAll<Worker>()

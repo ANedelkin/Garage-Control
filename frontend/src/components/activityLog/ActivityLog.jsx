@@ -115,10 +115,8 @@ const ActivityLog = () => {
         }
     }, []);
 
-    const formatLogLines = (messageHtml) => {
-        if (!messageHtml) return [];
-        const plain = stripHtml(messageHtml);
-        return plain.split(',').map(s => s.trim()).filter(Boolean);
+    const formatLogLines = (log) => {
+        return log.details || [];
     };
 
     const clearFilters = () => {
@@ -240,7 +238,14 @@ const ActivityLog = () => {
             {/* Log Detail Popup */}
             {selectedLog && (
                 <div className="popup-overlay top activity-log-overlay" onClick={closePopup}>
-                    <div className="activity-detail-popup tile popup">
+                    <div className="activity-detail-popup tile popup" onClick={(e) => {
+                        const link = e.target.closest('a');
+                        if (link?.getAttribute('href')?.startsWith('/')) {
+                            e.preventDefault();
+                            setSelectedLog(null);
+                            navigate(link.getAttribute('href'));
+                        }
+                    }}>
                         <div className="activity-popup-header">
                             <div>
                                 <h3 className="activity-popup-title">Activity Detail</h3>
@@ -260,14 +265,6 @@ const ActivityLog = () => {
                         <div
                             className="activity-popup-summary"
                             dangerouslySetInnerHTML={{ __html: selectedLog.messageHtml }}
-                            onClick={(e) => {
-                                const link = e.target.closest('a');
-                                if (link?.getAttribute('href')?.startsWith('/')) {
-                                    e.preventDefault();
-                                    setSelectedLog(null);
-                                    navigate(link.getAttribute('href'));
-                                }
-                            }}
                         />
                         <div className="activity-popup-changes">
                             <div className="activity-popup-changes-label">
@@ -275,12 +272,12 @@ const ActivityLog = () => {
                                 Changes
                             </div>
                             <div className="activity-popup-changes-scroll">
-                                {formatLogLines(selectedLog.messageHtml).map((line, i) => (
+                                {formatLogLines(selectedLog).map((line, i) => (
                                     <div key={i} className="activity-change-line">
                                         <span className="activity-change-bullet">
                                             <i className="fa-solid fa-circle-dot"></i>
                                         </span>
-                                        <span>{line}</span>
+                                        <span dangerouslySetInnerHTML={{ __html: line }}></span>
                                     </div>
                                 ))}
                             </div>

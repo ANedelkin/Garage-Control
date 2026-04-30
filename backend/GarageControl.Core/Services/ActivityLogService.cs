@@ -1,6 +1,7 @@
 using System.Text.Json;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Core.Services.Helpers;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
@@ -106,8 +107,7 @@ namespace GarageControl.Core.Services
             await SaveLogAsync(workshopId, messageHtml, logType, serialised);
         }
 
-        /// <inheritdoc/>
-        public async Task<IEnumerable<ActivityLog>> GetLogsAsync(string workshopId, int count = 100)
+        public async Task<IEnumerable<ActivityLogVM>> GetLogsAsync(string workshopId, int count = 100)
         {
             var logs = await _repository.GetAllAsNoTracking<ActivityLog>()
                 .Where(l => l.WorkshopId == workshopId)
@@ -115,49 +115,60 @@ namespace GarageControl.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            // Perform dynamic re-rendering for structured logs
-            var structuredLogs = logs.Where(l => !string.IsNullOrEmpty(l.LogType) && !string.IsNullOrEmpty(l.LogData)).ToList();
-            if (structuredLogs.Any())
-            {
-                var logDatas = new List<(ActivityLog log, ActivityLogData data)>();
-                var allIds = new HashSet<string>();
+            var result = new List<ActivityLogVM>();
+            var allIds = new HashSet<string>();
+            var parsedLogs = new List<(ActivityLog log, ActivityLogData data)>();
 
-                foreach (var log in structuredLogs)
+            foreach (var log in logs)
+            {
+                if (string.IsNullOrEmpty(log.LogType) || string.IsNullOrEmpty(log.LogData))
                 {
-                    try 
+                    result.Add(new ActivityLogVM
                     {
-                        var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                        if (data != null)
+                        Id = log.Id,
+                        Timestamp = log.Timestamp,
+                        MessageHtml = log.MessageHtml
+                    });
+                    continue;
+                }
+
+                try
+                {
+                    var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                    if (data != null)
+                    {
+                        parsedLogs.Add((log, data));
+                        if (!string.IsNullOrEmpty(data.ActorId)) allIds.Add(data.ActorId);
+                        if (!string.IsNullOrEmpty(data.EntityId)) allIds.Add(data.EntityId);
+                        if (!string.IsNullOrEmpty(data.SecondaryEntityId)) allIds.Add(data.SecondaryEntityId);
+                        if (data.Changes != null)
                         {
-                            logDatas.Add((log, data));
-                            if (!string.IsNullOrEmpty(data.ActorId)) allIds.Add(data.ActorId);
-                            if (!string.IsNullOrEmpty(data.EntityId)) allIds.Add(data.EntityId);
-                            if (!string.IsNullOrEmpty(data.SecondaryEntityId)) allIds.Add(data.SecondaryEntityId);
-                            
-                            if (data.Changes != null)
+                            foreach (var c in data.Changes.Where(ch => ch.FieldName == "mechanic" && ch.NewValue != null))
                             {
-                                foreach (var c in data.Changes.Where(ch => ch.FieldName == "mechanic" && ch.NewValue != null))
-                                {
-                                    var parts = c.NewValue!.Split('|');
-                                    if (parts.Length == 2) allIds.Add(parts[1]);
-                                }
+                                var parts = c.NewValue!.Split('|');
+                                if (parts.Length == 2) allIds.Add(parts[1]);
                             }
                         }
                     }
-                    catch { /* Skip malformed logs */ }
                 }
-
-                if (allIds.Any())
-                {
-                    var liveNames = await GetLiveNamesAsync(allIds);
-                    foreach (var (log, data) in logDatas)
-                    {
-                        log.MessageHtml = ActivityLogRenderer.BuildMessageHtml(log.LogType!, data, liveNames);
-                    }
-                }
+                catch { /* Skip malformed */ }
             }
 
-            return logs;
+            var liveNames = allIds.Any() ? await GetLiveNamesAsync(allIds) : new Dictionary<string, string>();
+
+            foreach (var (log, data) in parsedLogs)
+            {
+                var rendered = ActivityLogRenderer.Render(log.LogType!, data, liveNames);
+                result.Add(new ActivityLogVM
+                {
+                    Id = log.Id,
+                    Timestamp = log.Timestamp,
+                    MessageHtml = rendered.HeaderHtml,
+                    Details = rendered.DetailsHtml
+                });
+            }
+
+            return result;
         }
 
         private async Task<Dictionary<string, string>> GetLiveNamesAsync(HashSet<string> ids)

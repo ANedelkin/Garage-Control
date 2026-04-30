@@ -1,16 +1,23 @@
 using GarageControl.Core.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace GarageControl.Core.Services.Helpers
 {
+    public class ActivityLogRendererResult
+    {
+        public string HeaderHtml { get; set; } = "";
+        public List<string> DetailsHtml { get; set; } = new();
+    }
+
     /// <summary>
     /// Converts a structured <see cref="ActivityLogData"/> payload into HTML strings.
     /// Supports dynamic link generation based on entity existence and live names.
     /// </summary>
     public static class ActivityLogRenderer
     {
-        public static string BuildMessageHtml(string logType, ActivityLogData data, IDictionary<string, string>? liveNames = null)
+        public static ActivityLogRendererResult Render(string logType, ActivityLogData data, IDictionary<string, string>? liveNames = null)
         {
             string actorHtml = BuildActorHtml(data, liveNames);
 
@@ -27,26 +34,48 @@ namespace GarageControl.Core.Services.Helpers
                 "Part"     => BuildPartHtml(actorHtml, data, liveNames),
                 "Folder"   => BuildFolderHtml(actorHtml, data, liveNames),
                 "Workshop" => BuildWorkshopHtml(actorHtml, data),
-                _          => $"{actorHtml} performed action on {logType}"
+                _          => new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} performed action on {logType}" }
             };
+        }
+
+        public static string BuildMessageHtml(string logType, ActivityLogData data, IDictionary<string, string>? liveNames = null)
+        {
+            return Render(logType, data, liveNames).HeaderHtml;
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
 
         private static string Bold(string? value) => $"<b>{value}</b>";
 
-        private static string GetLink(string? id, string? defaultName, string urlTemplate, IDictionary<string, string>? liveNames)
+        private static string Humanize(string? value)
         {
-            if (string.IsNullOrEmpty(id)) return Bold(defaultName);
-            
-            bool exists = liveNames != null && liveNames.ContainsKey(id);
-            if (!exists) return Bold(defaultName);
+            if (string.IsNullOrEmpty(value)) return "";
+            // Split camelCase or PascalCase
+            var result = Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");
+            // Also handle underscores if any
+            result = result.Replace("_", " ");
+            return result;
+        }
 
-            string displayName = liveNames![id] ?? defaultName ?? "Unknown";
-            // Registration number based links (Vehicle) don't use ID in URL usually, but we check existence by ID
+        private static string Capitalize(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return char.ToUpper(value[0]) + value.Substring(1);
+        }
+
+        private static string GetLink(string? id, string? defaultName, string urlTemplate, IDictionary<string, string>? liveNames, string prefix = "", bool forceLink = false)
+        {
+            if (string.IsNullOrEmpty(id)) return prefix + Bold(defaultName);
+            
+            bool exists = forceLink || (liveNames != null && liveNames.ContainsKey(id));
+            if (!exists) return prefix + Bold(defaultName);
+
+            string displayName = (liveNames != null && liveNames.ContainsKey(id)) ? (liveNames[id] ?? defaultName) : defaultName;
+            displayName ??= "Unknown";
+
             string url = urlTemplate.Replace("{id}", id).Replace("{name}", displayName);
             
-            return $"<a href='{url}' class='log-link target-link'>{displayName}</a>";
+            return $"<a href='{url}' class='log-link target-link'>{prefix}<b>{displayName}</b></a>";
         }
 
         private static string BuildActorHtml(ActivityLogData d, IDictionary<string, string>? liveNames)
@@ -64,151 +93,153 @@ namespace GarageControl.Core.Services.Helpers
             return $"<a href='{url}' class='log-link actor-link'>{displayName}</a>";
         }
 
-        private static string BuildUpdatedHtml(
+        private static ActivityLogRendererResult BuildUpdatedHtml(
             string actorHtml,
             string entityLabel,
             string link,
             List<ActivityPropertyChange>? changes)
         {
+            var res = new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} updated {entityLabel} {link}" };
             if (changes == null || changes.Count == 0)
-                return $"{actorHtml} updated {entityLabel} {link}";
+                return res;
 
-            var formatted = changes.Select(c =>
+            res.DetailsHtml = changes.Select(c =>
             {
+                string fieldName = Humanize(c.FieldName);
+                if (fieldName.ToLower().Contains("password")) return "Password changed";
+                
                 string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
                 string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
 
-                if (oldDisp.Length > 100 || newDisp.Length > 100)
-                    return c.FieldName;
+                // Handle Name|Id structured values
+                string FormatValue(string val, string fName)
+                {
+                    if (val.Contains("|"))
+                    {
+                        var parts = val.Split('|');
+                        if (parts.Length == 2)
+                        {
+                            string name = parts[0];
+                            string id = parts[1];
+                            string template = "/";
+                            if (fName.ToLower().Contains("worker") || fName.ToLower().Contains("mechanic")) template = "/workers/{id}?highlight=true";
+                            else if (fName.ToLower().Contains("job type") || fName.ToLower().Contains("type")) template = "/job-types?highlightId={id}";
+                            
+                            return GetLink(id, name, template, null, forceLink: true);
+                        }
+                    }
+                    if (fName.ToLower().Contains("status")) return Bold(Humanize(val));
+                    return Bold(val);
+                }
 
-                return $"{c.FieldName} from {Bold(oldDisp)} to {Bold(newDisp)}";
+                if (oldDisp == "[empty]" && newDisp == "[empty]")
+                    return Capitalize(fieldName);
+
+                if (fieldName.ToLower().StartsWith("added ") || fieldName.ToLower().StartsWith("removed "))
+                {
+                    if (newDisp != "[empty]") return $"{Capitalize(fieldName)} {FormatValue(newDisp, fieldName)}";
+                    return Capitalize(fieldName);
+                }
+
+                bool isDescription = fieldName.ToLower().Contains("description");
+                if (isDescription)
+                {
+                    string truncate(string s) => s.Length > 50 ? s.Substring(0, 47) + "..." : s;
+                    if (oldDisp == "[empty]") return $"Added description: {Bold(truncate(newDisp))}";
+                    if (newDisp == "[empty]") return "Removed description";
+                    return $"Description changed from {Bold(truncate(oldDisp))} to {Bold(truncate(newDisp))}";
+                }
+
+                if (oldDisp.Length > 100 || newDisp.Length > 100)
+                    return Capitalize(fieldName);
+
+                if (oldDisp == "[empty]" && newDisp != "[empty]")
+                    return $"{Capitalize(fieldName)}: {FormatValue(newDisp, fieldName)}";
+
+                if (oldDisp != "[empty]" && newDisp == "[empty]")
+                    return $"Removed {fieldName.ToLower()}";
+
+                return $"{Capitalize(fieldName)} from {FormatValue(oldDisp, fieldName)} to {FormatValue(newDisp, fieldName)}";
             }).ToList();
 
-            bool allSimple = formatted.All(f => !f.Contains(" from "));
-
-            if (formatted.Count == 1 && !allSimple)
-                return $"{actorHtml} changed {formatted[0]} of {entityLabel} {link}";
-
-            if (allSimple)
-                return $"{actorHtml} updated details of {entityLabel} {link}";
-
-            return $"{actorHtml} updated {entityLabel} {link}: {string.Join(", ", formatted)}";
+            return res;
         }
 
         // ── Per-entity builders ────────────────────────────────────────────────
 
-        private static string BuildWorkerHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildWorkerHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/workers/{id}?highlight=true", liveNames);
+            var res = new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} worker {link}" };
 
             switch (d.Action)
             {
                 case "created":
-                {
-                    string html = $"{actorHtml} created worker {link}";
-                    var allChanges = d.Changes ?? new List<ActivityPropertyChange>();
-                    if (allChanges.Any())
-                    {
-                        var allStrings = allChanges.Select(c =>
-                        {
-                            if (c.NewValue == null) return c.FieldName;
-                            return $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}";
-                        });
-                        html += $": {string.Join(", ", allStrings)}";
-                    }
-                    return html;
-                }
-
+                    var created = BuildUpdatedHtml(actorHtml, "worker", link, d.Changes);
+                    created.HeaderHtml = $"{actorHtml} created worker {link}";
+                    return created;
+                
                 case "fired":
-                    return $"{actorHtml} fired {Bold(d.EntityName)}";
+                    res.HeaderHtml = $"{actorHtml} fired {Bold(d.EntityName)}";
+                    break;
 
                 case "updated":
-                {
-                    var allChanges = d.Changes ?? new List<ActivityPropertyChange>();
-                    var allStrings = allChanges.Select(c =>
-                    {
-                        string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
-                        string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
-                        if (c.NewValue == null) return c.FieldName; 
-                        if (oldDisp.Length > 100 || newDisp.Length > 100) return c.FieldName;
-                        return $"{c.FieldName} from {Bold(oldDisp)} to {Bold(newDisp)}";
-                    }).ToList();
-
-                    bool allSimple = allStrings.All(s => !s.Contains(" from ") && !s.Contains("added ") && !s.Contains("removed ") && !s.Contains("Updated ") && !s.Contains("deleted "));
-
-                    if (allStrings.Count == 1 && (allStrings[0].Contains(" from ") || allStrings[0].Contains("Updated ")))
-                        return $"{actorHtml} changed {allStrings[0]} of worker {link}";
-
-                    if (allSimple)
-                        return $"{actorHtml} updated details of worker {link}";
-
-                    return $"{actorHtml} updated worker {link}: {string.Join(", ", allStrings)}";
-                }
-
-                default:
-                    return $"{actorHtml} {d.Action} worker {link}";
+                    var upd = BuildUpdatedHtml(actorHtml, "worker", link, d.Changes);
+                    return upd;
             }
+            return res;
         }
 
-        private static string BuildClientHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildClientHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/clients?highlightId={id}", liveNames);
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created client {link}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} created client {link}" };
                 case "deleted":
-                    return $"{actorHtml} deleted client {Bold(d.EntityName)}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} deleted client {Bold(d.EntityName)}" };
                 case "updated":
                     return BuildUpdatedHtml(actorHtml, "client", link, d.Changes);
-
                 default:
-                    return $"{actorHtml} {d.Action} client {link}";
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} client {link}" };
             }
         }
 
-        private static string BuildVehicleHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildVehicleHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
-            // Registration based highlights
             string link = GetLink(d.EntityId, d.EntityName, "/vehicles?registrationNumber={name}", liveNames);
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created vehicle {link}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} created vehicle {link}" };
                 case "deleted":
-                    return $"{actorHtml} deleted vehicle {Bold(d.EntityName)}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} deleted vehicle {Bold(d.EntityName)}" };
                 case "updated":
                     return BuildUpdatedHtml(actorHtml, "vehicle", link, d.Changes);
-
                 default:
-                    return $"{actorHtml} {d.Action} vehicle {link}";
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} vehicle {link}" };
             }
         }
 
-        private static string BuildMakeHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildMakeHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/models?highlightId={id}", liveNames);
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created make {link}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} created make {link}" };
                 case "deleted":
-                    return $"{actorHtml} deleted make {Bold(d.EntityName)}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} deleted make {Bold(d.EntityName)}" };
                 default:
-                    return $"{actorHtml} {d.Action} make {link}";
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} make {link}" };
             }
         }
 
-        private static string BuildModelHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildModelHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string modelLink = GetLink(d.EntityId, d.EntityName, "/models?highlightModelId={id}", liveNames);
             string secMakeLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/models?highlightMakeId={id}", liveNames);
@@ -216,237 +247,121 @@ namespace GarageControl.Core.Services.Helpers
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created model {modelLink} for make {secMakeLink}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} created model {modelLink} for make {secMakeLink}" };
                 case "deleted":
-                    return $"{actorHtml} deleted model {Bold(d.EntityName)} from make {Bold(d.SecondaryEntityName)}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} deleted model {Bold(d.EntityName)} from make {Bold(d.SecondaryEntityName)}" };
                 case "renamed":
-                    return $"{actorHtml} renamed model {Bold(d.EntityName)} to {modelLink} (Make: {secMakeLink})";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} renamed model {Bold(d.EntityName)} to {modelLink} (Make: {secMakeLink})" };
                 case "merged":
-                    return $"{actorHtml} merged custom model {Bold(d.EntityName)} into {modelLink}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} merged custom model {Bold(d.EntityName)} into {modelLink}" };
                 default:
-                    return $"{actorHtml} {d.Action} model {Bold(d.EntityName)}";
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} model {Bold(d.EntityName)}" };
             }
         }
 
-        private static string BuildJobTypeHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildJobTypeHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/job-types?highlightId={id}", liveNames);
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created Job Type {link}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} created Job Type {link}" };
                 case "deleted":
-                    return $"{actorHtml} deleted Job Type {Bold(d.EntityName)}";
-
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} deleted Job Type {Bold(d.EntityName)}" };
                 case "updated":
-                {
-                    var changes = d.Changes ?? new List<ActivityPropertyChange>();
-                    var formatted = changes.Select(c =>
-                    {
-                        string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
-                        string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
-                        if (oldDisp.Length > 100 || newDisp.Length > 100) return c.FieldName;
-                        return $"{c.FieldName} from {Bold(oldDisp)} to {Bold(newDisp)}";
-                    }).ToList();
-
-                    bool allSimple = formatted.All(f => !f.Contains(" from "));
-
-                    if (formatted.Count == 1 && !allSimple)
-                        return $"{actorHtml} changed {formatted[0]} of Job Type {link}";
-
-                    if (allSimple)
-                        return $"{actorHtml} updated details of Job Type {link}";
-
-                    return $"{actorHtml} updated Job Type {link}: {string.Join(", ", formatted)}";
-                }
-
+                    return BuildUpdatedHtml(actorHtml, "Job Type", link, d.Changes);
                 default:
-                    return $"{actorHtml} {d.Action} Job Type {link}";
+                    return new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} Job Type {link}" };
             }
         }
 
-        private static string BuildOrderHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildOrderHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
-            string orderLink = GetLink(d.EntityId, d.EntityName, "/orders/{id}?highlight=true", liveNames);
-            orderLink = $"order for {orderLink}";
+            string orderLink = GetLink(d.EntityId, d.EntityName, "/orders/{id}?highlight=true", liveNames, prefix: "order for ");
+            var res = BuildUpdatedHtml(actorHtml, "order", orderLink, d.Changes);
+            
+            res.HeaderHtml = $"{actorHtml} {d.Action} {orderLink}";
+            if (d.Action == "deleted")
+                res.HeaderHtml = $"{actorHtml} deleted {Bold(d.EntityName)}";
 
-            switch (d.Action)
-            {
-                case "created":
-                    return $"{actorHtml} created {orderLink}";
-
-                case "updated":
-                {
-                    string html = $"{actorHtml} updated {orderLink}";
-                    if (d.Changes != null && d.Changes.Any())
-                    {
-                        var formatted = d.Changes.Select(c =>
-                        {
-                            if (string.IsNullOrEmpty(c.OldValue) && string.IsNullOrEmpty(c.NewValue))
-                                return c.FieldName;
-                            return $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}";
-                        });
-                        html += $": {string.Join(", ", formatted)}";
-                    }
-                    return html;
-                }
-
-                default:
-                    return $"{actorHtml} {d.Action} {orderLink}";
-            }
+            return res;
         }
 
-        private static string BuildJobHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildJobHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
-            string orderLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/orders/{id}?highlight=true", liveNames);
-            orderLink = $"order for {orderLink}";
-
+            string orderLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/orders/{id}?highlight=true", liveNames, prefix: "order for ");
             string jobLink = GetLink(d.EntityId, d.EntityName, "/orders/" + d.SecondaryEntityId + "?highlightJob={id}", liveNames);
+            
+            var res = BuildUpdatedHtml(actorHtml, "job", jobLink, d.Changes);
+            res.HeaderHtml = $"{actorHtml} {d.Action} job {jobLink} for {orderLink}";
 
-            switch (d.Action)
+            if (d.Action == "deleted")
             {
-                case "created":
-                {
-                    string html = $"{actorHtml} created job {jobLink} for {orderLink}";
-                    if (d.Changes != null && d.Changes.Any())
-                    {
-                        var partStrings = d.Changes.Select(c => c.FieldName); 
-                        html += $": {string.Join(", ", partStrings)}";
-                    }
-                    return html;
-                }
-
-                case "updated":
-                {
-                    var allChanges = new List<string>();
-                    if (d.Changes != null)
-                    {
-                        foreach (var c in d.Changes)
-                        {
-                            if (string.IsNullOrEmpty(c.OldValue) && string.IsNullOrEmpty(c.NewValue))
-                            {
-                                allChanges.Add(c.FieldName);
-                            }
-                            else if (c.FieldName == "mechanic")
-                            {
-                                var parts = c.NewValue.Split('|');
-                                if (parts.Length == 2)
-                                {
-                                    string workerName = parts[0];
-                                    string workerId = parts[1];
-                                    string workerLink = GetLink(workerId, workerName, "/workers/{id}?highlight=true", liveNames);
-                                    allChanges.Add($"mechanic from {Bold(c.OldValue)} to {workerLink}");
-                                }
-                                else
-                                {
-                                    allChanges.Add($"mechanic from {Bold(c.OldValue)} to {Bold(c.NewValue)}");
-                                }
-                            }
-                            else
-                            {
-                                allChanges.Add($"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}");
-                            }
-                        }
-                    }
-                    if (!allChanges.Any()) return string.Empty;
-                    return $"{actorHtml} updated job {jobLink} for {orderLink}: {string.Join(", ", allChanges)}";
-                }
-
-                case "deleted":
-                    return $"{actorHtml} deleted job '{d.EntityName}' for {orderLink}";
-
-                default:
-                    return $"{actorHtml} {d.Action} job {jobLink} for {orderLink}";
+                res.HeaderHtml = $"{actorHtml} deleted job '{Bold(d.EntityName)}' for {orderLink}";
             }
+
+            return res;
         }
 
-        private static string BuildPartHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildPartHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}", liveNames);
+            var res = new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} part {link}" };
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created part {link}";
-
+                    res.HeaderHtml = $"{actorHtml} created part {link}";
+                    break;
                 case "deleted":
-                    return $"{actorHtml} deleted part {Bold(d.EntityName)}";
-
+                    res.HeaderHtml = $"{actorHtml} deleted part {Bold(d.EntityName)}";
+                    break;
                 case "moved":
-                    return $"{actorHtml} moved part {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
-
+                    res.HeaderHtml = $"{actorHtml} moved part {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
+                    break;
                 case "updated":
-                {
-                    if (d.Changes == null || !d.Changes.Any()) return string.Empty;
-
-                    var formatted = d.Changes.Select(c =>
-                    {
-                        string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
-                        string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
-                        if (oldDisp.Length > 100 || newDisp.Length > 100) return c.FieldName;
-                        return $"{c.FieldName} from {Bold(oldDisp)} to {Bold(newDisp)}";
-                    }).ToList();
-
-                    bool allSimple = formatted.All(f => !f.Contains(" from "));
-
-                    if (formatted.Count == 1 && !allSimple)
-                        return $"{actorHtml} changed {formatted[0]} of part {link}";
-
-                    if (allSimple)
-                        return $"{actorHtml} updated details of part {link}";
-
-                    return $"{actorHtml} updated part {link}: {string.Join(", ", formatted)}";
-                }
-
-                default:
-                    return $"{actorHtml} {d.Action} part {link}";
+                    var upd = BuildUpdatedHtml(actorHtml, "part", link, d.Changes);
+                    upd.DetailsHtml = upd.DetailsHtml.Select(l => l.Replace("Quantity", "Stockpile")).ToList();
+                    return upd;
             }
+            return res;
         }
 
-        private static string BuildFolderHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
+        private static ActivityLogRendererResult BuildFolderHtml(string actorHtml, ActivityLogData d, IDictionary<string, string>? liveNames)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}", liveNames);
+            var res = new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} group of parts {link}" };
 
             switch (d.Action)
             {
                 case "created":
-                    return $"{actorHtml} created group of parts {link}";
-
+                    res.HeaderHtml = $"{actorHtml} created group of parts {link}";
+                    break;
                 case "deleted":
-                    return $"{actorHtml} deleted group of parts {Bold(d.EntityName)}";
-
+                    res.HeaderHtml = $"{actorHtml} deleted group of parts {Bold(d.EntityName)}";
+                    break;
                 case "renamed":
-                    return $"{actorHtml} renamed group of parts {Bold(d.EntityName)} to {Bold(d.SecondaryEntityName)}";
-
+                    res.HeaderHtml = $"{actorHtml} renamed group of parts {Bold(d.EntityName)} to {Bold(d.SecondaryEntityName)}";
+                    break;
                 case "moved":
-                    return $"{actorHtml} moved group of parts {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
-
-                default:
-                    return $"{actorHtml} {d.Action} group of parts {link}";
+                    res.HeaderHtml = $"{actorHtml} moved group of parts {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
+                    break;
             }
+            return res;
         }
 
-        private static string BuildWorkshopHtml(string actorHtml, ActivityLogData d)
+        private static ActivityLogRendererResult BuildWorkshopHtml(string actorHtml, ActivityLogData d)
         {
-            string name = Bold(d.EntityName); 
+            string name = Bold(d.EntityName);
+            var res = new ActivityLogRendererResult { HeaderHtml = $"{actorHtml} {d.Action} workshop {name}" };
 
-            switch (d.Action)
+            if (d.Action == "updated" && d.Changes != null && d.Changes.Any())
             {
-                case "updated":
-                {
-                    if (d.Changes == null || !d.Changes.Any()) return $"{actorHtml} updated workshop details";
-                    var formatted = d.Changes.Select(c => $"{c.FieldName} from {Bold(c.OldValue)} to {Bold(c.NewValue)}");
-                    return $"{actorHtml} updated workshop details: {string.Join(", ", formatted)}";
-                }
-                default:
-                    return $"{actorHtml} {d.Action} workshop {name}";
+                res.HeaderHtml = $"{actorHtml} updated workshop details";
+                res.DetailsHtml = d.Changes.Select(c => $"{Capitalize(Humanize(c.FieldName))} from {Bold(c.OldValue)} to {Bold(c.NewValue)}").ToList();
             }
+            return res;
         }
     }
 }

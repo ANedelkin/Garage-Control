@@ -430,21 +430,27 @@ namespace GarageControl.Core.Services
             // Schedules
             var oldSchedules = worker.Schedules.ToList();
             bool scheduleChanged = false;
-            
-            if (model.Schedules.Count != oldSchedules.Count)
+            var newSchedules = model.Schedules.Select(s => new {
+                Day = (DayOfWeek)((s.DayOfWeek + 1) % 7),
+                Start = TimeOnly.Parse(s.StartTime),
+                End = TimeOnly.Parse(s.EndTime)
+            }).ToList();
+
+            var oldSchedulesMapped = oldSchedules.Select(s => new {
+                Day = s.DayOfWeek,
+                Start = s.StartTime,
+                End = s.EndTime
+            }).ToList();
+
+            if (newSchedules.Count != oldSchedulesMapped.Count)
             {
                 scheduleChanged = true;
             }
             else
             {
-                foreach(var s in model.Schedules)
+                foreach (var ns in newSchedules)
                 {
-                    var backendDayOfWeek = (DayOfWeek)((s.DayOfWeek + 1) % 7);
-                    var startTime = TimeOnly.Parse(s.StartTime);
-                    var endTime = TimeOnly.Parse(s.EndTime);
-
-                    var existing = oldSchedules.FirstOrDefault(os => os.DayOfWeek == backendDayOfWeek);
-                    if (existing == null || existing.StartTime != startTime || existing.EndTime != endTime)
+                    if (!oldSchedulesMapped.Any(os => os.Day == ns.Day && os.Start.Hour == ns.Start.Hour && os.Start.Minute == ns.Start.Minute && os.End.Hour == ns.End.Hour && os.End.Minute == ns.End.Minute))
                     {
                         scheduleChanged = true;
                         break;

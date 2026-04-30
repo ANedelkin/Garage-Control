@@ -17,6 +17,7 @@ const ServiceForm = ({
     jobTypes,
     workers,
     allParts = [],
+    mechanicView = false,
     errors = {} // Ensure errors is passed
 }) => {
 
@@ -29,7 +30,6 @@ const ServiceForm = ({
 
     const { user, accesses } = useAuth();
     const hasStockAccess = accesses.includes('Parts Stock');
-    const mechanicView = !accesses.includes('Orders');
     const isAssignedWorker = user && service.workerId === user.workerId;
 
     const handleChange = (field, value) => {
@@ -400,14 +400,14 @@ const ServiceForm = ({
                                     <tr key={i} className={isExpanded ? 'expanded-row' : ''} style={{ position: 'relative' }}>
                                         <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
                                             <div className="mobile-part-header">
-                                                <button
-                                                    type="button"
+                                                <button 
+                                                    type="button" 
                                                     className="btn icon-btn mobile-only expand-btn"
                                                     onClick={() => togglePartExpand(i)}
                                                 >
                                                     <i className={`fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
                                                 </button>
-                                                <div style={{ flex: 1 }}>
+                                                <div style={{flex: 1}}>
                                                     <input
                                                         type="text"
                                                         value={p.name}
@@ -454,8 +454,8 @@ const ServiceForm = ({
                                                 value={p.plannedQuantity}
                                                 min={p.sentQuantity || 0}
                                                 onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
-                                                disabled={service.status === 2 || mechanicView}
-                                                title={(service.status === 2) ? "Job is finished" : (mechanicView) ? "Need Orders access to edit this" : ""}
+                                                disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                                title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                             />
                                             <FieldError name={`Parts[${i}].PlannedQuantity`} errors={errors} />
                                         </td>
@@ -468,8 +468,8 @@ const ServiceForm = ({
                                                 min={p.usedQuantity || 0}
                                                 max={p.plannedQuantity || 0}
                                                 onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
-                                                disabled={service.status === 2 || !hasStockAccess}
-                                                title={(service.status === 2) ? "Job is finished" : !hasStockAccess ? "Need Parts Stock access to edit this" : ""}
+                                                disabled={service.status === 2 || mechanicView || !hasStockAccess}
+                                                title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                             />
                                             <FieldError name={`Parts[${i}].SentQuantity`} errors={errors} />
                                         </td>
@@ -501,9 +501,9 @@ const ServiceForm = ({
                                                 <button
                                                     type="button"
                                                     className="btn icon-btn"
-                                                    disabled={service.status === 2 || mechanicView || !p.requestedQuantity}
+                                                    disabled={service.status === 2 || !p.requestedQuantity}
                                                     onClick={() => openTransferPopup(i)}
-                                                    title={mechanicView ? "Need Orders access to transfer to planned" : "Transfer to Planned"}
+                                                    title="Transfer to Planned"
                                                 >
                                                     <i className="fa-solid fa-plus"></i>
                                                 </button>

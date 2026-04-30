@@ -1,4 +1,5 @@
 using GarageControl.Core.Models;
+using GarageControl.Core.ViewModels;
 using GarageControl.Infrastructure.Data.Models;
 
 namespace GarageControl.Core.Contracts
@@ -14,6 +15,6 @@ namespace GarageControl.Core.Contracts
         /// </summary>
         Task LogActionAsync(string userId, string workshopId, string logType, ActivityLogData logData);
 
-        Task<IEnumerable<ActivityLog>> GetLogsAsync(string workshopId, int count = 100);
+        Task<IEnumerable<ActivityLogVM>> GetLogsAsync(string workshopId, int count = 100);
     }
 }

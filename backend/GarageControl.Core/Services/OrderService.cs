@@ -160,14 +160,20 @@ namespace GarageControl.Core.Services
             };
             _context.Orders.Add(order);
             
+            int oldKm = car.Kilometers;
+            
             // Sync car kilometers
             car.Kilometers = model.Kilometers;
             
             await _context.SaveChangesAsync();
 
             // --- log via the activity logger ---
+            var createChanges = new List<ActivityPropertyChange>();
+            if (model.Kilometers > oldKm)
+                createChanges.Add(new ActivityPropertyChange("odometer", oldKm.ToString(), model.Kilometers.ToString()));
+
             string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
-            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, order.Id, carInfo);
+            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, order.Id, carInfo, createChanges);
 
             return new MethodResponseVM(true, "Order created successfully", new { orderId = order.Id });
         }
@@ -224,7 +230,7 @@ namespace GarageControl.Core.Services
             }
 
             if (order.Kilometers != model.Kilometers)
-                changes.Add(new ActivityPropertyChange("kilometers", order.Kilometers.ToString(), model.Kilometers.ToString()));
+                changes.Add(new ActivityPropertyChange("odometer", order.Kilometers.ToString(), model.Kilometers.ToString()));
             if (model.IsDone && !order.IsDone)
             {
                 // Migate to CompletedOrder

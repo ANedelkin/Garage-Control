@@ -331,7 +331,7 @@ namespace GarageControl.Core.Services.Jobs
                 if (jp.Part != null)
                 {
                     jp.Part.Quantity += jp.SentQuantity - jp.UsedQuantity;
-                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Id, jp.Part.Name));
+                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Id, jp.Part.Name, jp.PlannedQuantity));
                     affectedPartIds.Add(jp.PartId);
                 }
                 job.JobParts.Remove(jp);
@@ -395,7 +395,7 @@ namespace GarageControl.Core.Services.Jobs
                     });
 
                     part.Quantity -= effectiveSent;
-                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name));
+                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name, effectivePlanned, effectiveSent, partModel.UsedQuantity, partModel.RequestedQuantity));
                 }
 
                 affectedPartIds.Add(part.Id);
@@ -409,10 +409,14 @@ namespace GarageControl.Core.Services.Jobs
             string FormatPrice(decimal p) => p.ToString("0.00");
 
             if (job.JobTypeId != model.JobTypeId)
-                changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName));
+                changes.Add(new ActivityPropertyChange("type", $"{job.JobType.Name}|{job.JobTypeId}", $"{newJobTypeName}|{model.JobTypeId}"));
 
             if (job.WorkerId != model.WorkerId)
-                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, $"{newWorkerName}|{model.WorkerId}"));
+            {
+                string oldMech = $"{job.Worker.Name}|{job.WorkerId}";
+                string newMech = $"{newWorkerName}|{model.WorkerId}";
+                changes.Add(new ActivityPropertyChange("mechanic", oldMech, newMech));
+            }
 
             if (job.Status != model.Status)
                 changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));
@@ -424,7 +428,7 @@ namespace GarageControl.Core.Services.Jobs
                 changes.Add(new ActivityPropertyChange("interval", $"{job.StartTime:HH:mm}-{job.EndTime:HH:mm}", $"{model.StartTime:HH:mm}-{model.EndTime:HH:mm}"));
 
             if (job.Description != model.Description)
-                changes.Add(new ActivityPropertyChange("description", "updated", ""));
+                changes.Add(new ActivityPropertyChange("description", job.Description ?? "", model.Description ?? ""));
 
             return changes;
         }
