@@ -7,7 +7,7 @@ namespace GarageControl.Core.ViewModels
     {
         public string Id { get; set; } = null!;
         public DateTimeOffset Timestamp { get; set; }
-        public string MessageHtml { get; set; } = null!; // Header: Actor Action ActedOn
+        public string Message { get; set; } = null!; // Header: Actor Action ActedOn
         public List<string> Details { get; set; } = new();
     }
 }

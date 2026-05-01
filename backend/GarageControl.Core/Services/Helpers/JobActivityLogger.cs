@@ -70,7 +70,7 @@ namespace GarageControl.Core.Services.Jobs
 
         public string FormatPartAdded(string partId, string partName, int planned, int sent, int used, int requested)
         {
-            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'><b>{partName}</b></a>" : $"<b>{partName}</b>";
+            string link = partId != null ? $"[{partName}](/parts?partId={partId})" : $"**{partName}**";
             var q = new List<string>();
             if (planned > 0) q.Add($"planned: {planned}");
             if (sent > 0) q.Add($"sent: {sent}");
@@ -82,14 +82,14 @@ namespace GarageControl.Core.Services.Jobs
 
         public string FormatPartRemoved(string partId, string partName, int quantity)
         {
-            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'><b>{partName}</b></a>" : $"<b>{partName}</b>";
+            string link = partId != null ? $"[{partName}](/parts?partId={partId})" : $"**{partName}**";
             return $"removed part '{link}' (qty: {quantity})";
         }
 
         public string FormatPartQuantityChanged(string partId, string partName, string qtyType, string oldVal, string newVal)
         {
-            string link = partId != null ? $"<a href='/parts?partId={partId}' class='log-link target-link'>{partName}</a>" : $"<b>{partName}</b>";
-            return $"changed {qtyType} qty of '{link}' from <b>{oldVal}</b> to <b>{newVal}</b>";
+            string link = partId != null ? $"[{partName}](/parts?partId={partId})" : $"**{partName}**";
+            return $"changed {qtyType} qty of '{link}' from **{oldVal}** to **{newVal}**";
         }
     }
 }

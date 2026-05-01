@@ -6,12 +6,12 @@ namespace GarageControl.Core.Contracts
 {
     public interface IActivityLogService
     {
-        /// <summary>Legacy overload — stores a hand-crafted HTML string (kept for compatibility).</summary>
-        Task LogActionAsync(string userId, string workshopId, string actionHtml);
+        /// <summary>Legacy overload — stores a hand-crafted markup string (kept for compatibility).</summary>
+        Task LogActionAsync(string userId, string workshopId, string actionMarkup);
 
         /// <summary>
         /// Structured overload — stores <paramref name="logData"/> as JSON and renders
-        /// <c>MessageHtml</c> automatically via <see cref="GarageControl.Core.Services.Helpers.ActivityLogRenderer"/>.
+        /// Message automatically via <see cref="GarageControl.Core.Services.Helpers.ActivityLogRenderer"/>.
         /// </summary>
         Task LogActionAsync(string userId, string workshopId, string logType, ActivityLogData logData);
 

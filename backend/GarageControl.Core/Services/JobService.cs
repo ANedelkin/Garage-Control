@@ -409,14 +409,10 @@ namespace GarageControl.Core.Services.Jobs
             string FormatPrice(decimal p) => p.ToString("0.00");
 
             if (job.JobTypeId != model.JobTypeId)
-                changes.Add(new ActivityPropertyChange("type", $"{job.JobType.Name}|{job.JobTypeId}", $"{newJobTypeName}|{model.JobTypeId}"));
+                changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName, job.JobTypeId, model.JobTypeId));
 
             if (job.WorkerId != model.WorkerId)
-            {
-                string oldMech = $"{job.Worker.Name}|{job.WorkerId}";
-                string newMech = $"{newWorkerName}|{model.WorkerId}";
-                changes.Add(new ActivityPropertyChange("mechanic", oldMech, newMech));
-            }
+                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, newWorkerName, job.WorkerId, model.WorkerId));
 
             if (job.Status != model.Status)
                 changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));

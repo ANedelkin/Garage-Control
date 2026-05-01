@@ -96,7 +96,7 @@ namespace GarageControl.Core.Services
             var changes = new List<ActivityPropertyChange>();
             void TrackProperty(string field, string? oldV, string? newV)
             {
-                if (oldV != newV) changes.Add(new ActivityPropertyChange(field, oldV ?? "", newV ?? ""));
+                if (oldV != newV) changes.Add(new ActivityPropertyChange(field, oldV, newV));
             }
 
             TrackProperty("name", workshop.Name, model.Name);

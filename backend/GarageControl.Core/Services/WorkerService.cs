@@ -285,7 +285,7 @@ namespace GarageControl.Core.Services
                 void TrackChange(string fieldName, string? oldValue, string? newValue)
                 {
                     if (oldValue != newValue)
-                        changes.Add(new ActivityPropertyChange(fieldName, oldValue ?? "", newValue ?? ""));
+                        changes.Add(new ActivityPropertyChange(fieldName, oldValue, newValue));
                 }
 
                 TrackChange("name", worker.Name, model.Name);
@@ -403,8 +403,8 @@ namespace GarageControl.Core.Services
             var addedAccesses = model.Accesses.Where(r => r.IsSelected && !oldAccessIds.Contains(r.Id)).Select(r => r.Name).ToList();
             var removedAccesses = worker.Accesses.Where(r => !newAccessIds.Contains(r.Id)).Select(r => r.Name).ToList();
             
-            foreach (var a in addedAccesses) changes.Add(new ActivityPropertyChange($"added access <b>{a}</b>", "", null));
-            foreach (var a in removedAccesses) changes.Add(new ActivityPropertyChange($"removed access <b>{a}</b>", "", null));
+            foreach (var a in addedAccesses) changes.Add(new ActivityPropertyChange($"added access", null, a));
+            foreach (var a in removedAccesses) changes.Add(new ActivityPropertyChange($"removed access", a, null));
 
             worker.Accesses.Clear();
             var accessesToAdd = await _repo.GetAllAttached<Access>().Where(r => newAccessIds.Contains(r.Id)).ToListAsync();
@@ -413,15 +413,14 @@ namespace GarageControl.Core.Services
             // JobTypes (Activities)
             var oldJobTypeIds = worker.Activities.Select(j => j.Id).ToList();
             var newJobTypeIds = model.JobTypeIds ?? new List<string>();
-            
             var addedJobTypes = await _repo.GetAllAsNoTracking<JobType>()
                 .Where(j => newJobTypeIds.Contains(j.Id) && !oldJobTypeIds.Contains(j.Id))
-                .Select(j => j.Name)
+                .Select(j => new { j.Id, j.Name })
                 .ToListAsync();
-            var removedJobTypes = worker.Activities.Where(j => !newJobTypeIds.Contains(j.Id)).Select(j => j.Name).ToList();
+            var removedJobTypes = worker.Activities.Where(j => !newJobTypeIds.Contains(j.Id)).Select(j => new { j.Id, j.Name }).ToList();
             
-            foreach (var j in addedJobTypes) changes.Add(new ActivityPropertyChange($"added job type <b>{j}</b>", "", null));
-            foreach (var j in removedJobTypes) changes.Add(new ActivityPropertyChange($"removed job type <b>{j}</b>", "", null));
+            foreach (var j in addedJobTypes) changes.Add(new ActivityPropertyChange($"added job type", null, j.Name, null, j.Id));
+            foreach (var j in removedJobTypes) changes.Add(new ActivityPropertyChange($"removed job type", j.Name, null, j.Id, null));
 
             worker.Activities.Clear();
             var jobTypesToAdd = await _repo.GetAllAttached<JobType>().Where(j => newJobTypeIds.Contains(j.Id)).ToListAsync();
@@ -494,7 +493,7 @@ namespace GarageControl.Core.Services
                 }
                 else
                 {
-                    changes.Add(new ActivityPropertyChange($"added leave from <b>{startDate:yyyy-MM-dd}</b> to <b>{endDate:yyyy-MM-dd}</b>", "", null));
+                    changes.Add(new ActivityPropertyChange($"added leave from **{startDate:yyyy-MM-dd}** to **{endDate:yyyy-MM-dd}**", null, null));
                     await _repo.AddAsync(new WorkerLeave
                     {
                         WorkerId = workerId,
@@ -505,7 +504,7 @@ namespace GarageControl.Core.Services
             }
             foreach (var ol in oldLeaves)
             {
-                changes.Add(new ActivityPropertyChange($"deleted leave from <b>{ol.StartDate:yyyy-MM-dd}</b> to <b>{ol.EndDate:yyyy-MM-dd}</b>", "", null));
+                changes.Add(new ActivityPropertyChange($"deleted leave from **{ol.StartDate:yyyy-MM-dd}** to **{ol.EndDate:yyyy-MM-dd}**", null, null));
                 _repo.Delete(ol);
             }
 

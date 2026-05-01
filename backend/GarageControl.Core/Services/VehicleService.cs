@@ -148,7 +148,7 @@ namespace GarageControl.Core.Services
                 void Track(string field, string? oldVal, string? newVal)
                 {
                     if (oldVal != newVal)
-                        changes.Add(new ActivityPropertyChange(field, oldVal ?? "", newVal ?? ""));
+                        changes.Add(new ActivityPropertyChange(field, oldVal, newVal));
                 }
 
                 Track("registration number", car.RegistrationNumber, model.RegistrationNumber);

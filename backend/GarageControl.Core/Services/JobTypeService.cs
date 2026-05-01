@@ -119,7 +119,7 @@ namespace GarageControl.Core.Services
                 if (jobType.Name != model.Name)
                     changes.Add(new ActivityPropertyChange("name", jobType.Name, model.Name));
                 if (jobType.Description != model.Description)
-                    changes.Add(new ActivityPropertyChange("description", jobType.Description ?? "", model.Description ?? ""));
+                    changes.Add(new ActivityPropertyChange("description", jobType.Description, model.Description));
 
                 jobType.Name = model.Name;
                 jobType.Description = model.Description;
@@ -139,12 +139,12 @@ namespace GarageControl.Core.Services
                 foreach (var name in addedWorkersNames)
                 {
                     var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
-                    changes.Add(new ActivityPropertyChange("added worker", "", w != null ? $"{w.Name}|{w.Id}" : name));
+                    changes.Add(new ActivityPropertyChange("added worker", null, w?.Name ?? name, null, w?.Id));
                 }
                 foreach (var name in removedWorkersNames)
                 {
                     var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
-                    changes.Add(new ActivityPropertyChange("removed worker", "", w != null ? $"{w.Name}|{w.Id}" : name));
+                    changes.Add(new ActivityPropertyChange("removed worker", w?.Name ?? name, null, w?.Id, null));
                 }
 
                 jobType.Workers.Clear();

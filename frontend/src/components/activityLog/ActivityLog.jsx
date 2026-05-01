@@ -50,7 +50,7 @@ const ActivityLog = () => {
 
 
     const filteredLogs = logs.filter(log => {
-        const plainText = stripMarkup(log.messageHtml || '').toLowerCase();
+        const plainText = stripMarkup(log.message || '').toLowerCase();
         const searchLower = search.toLowerCase();
         const matchesSearch = !search || plainText.includes(searchLower);
 
@@ -188,7 +188,7 @@ const ActivityLog = () => {
                                         </td>
                                         <td className="col-action">
                                             <div className="activity-sentence activity-sentence-truncate">
-                                                {renderAst(parseMarkup(log.messageHtml), `msg-${log.id}`)}
+                                                {renderAst(parseMarkup(log.message), `msg-${log.id}`)}
                                             </div>
                                         </td>
                                     </tr>
@@ -227,7 +227,7 @@ const ActivityLog = () => {
                             </button>
                         </div>
                         <div className="activity-popup-summary">
-                            {renderAst(parseMarkup(selectedLog.messageHtml), 'popup-msg')}
+                            {renderAst(parseMarkup(selectedLog.message), 'popup-msg')}
                         </div>
                         <div className="activity-popup-changes">
                             <div className="activity-popup-changes-label">
