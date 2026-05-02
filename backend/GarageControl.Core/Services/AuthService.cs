@@ -43,7 +43,7 @@ namespace GarageControl.Core.Services
             _jwtSecret = _configuration["Jwt:Key"];
             _jwtIssuer = _configuration["Jwt:Issuer"];
             _jwtAudience = _configuration["Jwt:Audience"];
-            _accessTokenExpiryMinutes = 1;
+            _accessTokenExpiryMinutes = 15;
         }
 
         public async Task<LoginResponseVM> SignUp(RegisterVM model)
@@ -190,16 +190,18 @@ namespace GarageControl.Core.Services
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(_accessTokenExpiryMinutes)
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                MaxAge = TimeSpan.FromMinutes(_accessTokenExpiryMinutes)
             });
 
             response.Cookies.Append("RefreshToken", body.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(14)
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                MaxAge = TimeSpan.FromDays(14)
             });
 
             return Task.CompletedTask;

@@ -2,7 +2,7 @@
     "scripts": {
         "start-all": "npm run recomp-frontend && dotnet run",
         "start-backend": "dotnet run",
-        "recomp-frontend": "rimraf wwwroot/* && npm --prefix ../../frontend run build"
+        "recomp-frontend": "rimraf wwwroot && mkdir wwwroot && npm --prefix ../../frontend run build"
     },
     "devDependencies": {
         "rimraf": "^6.1.2"
