@@ -118,9 +118,24 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        const handle401 = () => {
+            setLoggedIn(false);
+            setAccesses([]);
+            setUser(null);
+            localStorage.removeItem('LoggedIn');
+            localStorage.removeItem('accesses');
+            localStorage.removeItem('user');
+            localStorage.removeItem('HasWorkshop');
+            window.location.href = '/login';
+        };
         const handle403 = () => refreshAuth();
+
+        window.addEventListener('api-401', handle401);
         window.addEventListener('api-403', handle403);
-        return () => window.removeEventListener('api-403', handle403);
+        return () => {
+            window.removeEventListener('api-401', handle401);
+            window.removeEventListener('api-403', handle403);
+        };
     }, []);
 
     return (

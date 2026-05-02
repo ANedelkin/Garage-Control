@@ -18,7 +18,7 @@ import PartsStock from './components/parts/PartsStock.jsx';
 import ActiveOrdersPage from './components/orders/ActiveOrdersPage.jsx';
 import ArchivedOrdersPage from './components/orders/ArchivedOrdersPage.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
-import DoneJobPage from './components/orders/DoneJobPage.jsx';
+import ArchivedJobPage from './components/orders/ArchivedJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
 import ActivityLog from './components/activityLog/ActivityLog.jsx';
 
@@ -89,10 +89,10 @@ const routes = [
     ]
   },
   {
-    path: '/done-jobs',
+    path: '/archived-jobs',
     accesses: ['Orders'],
     children: [
-      { path: '/:jobId', element: DoneJobPage }
+      { path: '/:jobId', element: ArchivedJobPage }
     ]
   },
   { path: '/parts', element: PartsStock, label: 'Parts Stock', icon: 'fa-boxes-stacked', accesses: ['Parts Stock'] },

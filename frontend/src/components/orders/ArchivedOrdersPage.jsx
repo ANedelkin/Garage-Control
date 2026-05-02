@@ -198,7 +198,7 @@ const ArchivedOrdersPage = () => {
                                                     <tr
                                                         key={job.id}
                                                         ref={el => jobRefs.current[job.id] = el}
-                                                        onClick={() => navigate(`/done-jobs/${job.id}`)}
+                                                        onClick={() => navigate(`/archived-jobs/${job.id}`)}
                                                         className={`clickable ${highlightJob === job.id ? 'highlight-outline' : ''}`}
                                                     >
                                                         <td className="hide-md">{formatDate(job.startTime)}</td>

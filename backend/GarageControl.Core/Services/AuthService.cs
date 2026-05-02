@@ -179,7 +179,9 @@ namespace GarageControl.Core.Services
 
             bool hasWorkshop = await UserHasWorkshop(user.Id);
 
-            return new LoginResponseVM(true, "Token refreshed", newAccess, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
+            var vm = new LoginResponseVM(true, "Token refreshed", newAccess, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
+            await SetAuthCookies(response, vm);
+            return vm;
         }
 
         public Task SetAuthCookies(HttpResponse response, LoginResponseVM body)
@@ -377,16 +379,6 @@ namespace GarageControl.Core.Services
                 };
             }
 
-            // Check if Owner
-            // var isOwner = await _repo.GetAllAsNoTracking<Workshop>().AnyAsync(s => s.BossId == userId);
-            // if (isOwner)
-            // {
-            //     var ownerAccesses = await _repo.GetAllAsNoTracking<Access>().Select(a => a.Name).ToListAsync();
-            //     ownerAccesses.Add("To Do");
-            //     return ownerAccesses;
-            // }
-
-            // Check if Worker
             var worker = await _repo.GetAllAsNoTracking<Worker>()
                 .Include(w => w.Accesses)
                 .Include(w => w.Activities)

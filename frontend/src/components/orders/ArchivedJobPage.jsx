@@ -6,10 +6,10 @@ import '../../assets/css/orders.css';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
 
-const DoneJobPage = () => {
+const ArchivedJobPage = () => {
     const { jobId } = useParams();
     const navigate = useNavigate();
-    usePageTitle('View Done Job');
+    usePageTitle('View Archived Job');
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ const DoneJobPage = () => {
         <main className="main edit-order">
             <div className="section-header order-header">
                 <div className="order-context-info">
-                    <h2>View Done Job</h2>
+                    <h2>View Archived Job</h2>
                     <p>{job.clientName} • {job.carName} ({job.carRegistrationNumber})</p>
                 </div>
                 <div className="order-actions">
@@ -149,4 +149,4 @@ const DoneJobPage = () => {
     );
 };
 
-export default DoneJobPage;
+export default ArchivedJobPage;

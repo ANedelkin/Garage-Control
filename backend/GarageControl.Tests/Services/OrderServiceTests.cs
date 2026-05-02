@@ -142,12 +142,14 @@ namespace GarageControl.Tests.Services
             var carId = Guid.NewGuid().ToString();
             var orderId = Guid.NewGuid().ToString();
 
+            var workshop = new Workshop { Id = workshopId, Name = "Test Workshop", Address = "Test Address", PhoneNumber = "123456", BossId = userId };
             var make = new CarMake { Id = makeId, Name = "Toyota" };
             var model = new CarModel { Id = modelId, Name = "Corolla", CarMakeId = makeId, CarMake = make };
-            var owner = new Client { Id = ownerId, Name = "Client", WorkshopId = workshopId, PhoneNumber = "123-456-7890" };
+            var owner = new Client { Id = ownerId, Name = "Client", WorkshopId = workshopId, Workshop = workshop, PhoneNumber = "123-456-7890" };
             var car = new Car { Id = carId, RegistrationNumber = "REG_SYNC", ModelId = modelId, Model = model, OwnerId = ownerId, Owner = owner, Kilometers = 1000 };
             var order = new Order { Id = orderId, CarId = carId, Car = car, Kilometers = 1000, IsDone = false };
 
+            _context.Workshops.Add(workshop);
             _context.CarMakes.Add(make);
             _context.CarModels.Add(model);
             _context.Clients.Add(owner);
