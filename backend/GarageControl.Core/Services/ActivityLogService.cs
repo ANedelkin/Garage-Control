@@ -107,39 +107,78 @@ namespace GarageControl.Core.Services
                 .Take(count)
                 .ToListAsync();
 
-            var result = new List<ActivityLogVM>();
+            // 1. Deserialize and collect all referenced entities to pre-fetch existence
+            var logDataMap = new Dictionary<ActivityLog, ActivityLogData>();
+            var referenced = new HashSet<(string Type, string Id)>();
 
             foreach (var log in logs)
             {
-                if (string.IsNullOrEmpty(log.LogType) || string.IsNullOrEmpty(log.LogData))
+                if (!string.IsNullOrEmpty(log.LogType) && !string.IsNullOrEmpty(log.LogData))
                 {
+                    try
+                    {
+                        var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                        if (data != null)
+                        {
+                            logDataMap[log] = data;
+                            foreach (var r in ActivityLogRenderer.GetReferencedEntities(log.LogType, data))
+                            {
+                                referenced.Add(r);
+                            }
+                        }
+                    }
+                    catch { /* Skip malformed logs */ }
+                }
+            }
+
+            // 2. Check existence in bulk to avoid N+1
+            var existenceSet = new HashSet<(string Type, string Id)>();
+            var byType = referenced.GroupBy(r => r.Type);
+
+            foreach (var group in byType)
+            {
+                var ids = group.Select(r => r.Id).Distinct().ToList();
+                List<string> aliveIds = group.Key switch
+                {
+                    "Worker"   => await _repository.GetAllAsNoTracking<Worker>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Client"   => await _repository.GetAllAsNoTracking<Client>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Vehicle"  => await _repository.GetAllAsNoTracking<Car>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Make"     => await _repository.GetAllAsNoTracking<CarMake>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Model"    => await _repository.GetAllAsNoTracking<CarModel>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "JobType"  => await _repository.GetAllAsNoTracking<JobType>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Order"    => await _repository.GetAllAsNoTracking<Order>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Job"      => await _repository.GetAllAsNoTracking<Job>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Part"     => await _repository.GetAllAsNoTracking<Part>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    "Folder"   => await _repository.GetAllAsNoTracking<PartsFolder>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                    _          => new List<string>()
+                };
+
+                foreach (var id in aliveIds)
+                {
+                    existenceSet.Add((group.Key, id));
+                }
+            }
+
+            // 3. Render final results
+            var result = new List<ActivityLogVM>();
+            bool ExistsChecker(string type, string id) => existenceSet.Contains((type, id));
+
+            foreach (var log in logs)
+            {
+                if (logDataMap.TryGetValue(log, out var data))
+                {
+                    var rendered = ActivityLogRenderer.Render(log.LogType!, data, ExistsChecker);
                     result.Add(new ActivityLogVM
                     {
                         Id = log.Id,
                         Timestamp = log.Timestamp,
-                        Message = log.MessageHtml
+                        Message = rendered.Header,
+                        Details = rendered.Details
                     });
-                    continue;
                 }
-
-                try
+                else
                 {
-                    var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                    if (data != null)
-                    {
-                        var rendered = ActivityLogRenderer.Render(log.LogType!, data);
-                        result.Add(new ActivityLogVM
-                        {
-                            Id = log.Id,
-                            Timestamp = log.Timestamp,
-                            Message = rendered.Header,
-                            Details = rendered.Details
-                        });
-                    }
-                }
-                catch 
-                { 
-                    // Fallback to static message if parsing fails
+                    // Fallback to static message for legacy logs or if data is missing
                     result.Add(new ActivityLogVM
                     {
                         Id = log.Id,

@@ -1,4 +1,5 @@
 using GarageControl.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -17,22 +18,22 @@ namespace GarageControl.Core.Services.Helpers
     /// </summary>
     public static class ActivityLogRenderer
     {
-        public static ActivityLogRendererResult Render(string logType, ActivityLogData data)
+        public static ActivityLogRendererResult Render(string logType, ActivityLogData data, Func<string, string, bool>? existsChecker = null)
         {
-            string actorMarkup = BuildActorMarkup(data);
+            string actorMarkup = BuildActorMarkup(data, existsChecker);
 
             return logType switch
             {
-                "Worker"   => BuildWorkerMarkup(actorMarkup, data),
-                "Client"   => BuildClientMarkup(actorMarkup, data),
-                "Vehicle"  => BuildVehicleMarkup(actorMarkup, data),
-                "Make"     => BuildMakeMarkup(actorMarkup, data),
-                "Model"    => BuildModelMarkup(actorMarkup, data),
-                "JobType"  => BuildJobTypeMarkup(actorMarkup, data),
-                "Order"    => BuildOrderMarkup(actorMarkup, data),
-                "Job"      => BuildJobMarkup(actorMarkup, data),
-                "Part"     => BuildPartMarkup(actorMarkup, data),
-                "Folder"   => BuildFolderMarkup(actorMarkup, data),
+                "Worker"   => BuildWorkerMarkup(actorMarkup, data, existsChecker),
+                "Client"   => BuildClientMarkup(actorMarkup, data, existsChecker),
+                "Vehicle"  => BuildVehicleMarkup(actorMarkup, data, existsChecker),
+                "Make"     => BuildMakeMarkup(actorMarkup, data, existsChecker),
+                "Model"    => BuildModelMarkup(actorMarkup, data, existsChecker),
+                "JobType"  => BuildJobTypeMarkup(actorMarkup, data, existsChecker),
+                "Order"    => BuildOrderMarkup(actorMarkup, data, existsChecker),
+                "Job"      => BuildJobMarkup(actorMarkup, data, existsChecker),
+                "Part"     => BuildPartMarkup(actorMarkup, data, existsChecker),
+                "Folder"   => BuildFolderMarkup(actorMarkup, data, existsChecker),
                 "Workshop" => BuildWorkshopMarkup(actorMarkup, data),
                 _          => new ActivityLogRendererResult { Header = $"{actorMarkup} performed action on {logType}" }
             };
@@ -41,6 +42,63 @@ namespace GarageControl.Core.Services.Helpers
         public static string BuildMessageMarkup(string logType, ActivityLogData data)
         {
             return Render(logType, data).Header;
+        }
+
+        public static IEnumerable<(string Type, string Id)> GetReferencedEntities(string logType, ActivityLogData data)
+        {
+            var result = new List<(string Type, string Id)>();
+
+            if (!string.IsNullOrEmpty(data.ActorId))
+                result.Add(("Worker", data.ActorId));
+
+            if (!string.IsNullOrEmpty(data.EntityId))
+            {
+                string? type = logType switch
+                {
+                    "Worker"  => "Worker",
+                    "Client"  => "Client",
+                    "Vehicle" => "Vehicle",
+                    "Make"    => "Make",
+                    "Model"   => "Model",
+                    "JobType" => "JobType",
+                    "Order"   => "Order",
+                    "Job"     => "Job",
+                    "Part"    => "Part",
+                    "Folder"  => "Folder",
+                    _         => null
+                };
+                if (type != null) result.Add((type, data.EntityId));
+            }
+
+            if (!string.IsNullOrEmpty(data.SecondaryEntityId))
+            {
+                string? type = logType switch
+                {
+                    "Model" => "Make",
+                    "Job"   => "Order",
+                    _       => null
+                };
+                if (type != null) result.Add((type, data.SecondaryEntityId));
+            }
+
+            if (data.Changes != null)
+            {
+                foreach (var c in data.Changes)
+                {
+                    string? type = null;
+                    string fName = c.FieldName.ToLower();
+                    if (fName.Contains("worker") || fName.Contains("mechanic")) type = "Worker";
+                    else if (fName.Contains("job type") || fName.Contains("type")) type = "JobType";
+
+                    if (type != null)
+                    {
+                        if (!string.IsNullOrEmpty(c.OldId)) result.Add((type, c.OldId));
+                        if (!string.IsNullOrEmpty(c.NewId)) result.Add((type, c.NewId));
+                    }
+                }
+            }
+
+            return result.Distinct();
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
@@ -64,25 +122,29 @@ namespace GarageControl.Core.Services.Helpers
             return char.ToUpper(value[0]) + value.Substring(1);
         }
 
-        private static string GetLink(string? id, string? label, string urlTemplate)
+        private static string GetLink(string? id, string? label, string urlTemplate, string entityType, Func<string, string, bool>? existsChecker)
         {
             if (string.IsNullOrEmpty(id)) return Bold(label);
+
+            if (existsChecker != null && !existsChecker(entityType, id))
+                return Bold(label);
             
             string url = urlTemplate.Replace("{id}", System.Uri.EscapeDataString(id))
                                     .Replace("{name}", System.Uri.EscapeDataString(label ?? "[Unknown]"));
             return Link(label, url);
         }
 
-        private static string BuildActorMarkup(ActivityLogData d)
+        private static string BuildActorMarkup(ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            return Link(d.ActorName, $"/workers/{d.ActorId}?highlight=true");
+            return GetLink(d.ActorId, d.ActorName, "/workers/{id}?highlight=true", "Worker", existsChecker);
         }
 
         private static ActivityLogRendererResult BuildUpdatedMarkup(
             string actorMarkup,
             string entityLabel,
             string link,
-            List<ActivityPropertyChange>? changes)
+            List<ActivityPropertyChange>? changes,
+            Func<string, string, bool>? existsChecker)
         {
             var res = new ActivityLogRendererResult { Header = $"{actorMarkup} updated {entityLabel} {link}" };
             if (changes == null || changes.Count == 0)
@@ -104,10 +166,22 @@ namespace GarageControl.Core.Services.Helpers
                     if (!string.IsNullOrEmpty(id))
                     {
                         string template = "/";
-                        if (fName.ToLower().Contains("worker") || fName.ToLower().Contains("mechanic")) template = "/workers/{id}?highlight=true";
-                        else if (fName.ToLower().Contains("job type") || fName.ToLower().Contains("type")) template = "/job-types?highlightId={id}";
+                        string type = "";
+                        if (fName.ToLower().Contains("worker") || fName.ToLower().Contains("mechanic"))
+                        {
+                            template = "/workers/{id}?highlight=true";
+                            type = "Worker";
+                        }
+                        else if (fName.ToLower().Contains("job type") || fName.ToLower().Contains("type"))
+                        {
+                            template = "/job-types?highlightId={id}";
+                            type = "JobType";
+                        }
                         
-                        return GetLink(id, val, template);
+                        if (!string.IsNullOrEmpty(type))
+                        {
+                            return GetLink(id, val, template, type, existsChecker);
+                        }
                     }
                     if (fName.ToLower().Contains("status")) return Bold(Humanize(val));
                     return Bold(val);
@@ -146,14 +220,14 @@ namespace GarageControl.Core.Services.Helpers
 
         // ── Per-entity builders ────────────────────────────────────────────────
 
-        private static ActivityLogRendererResult BuildWorkerMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildWorkerMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/workers/{id}?highlight=true");
+            string link = GetLink(d.EntityId, d.EntityName, "/workers/{id}?highlight=true", "Worker", existsChecker);
             ActivityLogRendererResult res;
             switch (d.Action)
             {
                 case "created":
-                    res = BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes);
+                    res = BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
                     res.Header = $"{actorMarkup} created worker {link}";
                     return res;
                 
@@ -162,7 +236,7 @@ namespace GarageControl.Core.Services.Helpers
                     break;
 
                 case "updated":
-                    return BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes);
+                    return BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
 
                 default:
                     res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} worker {link}" };
@@ -172,9 +246,9 @@ namespace GarageControl.Core.Services.Helpers
             return res;
         }
 
-        private static ActivityLogRendererResult BuildClientMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildClientMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/clients?highlightId={id}");
+            string link = GetLink(d.EntityId, d.EntityName, "/clients/{id}?highlight=true", "Client", existsChecker);
 
             switch (d.Action)
             {
@@ -183,15 +257,15 @@ namespace GarageControl.Core.Services.Helpers
                 case "deleted":
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted client {Bold(d.EntityName)}" };
                 case "updated":
-                    return BuildUpdatedMarkup(actorMarkup, "client", link, d.Changes);
+                    return BuildUpdatedMarkup(actorMarkup, "client", link, d.Changes, existsChecker);
                 default:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} client {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildVehicleMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildVehicleMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/vehicles?registrationNumber={name}");
+            string link = GetLink(d.EntityId, d.EntityName, "/cars/{id}?highlight=true", "Vehicle", existsChecker);
 
             switch (d.Action)
             {
@@ -200,15 +274,15 @@ namespace GarageControl.Core.Services.Helpers
                 case "deleted":
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted vehicle {Bold(d.EntityName)}" };
                 case "updated":
-                    return BuildUpdatedMarkup(actorMarkup, "vehicle", link, d.Changes);
+                    return BuildUpdatedMarkup(actorMarkup, "vehicle", link, d.Changes, existsChecker);
                 default:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} vehicle {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildMakeMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildMakeMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/models?highlightId={id}");
+            string link = GetLink(d.EntityId, d.EntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
 
             switch (d.Action)
             {
@@ -221,10 +295,11 @@ namespace GarageControl.Core.Services.Helpers
             }
         }
 
-        private static ActivityLogRendererResult BuildModelMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildModelMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string modelLink = GetLink(d.EntityId, d.EntityName, "/models?highlightModelId={id}");
-            string secMakeLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/models?highlightMakeId={id}");
+            string modelTemplate = $"/makes-and-models/{d.SecondaryEntityId ?? "unknown"}/model/{{id}}?highlight=true";
+            string modelLink = GetLink(d.EntityId, d.EntityName, modelTemplate, "Model", existsChecker);
+            string secMakeLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
 
             switch (d.Action)
             {
@@ -241,9 +316,9 @@ namespace GarageControl.Core.Services.Helpers
             }
         }
 
-        private static ActivityLogRendererResult BuildJobTypeMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildJobTypeMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/job-types?highlightId={id}");
+            string link = GetLink(d.EntityId, d.EntityName, "/job-types?highlightId={id}", "JobType", existsChecker);
 
             switch (d.Action)
             {
@@ -252,30 +327,30 @@ namespace GarageControl.Core.Services.Helpers
                 case "deleted":
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted Job Type {Bold(d.EntityName)}" };
                 case "updated":
-                    return BuildUpdatedMarkup(actorMarkup, "Job Type", link, d.Changes);
+                    return BuildUpdatedMarkup(actorMarkup, "Job Type", link, d.Changes, existsChecker);
                 default:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} Job Type {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", "/orders/{id}?highlight=true");
-            var res = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes);
+            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", "/orders/{id}?highlight=true", "Order", existsChecker);
+            var res = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
             
             res.Header = $"{actorMarkup} {d.Action} {orderLink}";
             if (d.Action == "deleted")
-                res.Header = $"{actorMarkup} deleted {Bold(d.EntityName)}";
+                res.Header = $"{actorMarkup} deleted {Bold($"order for {d.EntityName}")}";
 
             return res;
         }
 
-        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", "/orders/{id}?highlight=true");
-            string jobLink = GetLink(d.EntityId, d.EntityName, "/orders/" + d.SecondaryEntityId + "?highlightJob={id}");
+            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", "/orders/{id}?highlight=true", "Order", existsChecker);
+            string jobLink = GetLink(d.EntityId, d.EntityName, "/orders/" + d.SecondaryEntityId + "?highlightJob={id}", "Job", existsChecker);
             
-            var res = BuildUpdatedMarkup(actorMarkup, "job", jobLink, d.Changes);
+            var res = BuildUpdatedMarkup(actorMarkup, "job", jobLink, d.Changes, existsChecker);
             res.Header = $"{actorMarkup} {d.Action} job {jobLink} for {orderLink}";
 
             if (d.Action == "deleted")
@@ -286,9 +361,9 @@ namespace GarageControl.Core.Services.Helpers
             return res;
         }
 
-        private static ActivityLogRendererResult BuildPartMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildPartMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}");
+            string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}", "Part", existsChecker);
             var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} part {link}" };
 
             switch (d.Action)
@@ -303,16 +378,16 @@ namespace GarageControl.Core.Services.Helpers
                     res.Header = $"{actorMarkup} moved part {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     break;
                 case "updated":
-                    var upd = BuildUpdatedMarkup(actorMarkup, "part", link, d.Changes);
+                    var upd = BuildUpdatedMarkup(actorMarkup, "part", link, d.Changes, existsChecker);
                     upd.Details = upd.Details.Select(l => l.Replace("Quantity", "Stockpile")).ToList();
                     return upd;
             }
             return res;
         }
 
-        private static ActivityLogRendererResult BuildFolderMarkup(string actorMarkup, ActivityLogData d)
+        private static ActivityLogRendererResult BuildFolderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}");
+            string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}", "Folder", existsChecker);
             var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} group of parts {link}" };
 
             switch (d.Action)
