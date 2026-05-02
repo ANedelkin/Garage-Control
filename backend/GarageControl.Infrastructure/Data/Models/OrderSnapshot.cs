@@ -1,13 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CompletedOrder
+    public class OrderSnapshot
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
         public string WorkshopId { get; set; } = null!;
+        [Required]
+        public string OrderId { get; set; } = null!;
+
         public DateTime CompletionDate { get; set; } = DateTime.UtcNow;
 
         public string WorkshopName { get; set; } = null!;
@@ -20,6 +24,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public string ClientName { get; set; } = null!;
         public int Kilometers { get; set; }
 
-        public ICollection<CompletedJob> CompletedJobs { get; set; } = new HashSet<CompletedJob>();
+        public ICollection<JobSnapshot> JobSnapshots { get; set; } = new HashSet<JobSnapshot>();
     }
 }

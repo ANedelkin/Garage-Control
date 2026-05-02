@@ -126,7 +126,11 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('accesses');
             localStorage.removeItem('user');
             localStorage.removeItem('HasWorkshop');
-            window.location.href = '/login';
+            
+            const isAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+            if (!isAuthPage) {
+                window.location.href = '/login';
+            }
         };
         const handle403 = () => refreshAuth();
 

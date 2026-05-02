@@ -3,14 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CompletedJobPart
+    public class JobPartSnapshot
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
-        public string CompletedJobId { get; set; } = null!;
-        [ForeignKey(nameof(CompletedJobId))]
-        public CompletedJob CompletedJob { get; set; } = null!;
+        public string JobSnapshotId { get; set; } = null!;
+        [ForeignKey(nameof(JobSnapshotId))]
+        public JobSnapshot JobSnapshot { get; set; } = null!;
+
+        public string? JobPartId { get; set; }
 
         public string? PartId { get; set; }
 

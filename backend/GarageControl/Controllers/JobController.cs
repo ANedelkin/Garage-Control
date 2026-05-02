@@ -73,8 +73,8 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpGet("completed/{jobId}")]
-        public async Task<IActionResult> GetCompletedJobById(string jobId)
+        [HttpGet("archived/{jobId}")]
+        public async Task<IActionResult> GetArchivedJobById(string jobId)
         {
             try
             {

@@ -43,7 +43,7 @@ namespace GarageControl.Core.Services
             _jwtSecret = _configuration["Jwt:Key"];
             _jwtIssuer = _configuration["Jwt:Issuer"];
             _jwtAudience = _configuration["Jwt:Audience"];
-            _accessTokenExpiryMinutes = 30;
+            _accessTokenExpiryMinutes = 1;
         }
 
         public async Task<LoginResponseVM> SignUp(RegisterVM model)

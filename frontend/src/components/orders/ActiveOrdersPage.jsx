@@ -65,7 +65,7 @@ const ActiveOrdersPage = () => {
             const payload = {
                 carId: details.carId,
                 kilometers: details.kilometers,
-                isDone: details.isDone
+                isArchived: details.isArchived
             };
 
             await orderApi.updateOrder(order.id, payload);
@@ -115,6 +115,10 @@ const ActiveOrdersPage = () => {
             if (!highlight && !highlightJob) {
                 const order = orders.find(o => o.id === orderId);
                 if (order) {
+                    if (order.isArchived) {
+                        navigate(`/archived-orders/${orderId}`, { replace: true });
+                        return;
+                    }
                     openOrderDetailsPopup(order);
                 }
             }
@@ -235,8 +239,8 @@ const ActiveOrdersPage = () => {
                 </Dropdown>
                 <button className="btn primary" onClick={openNewOrderPopup}>+ New Order</button>
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    <ExcelExportButton endpoint="export/orders?isDone=false" />
-                    <PdfExportButton endpoint="export/orders?isDone=false" />
+                    <ExcelExportButton endpoint="export/orders?isArchived=false" />
+                    <PdfExportButton endpoint="export/orders?isArchived=false" />
                 </div>
             </div>
 

@@ -7,6 +7,6 @@ namespace GarageControl.Core.ViewModels.Orders
         [Required]
         public string CarId { get; set; } = null!;
         public int Kilometers { get; set; }
-        public bool IsDone { get; set; }
+        public bool IsArchived { get; set; }
     }
 }

@@ -20,8 +20,11 @@ body.dark {
     --glass-hover: linear-gradient(180deg, rgba(20, 40, 45, 1), rgba(25, 55, 65, 1));
     --gradient: linear-gradient(180deg, rgba(5, 20, 25), rgba(10, 25, 35));
 
-    --all-orders: linear-gradient(180deg, rgba(70, 80, 90), rgba(70, 80, 90, 0.03));
-    --all-orders-hover: linear-gradient(180deg, rgba(105, 120, 135), rgba(105, 120, 135, 0.06));
+    --active-orders: linear-gradient(180deg, rgba(70, 80, 90), rgba(70, 80, 90, 0.03));
+    --active-orders-hover: linear-gradient(180deg, rgba(105, 120, 135), rgba(105, 120, 135, 0.06));
+
+    --archived: linear-gradient(180deg, rgba(120, 100, 140), rgba(120, 100, 140, 0.03));
+    --archived-hover: linear-gradient(180deg, rgba(150, 130, 180), rgba(150, 130, 180, 0.06));
 
     --pending-jobs: linear-gradient(180deg, rgba(100, 65, 25), rgba(100, 65, 25, 0.03));
     --pending-jobs-hover: linear-gradient(180deg, rgba(140, 95, 40), rgba(140, 95, 40, 0.06));
@@ -55,8 +58,11 @@ body.light {
     --glass-hover: linear-gradient(180deg, rgba(235, 235, 235, 1), rgba(225, 225, 225, 1));
     --gradient: linear-gradient(180deg, rgba(235, 235, 240), rgba(220, 225, 230));
 
-    --all-orders: linear-gradient(180deg, rgba(180, 185, 190), rgba(200, 205, 210, 0.3));
-    --all-orders-hover: linear-gradient(180deg, rgba(180, 185, 190), rgba(200, 205, 210, 0.3));
+    --active-orders: linear-gradient(180deg, rgba(180, 185, 190), rgba(200, 205, 210, 0.3));
+    --active-orders-hover: linear-gradient(180deg, rgba(180, 185, 190), rgba(200, 205, 210, 0.3));
+
+    --archived: linear-gradient(180deg, rgba(200, 180, 220), rgba(220, 200, 240, 0.4));
+    --archived-hover: linear-gradient(180deg, rgba(180, 160, 200), rgba(200, 180, 230, 0.5));
 
     --pending-jobs: linear-gradient(180deg, rgba(255, 200, 140), rgba(255, 230, 200, 0.4));
     --pending-jobs-hover: linear-gradient(180deg, rgba(255, 180, 100), rgba(255, 210, 160, 0.5));

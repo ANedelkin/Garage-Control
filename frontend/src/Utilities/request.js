@@ -35,13 +35,19 @@ export async function request(method, url, body = null, options = {}) {
                 return await request(method, url, body, options);
             } catch (refreshError) {
                 // If refresh fails, redirect to login
-                window.dispatchEvent(new CustomEvent('api-401'));
+                const isAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+                if (!isAuthPage) {
+                    window.dispatchEvent(new CustomEvent('api-401'));
+                }
                 throw refreshError;
             }
         }
 
         if (response.status === 401 && url.includes('auth/refresh')) {
-             window.dispatchEvent(new CustomEvent('api-401'));
+             const isAuthPage = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+             if (!isAuthPage) {
+                window.dispatchEvent(new CustomEvent('api-401'));
+             }
         }
 
         if (response.status === 404 && method.toLowerCase() === 'get') {

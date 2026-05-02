@@ -9,6 +9,6 @@ namespace GarageControl.Core.ViewModels.Orders
         public string ClientName { get; set; } = null!;
         public DateTime Date { get; set; }
         public int Kilometers { get; set; }
-        public bool IsDone { get; set; }
+        public bool IsArchived { get; set; }
     }
 }

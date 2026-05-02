@@ -40,7 +40,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
         onSave({
             carId: selectedCarId,
             kilometers: parseInt(kilometers) || 0,
-            isDone: markDone
+            isArchived: markDone
         });
     };
 
@@ -59,13 +59,13 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     onBlur={() => {
                         setTimeout(() => setSuggestions([]), 200);
                     }}
-                    disabled={order.isDone}
+                    disabled={order.isArchived}
                 />
                 <FieldError name="CarId" errors={errors} />
                 <Suggestions
                     ref={suggestionsRef}
                     suggestions={suggestions}
-                    isOpen={suggestions.length > 0 && !order.isDone}
+                    isOpen={suggestions.length > 0 && !order.isArchived}
                     onSelect={selectCar}
                     onClose={() => setSuggestions([])}
                     renderItem={(car) => (
@@ -85,7 +85,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     min={minKilometers}
                     value={kilometers}
                     onChange={(e) => setKilometers(e.target.value)}
-                    disabled={order.isDone}
+                    disabled={order.isArchived}
                 />
                 <FieldError name="Kilometers" errors={errors} />
                 {errors.general && errors.general.toLowerCase().includes('kilometers') && (
@@ -93,7 +93,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                 )}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
-                {!order.isDone && (
+                {!order.isArchived && (
                     <button
                         className="btn"
                         disabled={order.jobs && !order.jobs.every(j => j.status === 'done')}
@@ -149,10 +149,10 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
             <div className="divider"></div>
             <div className="form-footer">
                 {errors.general && !errors.general.toLowerCase().includes('kilometers') && <p className="form-error">{errors.general}</p>}
-                {!order.isDone && (
+                {!order.isArchived && (
                     <button className="btn" onClick={() => handleSave(false)}>Save Changes</button>
                 )}
-                <button className="btn" onClick={onClose}>{order.isDone ? 'Close' : 'Cancel'}</button>
+                <button className="btn" onClick={onClose}>{order.isArchived ? 'Close' : 'Cancel'}</button>
             </div>
         </div>
     );

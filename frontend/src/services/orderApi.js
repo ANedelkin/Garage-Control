@@ -7,8 +7,8 @@ const orderApi = {
     getActiveOrders: async () => {
         return await request('GET', 'order/active');
     },
-    getCompletedOrders: async () => {
-        return await request('GET', 'order/completed');
+    getArchivedOrders: async () => {
+        return await request('GET', 'order/archived');
     },
     createOrder: async (data) => {
         return await request('POST', 'order/create', data);

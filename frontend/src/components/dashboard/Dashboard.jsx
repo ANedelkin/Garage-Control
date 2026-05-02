@@ -194,8 +194,8 @@ const Dashboard = () => {
     return (
         <main className="main dashboard">
             <section className="grid">
-                <div className="tile count-tile glow job-status-all" onClick={() => navigate('/orders')}>
-                    <h3>All orders</h3>
+                <div className="tile count-tile glow job-status-active" onClick={() => navigate('/orders')}>
+                    <h3>Active orders</h3>
                     <p className="count">{dashboardData.orderStats.allOrders}</p>
                 </div>
                 <div className="tile count-tile glow job-status-pending" onClick={() => navigate('/orders?status=pending')}>

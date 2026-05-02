@@ -11,11 +11,11 @@
 }
 
 .job-status-archived {
-    background: var(--done-jobs) !important;
+    background: var(--archived) !important;
 }
 
-.job-status-all {
-    background: var(--all-orders) !important;
+.job-status-active {
+    background: var(--active-orders) !important;
 }
 
 .job-status-pending.glow::before {
@@ -31,9 +31,9 @@
 }
 
 .job-status-archived.glow::before {
-    background: var(--done-jobs-hover);
+    background: var(--archived-hover);
 }
 
-.job-status-all.glow::before {
-    background: var(--all-orders-hover);
+.job-status-active.glow::before {
+    background: var(--active-orders-hover);
 }

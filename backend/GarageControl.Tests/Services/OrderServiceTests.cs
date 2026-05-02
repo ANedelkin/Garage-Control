@@ -58,7 +58,7 @@ namespace GarageControl.Tests.Services
             var make = new CarMake { Id = "m1", Name = "Toyota" };
             var model = new CarModel { Id = "mod1", Name = "Corolla", CarMake = make };
             var car = new Car { Id = "car1", RegistrationNumber = "123", Model = model, Owner = owner };
-            var order = new Order { Id = "o1", Car = car, Kilometers = 1000, IsDone = false };
+            var order = new Order { Id = "o1", Car = car, Kilometers = 1000, IsArchived = false };
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
@@ -147,7 +147,7 @@ namespace GarageControl.Tests.Services
             var model = new CarModel { Id = modelId, Name = "Corolla", CarMakeId = makeId, CarMake = make };
             var owner = new Client { Id = ownerId, Name = "Client", WorkshopId = workshopId, Workshop = workshop, PhoneNumber = "123-456-7890" };
             var car = new Car { Id = carId, RegistrationNumber = "REG_SYNC", ModelId = modelId, Model = model, OwnerId = ownerId, Owner = owner, Kilometers = 1000 };
-            var order = new Order { Id = orderId, CarId = carId, Car = car, Kilometers = 1000, IsDone = false };
+            var order = new Order { Id = orderId, CarId = carId, Car = car, Kilometers = 1000, IsArchived = false };
 
             _context.Workshops.Add(workshop);
             _context.CarMakes.Add(make);
@@ -161,7 +161,7 @@ namespace GarageControl.Tests.Services
             { 
                 CarId = car.Id, 
                 Kilometers = 2000,
-                IsDone = false
+                IsArchived = false
             };
 
             // Act

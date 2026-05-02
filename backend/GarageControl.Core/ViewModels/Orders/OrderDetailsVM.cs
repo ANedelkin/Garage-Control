@@ -8,6 +8,6 @@ namespace GarageControl.Core.ViewModels.Orders
         public string CarRegistrationNumber { get; set; } = null!;
         public string ClientName { get; set; } = null!;
         public int Kilometers { get; set; }
-        public bool IsDone { get; set; }
+        public bool IsArchived { get; set; }
     }
 }

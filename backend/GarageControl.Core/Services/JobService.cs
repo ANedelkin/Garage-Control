@@ -96,7 +96,7 @@ namespace GarageControl.Core.Services.Jobs
 
         public async Task<List<JobToDoVM>> GetMyJobsAsync(string userId, string workshopId)
         {
-            return await _context.Jobs.Where(j => j.Worker.UserId == userId)
+            return await _context.Jobs.Where(j => j.Worker.UserId == userId && !j.Order.IsArchived)
                                       .Select(j => new JobToDoVM
                                       {
                                           Id = j.Id,
@@ -116,7 +116,7 @@ namespace GarageControl.Core.Services.Jobs
         
         public async Task<List<JobToDoVM>> GetJobsByWorkerIdAsync(string workerId, string workshopId)
         {
-            return await _context.Jobs.Where(j => j.WorkerId == workerId && j.Order.Car.Owner.WorkshopId == workshopId)
+            return await _context.Jobs.Where(j => j.WorkerId == workerId && j.Order.Car.Owner.WorkshopId == workshopId && !j.Order.IsArchived)
                                       .Select(j => new JobToDoVM
                                       {
                                           Id = j.Id,
@@ -186,12 +186,12 @@ namespace GarageControl.Core.Services.Jobs
 
         public async Task<JobDetailsVM?> GetCompletedJobByIdAsync(string jobId, string workshopId)
         {
-            return await _context.CompletedJobs
+            return await _context.JobSnapshots
                 .AsNoTracking()
-                .Where(j => j.Id == jobId && j.CompletedOrder.WorkshopId == workshopId)
+                .Where(j => j.JobId == jobId && j.OrderSnapshot.WorkshopId == workshopId)
                 .Select(j => new JobDetailsVM
                 {
-                    Id = j.Id,
+                    Id = j.JobId,
                     JobTypeId = j.JobTypeId ?? "",
                     WorkerId = j.WorkerId ?? "",
                     Description = j.Description ?? "",
@@ -199,13 +199,13 @@ namespace GarageControl.Core.Services.Jobs
                     LaborCost = j.LaborCost,
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
-                    OrderId = j.CompletedOrderId,
-                    ClientName = j.CompletedOrder.ClientName,
-                    CarName = j.CompletedOrder.CarName,
-                    CarRegistrationNumber = j.CompletedOrder.CarRegistrationNumber,
+                    OrderId = j.OrderSnapshot.OrderId,
+                    ClientName = j.OrderSnapshot.ClientName,
+                    CarName = j.OrderSnapshot.CarName,
+                    CarRegistrationNumber = j.OrderSnapshot.CarRegistrationNumber,
                     JobTypeName = j.JobTypeName,
                     MechanicName = j.MechanicName,
-                    Parts = j.CompletedJobParts.Select(jp => new JobPartDetailsVM
+                    Parts = j.JobPartSnapshots.Select(jp => new JobPartDetailsVM
                     {
                         PartId = jp.PartId ?? "",
                         PartName = jp.PartName,
@@ -240,12 +240,12 @@ namespace GarageControl.Core.Services.Jobs
 
             if (activeJobs.Any()) return activeJobs;
 
-            return await _context.CompletedJobs
+            return await _context.JobSnapshots
                 .AsNoTracking()
-                .Where(j => j.CompletedOrderId == orderId && j.CompletedOrder.WorkshopId == workshopId)
+                .Where(j => j.OrderSnapshot.OrderId == orderId && j.OrderSnapshot.WorkshopId == workshopId)
                 .Select(j => new JobListVM
                 {
-                    Id = j.Id,
+                    Id = j.JobId,
                     Type = j.JobTypeName,
                     Description = j.Description ?? "",
                     Status = "done",
@@ -253,7 +253,7 @@ namespace GarageControl.Core.Services.Jobs
                     StartTime = j.StartTime,
                     EndTime = j.EndTime,
                     LaborCost = j.LaborCost,
-                    PartsCost = j.CompletedJobParts.Sum(jp => (decimal)jp.UsedQuantity * jp.Price)
+                    PartsCost = j.JobPartSnapshots.Sum(jp => (decimal)jp.UsedQuantity * jp.Price)
                 })
                 .ToListAsync();
         }

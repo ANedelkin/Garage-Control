@@ -41,27 +41,26 @@ namespace GarageControl.Core.Services
         {
             return _context.Jobs
                 .AsNoTracking()
-                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId);
+                .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && !j.Order.IsArchived);
         }
 
         private async Task<OrderStatsVM> GetOrderStatsAsync(string workshopId)
         {
-            var stats = await JobsForWorkshop(workshopId)
+            var activeStats = await JobsForWorkshop(workshopId)
                 .GroupBy(_ => 1)
-                .Select(g => new OrderStatsVM
+                .Select(g => new
                 {
                     PendingJobs = g.Count(j => j.Status == JobStatus.Pending),
                     InProgressJobs = g.Count(j => j.Status == JobStatus.InProgress),
                 })
-                .Select(s => new OrderStatsVM
-                {
-                    PendingJobs = s.PendingJobs,
-                    InProgressJobs = s.InProgressJobs,
-                    AllOrders = s.PendingJobs + s.InProgressJobs,
-                })
                 .FirstOrDefaultAsync();
 
-            return stats ?? new OrderStatsVM();
+            return new OrderStatsVM
+            {
+                PendingJobs = activeStats?.PendingJobs ?? 0,
+                InProgressJobs = activeStats?.InProgressJobs ?? 0,
+                AllOrders = (activeStats?.PendingJobs ?? 0) + (activeStats?.InProgressJobs ?? 0)
+            };
         }
 
         private async Task<List<JobsCompletedByDayVM>> GetJobsCompletedByDayAsync(string workshopId, DateTime now)
@@ -78,9 +77,9 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            var completedJobs = await _context.CompletedJobs
+            var completedJobs = await _context.JobSnapshots
                 .AsNoTracking()
-                .Where(j => j.CompletedOrder.WorkshopId == workshopId && j.EndTime >= thirtyDaysAgo)
+                .Where(j => j.OrderSnapshot.WorkshopId == workshopId && j.EndTime >= thirtyDaysAgo)
                 .Select(j => new
                 {
                     Date = (j.EndTime > now ? now : j.EndTime).Date,
@@ -150,9 +149,9 @@ namespace GarageControl.Core.Services
                 .Select(j => new { JobTypeName = j.JobType.Name })
                 .ToListAsync();
 
-            var completedJobs = await _context.CompletedJobs
+            var completedJobs = await _context.JobSnapshots
                 .AsNoTracking()
-                .Where(j => j.CompletedOrder.WorkshopId == workshopId && j.EndTime >= oneMonthAgo)
+                .Where(j => j.OrderSnapshot.WorkshopId == workshopId && j.EndTime >= oneMonthAgo)
                 .Select(j => new { JobTypeName = j.JobTypeName })
                 .ToListAsync();
 
@@ -180,9 +179,9 @@ namespace GarageControl.Core.Services
                 })
                 .ToListAsync();
 
-            var completedJobs = await _context.CompletedJobs
+            var completedJobs = await _context.JobSnapshots
                 .AsNoTracking()
-                .Where(j => j.CompletedOrder.WorkshopId == workshopId)
+                .Where(j => j.OrderSnapshot.WorkshopId == workshopId)
                 .Select(j => new
                 {
                     WorkerId = j.WorkerId ?? "",

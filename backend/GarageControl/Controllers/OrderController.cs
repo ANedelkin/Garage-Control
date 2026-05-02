@@ -51,7 +51,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isDone: false);
+                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived: false);
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -60,12 +60,12 @@ namespace GarageControl.Controllers
             }
         }
 
-        [HttpGet("completed")]
-        public async Task<IActionResult> GetCompletedOrders()
+        [HttpGet("archived")]
+        public async Task<IActionResult> GetArchivedOrders()
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isDone: true);
+                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived: true);
                 return Ok(orders);
             }
             catch (Exception ex)

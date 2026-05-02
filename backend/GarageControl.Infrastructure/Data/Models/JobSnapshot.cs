@@ -3,14 +3,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
-    public class CompletedJob
+    public class JobSnapshot
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         [Required]
-        public string CompletedOrderId { get; set; } = null!;
-        [ForeignKey(nameof(CompletedOrderId))]
-        public CompletedOrder CompletedOrder { get; set; } = null!;
+        public string OrderSnapshotId { get; set; } = null!;
+        [ForeignKey(nameof(OrderSnapshotId))]
+        public OrderSnapshot OrderSnapshot { get; set; } = null!;
+
+        [Required]
+        public string JobId { get; set; } = null!;
 
         public string? JobTypeId { get; set; }
         public string? WorkerId { get; set; }
@@ -23,6 +26,6 @@ namespace GarageControl.Infrastructure.Data.Models
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
-        public ICollection<CompletedJobPart> CompletedJobParts { get; set; } = new HashSet<CompletedJobPart>();
+        public ICollection<JobPartSnapshot> JobPartSnapshots { get; set; } = new HashSet<JobPartSnapshot>();
     }
 }

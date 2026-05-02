@@ -332,7 +332,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
                         {
                             CarId = randomCar.Id,
                             Car = randomCar,
-                            IsDone = false,
+                            IsArchived = false,
                             Kilometers = Rnd.Next(5000, 150000)
                         };
 
@@ -458,7 +458,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
                         order.Jobs = jobs;
                         if (jobs.All(j => j.Status == JobStatus.Done))
                         {
-                            order.IsDone = true;
+                            order.IsArchived = true;
                         }
                         context.Orders.Add(order);
                     }

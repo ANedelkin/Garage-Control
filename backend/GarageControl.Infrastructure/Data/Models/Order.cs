@@ -13,7 +13,7 @@ namespace GarageControl.Infrastructure.Data.Models
         [ForeignKey(nameof(CarId))]
         public Car Car { get; set; } = null!;
         public int Kilometers { get; set; }
-        public bool IsDone { get; set; }
+        public bool IsArchived { get; set; }
         public ICollection<Job> Jobs { get; set; } = new HashSet<Job>();
 
     }

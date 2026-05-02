@@ -33,7 +33,7 @@ const ArchivedOrdersPage = () => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const data = await orderApi.getCompletedOrders();
+            const data = await orderApi.getArchivedOrders();
             const ordersWithJobs = await Promise.all(data.map(async (order) => {
                 const jobs = await jobApi.getJobsByOrderId(order.id);
                 return { ...order, jobs };
@@ -137,8 +137,8 @@ const ArchivedOrdersPage = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    <ExcelExportButton endpoint="export/orders?isDone=true" />
-                    <PdfExportButton endpoint="export/orders?isDone=true" />
+                    <ExcelExportButton endpoint="export/orders?isArchived=true" />
+                    <PdfExportButton endpoint="export/orders?isArchived=true" />
                 </div>
             </div>
 

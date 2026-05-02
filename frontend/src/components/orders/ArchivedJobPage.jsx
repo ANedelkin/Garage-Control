@@ -18,7 +18,7 @@ const ArchivedJobPage = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const jobData = await jobApi.getCompletedJob(jobId);
+                const jobData = await jobApi.getArchivedJob(jobId);
                 setJob(jobData);
             } catch (e) {
                 console.error("Failed to load data", e);

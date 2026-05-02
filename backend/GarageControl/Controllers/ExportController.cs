@@ -46,9 +46,9 @@ namespace GarageControl.Controllers
         private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
         [HttpGet("orders")]
-        public async Task<IActionResult> ExportOrders([FromQuery] bool? isDone, [FromQuery] string format = "excel")
+        public async Task<IActionResult> ExportOrders([FromQuery] bool? isArchived, [FromQuery] string format = "excel")
         {
-            var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isDone);
+            var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived);
             var ordersWithJobs = new List<(GarageControl.Core.ViewModels.Orders.OrderListVM Order, List<GarageControl.Core.ViewModels.Jobs.JobListVM> Jobs)>();
 
             foreach (var order in orders)
@@ -61,7 +61,7 @@ namespace GarageControl.Controllers
                 ? await _pdfService.ExportOrdersAsync(ordersWithJobs)
                 : await _exportService.ExportOrdersAsync(ordersWithJobs);
 
-            string filename = isDone == true ? "Done_Orders" : "Active_Orders";
+            string filename = isArchived == true ? "Archived_Orders" : "Active_Orders";
             return ExportFile(bytes, filename, format);
         }
 

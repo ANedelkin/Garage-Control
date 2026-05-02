@@ -2,7 +2,7 @@ const API_BASE_URL = 'https://localhost:5173/api';
 
 /**
  * Downloads a file from the backend Export controller.
- * @param {string} endpoint - The API endpoint (e.g., 'export/orders?isDone=false')
+ * @param {string} endpoint - The API endpoint (e.g., 'export/orders?isArchived=false')
  * @param {string} format - The file format ('excel' or 'pdf')
  */
 export async function exportFile(endpoint, format = 'excel') {
