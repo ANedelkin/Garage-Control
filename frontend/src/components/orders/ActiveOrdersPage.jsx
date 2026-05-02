@@ -327,7 +327,7 @@ const ActiveOrdersPage = () => {
                                                         <td className="hide-md">{formatDate(job.startTime)}</td>
                                                         <td>{job.type}</td>
                                                         <td className="hide-md">{job.mechanicName}</td>
-                                                        <td className="hide-sm">&euro; {(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
+                                                        <td className="hide-sm">{(parseFloat(job.laborCost || 0) + parseFloat(job.partsCost || 0)).toFixed(2)}</td>
                                                         <td onClick={e => e.stopPropagation()}>
                                                             <button className="btn icon-btn delete" onClick={() => handleDeleteJob(order.id, job.id)}>
                                                                 <i className="fa-solid fa-trash"></i>

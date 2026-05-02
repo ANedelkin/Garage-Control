@@ -82,7 +82,7 @@ const ArchivedJobPage = () => {
                         </div>
                         <div className="form-section">
                             <label>Labor Cost</label>
-                            <input type="text" value={`€ ${parseFloat(job.laborCost || 0).toFixed(2)}`} readOnly disabled />
+                            <input type="text" value={`${parseFloat(job.laborCost || 0).toFixed(2)}`} readOnly disabled />
                         </div>
                         <div className="form-section">
                             <label>Time</label>
@@ -130,8 +130,8 @@ const ArchivedJobPage = () => {
                                             </div>
                                         </td>
                                         <td className="mobile-collapsible" data-label="Used Qty">{p.usedQuantity}</td>
-                                        <td className="mobile-collapsible" data-label="Unit Price">€ {parseFloat(p.price || 0).toFixed(2)}</td>
-                                        <td className="mobile-collapsible" data-label="Total">€ {(parseFloat(p.usedQuantity || 0) * parseFloat(p.price || 0)).toFixed(2)}</td>
+                                        <td className="mobile-collapsible" data-label="Unit Price">{parseFloat(p.price || 0).toFixed(2)}</td>
+                                        <td className="mobile-collapsible" data-label="Total">{(parseFloat(p.usedQuantity || 0) * parseFloat(p.price || 0)).toFixed(2)}</td>
                                     </tr>
                                 );
                             })}
@@ -141,7 +141,7 @@ const ArchivedJobPage = () => {
 
                 <div className="form-footer" style={{ justifyContent: 'flex-end', padding: '15px 0' }}>
                     <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                        Total Job Cost: € {(parseFloat(job.laborCost || 0) + job.parts.reduce((sum, p) => sum + (p.usedQuantity * p.price), 0)).toFixed(2)}
+                        Total Job Cost: {(parseFloat(job.laborCost || 0) + job.parts.reduce((sum, p) => sum + (p.usedQuantity * p.price), 0)).toFixed(2)}
                     </div>
                 </div>
             </div>

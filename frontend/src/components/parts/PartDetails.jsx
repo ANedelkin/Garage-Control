@@ -162,7 +162,6 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                         <div className="form-section">
                             <label>Price</label>
                             <div className="input-group">
-                                {/* <span className="input-prefix">$</span> */}
                                 <input
                                     type="number"
                                     step="0.01"

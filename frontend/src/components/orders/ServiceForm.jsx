@@ -432,7 +432,7 @@ const ServiceForm = ({
                                                         onClose={() => setActivePartIndex(null)}
                                                         renderItem={(part) => (
                                                             <>
-                                                                <b>{part.name}</b> ({part.partNumber}) - ${part.price}
+                                                                <b>{part.name}</b> ({part.partNumber}) - {part.price}
                                                             </>
                                                         )}
                                                         maxHeight="150px"
@@ -440,7 +440,7 @@ const ServiceForm = ({
                                                     />
                                                 </div>
                                                 <div className="mobile-only mobile-price">
-                                                    ${p.price.toFixed(2)}
+                                                    {p.price.toFixed(2)}
                                                 </div>
                                             </div>
                                             <FieldError name={`Parts[${i}].Name`} errors={errors} />
