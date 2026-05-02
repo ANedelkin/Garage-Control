@@ -160,7 +160,7 @@ const ActiveOrdersPage = () => {
     const handleDeleteJob = async (orderId, jobId) => {
         addPopup(
             'Delete Job',
-            <ConfirmationPopup 
+            <ConfirmationPopup
                 message="Are you sure you want to delete this job?"
                 confirmText="Delete"
                 isDanger={true}
@@ -181,7 +181,7 @@ const ActiveOrdersPage = () => {
     const handleDeleteOrder = async (orderId) => {
         addPopup(
             'Delete Order',
-            <ConfirmationPopup 
+            <ConfirmationPopup
                 message="Are you sure you want to delete this entire order and all its jobs? This cannot be undone."
                 confirmText="Delete"
                 isDanger={true}

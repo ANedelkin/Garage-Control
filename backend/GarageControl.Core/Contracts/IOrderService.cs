@@ -12,5 +12,6 @@ namespace GarageControl.Core.Contracts
         Task<OrderInvoiceVM?> GetOrderInvoiceByIdAsync(string id);
         Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model);
         Task<MethodResponseVM> DeleteOrderAsync(string userId, string id, string workshopId);
+        Task<string> GenerateInvoiceAsync(string orderId, string workshopId);
     }
 }

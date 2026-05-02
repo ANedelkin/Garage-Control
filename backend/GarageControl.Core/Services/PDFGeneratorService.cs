@@ -19,10 +19,14 @@ public class PDFGeneratorService : IPDFGeneratorService
         var section = document.AddSection();
 
         // Header
-        var header = section.AddParagraph($"Invoice for Order #{order.OrderId}");
+        var title = order.InvoiceNumber != null ? $"Invoice #{order.InvoiceNumber}" : $"Invoice for Order #{order.OrderId}";
+        var header = section.AddParagraph(title);
         header.Format.Font.Size = 16;
         header.Format.Font.Bold = true;
-        header.Format.SpaceAfter = "1cm";
+        header.Format.SpaceAfter = "0.5cm";
+
+        section.AddParagraph($"Date: {System.DateTime.UtcNow:dd/MM/yyyy}");
+        section.AddParagraph().AddLineBreak();
 
         // Client & car info
         section.AddParagraph($"Client: {order.ClientName}");
@@ -52,17 +56,17 @@ public class PDFGeneratorService : IPDFGeneratorService
             // Job details
             AddIndentedParagraph(section, $"Description: {job.Description}", DetailIndent);
             AddIndentedParagraph(section, $"Mechanic: {job.MechanicName}", DetailIndent);
-            AddIndentedParagraph(section, $"Labor cost: {job.LaborCost:C}", DetailIndent);
+            AddIndentedParagraph(section, $"Labor cost: {job.LaborCost.ToString("0.00")}", DetailIndent);
 
             var partsTotal = job.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity);
-            AddIndentedParagraph(section, $"Parts total: {partsTotal:C}", DetailIndent);
+            AddIndentedParagraph(section, $"Parts total: {partsTotal.ToString("0.00")}", DetailIndent);
 
             // Parts
             foreach (var part in job.Parts)
             {
                 AddIndentedParagraph(
                     section,
-                    $"{part.PartName} x{part.UsedQuantity} @ {part.Price:C} = {(part.Price * (decimal)part.UsedQuantity):C}",
+                    $"{part.PartName} x{part.UsedQuantity} @ {part.Price.ToString("0.00")} = {(part.Price * (decimal)part.UsedQuantity).ToString("0.00")}",
                     PartIndent
                 );
             }
@@ -73,7 +77,7 @@ public class PDFGeneratorService : IPDFGeneratorService
             j.LaborCost + j.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity)
         );
 
-        var totalParagraph = section.AddParagraph($"Total: {total:C}");
+        var totalParagraph = section.AddParagraph($"Total: {total.ToString("0.00")}");
         totalParagraph.Format.Font.Bold = true;
         totalParagraph.Format.SpaceBefore = "0.8cm";
 

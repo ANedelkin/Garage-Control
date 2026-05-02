@@ -108,5 +108,6 @@ namespace GarageControl.Infrastructure.Data
         public DbSet<OrderSnapshot> OrderSnapshots { get; set; } = null!;
         public DbSet<JobSnapshot> JobSnapshots { get; set; } = null!;
         public DbSet<JobPartSnapshot> JobPartSnapshots { get; set; } = null!;
+        public DbSet<Invoice> Invoices { get; set; } = null!;
     }
 }

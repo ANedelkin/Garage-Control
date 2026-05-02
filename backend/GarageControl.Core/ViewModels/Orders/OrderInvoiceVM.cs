@@ -5,6 +5,7 @@ namespace GarageControl.Core.ViewModels.Orders
     public class OrderInvoiceVM
     {
         public string OrderId { get; set; } = null!;
+        public string? InvoiceNumber { get; set; }
         public string WorkshopName { get; set; } = null!;
         public string WorkshopAddress { get; set; } = null!;
         public string WorkshopPhone { get; set; } = null!;

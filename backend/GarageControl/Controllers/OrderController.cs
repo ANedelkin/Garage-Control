@@ -99,9 +99,12 @@ namespace GarageControl.Controllers
             if (order == null)
                 return NotFound("Order not found.");
 
+            var workshopId = GetWorkshopId();
+            order.InvoiceNumber = await _orderService.GenerateInvoiceAsync(orderId, workshopId);
+
             var pdfBytes = await _pdfGeneratorService.GenerateInvoicePdfAsync(order);
 
-            return File(pdfBytes, "application/pdf", $"Invoice_{orderId}.pdf");
+            return File(pdfBytes, "application/pdf", $"Invoice_{order.InvoiceNumber}.pdf");
         }
 
         [HttpGet("{id}")]
