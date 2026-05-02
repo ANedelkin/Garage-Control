@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GarageControl.Infrastructure.Data.Models
 {
@@ -11,7 +12,8 @@ namespace GarageControl.Infrastructure.Data.Models
         [Required]
         public string WorkshopId { get; set; } = null!;
         [Required]
-        public string MessageHtml { get; set; } = null!;
+        [Column("MessageHtml")]
+        public string MessageMarkup { get; set; } = null!;
 
         /// <summary>Entity category, e.g. "Worker", "Client", "Job"…</summary>
         public string? LogType { get; set; }

@@ -46,7 +46,7 @@ namespace GarageControl.Core.Services
         {
             await _repository.AddAsync(new ActivityLog
             {
-                MessageHtml = messageMarkup,
+                MessageMarkup = messageMarkup,
                 WorkshopId  = workshopId,
                 LogType     = logType,
                 LogData     = logData,
@@ -183,7 +183,7 @@ namespace GarageControl.Core.Services
                     {
                         Id = log.Id,
                         Timestamp = log.Timestamp,
-                        Message = log.MessageHtml
+                        Message = log.MessageMarkup
                     });
                 }
             }

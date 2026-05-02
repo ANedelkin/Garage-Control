@@ -440,21 +440,6 @@ namespace GarageControl.Core.Services
 
         public async Task<string> GenerateInvoiceAsync(string orderId, string workshopId)
         {
-            // Ensure table exists (bypass broken migration history)
-            await _context.Database.ExecuteSqlRawAsync(@"
-                IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Invoices]') AND type in (N'U'))
-                BEGIN
-                    CREATE TABLE [Invoices] (
-                        [Id] int NOT NULL IDENTITY,
-                        [OrderId] nvarchar(max) NOT NULL,
-                        [WorkshopId] nvarchar(max) NOT NULL,
-                        [GeneratedAt] datetime2 NOT NULL,
-                        [InvoiceNumber] nvarchar(max) NOT NULL,
-                        CONSTRAINT [PK_Invoices] PRIMARY KEY ([Id])
-                    );
-                END
-            ");
-
             var invoice = new Invoice
             {
                 OrderId = orderId,
