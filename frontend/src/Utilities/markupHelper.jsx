@@ -1,28 +1,54 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const ESCAPES = {
+    '\\\\': '___ESC_BS___',
+    '\\*': '___ESC_AST___',
+    '\\[': '___ESC_LB___',
+    '\\]': '___ESC_RB___',
+    '\\(': '___ESC_LP___',
+    '\\)': '___ESC_RP___'
+};
+
+const applyEscapes = (text) => {
+    let result = text;
+    for (const [key, value] of Object.entries(ESCAPES)) {
+        result = result.split(key).join(value);
+    }
+    return result;
+};
+
+const restoreEscapes = (text) => {
+    let result = text;
+    for (const [key, value] of Object.entries(ESCAPES)) {
+        result = result.split(value).join(key.substring(1));
+    }
+    return result;
+};
+
 export const parseMarkup = (markup) => {
     if (!markup) return [];
     
+    const escapedMarkup = applyEscapes(markup);
     const parts = [];
     const linkRegex = /\[(.*?)\]\((.*?)\)/g;
     let lastIndex = 0;
     let match;
     
-    while ((match = linkRegex.exec(markup)) !== null) {
+    while ((match = linkRegex.exec(escapedMarkup)) !== null) {
         if (match.index > lastIndex) {
-            parts.push(...parseBoldMarkup(markup.substring(lastIndex, match.index)));
+            parts.push(...parseBoldMarkup(escapedMarkup.substring(lastIndex, match.index)));
         }
         parts.push({
             type: 'link',
-            url: match[2],
+            url: restoreEscapes(match[2]),
             children: parseBoldMarkup(match[1])
         });
         lastIndex = match.index + match[0].length;
     }
     
-    if (lastIndex < markup.length) {
-        parts.push(...parseBoldMarkup(markup.substring(lastIndex)));
+    if (lastIndex < escapedMarkup.length) {
+        parts.push(...parseBoldMarkup(escapedMarkup.substring(lastIndex)));
     }
     return parts;
 };
@@ -35,23 +61,24 @@ const parseBoldMarkup = (text) => {
     
     while ((match = boldRegex.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+            parts.push({ type: 'text', content: restoreEscapes(text.substring(lastIndex, match.index)) });
         }
-        parts.push({ type: 'bold', content: match[1] });
+        parts.push({ type: 'bold', content: restoreEscapes(match[1]) });
         lastIndex = match.index + match[0].length;
     }
     
     if (lastIndex < text.length) {
-        parts.push({ type: 'text', content: text.substring(lastIndex) });
+        parts.push({ type: 'text', content: restoreEscapes(text.substring(lastIndex)) });
     }
     return parts;
 };
 
 export const stripMarkup = (markup) => {
     if (!markup) return '';
-    let text = markup.replace(/\[(.*?)\]\([^)]+\)/g, '$1');
+    const escaped = applyEscapes(markup);
+    let text = escaped.replace(/\[(.*?)\]\([^)]+\)/g, '$1');
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
-    return text;
+    return restoreEscapes(text);
 };
 
 export const renderAst = (ast, keyPrefix = '') => {

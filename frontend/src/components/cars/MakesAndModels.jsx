@@ -21,7 +21,7 @@ const MakesAndModels = () => {
     const [selectedMake, setSelectedMake] = useState(null);
     const [loadingMakes, setLoadingMakes] = useState(true);
     const [loadingModels, setLoadingModels] = useState(false);
-    
+
     const makeRefs = useRef({});
     const modelRefs = useRef({});
     const location = useLocation();
@@ -66,7 +66,7 @@ const MakesAndModels = () => {
             if (modelRefs.current[modelId]) {
                 modelRefs.current[modelId].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            if (!highlight && model && (!editingItem || editingItem.id !== modelId)) {
+            if (!highlight && model && model.isCustom && (!editingItem || editingItem.id !== modelId)) {
                 handleOpenModal('model', model);
             }
         }
@@ -190,7 +190,7 @@ const MakesAndModels = () => {
         const item = type === 'make' ? makes.find(m => m.id === id) : models.find(m => m.id === id);
         addPopup(
             `Delete ${type === 'make' ? 'Make' : 'Model'}`,
-            <ConfirmationPopup 
+            <ConfirmationPopup
                 message={`Are you sure you want to delete ${type === 'make' ? 'make' : 'model'} "${item?.name}"?`}
                 confirmText="Delete"
                 isDanger={true}
@@ -259,12 +259,11 @@ const MakesAndModels = () => {
         if (makeId || modelId) {
             navigate('/makes-and-models', { replace: true });
         }
-        setSelectedMake(null);
     };
 
     return (
         <main className="main makes-models" onClick={handleContainerClick}>
-            <div className={`tile ${selectedMake ? 'mobile-show-models' : 'mobile-show-makes'}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`tile ${selectedMake ? 'mobile-show-models' : 'mobile-show-makes'}`}>
                 <div className="horizontal grow align-stretch">
                     {/* Makes Pane */}
                     <div className="form-left">
@@ -278,7 +277,7 @@ const MakesAndModels = () => {
                                     key={make.id}
                                     ref={el => makeRefs.current[make.id] = el}
                                     className={`list-item ${selectedMake?.id === make.id ? 'active' : ''}`}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedMake(make); navigate(`/makes-and-models/${make.id}`); }}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedMake(make); }}
                                 >
                                     <span className="item-label">{make.name}</span>
                                     <div>
@@ -297,12 +296,16 @@ const MakesAndModels = () => {
                                                 <i className="fa-solid fa-arrows-to-circle"></i>
                                             </button>
                                         )}
-                                        <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
-                                            <i className="fa-solid fa-pen"></i>
-                                        </button>
-                                        <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
-                                            <i className="fa-solid fa-trash"></i>
-                                        </button>
+                                        {make.isCustom && (
+                                            <>
+                                                <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('make', make); }}>
+                                                    <i className="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('make', make.id); }}>
+                                                    <i className="fa-solid fa-trash"></i>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -331,22 +334,22 @@ const MakesAndModels = () => {
                                 <p className="list-empty">Loading...</p>
                             ) : (
                                 models.map(model => (
-                                    <div 
-                                        key={model.id} 
+                                    <div
+                                        key={model.id}
                                         ref={el => modelRefs.current[model.id] = el}
-                                        className="list-item"
-                                        onClick={(e) => { e.stopPropagation(); navigate(`/makes-and-models/${selectedMake.id}/model/${model.id}`); }}
+                                        className={`list-item ${modelId === model.id ? 'highlight-outline' : ''}`}
                                     >
                                         <span className="item-label">{model.name}</span>
                                         <div>
                                             {model.globalId && (
                                                 <button
                                                     className="btn icon-btn"
-                                                    onClick={async () => {
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
                                                         try {
                                                             const globalModel = await modelApi.getModel(model.globalId);
                                                             if (globalModel) {
-                                                                 handleOpenMerge('model', model, globalModel);
+                                                                handleOpenMerge('model', model, globalModel);
                                                             }
                                                         } catch (error) {
                                                             console.error('Error fetching global model:', error);
@@ -358,12 +361,16 @@ const MakesAndModels = () => {
                                                     <i className="fa-solid fa-arrows-to-circle"></i>
                                                 </button>
                                             )}
-                                            <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('model', model); }}>
-                                                <i className="fa-solid fa-pen"></i>
-                                            </button>
-                                            <button className="btn icon-btn delete" onClick={() => handleDelete('model', model.id)}>
-                                                <i className="fa-solid fa-trash"></i>
-                                            </button>
+                                            {model.isCustom && (
+                                                <>
+                                                    <button className="btn icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenModal('model', model); }}>
+                                                        <i className="fa-solid fa-pen"></i>
+                                                    </button>
+                                                    <button className="btn icon-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete('model', model.id); }}>
+                                                        <i className="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 ))

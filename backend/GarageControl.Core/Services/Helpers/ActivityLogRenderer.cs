@@ -76,6 +76,7 @@ namespace GarageControl.Core.Services.Helpers
                 {
                     "Model" => "Make",
                     "Job"   => "Order",
+                    "Make"  => "Make",
                     _       => null
                 };
                 if (type != null) result.Add((type, data.SecondaryEntityId));
@@ -103,8 +104,19 @@ namespace GarageControl.Core.Services.Helpers
 
         // ── Helpers ────────────────────────────────────────────────────────────
 
-        private static string Bold(string? value) => $"**{value ?? "[Unknown]"}**";
-        private static string Link(string? text, string? url) => string.IsNullOrEmpty(url) ? Bold(text) : $"[{text ?? "[Unknown]"}]({url})";
+        private static string EscapeMarkup(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            return text.Replace("\\", "\\\\")
+                       .Replace("*", "\\*")
+                       .Replace("[", "\\[")
+                       .Replace("]", "\\]")
+                       .Replace("(", "\\(")
+                       .Replace(")", "\\)");
+        }
+
+        private static string Bold(string? value) => $"**{EscapeMarkup(value) ?? "[Unknown]"}**";
+        private static string Link(string? text, string? url) => string.IsNullOrEmpty(url) ? Bold(text) : $"[{EscapeMarkup(text) ?? "[Unknown]"}]({url})";
 
         private static string Humanize(string? value)
         {
@@ -152,8 +164,8 @@ namespace GarageControl.Core.Services.Helpers
 
             res.Details = changes.Select(c =>
             {
-                string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : c.OldValue;
-                string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : c.NewValue;
+                string oldDisp = string.IsNullOrEmpty(c.OldValue) ? "[empty]" : EscapeMarkup(c.OldValue);
+                string newDisp = string.IsNullOrEmpty(c.NewValue) ? "[empty]" : EscapeMarkup(c.NewValue);
 
                 if (oldDisp == "[empty]" && newDisp == "[empty]")
                     return Capitalize(c.FieldName);
@@ -290,6 +302,11 @@ namespace GarageControl.Core.Services.Helpers
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created make {link}" };
                 case "deleted":
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted make {Bold(d.EntityName)}" };
+                case "merged":
+                    {
+                        string globalLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
+                        return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom make {Bold(d.EntityName)} into {globalLink}" };
+                    }
                 default:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} make {link}" };
             }
@@ -310,7 +327,7 @@ namespace GarageControl.Core.Services.Helpers
                 case "renamed":
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} renamed model {Bold(d.EntityName)} to {modelLink} (Make: {secMakeLink})" };
                 case "merged":
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom model {Bold(d.EntityName)} into {modelLink}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom model {Bold(d.SecondaryEntityName)} into {modelLink}" };
                 default:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} model {Bold(d.EntityName)}" };
             }
