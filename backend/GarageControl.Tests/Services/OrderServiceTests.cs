@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using System;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Jobs;
+using GarageControl.Core.ViewModels.Shared;
 
 namespace GarageControl.Tests.Services
 {
@@ -98,7 +100,7 @@ namespace GarageControl.Tests.Services
             var orderInDb = _context.Orders.First();
             Assert.Equal(1000, orderInDb.Kilometers);
 
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.IsAny<string>()), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Order", It.IsAny<ActivityLogData>()), Times.Once);
         }
         [Fact]
         public async Task CreateOrderAsync_ShouldSyncCarKilometers()
@@ -132,32 +134,45 @@ namespace GarageControl.Tests.Services
         public async Task UpdateOrderAsync_ShouldSyncCarKilometers()
         {
             // Arrange
-            var userId = "u1";
-            var workshopId = "w1";
-            var owner = new Client { Id = "c1", Name = "Client", WorkshopId = workshopId, PhoneNumber = "123-456-7890" };
-            var make = new CarMake { Id = "m1", Name = "Toyota" };
-            var model = new CarModel { Id = "mod1", Name = "Corolla", CarMake = make };
-            var car = new Car { Id = "car1", RegistrationNumber = "123", Model = model, Owner = owner, Kilometers = 1000 };
-            var order = new Order { Id = "o1", CarId = "car1", Car = car, Kilometers = 1000, IsDone = false };
+            var userId = Guid.NewGuid().ToString();
+            var workshopId = Guid.NewGuid().ToString();
+            var ownerId = Guid.NewGuid().ToString();
+            var makeId = Guid.NewGuid().ToString();
+            var modelId = Guid.NewGuid().ToString();
+            var carId = Guid.NewGuid().ToString();
+            var orderId = Guid.NewGuid().ToString();
 
+            var make = new CarMake { Id = makeId, Name = "Toyota" };
+            var model = new CarModel { Id = modelId, Name = "Corolla", CarMakeId = makeId, CarMake = make };
+            var owner = new Client { Id = ownerId, Name = "Client", WorkshopId = workshopId, PhoneNumber = "123-456-7890" };
+            var car = new Car { Id = carId, RegistrationNumber = "REG_SYNC", ModelId = modelId, Model = model, OwnerId = ownerId, Owner = owner, Kilometers = 1000 };
+            var order = new Order { Id = orderId, CarId = carId, Car = car, Kilometers = 1000, IsDone = false };
+
+            _context.CarMakes.Add(make);
+            _context.CarModels.Add(model);
+            _context.Clients.Add(owner);
             _context.Cars.Add(car);
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
             var updateModel = new UpdateOrderVM 
             { 
-                CarId = "car1", 
+                CarId = car.Id, 
                 Kilometers = 2000,
                 IsDone = false
             };
 
             // Act
-            await _service.UpdateOrderAsync(userId, "o1", workshopId, updateModel);
+            var response = await _service.UpdateOrderAsync(userId, orderId, workshopId, updateModel) as MethodResponseVM;
+            Assert.NotNull(response);
+            Assert.True(response.Success, response.Message);
 
             // Assert
-            var carInDb = await _context.Cars.FindAsync("car1");
+            var carInDb = await _context.Cars.FindAsync(car.Id);
+            Assert.NotNull(carInDb);
             Assert.Equal(2000, carInDb.Kilometers);
-            var orderInDb = await _context.Orders.FindAsync("o1");
+            var orderInDb = await _context.Orders.FindAsync(orderId);
+            Assert.NotNull(orderInDb);
             Assert.Equal(2000, orderInDb.Kilometers);
         }
     }

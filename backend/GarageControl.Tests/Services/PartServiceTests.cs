@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -71,9 +72,8 @@ namespace GarageControl.Tests.Services
                 x.LogActionAsync(
                     userId,
                     workshopId,
-                    It.Is<string>(s =>
-                        s.Contains("created part") &&
-                        s.Contains("Spark Plug"))),
+                    "Part",
+                    It.Is<ActivityLogData>(d => d.Action == "created" && d.EntityName == "Spark Plug")),
                 Times.Once);
         }
 
@@ -116,7 +116,7 @@ namespace GarageControl.Tests.Services
             Assert.Equal(12, updated.Price);
 
             _mockInventoryService.Verify(x => x.RecalculateAvailabilityBalanceAsync(workshopId, It.Is<IEnumerable<string>>(ids => ids.Contains("part1")), It.IsAny<int?>()), Times.Once);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("updated part") && s.Contains("New Name"))), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Part", It.Is<ActivityLogData>(d => d.Action == "updated" && d.EntityName == "New Name")), Times.Once);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace GarageControl.Tests.Services
 
             // Assert
             Assert.Null(await _context.Parts.FindAsync("part1"));
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("deleted part") && s.Contains("To Delete"))), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Part", It.Is<ActivityLogData>(d => d.Action == "deleted" && d.EntityName == "To Delete")), Times.Once);
         }
     }
 }

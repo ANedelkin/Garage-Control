@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -59,7 +60,8 @@ namespace GarageControl.Tests.Services
             _mockActivityLogService.Verify(x => x.LogActionAsync(
                 userId, 
                 workshopId, 
-                It.Is<string>(s => s.Contains("created group of parts") && s.Contains("NewFolder"))), Times.Once);
+                "Folder",
+                It.Is<ActivityLogData>(d => d.Action == "created" && d.EntityName == "NewFolder")), Times.Once);
         }
 
         [Fact]
@@ -138,7 +140,8 @@ namespace GarageControl.Tests.Services
             _mockActivityLogService.Verify(x => x.LogActionAsync(
                 userId,
                 workshopId,
-                It.Is<string>(s => s.Contains("deleted group of parts"))), Times.AtLeastOnce);
+                "Folder",
+                It.Is<ActivityLogData>(d => d.Action == "deleted")), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -164,11 +167,12 @@ namespace GarageControl.Tests.Services
              _mockActivityLogService.Verify(x => x.LogActionAsync(
                 userId, 
                 workshopId,
-                It.Is<string>(s => 
-                    s.Contains("moved group of parts") && 
-                    s.Contains("Folder") && 
-                    s.Contains("OldParent") && 
-                    s.Contains("NewParent"))), Times.Once);
+                "Folder",
+                It.Is<ActivityLogData>(d => 
+                    d.Action == "moved" && 
+                    d.EntityName == "Folder" && 
+                    d.SecondaryEntityName == "OldParent" && 
+                    d.SecondaryEntityId == "NewParent")), Times.Once);
         }
     }
 }

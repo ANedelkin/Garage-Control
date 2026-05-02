@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -116,7 +117,7 @@ namespace GarageControl.Tests.Services
             var jobInDb = _context.Jobs.First();
             Assert.Equal("jt1", jobInDb.JobTypeId);
 
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("created job"))), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Job", It.Is<ActivityLogData>(d => d.Action == "created")), Times.Once);
         }
     }
 }

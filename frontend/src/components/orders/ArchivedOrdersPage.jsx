@@ -10,8 +10,8 @@ import usePageTitle from '../../hooks/usePageTitle';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
 
-const DoneOrdersPage = () => {
-    usePageTitle('Done Orders');
+const ArchivedOrdersPage = () => {
+    usePageTitle('Archived Orders');
     const navigate = useNavigate();
     const { orderId } = useParams();
     const [searchParams] = useSearchParams();
@@ -57,7 +57,7 @@ const DoneOrdersPage = () => {
 
     const handleClosePopup = () => {
         removeLastPopup();
-        navigate('/done-orders');
+        navigate('/archived-orders');
     };
 
     const openOrderDetailsPopup = (order) => {
@@ -67,11 +67,11 @@ const DoneOrdersPage = () => {
                 order={order}
                 cars={cars}
                 onClose={handleClosePopup}
-                onSave={() => {}}
+                onSave={() => { }}
                 errors={{}}
             />,
             false,
-            () => navigate('/done-orders')
+            () => navigate('/archived-orders')
         );
     };
 
@@ -121,7 +121,7 @@ const DoneOrdersPage = () => {
 
     const handleContainerClick = () => {
         if (orderId || highlightJob) {
-            navigate('/done-orders', { replace: true });
+            navigate('/archived-orders', { replace: true });
         }
     };
 
@@ -132,7 +132,7 @@ const DoneOrdersPage = () => {
             <div className="header">
                 <input
                     type="text"
-                    placeholder="Search done orders..."
+                    placeholder="Search archived orders..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
@@ -145,7 +145,7 @@ const DoneOrdersPage = () => {
             {loading ? (
                 <p>Loading...</p>
             ) : filteredOrders.length === 0 ? (
-                <p className="list-empty">No done orders found.</p>
+                <p className="list-empty">No archived orders found.</p>
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map(order => (
@@ -220,4 +220,4 @@ const DoneOrdersPage = () => {
     );
 };
 
-export default DoneOrdersPage;
+export default ArchivedOrdersPage;

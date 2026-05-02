@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -53,7 +54,7 @@ namespace GarageControl.Tests.Services
             var jobType = await _context.JobTypes.FirstOrDefaultAsync(jt => jt.Name == "Oil Change");
             Assert.NotNull(jobType);
             Assert.Equal(workshopId, jobType.WorkshopId);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.IsAny<string>()), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "JobType", It.IsAny<ActivityLogData>()), Times.Once);
         }
 
         [Fact]

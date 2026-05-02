@@ -139,7 +139,7 @@ namespace GarageControl.Core.Services
             var changes = await UpdateWorkerRelations(worker.Id, model);
 
             await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
-                new ActivityLogData("created", worker.Id, worker.Name, Changes: changes.Any() ? changes : null));
+                new ActivityLogData("hired", worker.Id, worker.Name, Changes: changes.Any() ? changes : null));
 
             return new MethodResponseVM(true, "Worker created successfully");
         }

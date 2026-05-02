@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using Moq;
 using System.Threading.Tasks;
@@ -54,7 +55,7 @@ namespace GarageControl.Tests.Services
             var make = await _context.CarMakes.FirstOrDefaultAsync(m => m.Name == "CustomMake");
             Assert.NotNull(make);
             Assert.Equal(userId, make.CreatorId);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("created make") || s.Contains("created custom make"))), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Make", It.Is<ActivityLogData>(d => d.Action == "created")), Times.Once);
         }
 
         [Fact]

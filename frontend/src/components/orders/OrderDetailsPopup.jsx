@@ -96,12 +96,14 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                 {!order.isDone && (
                     <button
                         className="btn"
+                        disabled={order.jobs && !order.jobs.every(j => j.status === 'done')}
+                        title={order.jobs && !order.jobs.every(j => j.status === 'done') ? "All jobs must be 'Done' before archiving" : ""}
                         onClick={() => {
                             addPopup(
-                                'Confirm Completion',
+                                'Confirm Archival',
                                 <ConfirmationPopup
-                                    message="Are you sure you want to mark this order as complete? This action is permanent and will archive the order."
-                                    confirmText="Mark as Done"
+                                    message="Are you sure you want to archive this order? This action is permanent."
+                                    confirmText="Save & Archive"
                                     isDanger={false}
                                     onConfirm={() => {
                                         removeLastPopup();
@@ -112,7 +114,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                             );
                         }}
                     >
-                        Save & Mark as Done
+                        Save & Archive
                     </button>
                 )}
                 <button

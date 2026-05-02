@@ -1,3 +1,4 @@
+using GarageControl.Core.Models;
 using Xunit;
 using System.Threading.Tasks;
 using GarageControl.Core.Services;
@@ -63,7 +64,7 @@ namespace GarageControl.Tests.Services
             var car = await _context.Cars.FirstOrDefaultAsync(c => c.RegistrationNumber == "REG1");
             Assert.NotNull(car);
             Assert.Equal(clientId, car.OwnerId);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, It.Is<string>(s => s.Contains("added car") && s.Contains("REG1"))), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Vehicle", It.Is<ActivityLogData>(d => d.Action == "added" && d.EntityName.Contains("REG1"))), Times.Once);
         }
 
         [Fact]

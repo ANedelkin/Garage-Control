@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GarageControl.Core.Models;
+using GarageControl.Shared.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -192,13 +193,12 @@ namespace GarageControl.Core.Services
                     .ThenInclude(c => c.Owner)
                         .ThenInclude(owner => owner.Workshop)
                 .Include(o => o.Car.Model.CarMake)
-                .Include(o => o.Car.Model)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(o => o.Id == id && o.Car.Owner.WorkshopId == workshopId);
-
-            if (order == null)
+                .FirstOrDefaultAsync(o => o.Id == id);
+ 
+            if (order == null || order.Car.Owner.WorkshopId != workshopId)
+            {
                 return new MethodResponseVM(false, "Order not found.");
-
+            }
             var changes = new List<ActivityPropertyChange>();
 
             if (model.Kilometers < 0)
@@ -233,7 +233,13 @@ namespace GarageControl.Core.Services
                 changes.Add(new ActivityPropertyChange("odometer", order.Kilometers.ToString(), model.Kilometers.ToString()));
             if (model.IsDone && !order.IsDone)
             {
-                // Migate to CompletedOrder
+                // Check if all jobs are done
+                if (order.Jobs.Any(j => j.Status != JobStatus.Done))
+                {
+                    return new MethodResponseVM(false, "Cannot archive order with incomplete jobs.");
+                }
+
+                // Migrate to CompletedOrder
                 var completedOrder = new CompletedOrder
                 {
                     Id = order.Id,
@@ -291,7 +297,7 @@ namespace GarageControl.Core.Services
                 }
 
                 _context.Orders.Remove(order);
-                changes.Add(new ActivityPropertyChange("status", "open", "done"));
+                changes.Add(new ActivityPropertyChange("status", "open", "archived"));
             }
             else
             {

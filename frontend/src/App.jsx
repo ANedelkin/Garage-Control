@@ -16,7 +16,7 @@ import Cars from './components/cars/Cars.jsx';
 import Clients from './components/clients/Clients.jsx';
 import PartsStock from './components/parts/PartsStock.jsx';
 import ActiveOrdersPage from './components/orders/ActiveOrdersPage.jsx';
-import DoneOrdersPage from './components/orders/DoneOrdersPage.jsx';
+import ArchivedOrdersPage from './components/orders/ArchivedOrdersPage.jsx';
 import EditJobPage from './components/orders/EditJobPage.jsx';
 import DoneJobPage from './components/orders/DoneJobPage.jsx';
 import ToDoPage from './components/todo/ToDoPage.jsx';
@@ -130,9 +130,9 @@ const routes = [
     { path: '/:carId', element: Cars }
   ]},
   { path: '/activity-log', element: ActivityLog, label: 'Activity Log', icon: 'fa-clock-rotate-left', accesses: ['Activity Log'] },
-  { divider: true, accesses: ['Done Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
-  { path: '/done-orders', element: DoneOrdersPage, label: 'Done Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], children: [
-    { path: '/:orderId', element: DoneOrdersPage }
+  { divider: true, accesses: ['Archived Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
+  { path: '/archived-orders', element: ArchivedOrdersPage, label: 'Archived Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], children: [
+    { path: '/:orderId', element: ArchivedOrdersPage }
   ]},
   { path: '/job-types', element: JobTypes, label: 'Job Types', icon: 'fa-gear', accesses: ['Job Types'], children: [
     { path: '/new', element: EditJobType },

@@ -1,13 +1,17 @@
 .job-status-pending {
-    background: var(--pending-orders) !important;
+    background: var(--pending-jobs) !important;
 }
 
 .job-status-inprogress {
-    background: var(--inprogress-orders) !important;
+    background: var(--inprogress-jobs) !important;
 }
 
 .job-status-done {
-    background: var(--done-orders) !important;
+    background: var(--done-jobs) !important;
+}
+
+.job-status-archived {
+    background: var(--done-jobs) !important;
 }
 
 .job-status-all {
@@ -15,15 +19,19 @@
 }
 
 .job-status-pending.glow::before {
-    background: var(--pending-orders-hover);
+    background: var(--pending-jobs-hover);
 }
 
 .job-status-inprogress.glow::before {
-    background: var(--inprogress-orders-hover);
+    background: var(--inprogress-jobs-hover);
 }
 
 .job-status-done.glow::before {
-    background: var(--done-orders-hover);
+    background: var(--done-jobs-hover);
+}
+
+.job-status-archived.glow::before {
+    background: var(--done-jobs-hover);
 }
 
 .job-status-all.glow::before {
