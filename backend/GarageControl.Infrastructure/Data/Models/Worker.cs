@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using GarageControl.Shared.Constants;
-using Microsoft.Identity.Client;
+
 namespace GarageControl.Infrastructure.Data.Models
 {
     public class Worker
