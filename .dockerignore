@@ -1,0 +1,21 @@
+# Git
+**/.git
+**/.gitignore
+
+# Build artifacts
+**/bin/
+**/obj/
+
+# Frontend build output (rebuilt in Docker)
+frontend/node_modules/
+frontend/dist/
+
+# Development secrets - NEVER bake these into the image
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# Misc
+**/frontend-prototype/
+**/Documentation/
+*.md
