@@ -110,6 +110,8 @@ if (!string.IsNullOrEmpty(msClientId) && !string.IsNullOrEmpty(msClientSecret)
         options.Scope.Add("email");
         options.Authority = $"https://login.microsoftonline.com/{msTenantId}/v2.0";
         options.ResponseType = "code";
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 }
 
@@ -123,6 +125,8 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
         options.ClientId = googleClientId;
         options.ClientSecret = googleClientSecret;
         options.SignInScheme = IdentityConstants.ExternalScheme;
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 }
 
@@ -157,10 +161,32 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
+builder.Services.ConfigureExternalCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+    options.OnAppendCookie = cookieContext =>
+    {
+        if (cookieContext.CookieOptions.SameSite == SameSiteMode.None)
+        {
+            cookieContext.CookieOptions.Secure = true;
+        }
+    };
+});
+
 builder.Services.AddHttpsRedirection(options =>
 {
     options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-    options.HttpsPort = 5173;
+    if (builder.Environment.IsDevelopment())
+    {
+        options.HttpsPort = 5173;
+    }
 });
 
 builder.Services.AddAuthorization();
@@ -175,6 +201,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseCookiePolicy();
 
 if (app.Environment.IsDevelopment())
 {
