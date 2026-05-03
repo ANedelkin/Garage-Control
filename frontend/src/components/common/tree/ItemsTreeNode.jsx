@@ -119,7 +119,6 @@ const ItemsTreeNode = ({
                     setLoaded(true);
                     setExpanded(true);
                     if (newItem && onSelectItem) onSelectItem(newItem, [...currentPath, newItem.id]);
-                    if (onRefresh && typeof onRefresh === 'function') onRefresh();
                 });
             });
         }
