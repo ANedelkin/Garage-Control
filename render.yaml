@@ -1,0 +1,32 @@
+services:
+  # The unified web service (Frontend + Backend)
+  - type: web
+    name: garage-control
+    env: docker
+    region: frankfurt # You can change this to your preferred region
+    plan: free # Or 'free' depending on your needs
+    dockerCommand: "" # Uses the ENTRYPOINT from the Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: garage-control-db
+          property: connectionString
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Jwt__Key
+        generateValue: true
+      - key: Jwt__Issuer
+        value: "GarageControl"
+      - key: Jwt__Audience
+        value: "GarageControlUsers"
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "10000"
+
+databases:
+  # The PostgreSQL Database
+  - name: garage-control-db
+    databaseName: garagecontrol
+    user: admin
+    region: frankfurt # Must match the web service region
+    plan: free # Or 'starter'

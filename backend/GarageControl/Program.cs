@@ -157,6 +157,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var context = services.GetRequiredService<GarageControlDbContext>();
+        await context.Database.MigrateAsync();
         await GarageControl.Infrastructure.Data.Seeding.DbSeeder.SeedAsync(services);
     }
     catch (Exception ex)
