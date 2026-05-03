@@ -13,6 +13,8 @@ using GarageControl.Core.Services;
 using GarageControl.Core.Services.Jobs;
 using Microsoft.Identity.Web;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();

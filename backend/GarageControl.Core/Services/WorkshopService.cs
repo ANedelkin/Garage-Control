@@ -41,7 +41,7 @@ namespace GarageControl.Core.Services
                 UserId = userId,
                 Name = model.Name,
                 Workshop = workshop,
-                HiredOn = DateTime.Now,
+                HiredOn = DateTime.UtcNow,
                 Accesses = new HashSet<Access>(allAccesses)
             };
             await _repository.AddAsync<Worker>(worker);
