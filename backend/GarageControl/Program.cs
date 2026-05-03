@@ -64,37 +64,50 @@ builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedA
                .AddEntityFrameworkStores<GarageControlDbContext>()
                .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(o =>
+var authBuilder = builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-})
-.AddOpenIdConnect("Microsoft", options =>
+});
+
+// Only register Microsoft OAuth if all required config values are present
+var msClientId = builder.Configuration["Microsoft:ClientId"];
+var msClientSecret = builder.Configuration["Microsoft:ClientSecret"];
+var msCallbackPath = builder.Configuration["Microsoft:CallbackPath"];
+var msTenantId = builder.Configuration["Microsoft:TenantId"];
+if (!string.IsNullOrEmpty(msClientId) && !string.IsNullOrEmpty(msClientSecret)
+    && !string.IsNullOrEmpty(msCallbackPath) && !string.IsNullOrEmpty(msTenantId))
 {
-    options.SignInScheme = IdentityConstants.ExternalScheme;
+    authBuilder.AddOpenIdConnect("Microsoft", options =>
+    {
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+        options.ClientId = msClientId;
+        options.ClientSecret = msClientSecret;
+        options.CallbackPath = msCallbackPath;
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+        options.Authority = $"https://login.microsoftonline.com/{msTenantId}/v2.0";
+        options.ResponseType = "code";
+    });
+}
 
-    options.ClientId = builder.Configuration["Microsoft:ClientId"];
-    options.ClientSecret = builder.Configuration["Microsoft:ClientSecret"];
-    options.CallbackPath = builder.Configuration["Microsoft:CallbackPath"];
-
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-    options.Scope.Add("email");
-
-    var tenantId = builder.Configuration["Microsoft:TenantId"];
-    options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
-
-    options.ResponseType = "code";
-})
-.AddGoogle(options =>
+// Only register Google OAuth if all required config values are present
+var googleClientId = builder.Configuration["Google:ClientId"];
+var googleClientSecret = builder.Configuration["Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
 {
-    options.ClientId = builder.Configuration["Google:ClientId"];
-    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-})
-.AddJwtBearer(o =>
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+    });
+}
+
+authBuilder.AddJwtBearer(o =>
 {
     o.TokenValidationParameters = new TokenValidationParameters
     {
