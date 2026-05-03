@@ -49,11 +49,11 @@ const LogInPage = () => {
 
     const handleGoogle = async (e) => {
         e.preventDefault();
-        window.location.href = 'https://localhost:5173/api/auth/google';
+        window.location.href = '/api/auth/google';
     };
     const handleMicrosoft = async (e) => {
         e.preventDefault();
-        window.location.href = 'https://localhost:5173/api/auth/microsoft';
+        window.location.href = '/api/auth/microsoft';
     }
 
     return (

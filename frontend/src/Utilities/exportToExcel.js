@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:5173/api';
+const API_BASE_URL = '/api';
 
 /**
  * Downloads a file from the backend Export controller.

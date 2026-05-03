@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:5173/api';
+const API_BASE_URL = '/api';
 let refreshPromise = null;
 
 export async function request(method, url, body = null, options = {}) {
