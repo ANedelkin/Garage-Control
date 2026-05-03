@@ -4,7 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ ./
-RUN npm run build
+RUN npm run build -- --outDir dist
 
 # Stage 2: Build the backend (.NET)
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend-build
