@@ -108,7 +108,7 @@ namespace GarageControl.Controllers
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-                var frontendRedirectUri = $"https://localhost:5173";
+                var frontendRedirectUri = "/";
                 return Redirect(frontendRedirectUri);
             }
 
@@ -147,7 +147,7 @@ namespace GarageControl.Controllers
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-                var frontendRedirectUri = $"https://localhost:5173";
+                var frontendRedirectUri = "/";
                 return Redirect(frontendRedirectUri);
             }
 
