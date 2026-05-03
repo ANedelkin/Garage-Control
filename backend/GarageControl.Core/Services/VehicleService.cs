@@ -41,6 +41,8 @@ namespace GarageControl.Core.Services
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
                     Kilometers = c.Kilometers,
+                    MakeName = c.Model.CarMake.Name,
+                    ModelName = c.Model.Name,
                     Model = new ModelVM
                     {
                         Name = c.Model.Name,
@@ -71,6 +73,8 @@ namespace GarageControl.Core.Services
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
                     Kilometers = c.Kilometers,
+                    MakeName = c.Model.CarMake.Name,
+                    ModelName = c.Model.Name,
                     Model = new ModelVM
                     {
                         Name = c.Model.Name,
@@ -210,6 +214,8 @@ namespace GarageControl.Core.Services
                     OwnerId = c.OwnerId,
                     OwnerName = c.Owner.Name,
                     Kilometers = c.Kilometers,
+                    MakeName = c.Model.CarMake.Name,
+                    ModelName = c.Model.Name,
                     Model = new ModelVM
                     {
                         Name = c.Model.Name,

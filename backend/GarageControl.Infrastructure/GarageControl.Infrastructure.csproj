@@ -21,6 +21,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Remove="Migrations\old_migrations\**" />
+  </ItemGroup>
 
 </Project>
