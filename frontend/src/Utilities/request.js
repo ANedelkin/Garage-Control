@@ -3,6 +3,8 @@ let refreshPromise = null;
 
 export async function request(method, url, body = null, options = {}) {
     const isRefreshCall = url.includes('auth/refresh');
+    const isLoginCall = url.includes('auth/login');
+    const isSignUpCall = url.includes('auth/signup');
 
     // If there's an ongoing refresh call, and this IS a refresh call, wait for it.
     if (isRefreshCall && refreshPromise) {
@@ -37,8 +39,8 @@ export async function request(method, url, body = null, options = {}) {
         }
 
         if (!response.ok) {
-            // Handle 401 and attempt refresh if it's not a refresh call itself
-            if (response.status === 401 && !isRefreshCall) {
+            // Handle 401 and attempt refresh if it's not a refresh, login, or signup call itself
+            if (response.status === 401 && !isRefreshCall && !isLoginCall && !isSignUpCall) {
                 try {
                     if (!refreshPromise) {
                         refreshPromise = request('POST', 'auth/refresh');
