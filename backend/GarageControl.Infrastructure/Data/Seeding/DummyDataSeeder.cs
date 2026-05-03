@@ -42,7 +42,12 @@ namespace GarageControl.Infrastructure.Data.Seeding
             }
 
             var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var baseDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "GarageControl.Infrastructure", "Data", "Seeding", "DataSets");
+            var baseDir = Path.Combine(AppContext.BaseDirectory, "Data", "Seeding", "DataSets");
+            if (!Directory.Exists(baseDir))
+            {
+                // Fallback for development where the working directory might be the project root
+                baseDir = Path.Combine(Directory.GetCurrentDirectory(), "..", "GarageControl.Infrastructure", "Data", "Seeding", "DataSets");
+            }
             
             var makesWithModels = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(await File.ReadAllTextAsync(Path.Combine(baseDir, "MakesModels.json")), opts)!;
             var workshopConfigs = JsonSerializer.Deserialize<List<WorkshopConfig>>(await File.ReadAllTextAsync(Path.Combine(baseDir, "Workshops.json")), opts)!;

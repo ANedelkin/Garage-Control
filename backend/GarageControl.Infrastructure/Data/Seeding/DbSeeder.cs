@@ -43,46 +43,52 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 }
             }
 
-            // Seed Admin User
-            var adminUsername = Environment.GetEnvironmentVariable("SEED_ADMIN_USERNAME");
-            var adminPass = Environment.GetEnvironmentVariable("SEED_ADMIN_PASS");
+            if (!string.IsNullOrWhiteSpace(adminUsername) && !string.IsNullOrWhiteSpace(adminPass))
+            {
+                var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+                var adminUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == adminUsername);
 
-            if (string.IsNullOrWhiteSpace(adminUsername) || string.IsNullOrWhiteSpace(adminPass))
+                if (adminUser == null)
+                {
+                    adminUser = new User
+                    {
+                        UserName = adminUsername,
+                    };
+
+                    var createResult = await userManager.CreateAsync(adminUser, adminPass);
+                    if (createResult.Succeeded)
+                    {
+                        // Ensure admin has Admin role
+                        if (!await userManager.IsInRoleAsync(adminUser, adminRoleName))
+                        {
+                            var addRoleResult = await userManager.AddToRoleAsync(adminUser, adminRoleName);
+                            if (!addRoleResult.Succeeded)
+                            {
+                                Console.WriteLine("Failed to add Admin role to admin user:");
+                                foreach (var error in addRoleResult.Errors)
+                                    Console.WriteLine($"- {error.Description}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to create admin user:");
+                        foreach (var error in createResult.Errors)
+                            Console.WriteLine($"- {error.Description}");
+                    }
+                }
+                else
+                {
+                    // Ensure admin has Admin role
+                    if (!await userManager.IsInRoleAsync(adminUser, adminRoleName))
+                    {
+                        await userManager.AddToRoleAsync(adminUser, adminRoleName);
+                    }
+                }
+            }
+            else
             {
                 Console.WriteLine("Admin credentials not set in environment variables. Skipping admin seeding.");
-                return;
-            }
-
-            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            var adminUser = await userManager.Users.FirstOrDefaultAsync(u => u.UserName == adminUsername);
-
-            if (adminUser == null)
-            {
-                adminUser = new User
-                {
-                    UserName = adminUsername,
-                };
-
-                var createResult = await userManager.CreateAsync(adminUser, adminPass);
-                if (!createResult.Succeeded)
-                {
-                    Console.WriteLine("Failed to create admin user:");
-                    foreach (var error in createResult.Errors)
-                        Console.WriteLine($"- {error.Description}");
-                    return; // Stop further seeding if user creation fails
-                }
-            }
-
-            // Ensure admin has Admin role
-            if (!await userManager.IsInRoleAsync(adminUser, adminRoleName))
-            {
-                var addRoleResult = await userManager.AddToRoleAsync(adminUser, adminRoleName);
-                if (!addRoleResult.Succeeded)
-                {
-                    Console.WriteLine("Failed to add Admin role to admin user:");
-                    foreach (var error in addRoleResult.Errors)
-                        Console.WriteLine($"- {error.Description}");
-                }
             }
 
             // Seed Dummy Data
