@@ -90,7 +90,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
             return (dbMakes, dbModels);
         }
 
-        private static async Task<List<Workshop>> SeedWorkshopsAsync(GarageControlDbContext context, List<WorkshopConfig> workshopConfigs)
+        private static Task<List<Workshop>> SeedWorkshopsAsync(GarageControlDbContext context, List<WorkshopConfig> workshopConfigs)
         {
             var dbWorkshops = new List<Workshop>();
             
@@ -106,7 +106,7 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 dbWorkshops.Add(w);
             }
 
-            return dbWorkshops;
+            return Task.FromResult(dbWorkshops);
         }
 
         private static async Task SeedWorkshopDependenciesAsync(GarageControlDbContext context, IServiceProvider serviceProvider, List<Workshop> dbWorkshops, List<CarModel> dbModels, string[] firstNames, string[] lastNames, List<string> baseJobTypes, string[] baseFolders, string[] baseParts)

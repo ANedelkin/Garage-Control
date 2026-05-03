@@ -43,6 +43,10 @@ namespace GarageControl.Infrastructure.Data.Seeding
                 }
             }
 
+            // Seed Admin User
+            var adminUsername = Environment.GetEnvironmentVariable("SEED_ADMIN_USERNAME");
+            var adminPass = Environment.GetEnvironmentVariable("SEED_ADMIN_PASS");
+
             if (!string.IsNullOrWhiteSpace(adminUsername) && !string.IsNullOrWhiteSpace(adminPass))
             {
                 var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
