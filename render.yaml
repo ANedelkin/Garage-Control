@@ -5,7 +5,7 @@ services:
     env: docker
     region: frankfurt # You can change this to your preferred region
     plan: free # Or 'free' depending on your needs
-    dockerCommand: "" # Uses the ENTRYPOINT from the Dockerfile
+    autoDeploy: true
     healthCheckPath: /
     envVars:
       - key: ConnectionStrings__DefaultConnection

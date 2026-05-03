@@ -26,7 +26,7 @@ COPY --from=frontend-build /app/frontend/dist ./wwwroot
 # Optional: Add cultures for localization support
 RUN apt-get update && apt-get install -y --no-install-recommends locales && rm -rf /var/lib/apt/lists/*
 
-# Set ASP.NET Core to use the PORT environment variable provided by Render
+# Render provides a PORT env variable. ASPNETCORE_HTTP_PORTS tells .NET to listen on it.
 ENV ASPNETCORE_HTTP_PORTS=10000
 EXPOSE 10000
 
