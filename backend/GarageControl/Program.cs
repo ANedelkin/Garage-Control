@@ -13,8 +13,12 @@ using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using GarageControl.Core.Services.Jobs;
 using Microsoft.Identity.Web;
+using PdfSharpCore.Fonts;
+using GarageControl.Core.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
+
+GlobalFontSettings.FontResolver = new EmbeddedFontResolver();
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();

@@ -22,6 +22,7 @@ namespace GarageControl.Core.Services
         public Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceVM order)
         {
             var document = new Document();
+            document.Styles["Normal"].Font.Name = "Noto Sans";
             var section = document.AddSection();
 
             // Header
@@ -654,7 +655,7 @@ namespace GarageControl.Core.Services
         {
             var doc = new Document();
             var style = doc.Styles["Normal"];
-            style.Font.Name = "Arial";
+            style.Font.Name = "Noto Sans";
             style.Font.Size = 10;
 
             var section = doc.AddSection();
