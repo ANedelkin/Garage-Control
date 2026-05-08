@@ -128,9 +128,9 @@ namespace GarageControl.Core.Services
             header.Cells[5].AddParagraph("Mechanic");
             header.Cells[6].AddParagraph("Status");
             header.Cells[7].AddParagraph("Start Time");
-            header.Cells[8].AddParagraph("Labor (€)");
-            header.Cells[9].AddParagraph("Parts (€)");
-            header.Cells[10].AddParagraph("Total (€)");
+            header.Cells[8].AddParagraph("Labor");
+            header.Cells[9].AddParagraph("Parts");
+            header.Cells[10].AddParagraph("Total");
 
             foreach (var (order, jobs) in ordersWithJobs)
             {
@@ -383,7 +383,7 @@ namespace GarageControl.Core.Services
             header.Cells[3].AddParagraph("Avail. Balance");
             header.Cells[4].AddParagraph("Pts to Client");
             header.Cells[5].AddParagraph("Min Qty");
-            header.Cells[6].AddParagraph("Unit Price (€)");
+            header.Cells[6].AddParagraph("Unit Price");
 
             foreach (var p in parts)
             {
@@ -562,7 +562,7 @@ namespace GarageControl.Core.Services
             headerInfo.Cells[2].AddParagraph("Reg #");
             headerInfo.Cells[3].AddParagraph("Job Type");
             headerInfo.Cells[4].AddParagraph("Mechanic");
-            headerInfo.Cells[5].AddParagraph("Labor (€)");
+            headerInfo.Cells[5].AddParagraph("Labor");
             headerInfo.Cells[6].AddParagraph("Start Time");
             headerInfo.Cells[7].AddParagraph("End Time");
             headerInfo.Cells[8].AddParagraph("Description");
@@ -598,8 +598,8 @@ namespace GarageControl.Core.Services
             headerParts.Cells[2].AddParagraph("Sent Qty");
             headerParts.Cells[3].AddParagraph("Used Qty");
             headerParts.Cells[4].AddParagraph("Req. Qty");
-            headerParts.Cells[5].AddParagraph("Price (€)");
-            headerParts.Cells[6].AddParagraph("Total (€)");
+            headerParts.Cells[5].AddParagraph("Price");
+            headerParts.Cells[6].AddParagraph("Total");
 
             foreach (var p in job.Parts)
             {

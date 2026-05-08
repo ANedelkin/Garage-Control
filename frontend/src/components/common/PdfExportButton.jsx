@@ -2,11 +2,16 @@ import React from 'react';
 import { exportToPdf } from '../../Utilities/exportToExcel';
 import { useStatus } from '../../context/StatusContext';
 
-const PdfExportButton = ({ endpoint, className = '', text = 'Export to PDF', disabled = false }) => {
+const PdfExportButton = ({ endpoint, onClick, className = '', text = 'Export to PDF', disabled = false }) => {
     const { showStatus } = useStatus();
 
     const handleClick = async (e) => {
+        if (onClick) {
+            onClick(e);
+            return;
+        }
         e.stopPropagation();
+        if (!endpoint) return;
         showStatus('Generating PDF file...', 'loading');
         try {
             await exportToPdf(endpoint);

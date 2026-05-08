@@ -85,7 +85,7 @@ namespace GarageControl.Core.Services
             {
                 "Client", "Car", "Reg #", "Km",
                 "Job Type", "Mechanic", "Status",
-                "Start Time", "Labor Cost (€)", "Parts Cost (€)", "Total Cost (€)"
+                "Start Time", "Labor Cost", "Parts Cost", "Total Cost"
             };
 
             var rows = new List<IReadOnlyList<object?>>();
@@ -226,7 +226,7 @@ namespace GarageControl.Core.Services
             var ws = wb.Worksheets.Add("Parts Stock");
 
             WriteTable(ws,
-                new[] { "Name", "Part Number", "Current Qty", "Availability Balance", "Parts to Client", "Min Qty", "Unit Price (€)" },
+                new[] { "Name", "Part Number", "Current Qty", "Availability Balance", "Parts to Client", "Min Qty", "Unit Price" },
                 parts.Select(p => (IReadOnlyList<object?>)new object?[]
                 {
                     p.Name, p.PartNumber, p.Quantity, p.AvailabilityBalance, p.PartsToSend, p.MinimumQuantity, p.Price
@@ -294,7 +294,7 @@ namespace GarageControl.Core.Services
 
             var wsInfo = wb.Worksheets.Add("Job Details");
             WriteTable(wsInfo,
-                new[] { "Client", "Car", "Reg #", "Job Type", "Mechanic", "Labor Cost (€)", "Start Time", "End Time", "Description" },
+                new[] { "Client", "Car", "Reg #", "Job Type", "Mechanic", "Labor Cost", "Start Time", "End Time", "Description" },
                 new[]
                 {
                     (IReadOnlyList<object?>)new object?[]
@@ -309,7 +309,7 @@ namespace GarageControl.Core.Services
 
             var wsParts = wb.Worksheets.Add("Parts Used");
             WriteTable(wsParts,
-                new[] { "Part Name", "Planned Qty", "Sent Qty", "Used Qty", "Requested Qty", "Unit Price (€)", "Total (€)" },
+                new[] { "Part Name", "Planned Qty", "Sent Qty", "Used Qty", "Requested Qty", "Unit Price", "Total" },
                 job.Parts.Select(p => (IReadOnlyList<object?>)new object?[]
                 {
                     p.PartName,

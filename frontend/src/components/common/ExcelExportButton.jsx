@@ -2,11 +2,16 @@ import React from 'react';
 import { exportToExcel } from '../../Utilities/exportToExcel';
 import { useStatus } from '../../context/StatusContext';
 
-const ExcelExportButton = ({ endpoint, className = '', text = 'Export to Excel', disabled = false }) => {
+const ExcelExportButton = ({ endpoint, onClick, className = '', text = 'Export to Excel', disabled = false }) => {
     const { showStatus } = useStatus();
 
     const handleClick = async (e) => {
+        if (onClick) {
+            onClick(e);
+            return;
+        }
         e.stopPropagation();
+        if (!endpoint) return;
         showStatus('Generating Excel file...', 'loading');
         try {
             await exportToExcel(endpoint);
