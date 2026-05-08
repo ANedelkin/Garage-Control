@@ -90,7 +90,7 @@ header {
   width: 600px !important;
   max-width: calc(100vw - 40px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 2;
+  z-index: 1000;
 }
 
 .notification-popup h3 {
@@ -176,7 +176,7 @@ header {
   right: 20px;
   width: 200px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 2;
+  z-index: 1000;
   padding: 12px;
 }
 
