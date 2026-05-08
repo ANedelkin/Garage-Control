@@ -14,12 +14,12 @@ namespace GarageControl.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
-        private readonly IPDFGeneratorService _pdfGeneratorService;
+        private readonly IPdfExportService _pdfExportService;
 
-        public OrderController(IOrderService orderService, IPDFGeneratorService pdfGeneratorService)
+        public OrderController(IOrderService orderService, IPdfExportService pdfExportService)
         {
             _orderService = orderService;
-            _pdfGeneratorService = pdfGeneratorService;
+            _pdfExportService = pdfExportService;
         }
 
         private string GetWorkshopId()
@@ -102,7 +102,7 @@ namespace GarageControl.Controllers
             var workshopId = GetWorkshopId();
             order.InvoiceNumber = await _orderService.GenerateInvoiceAsync(orderId, workshopId);
 
-            var pdfBytes = await _pdfGeneratorService.GenerateInvoicePdfAsync(order);
+            var pdfBytes = await _pdfExportService.GenerateInvoicePdfAsync(order);
 
             return File(pdfBytes, "application/pdf", $"Invoice_{order.InvoiceNumber}.pdf");
         }

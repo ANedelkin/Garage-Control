@@ -1,4 +1,5 @@
 using GarageControl.Core.Contracts;
+using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Clients;
 using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.ViewModels.Orders;
@@ -14,6 +15,87 @@ namespace GarageControl.Core.Services
 {
     public class PdfExportService : IPdfExportService
     {
+        private const string JobIndent = "0.5cm";
+        private const string DetailIndent = "1cm";
+        private const string PartIndent = "1.5cm";
+
+        public Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceVM order)
+        {
+            var document = new Document();
+            var section = document.AddSection();
+
+            // Header
+            var title = order.InvoiceNumber != null ? $"Invoice #{order.InvoiceNumber}" : $"Invoice for Order #{order.OrderId}";
+            var header = section.AddParagraph(title);
+            header.Format.Font.Size = 16;
+            header.Format.Font.Bold = true;
+            header.Format.SpaceAfter = "0.5cm";
+
+            section.AddParagraph($"Date: {System.DateTime.UtcNow:dd/MM/yyyy}");
+            section.AddParagraph().AddLineBreak();
+
+            // Client & car info
+            section.AddParagraph($"Client: {order.ClientName}");
+            section.AddParagraph($"Car: {order.CarName} ({order.CarRegistrationNumber})");
+            section.AddParagraph($"Kilometers: {order.Kilometers}");
+            section.AddParagraph().AddLineBreak();
+
+            section.AddParagraph($"Workshop: {order.WorkshopName}");
+            section.AddParagraph($"Address: {order.WorkshopAddress}");
+            section.AddParagraph($"Phone: {order.WorkshopPhone}");
+            section.AddParagraph($"Email: {order.WorkshopEmail}");
+            section.AddParagraph($"Registration Number: {order.WorkshopRegistrationNumber}");
+            section.AddParagraph().AddLineBreak();
+
+            // Jobs title
+            section.AddParagraph("Jobs:")
+                   .Format.Font.Bold = true;
+
+            foreach (var job in order.Jobs)
+            {
+                var jobTitle = section.AddParagraph(job.JobTypeName);
+                jobTitle.Format.Font.Bold = true;
+                jobTitle.Format.LeftIndent = JobIndent;
+                jobTitle.Format.SpaceBefore = "0.3cm";
+
+                AddIndentedParagraph(section, $"Description: {job.Description}", DetailIndent);
+                AddIndentedParagraph(section, $"Mechanic: {job.MechanicName}", DetailIndent);
+                AddIndentedParagraph(section, $"Labor cost: {job.LaborCost:0.00}", DetailIndent);
+
+                var partsTotal = job.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity);
+                AddIndentedParagraph(section, $"Parts total: {partsTotal:0.00}", DetailIndent);
+
+                foreach (var part in job.Parts)
+                {
+                    AddIndentedParagraph(
+                        section,
+                        $"{part.PartName} x{part.UsedQuantity} @ {part.Price:0.00} = {(part.Price * (decimal)part.UsedQuantity):0.00}",
+                        PartIndent);
+                }
+            }
+
+            var total = order.Jobs.Sum(j => j.LaborCost + j.Parts.Sum(p => p.Price * (decimal)p.UsedQuantity));
+            var totalParagraph = section.AddParagraph($"Total: {total:0.00}");
+            totalParagraph.Format.Font.Bold = true;
+            totalParagraph.Format.SpaceBefore = "0.8cm";
+
+            var footer = section.AddParagraph("Thank you for choosing us!");
+            footer.Format.Alignment = ParagraphAlignment.Center;
+            footer.Format.SpaceBefore = "1cm";
+
+            var renderer = new PdfDocumentRenderer(unicode: true) { Document = document };
+            renderer.RenderDocument();
+            using var memoryStream = new MemoryStream();
+            renderer.PdfDocument.Save(memoryStream, false);
+            return Task.FromResult(memoryStream.ToArray());
+        }
+
+        private static void AddIndentedParagraph(Section section, string text, string leftIndent)
+        {
+            var paragraph = section.AddParagraph(text);
+            paragraph.Format.LeftIndent = leftIndent;
+        }
+
         public Task<byte[]> ExportOrdersAsync(List<(OrderListVM Order, List<JobListVM> Jobs)> ordersWithJobs)
         {
             var doc = CreateDocument("Orders Report");

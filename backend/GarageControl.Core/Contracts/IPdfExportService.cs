@@ -9,6 +9,7 @@ namespace GarageControl.Core.Contracts
 {
     public interface IPdfExportService
     {
+        Task<byte[]> GenerateInvoicePdfAsync(OrderInvoiceVM order);
         Task<byte[]> ExportOrdersAsync(List<(OrderListVM Order, List<JobListVM> Jobs)> ordersWithJobs);
         Task<byte[]> ExportClientsAsync(IEnumerable<ClientVM> clients);
         Task<byte[]> ExportWorkersAsync(IEnumerable<WorkerVM> workers, List<string> exportTypes);

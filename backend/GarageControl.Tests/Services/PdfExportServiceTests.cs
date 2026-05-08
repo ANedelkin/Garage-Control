@@ -1,5 +1,6 @@
 using Xunit;
 using System.Threading.Tasks;
+using GarageControl.Core.Services;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Jobs;
@@ -7,13 +8,13 @@ using System.Collections.Generic;
 
 namespace GarageControl.Tests.Services
 {
-    public class PDFGeneratorServiceTests
+    public class PdfExportServiceTests
     {
-        private readonly PDFGeneratorService _service;
+        private readonly PdfExportService _service;
 
-        public PDFGeneratorServiceTests()
+        public PdfExportServiceTests()
         {
-            _service = new PDFGeneratorService();
+            _service = new PdfExportService();
         }
 
         [Fact]
