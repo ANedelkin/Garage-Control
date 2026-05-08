@@ -26,7 +26,17 @@ export async function request(method, url, body = null, options = {}) {
     }
 
     const performRequest = async () => {
-        const response = await fetch(`${API_BASE_URL}/${url}`, requestOptions);
+        let response;
+        try {
+            response = await fetch(`${API_BASE_URL}/${url}`, requestOptions);
+        } catch (fetchError) {
+            // Network error or CORS issue (TypeError: Failed to fetch)
+            window.dispatchEvent(new CustomEvent('api-network-error'));
+            const error = new Error('Network error');
+            error.isNetworkError = true;
+            error.isGlobal = true;
+            throw error;
+        }
 
         let data = null;
         const contentType = response.headers.get('content-type');
@@ -79,6 +89,14 @@ export async function request(method, url, body = null, options = {}) {
 
             if (response.status === 403) {
                 window.dispatchEvent(new CustomEvent('api-403'));
+            }
+
+            if (response.status >= 500) {
+                window.dispatchEvent(new CustomEvent('api-server-error'));
+                const error = new Error('Server Error');
+                error.status = response.status;
+                error.isGlobal = true;
+                throw error;
             }
 
             const errorMessage = data?.message || data?.error || data?.title || response.statusText || 'Request failed';

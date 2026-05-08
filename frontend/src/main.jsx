@@ -26,6 +26,12 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
+window.addEventListener('unhandledrejection', (event) => {
+  // Prevent the default browser console error
+  event.preventDefault();
+  console.warn('Unhandled promise rejection caught globally:', event.reason);
+});
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
