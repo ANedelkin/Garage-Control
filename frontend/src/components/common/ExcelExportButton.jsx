@@ -1,20 +1,18 @@
 import React from 'react';
 import { exportToExcel } from '../../Utilities/exportToExcel';
+import { useStatus } from '../../context/StatusContext';
 
-/**
- * Reusable button for Excel exports.
- * @param {string} endpoint - The API endpoint to call.
- * @param {string} className - Additional CSS classes.
- * @param {string} text - Button text (defaults to 'Export to Excel').
- * @param {boolean} disabled - Whether the button is disabled.
- */
-const ExcelExportButton = ({ endpoint, className = '', text = 'Export to Excel', disabled = false, onClick = null }) => {
-    const handleClick = (e) => {
+const ExcelExportButton = ({ endpoint, className = '', text = 'Export to Excel', disabled = false }) => {
+    const { showStatus } = useStatus();
+
+    const handleClick = async (e) => {
         e.stopPropagation();
-        if (onClick) {
-            onClick(e);
-        } else {
-            exportToExcel(endpoint);
+        showStatus('Generating Excel file...', 'loading');
+        try {
+            await exportToExcel(endpoint);
+            showStatus('Excel file generated!', 'success');
+        } catch (error) {
+            showStatus('Failed to generate Excel file', 'error');
         }
     };
 

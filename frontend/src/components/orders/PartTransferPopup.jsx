@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useStatus } from '../../context/StatusContext';
 
 const PartTransferPopup = ({ onClose, onConfirm, maxQuantity, partName }) => {
     const [quantity, setQuantity] = useState(maxQuantity);
+    const { showStatus } = useStatus();
 
     useEffect(() => {
         setQuantity(maxQuantity);
@@ -10,11 +12,11 @@ const PartTransferPopup = ({ onClose, onConfirm, maxQuantity, partName }) => {
     const handleConfirm = async () => {
         const val = parseFloat(quantity);
         if (isNaN(val) || val <= 0) {
-            alert('Please enter a valid quantity.');
+            showStatus('Please enter a valid quantity.', 'error');
             return;
         }
         if (val > maxQuantity) {
-            alert('Cannot transfer more than requested.');
+            showStatus('Cannot transfer more than requested.', 'error');
             return;
         }
         try {

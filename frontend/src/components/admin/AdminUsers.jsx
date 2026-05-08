@@ -4,6 +4,7 @@ import Dropdown from '../common/Dropdown';
 import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from '../common/JustificationPopup';
 import AdminUserPopup from './AdminUserPopup';
+import { useStatus } from '../../context/StatusContext.jsx';
 import '../../assets/css/admin-users.css';
 import usePageTitle from '../../hooks/usePageTitle.js';
 
@@ -15,6 +16,7 @@ const AdminUsers = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     useEffect(() => {
         fetchUsers();
@@ -52,6 +54,7 @@ const AdminUsers = () => {
 
     const performToggleBlock = async (userId, reason = null) => {
         try {
+            showStatus(reason ? 'Blocking user...' : 'Unblocking user...', 'loading');
             await adminApi.toggleUserBlock(userId, reason);
             setUsers(users.map(u =>
                 u.id === userId
@@ -59,9 +62,10 @@ const AdminUsers = () => {
                     : u
             ));
             removeLastPopup();
+            showStatus(reason ? 'User blocked' : 'User unblocked', 'success');
         } catch (err) {
             console.error('Error toggling block status:', err);
-            alert(err.message || 'Failed to update user status');
+            showStatus('Failed to update user status', 'error');
         }
     };
 

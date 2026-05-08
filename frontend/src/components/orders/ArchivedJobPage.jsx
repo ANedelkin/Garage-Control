@@ -5,10 +5,12 @@ import usePageTitle from '../../hooks/usePageTitle';
 import '../../assets/css/orders.css';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const ArchivedJobPage = () => {
     const { jobId } = useParams();
     const navigate = useNavigate();
+    const { showStatus } = useStatus();
     usePageTitle('View Archived Job');
 
     const [job, setJob] = useState(null);
@@ -22,7 +24,7 @@ const ArchivedJobPage = () => {
                 setJob(jobData);
             } catch (e) {
                 console.error("Failed to load data", e);
-                alert("Error loading job details");
+                showStatus("Error loading job details", 'error');
             } finally {
                 setLoading(false);
             }

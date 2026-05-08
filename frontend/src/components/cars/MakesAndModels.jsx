@@ -9,10 +9,12 @@ import GenericInputPopup from '../common/GenericInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const MakesAndModels = () => {
     usePageTitle('Makes & Models');
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const navigate = useNavigate();
     const { makeId, modelId } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -161,6 +163,7 @@ const MakesAndModels = () => {
     };
 
     const handleSaveModal = async (type, editingItem, itemName) => {
+        showStatus(`Saving ${type}...`, 'loading');
         try {
             if (type === 'make') {
                 if (editingItem) {
@@ -180,8 +183,10 @@ const MakesAndModels = () => {
             removeLastPopup();
             navigate('/makes-and-models');
             setErrors({});
+            showStatus(`${type === 'make' ? 'Make' : 'Model'} saved successfully`, 'success');
         } catch (error) {
             console.error("Error saving item", error);
+            showStatus(`Failed to save ${type}`, 'error');
             setErrors(parseValidationErrors(error));
         }
     };
@@ -195,6 +200,7 @@ const MakesAndModels = () => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus(`Deleting ${type}...`, 'loading');
                     try {
                         if (type === 'make') {
                             await makeApi.deleteMake(id);
@@ -205,9 +211,10 @@ const MakesAndModels = () => {
                             fetchModels(selectedMake.id);
                         }
                         removeLastPopup();
+                        showStatus(`${type === 'make' ? 'Make' : 'Model'} deleted successfully`, 'success');
                     } catch (error) {
                         console.error("Error deleting", error);
-                        alert("Failed to delete. It might be in use.");
+                        showStatus(`Failed to delete ${type}`, 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -217,6 +224,7 @@ const MakesAndModels = () => {
 
     const handleOpenMerge = (type, custom, global) => {
         const handleMergeAction = async () => {
+            showStatus('Merging...', 'loading');
             try {
                 if (type === 'make') {
                     await makeApi.mergeMakeWithGlobal(custom.id, global.id);
@@ -227,10 +235,10 @@ const MakesAndModels = () => {
                     fetchModels(selectedMake.id);
                 }
                 removeLastPopup();
-                alert('Merge completed successfully!');
+                showStatus('Merge completed successfully!', 'success');
             } catch (error) {
                 console.error('Error merging:', error);
-                alert('Failed to merge. Check console.');
+                showStatus('Failed to merge', 'error');
             }
         };
 
@@ -353,7 +361,7 @@ const MakesAndModels = () => {
                                                             }
                                                         } catch (error) {
                                                             console.error('Error fetching global model:', error);
-                                                            alert('Failed to load global model');
+                                                            showStatus('Failed to load global model', 'error');
                                                         }
                                                     }}
                                                     title="Merge with global"

@@ -1,20 +1,21 @@
 import { partApi } from "../../services/partApi";
-
 import GenericInputPopup from "../common/GenericInputPopup";
 
-export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuccess) => {
+export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuccess, showStatus) => {
     addPopup('Add Folder', (
         <GenericInputPopup 
             label="Folder Name"
             confirmText="Add"
             onConfirm={async (name) => {
+                showStatus?.('Creating folder...', 'loading');
                 try {
                     await partApi.createFolder({ name, parentId });
                     onSuccess();
                     removeLastPopup();
+                    showStatus?.('Folder created successfully', 'success');
                 } catch (e) {
                     console.error(e);
-                    alert("Failed to create folder");
+                    showStatus?.('Failed to create folder', 'error');
                 }
             }}
             onClose={removeLastPopup}
@@ -22,7 +23,8 @@ export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuc
     ));
 };
 
-export const handleAddPart = async (parentId, onSuccess) => {
+export const handleAddPart = async (parentId, onSuccess, showStatus) => {
+    showStatus?.('Creating part...', 'loading');
     try {
         const newPart = await partApi.createPart({
             name: "Unnamed Part",
@@ -32,10 +34,11 @@ export const handleAddPart = async (parentId, onSuccess) => {
             parentId
         });
         onSuccess(newPart);
+        showStatus?.('Part created successfully', 'success');
         return newPart;
     } catch (e) {
         console.error(e);
-        alert("Failed to create part");
+        showStatus?.('Failed to create part', 'error');
     }
 };
 

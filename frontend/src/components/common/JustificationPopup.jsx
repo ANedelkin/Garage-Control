@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const JustificationPopup = ({ onClose, onConfirm, title, message }) => {
+    const { showStatus } = useStatus();
     const [justification, setJustification] = useState('');
 
     const handleConfirm = () => {
         if (!justification.trim()) {
-            alert('Please enter a justification.');
+            showStatus('Please enter a justification.', 'error');
             return;
         }
         onConfirm(justification);

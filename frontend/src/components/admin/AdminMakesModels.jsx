@@ -11,6 +11,7 @@ import '../../assets/css/admin-makes-models.css';
 import '../../assets/css/popup.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle.js';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const AdminMakesModels = () => {
     usePageTitle('Admin Makes & Models');
@@ -20,6 +21,7 @@ const AdminMakesModels = () => {
     const [activeTab, setActiveTab] = useState('existing');
 
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     const loadData = async () => {
         try {
@@ -45,7 +47,7 @@ const AdminMakesModels = () => {
 
         } catch (error) {
             console.error("Failed to load makes/models", error);
-            alert("Error loading data");
+            showStatus("Error loading data", 'error');
         }
     };
 
@@ -82,12 +84,14 @@ const AdminMakesModels = () => {
                     label="Model Name" 
                     confirmText="Add"
                     onConfirm={async (name) => {
+                        showStatus('Creating model...', 'loading');
                         try {
                             await modelApi.createModel({ name, makeId: node.id });
                             removeLastPopup();
                             onSuccess();
+                            showStatus('Model created successfully', 'success');
                         } catch (e) {
-                            alert("Failed to create model");
+                            showStatus('Failed to create model', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -101,6 +105,7 @@ const AdminMakesModels = () => {
                     initialValue={node.name}
                     confirmText="Rename"
                     onConfirm={async (newName) => {
+                        showStatus('Renaming...', 'loading');
                         try {
                             if (type === 'group') {
                                 await makeApi.editMake(node.id, { name: newName });
@@ -109,8 +114,9 @@ const AdminMakesModels = () => {
                             }
                             removeLastPopup();
                             onSuccess();
+                            showStatus('Renamed successfully', 'success');
                         } catch (e) {
-                            alert("Failed to rename");
+                            showStatus('Failed to rename', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -125,6 +131,7 @@ const AdminMakesModels = () => {
                     confirmText="Delete"
                     isDanger={true}
                     onConfirm={async () => {
+                        showStatus('Deleting...', 'loading');
                         try {
                             if (type === 'group') {
                                 await makeApi.deleteMake(node.id);
@@ -133,8 +140,9 @@ const AdminMakesModels = () => {
                             }
                             removeLastPopup();
                             onSuccess();
+                            showStatus('Deleted successfully', 'success');
                         } catch (e) {
-                            alert("Failed to delete");
+                            showStatus('Failed to delete', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -192,16 +200,19 @@ const AdminMakesModels = () => {
         }
 
         try {
+            showStatus('Promoting...', 'loading');
             await makeApi.promote({ name: node.name, newName });
             removeLastPopup();
             loadData();
+            showStatus('Promoted successfully', 'success');
         } catch (e) {
-            alert("Failed to promote");
+            showStatus('Failed to promote', 'error');
         }
     };
 
     const handleConfirmModelAdd = async (originalNode, makeName, modelName) => {
         try {
+            showStatus('Adding model...', 'loading');
             await makeApi.promoteModel({
                 makeName: originalNode.makeName,
                 newMakeName: makeName !== originalNode.makeName ? makeName : null,
@@ -212,9 +223,11 @@ const AdminMakesModels = () => {
             removeLastPopup();
             setErrors({});
             loadData();
+            showStatus('Model added successfully', 'success');
         } catch (e) {
             console.error("Error promoting model", e);
             setErrors(parseValidationErrors(e));
+            showStatus('Failed to add model', 'error');
         }
     };
 
@@ -248,12 +261,14 @@ const AdminMakesModels = () => {
                                 confirmText="Continue"
                                 onConfirm={async () => {
                                     removeLastPopup(); // Close duplicate warning
+                                    showStatus('Creating make...', 'loading');
                                     try {
                                         await makeApi.createMake({ name });
                                         removeLastPopup(); // Close Add Make popup
                                         loadData();
+                                        showStatus('Make created successfully', 'success');
                                     } catch (e) {
-                                        alert("Failed to create make");
+                                        showStatus('Failed to create make', 'error');
                                     }
                                 }}
                                 onClose={removeLastPopup}
@@ -263,11 +278,13 @@ const AdminMakesModels = () => {
                     }
 
                     try {
+                        showStatus('Creating make...', 'loading');
                         await makeApi.createMake({ name });
                         removeLastPopup();
                         loadData();
+                        showStatus('Make created successfully', 'success');
                     } catch (e) {
-                        alert("Failed to create make");
+                        showStatus('Failed to create make', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

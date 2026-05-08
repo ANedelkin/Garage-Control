@@ -33,6 +33,8 @@ import PopupPortal from './components/common/PopupPortal.jsx';
 import ErrorPage from './components/common/ErrorPage.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 import GlobalErrorWatcher from './components/common/GlobalErrorWatcher.jsx';
+import { StatusProvider } from './context/StatusContext.jsx';
+import StatusOverlay from './components/common/StatusOverlay.jsx';
 
 import { authApi } from './services/authApi';
 import { useAuth } from './context/AuthContext';
@@ -216,10 +218,12 @@ function App() {
 
   return (
     <div className="app-container">
-      <BrowserRouter>
-        <ErrorBoundary>
-          <PopupPortal />
-          <GlobalErrorWatcher>
+      <StatusProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <StatusOverlay />
+            <PopupPortal />
+            <GlobalErrorWatcher>
             <Routes>
               <Route path="/login" element={<LogInPage />} />
               <Route path="/signup" element={<SignUpPage />} />
@@ -256,6 +260,7 @@ function App() {
           </GlobalErrorWatcher>
         </ErrorBoundary>
       </BrowserRouter>
+      </StatusProvider>
     </div>
   );
 }

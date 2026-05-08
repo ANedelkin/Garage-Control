@@ -11,6 +11,7 @@ import ConfirmationPopup from '../common/ConfirmationPopup';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import ExcelExportButton from '../common/ExcelExportButton';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const ClientPopup = ({ onClose, onSave, clientId }) => {
     const isNew = !clientId;
@@ -33,6 +34,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
     const [modelsMap, setModelsMap] = useState({});
 
     const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const [activeTab, setActiveTab] = useState("info");
     const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
 
@@ -91,7 +93,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                 }
             } catch (error) {
                 console.error("Error loading data", error);
-                alert("Failed to load data.");
+                showStatus("Failed to load data.", 'error');
             } finally {
                 setLoading(false);
             }
@@ -102,6 +104,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
+            showStatus('Saving client...', 'loading');
             let savedClientId = clientId;
             if (isNew) {
                 await clientApi.create({ ...client, cars });
@@ -111,8 +114,10 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
 
             onSave();
             onClose();
+            showStatus('Client saved successfully', 'success');
         } catch (error) {
             console.error('Error saving client info:', error);
+            showStatus('Failed to save client', 'error');
             setErrors(parseValidationErrors(error));
         }
     };
@@ -148,6 +153,7 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                 ownerId: clientId
             };
 
+            showStatus('Saving car...', 'loading');
             if (carData.id) {
                 await vehicleApi.edit(carData.id, carDto);
             } else {
@@ -167,8 +173,10 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
             }
 
             removeLastPopup();
+            showStatus('Car saved successfully', 'success');
         } catch (error) {
             console.error("Error saving car", error);
+            showStatus('Failed to save car', 'error');
             const errors = parseValidationErrors(error);
             updateLastPopup(
                 <CarPopup
@@ -195,18 +203,21 @@ const ClientPopup = ({ onClose, onSave, clientId }) => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting car...', 'loading');
                     try {
                         if (isNew || carId.toString().startsWith('temp-')) {
                             setCars(cars.filter(c => c.id !== carId));
                             removeLastPopup();
+                            showStatus('Car removed', 'success');
                             return;
                         }
                         await vehicleApi.delete(carId);
                         setCars(cars.filter(c => c.id !== carId));
                         removeLastPopup();
+                        showStatus('Car deleted successfully', 'success');
                     } catch (error) {
                         console.error("Error deleting car", error);
-                        alert("Failed to delete car.");
+                        showStatus('Failed to delete car', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

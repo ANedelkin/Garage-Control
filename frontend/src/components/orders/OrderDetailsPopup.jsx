@@ -5,9 +5,11 @@ import '../../assets/css/orders.css';
 import FieldError from '../common/FieldError.jsx';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const [carSearch, setCarSearch] = useState(order.carRegistrationNumber);
     const [selectedCarId, setSelectedCarId] = useState(order.carId);
     const [kilometers, setKilometers] = useState(order.kilometers);
@@ -121,6 +123,7 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                     className="btn"
                     style={{ flex: 1 }}
                     onClick={async () => {
+                        showStatus('Generating invoice...', 'loading');
                         try {
                             const response = await request('get',
                                 `order/${order.id}/invoice`,
@@ -137,9 +140,10 @@ const OrderDetailsPopup = ({ order, cars, onClose, onSave, errors = {} }) => {
                                     printWindow.print();
                                 });
                             }
+                            showStatus('Invoice generated', 'success');
                         } catch (err) {
                             console.error(err);
-                            alert('Failed to load invoice for printing.');
+                            showStatus('Failed to load invoice', 'error');
                         }
                     }}
                 >

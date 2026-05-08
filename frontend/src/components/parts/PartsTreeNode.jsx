@@ -6,9 +6,11 @@ import { handleAddFolder, handleAddPart } from './helpers';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import GenericInputPopup from '../common/GenericInputPopup';
+import { useStatus } from '../../context/StatusContext';
 
 const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [] }) => {
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const [expanded, setExpanded] = useState(false);
     const [children, setChildren] = useState({ subFolders: [], parts: [] });
     const [loaded, setLoaded] = useState(false);
@@ -70,6 +72,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                 initialValue={node.name}
                 confirmText="Rename"
                 onConfirm={async (newName) => {
+                    showStatus('Renaming...', 'loading');
                     try {
                         if (type === 'folder') {
                             await partApi.renameFolder(node.id, newName);
@@ -78,8 +81,9 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                         }
                         removeLastPopup();
                         onRefresh();
+                        showStatus('Renamed successfully', 'success');
                     } catch (error) {
-                        alert("Failed to rename");
+                        showStatus('Failed to rename', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -96,6 +100,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting...', 'loading');
                     try {
                         if (type === 'folder') {
                             await partApi.deleteFolder(node.id);
@@ -104,8 +109,9 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                         }
                         removeLastPopup();
                         onRefresh();
+                        showStatus('Deleted successfully', 'success');
                     } catch (error) {
-                        alert("Failed to delete");
+                        showStatus('Failed to delete', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -115,20 +121,16 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
     };
 
     const handleAddSubFolder = async () => {
-        handleAddFolder(node.id, () => {
+        handleAddFolder(node.id, addPopup, removeLastPopup, () => {
             // Force reload children
             setLoaded(false);
             setExpanded(true);
-            // Verify if we can just re-fetch this node's content?
-            // Simplest is to trigger global refresh or specifically refresh this node
-            // Passed from parent is global refresh, which is heavy. 
-            // Better: reload this node specific
             fetchContent(node.id).then(data => {
                 setChildren(data);
                 setLoaded(true);
                 setExpanded(true);
             });
-        });
+        }, showStatus);
         setShowMenu(false);
     };
 
@@ -139,7 +141,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                 setLoaded(true);
                 setExpanded(true);
             });
-        });
+        }, showStatus);
         if (newPart) {
             onSelectPart(newPart, [...currentPath, newPart.id]);
         }

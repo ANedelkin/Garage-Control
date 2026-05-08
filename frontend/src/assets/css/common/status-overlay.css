@@ -1,0 +1,54 @@
+.status-overlay-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    animation: slideUp 0.3s ease-out;
+}
+
+.status-tile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--solid3);
+    border: 1px solid var(--border1);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--solid2);
+    color: var(--text-clr1);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.status-icon {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.status-overlay-container.loading .status-icon {
+    color: var(--primary);
+}
+
+.status-overlay-container.success .status-icon {
+    color: #2ecc71;
+}
+
+.status-overlay-container.error .status-icon {
+    color: #e74c3c;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 0.8;
+        transform: translate(-50%, 0);
+    }
+}

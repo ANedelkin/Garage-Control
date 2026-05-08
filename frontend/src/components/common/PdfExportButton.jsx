@@ -1,20 +1,18 @@
 import React from 'react';
 import { exportToPdf } from '../../Utilities/exportToExcel';
+import { useStatus } from '../../context/StatusContext';
 
-/**
- * Reusable button for PDF exports.
- * @param {string} endpoint - The API endpoint to call.
- * @param {string} className - Additional CSS classes.
- * @param {string} text - Button text (defaults to 'Export to PDF').
- * @param {boolean} disabled - Whether the button is disabled.
- */
-const PdfExportButton = ({ endpoint, className = '', text = 'Export to PDF', disabled = false, onClick = null }) => {
-    const handleClick = (e) => {
+const PdfExportButton = ({ endpoint, className = '', text = 'Export to PDF', disabled = false }) => {
+    const { showStatus } = useStatus();
+
+    const handleClick = async (e) => {
         e.stopPropagation();
-        if (onClick) {
-            onClick(e);
-        } else {
-            exportToPdf(endpoint);
+        showStatus('Generating PDF file...', 'loading');
+        try {
+            await exportToPdf(endpoint);
+            showStatus('PDF file generated!', 'success');
+        } catch (error) {
+            showStatus('Failed to generate PDF file', 'error');
         }
     };
 

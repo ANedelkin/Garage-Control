@@ -9,6 +9,7 @@ import ConfirmationPopup from '../common/ConfirmationPopup';
 import usePageTitle from '../../hooks/usePageTitle';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const Clients = () => {
     usePageTitle('Clients');
@@ -18,6 +19,7 @@ const Clients = () => {
     const [loading, setLoading] = useState(true);
     const [clients, setClients] = useState([]);
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const rowRefs = useRef({});
     const [searchParams] = useSearchParams();
     const highlight = searchParams.get('highlight') === 'true';
@@ -53,13 +55,15 @@ const Clients = () => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting client...', 'loading');
                     try {
                         await clientApi.delete(id);
                         setClients(clients.filter(c => c.id !== id));
                         removeLastPopup();
+                        showStatus('Client deleted successfully', 'success');
                     } catch (error) {
                         console.error("Failed to delete client", error);
-                        alert("Failed to delete client.");
+                        showStatus('Failed to delete client', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

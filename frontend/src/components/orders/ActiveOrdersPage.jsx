@@ -13,6 +13,7 @@ import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import usePageTitle from '../../hooks/usePageTitle';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
+import { useStatus } from '../../context/StatusContext';
 
 const ActiveOrdersPage = () => {
     usePageTitle('Orders');
@@ -20,6 +21,7 @@ const ActiveOrdersPage = () => {
     const { orderId } = useParams();
     const [searchParams] = useSearchParams();
     const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const [orders, setOrders] = useState([]);
     const [cars, setCars] = useState([]);
     const [filter, setFilter] = useState(searchParams.get('status') || 'all');
@@ -165,12 +167,15 @@ const ActiveOrdersPage = () => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting job...', 'loading');
                     try {
                         await jobApi.deleteJob(jobId);
                         removeLastPopup();
                         fetchOrders();
+                        showStatus('Job deleted successfully', 'success');
                     } catch (error) {
                         console.error('Failed to delete job:', error);
+                        showStatus('Failed to delete job', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -186,13 +191,15 @@ const ActiveOrdersPage = () => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting order...', 'loading');
                     try {
                         await orderApi.deleteOrder(orderId);
                         removeLastPopup();
                         fetchOrders();
+                        showStatus('Order deleted successfully', 'success');
                     } catch (error) {
                         console.error('Failed to delete order:', error);
-                        alert("Error deleting order");
+                        showStatus('Failed to delete order', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

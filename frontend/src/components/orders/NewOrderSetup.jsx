@@ -6,9 +6,11 @@ import Suggestions from '../common/Suggestions';
 import '../../assets/css/orders.css';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import FieldError from '../common/FieldError.jsx';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const NewOrderSetup = ({ onClose, onSuccess }) => {
     const navigate = useNavigate();
+    const { showStatus } = useStatus();
     const [cars, setCars] = useState([]);
     const [carSearch, setCarSearch] = useState('');
     const [selectedCar, setSelectedCar] = useState(null);
@@ -56,16 +58,19 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
 
     const handleCreateOrder = async () => {
         if (!selectedCar) {
-            alert("Please select a car");
+            showStatus("Please select a car", 'error');
             return;
         }
 
         try {
+            showStatus('Creating order...', 'loading');
             const result = await orderApi.createOrder({
                 carId: selectedCar.id,
                 kilometers: parseInt(kilometers) || 0,
                 jobs: [] // Start with empty jobs
             });
+
+            showStatus('Order created successfully', 'success');
 
             if (onSuccess) {
                 onSuccess();
@@ -74,6 +79,7 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
             }
         } catch (e) {
             console.error(e);
+            showStatus('Failed to create order', 'error');
             setErrors(parseValidationErrors(e));
         }
     };

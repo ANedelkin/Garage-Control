@@ -11,6 +11,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const Cars = () => {
     usePageTitle('Cars');
@@ -28,6 +29,7 @@ const Cars = () => {
     const location = useLocation();
 
     const { addPopup, removeLastPopup, updateLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -90,13 +92,15 @@ const Cars = () => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting car...', 'loading');
                     try {
                         await vehicleApi.delete(id);
                         setCars(cars.filter(c => c.id !== id));
                         removeLastPopup();
+                        showStatus('Car deleted successfully', 'success');
                     } catch (error) {
                         console.error("Failed to delete car", error);
-                        alert("Failed to delete car");
+                        showStatus('Failed to delete car', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -137,8 +141,8 @@ const Cars = () => {
             handleRowClick({});
         }
     }, [location.pathname]);
-
     const handleSaveCar = async (carData) => {
+        showStatus('Saving car...', 'loading');
         try {
             await vehicleApi.edit(carData.id, carData);
 
@@ -156,8 +160,10 @@ const Cars = () => {
 
             removeLastPopup();
             navigate('/cars');
+            showStatus('Car saved successfully', 'success');
         } catch (error) {
             console.error("Failed to save car", error);
+            showStatus('Failed to save car', 'error');
             const errors = parseValidationErrors(error);
             // Re-render popup with errors by updating it in place
             updateLastPopup(

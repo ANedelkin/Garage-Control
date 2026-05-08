@@ -6,6 +6,7 @@ import { usePopup } from '../../context/PopupContext';
 
 import GenericInputPopup from '../common/GenericInputPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
+import { useStatus } from '../../context/StatusContext';
 
 // Custom label renderer for parts tree with deficit status visualization
 const PartItemLabel = ({ node, type, expanded }) => {
@@ -54,6 +55,7 @@ const PartItemLabel = ({ node, type, expanded }) => {
 
 const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refreshTrigger, selectedPartId, selectedPath = [], currentPath = [], autoExpandPath = [], onAutoExpandProcessed }) => {
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     // Define Actions for the Parts Tree
     const actions = {
@@ -64,6 +66,7 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                     initialValue={node.name}
                     confirmText="Rename"
                     onConfirm={async (newName) => {
+                        showStatus('Renaming...', 'loading');
                         try {
                             if (type === 'group') {
                                 await partApi.renameFolder(node.id, newName);
@@ -72,8 +75,9 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                             }
                             removeLastPopup();
                             onSuccess();
+                            showStatus('Renamed successfully', 'success');
                         } catch (error) {
-                            alert("Failed to rename");
+                            showStatus('Failed to rename', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -90,6 +94,7 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                     confirmText="Delete"
                     isDanger={true}
                     onConfirm={async () => {
+                        showStatus('Deleting...', 'loading');
                         try {
                             if (type === 'group') {
                                 await partApi.deleteFolder(node.id);
@@ -103,8 +108,9 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                             } else {
                                 onRefresh();
                             }
+                            showStatus('Deleted successfully', 'success');
                         } catch (error) {
-                            alert("Failed to delete");
+                            showStatus('Failed to delete', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -112,25 +118,27 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
             );
         },
         onAddGroup: async (node, onSuccess) => {
-            handleAddFolder(node.id, addPopup, removeLastPopup, onSuccess);
+            handleAddFolder(node.id, addPopup, removeLastPopup, onSuccess, showStatus);
         },
         onAddItem: async (node, onSuccess) => {
-            const newPart = await handleAddPart(node.id, onSuccess);
+            const newPart = await handleAddPart(node.id, onSuccess, showStatus);
             return newPart;
         },
         onMoveItem: async (draggedItem, targetFolder, onSuccess) => {
             // draggedItem: { id, type }
             // targetFolder: node (the folder we dropped onto)
             try {
+                showStatus('Moving item...', 'loading');
                 if (draggedItem.type === 'item') {
                     await partApi.movePart(draggedItem.id, targetFolder.id);
                 } else if (draggedItem.type === 'group') {
                     await partApi.moveFolder(draggedItem.id, targetFolder.id);
                 }
                 onSuccess(); // Refreshes the target folder
-                onRefresh(); // Refreshes the whole tree (or source folder ideally, but full refresh is safer for now)
+                onRefresh(); // Refreshes the whole tree
+                showStatus('Item moved successfully', 'success');
             } catch (error) {
-                alert("Failed to move item");
+                showStatus('Failed to move item', 'error');
                 console.error(error);
             }
         }

@@ -4,6 +4,7 @@ import Dropdown from '../common/Dropdown';
 import { usePopup } from '../../context/PopupContext';
 import JustificationPopup from '../common/JustificationPopup';
 import AdminWorkshopPopup from './AdminWorkshopPopup';
+import { useStatus } from '../../context/StatusContext.jsx';
 import '../../assets/css/admin-users.css';
 import usePageTitle from '../../hooks/usePageTitle.js';
 
@@ -15,6 +16,7 @@ const AdminWorkshops = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     useEffect(() => {
         fetchWorkshops();
@@ -52,6 +54,7 @@ const AdminWorkshops = () => {
 
     const performToggleBlock = async (workshopId, reason = null) => {
         try {
+            showStatus(reason ? 'Blocking workshop...' : 'Unblocking workshop...', 'loading');
             await adminApi.toggleWorkshopBlock(workshopId, reason);
             setWorkshops(workshops.map(w =>
                 w.id === workshopId
@@ -59,9 +62,10 @@ const AdminWorkshops = () => {
                     : w
             ));
             removeLastPopup();
+            showStatus(reason ? 'Workshop blocked' : 'Workshop unblocked', 'success');
         } catch (err) {
             console.error('Error toggling workshop block status:', err);
-            alert(err.message || 'Failed to update workshop status');
+            showStatus('Failed to update workshop status', 'error');
         }
     };
 

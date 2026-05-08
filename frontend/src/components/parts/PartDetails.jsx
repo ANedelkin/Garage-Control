@@ -4,9 +4,11 @@ import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import { usePopup } from '../../context/PopupContext';
 import ConfirmationPopup from '../common/ConfirmationPopup';
+import { useStatus } from '../../context/StatusContext';
 
 const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const [formData, setFormData] = useState({
         name: '',
         partNumber: '',
@@ -53,6 +55,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
         setIsDirty(true);
 
         // Auto-save after adjustment
+        showStatus('Saving adjustment...', 'loading');
         try {
             await partApi.updatePart(part.id, {
                 ...updatedFormData,
@@ -64,14 +67,17 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
             setIsDirty(false);
             setStockAdj('');
             window.dispatchEvent(new CustomEvent('refresh-notifications'));
+            showStatus('Adjustment saved', 'success');
         } catch (error) {
             console.error("Error saving part after adjustment", error);
             setErrors(parseValidationErrors(error));
+            showStatus('Failed to save adjustment', 'error');
         }
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
+        showStatus('Saving changes...', 'loading');
         try {
             await partApi.updatePart(part.id, {
                 ...formData,
@@ -86,10 +92,11 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
             // Trigger notification refresh in header
             window.dispatchEvent(new CustomEvent('refresh-notifications'));
 
-            // alert("Saved successfully");
+            showStatus('Saved successfully', 'success');
         } catch (error) {
             console.error("Error saving part", error);
             setErrors(parseValidationErrors(error));
+            showStatus('Failed to save changes', 'error');
         }
     };
 
@@ -118,11 +125,16 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                                 message={`Are you sure you want to delete part "${part.name}"?`}
                                 confirmText="Delete"
                                 isDanger={true}
-                                onConfirm={() => {
-                                    partApi.deletePart(part.id).then(() => {
+                                onConfirm={async () => {
+                                    showStatus('Deleting part...', 'loading');
+                                    try {
+                                        await partApi.deletePart(part.id);
                                         removeLastPopup();
                                         onDelete();
-                                    });
+                                        showStatus('Part deleted successfully', 'success');
+                                    } catch (e) {
+                                        showStatus('Failed to delete part', 'error');
+                                    }
                                 }}
                                 onClose={removeLastPopup}
                             />

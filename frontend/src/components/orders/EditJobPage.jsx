@@ -14,10 +14,12 @@ import '../../assets/css/orders.css';
 import usePageTitle from '../../hooks/usePageTitle';
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const EditJobPage = ({ mechanicView = false }) => {
 
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
     const { orderId: paramOrderId, jobId } = useParams();
     const [searchParams] = useSearchParams();
     const queryOrderId = searchParams.get('orderId');
@@ -111,7 +113,7 @@ const EditJobPage = ({ mechanicView = false }) => {
 
             } catch (e) {
                 console.error("Failed to load data", e);
-                alert("Error loading job details");
+                showStatus("Error loading job details", 'error');
             } finally {
                 setLoading(false);
             }
@@ -161,6 +163,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 }))
             };
 
+            showStatus('Saving job...', 'loading');
             if (isEdit) {
                 await jobApi.updateJob(jobId, payload);
             } else {
@@ -171,8 +174,10 @@ const EditJobPage = ({ mechanicView = false }) => {
             window.dispatchEvent(new CustomEvent('refresh-notifications'));
 
             navigate(-1);
+            showStatus('Job saved successfully', 'success');
         } catch (e) {
             console.error(e);
+            showStatus('Failed to save job', 'error');
             setErrors(parseValidationErrors(e));
         }
     };
@@ -185,14 +190,16 @@ const EditJobPage = ({ mechanicView = false }) => {
                 confirmText="Delete"
                 isDanger={true}
                 onConfirm={async () => {
+                    showStatus('Deleting job...', 'loading');
                     try {
                         await jobApi.deleteJob(jobId);
                         window.dispatchEvent(new CustomEvent('refresh-notifications'));
                         removeLastPopup();
                         navigate(-1);
+                        showStatus('Job deleted successfully', 'success');
                     } catch (e) {
                         console.error("Failed to delete job", e);
-                        alert("Error deleting job");
+                        showStatus('Failed to delete job', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
