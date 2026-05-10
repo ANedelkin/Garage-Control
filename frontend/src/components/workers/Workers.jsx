@@ -83,8 +83,6 @@ const Workers = () => {
         }
     }, [location.pathname]);
 
-    // Unique roles for filter dropdown (assuming backend sends roles as objects with Name)
-    // const allRoles = Array.from(new Set(workers.flatMap(w => w.roles.map(r => r.name))));
 
     const filteredWorkers = workers.filter(w =>
         (roleFilter === 'all' || w.roles.some(r => r.name === roleFilter)) &&
@@ -116,12 +114,6 @@ const Workers = () => {
                     onChange={e => setSearch(e.target.value)}
                 />
 
-                {/* <Dropdown value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
-                    <option value="all">All Roles</option>
-                    {allRoles.map((r, i) => (
-                        <option value={r} key={i}>{r}</option>
-                    ))}
-                </Dropdown> */}
 
                 <button className="btn" onClick={(e) => { e.stopPropagation(); navigate("/workers/new"); }}>+ New Worker</button>
                 <div style={{ display: 'flex', gap: '5px' }}>
