@@ -7,7 +7,7 @@ namespace GarageControl.Core.ViewModels.Vehicles
     {
         public string? Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Model is required.")]
         public string ModelId { get; set; } = null!;
 
         public string? ModelName { get; set; }
@@ -18,11 +18,11 @@ namespace GarageControl.Core.ViewModels.Vehicles
         public string? OwnerName { get; set; }
         public ModelVM? Model { get; set; }
 
-        [Required]
-        [StringLength(CarConstants.registrationNumberMaxLength, MinimumLength = CarConstants.registrationNumberMinLength)]
+        [Required(ErrorMessage = "Registration number is required.")]
+        [StringLength(CarConstants.registrationNumberMaxLength, MinimumLength = CarConstants.registrationNumberMinLength, ErrorMessage = "Registration number must be between {2} and {1} characters.")]
         public string RegistrationNumber { get; set; } = null!;
 
-        [Range(0, int.MaxValue)]
+        [Range(0, int.MaxValue, ErrorMessage = "Kilometers cannot be negative.")]
         public int Kilometers { get; set; }
     }
 }

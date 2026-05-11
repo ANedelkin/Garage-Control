@@ -301,7 +301,7 @@ namespace GarageControl.Core.Services.Jobs
                     affectedPartIds.Add(jp.PartId);
             }
 
-            job.LaborCost = model.LaborCost;
+            job.LaborCost = model.LaborCost.Value;
             job.StartTime = DateTime.SpecifyKind(model.StartTime, DateTimeKind.Utc);
             job.EndTime = DateTime.SpecifyKind(model.EndTime, DateTimeKind.Utc);
 
@@ -352,13 +352,26 @@ namespace GarageControl.Core.Services.Jobs
                     if (existingJobPart.PlannedQuantity != partModel.PlannedQuantity &&
                         (hasStockAccess || isAssignedWorker))
                     {
+                        if (partModel.PlannedQuantity < existingJobPart.SentQuantity)
+                        {
+                            throw new ArgumentException($"Planned quantity for part '{part.Name}' cannot be less than sent quantity ({existingJobPart.SentQuantity}).");
+                        }
                         changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
-                        existingJobPart.PlannedQuantity = partModel.PlannedQuantity;
+                        existingJobPart.PlannedQuantity = partModel.PlannedQuantity.Value;
                     }
 
                     if (existingJobPart.SentQuantity != partModel.SentQuantity && hasStockAccess)
                     {
-                        var diff = partModel.SentQuantity - existingJobPart.SentQuantity;
+                        if (partModel.SentQuantity > existingJobPart.PlannedQuantity)
+                        {
+                            throw new ArgumentException($"Sent quantity for part '{part.Name}' cannot exceed planned quantity ({existingJobPart.PlannedQuantity}).");
+                        }
+                        if (partModel.SentQuantity < existingJobPart.UsedQuantity)
+                        {
+                            throw new ArgumentException($"Sent quantity for part '{part.Name}' cannot be less than used quantity ({existingJobPart.UsedQuantity}).");
+                        }
+
+                        var diff = partModel.SentQuantity.Value - existingJobPart.SentQuantity;
                         if (diff > part.Quantity)
                         {
                             throw new ArgumentException($"Insufficient stock for part '{part.Name}'. Available: {part.Quantity}, requested additional: {diff}");
@@ -366,27 +379,40 @@ namespace GarageControl.Core.Services.Jobs
 
                         changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
                         part.Quantity -= diff;
-                        existingJobPart.SentQuantity = partModel.SentQuantity;
+                        existingJobPart.SentQuantity = partModel.SentQuantity.Value;
                     }
 
                     if (existingJobPart.UsedQuantity != partModel.UsedQuantity &&
                         (hasStockAccess || isAssignedWorker))
                     {
+                        if (partModel.UsedQuantity > existingJobPart.SentQuantity)
+                        {
+                            throw new ArgumentException($"Used quantity for part '{part.Name}' cannot exceed sent quantity ({existingJobPart.SentQuantity}).");
+                        }
                         changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "used", existingJobPart.UsedQuantity.ToString(), partModel.UsedQuantity.ToString()));
-                        existingJobPart.UsedQuantity = partModel.UsedQuantity;
+                        existingJobPart.UsedQuantity = partModel.UsedQuantity.Value;
                     }
 
                     if (existingJobPart.RequestedQuantity != partModel.RequestedQuantity &&
                         (hasStockAccess || isAssignedWorker))
                     {
                         changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "requested", existingJobPart.RequestedQuantity.ToString(), partModel.RequestedQuantity.ToString()));
-                        existingJobPart.RequestedQuantity = partModel.RequestedQuantity;
+                        existingJobPart.RequestedQuantity = partModel.RequestedQuantity.Value;
                     }
                 }
                 else
                 {
-                    int effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity : 0;
-                    int effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
+                    int effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity.Value : 0;
+                    int effectiveSent = hasStockAccess ? partModel.SentQuantity.Value : 0;
+
+                    if (effectiveSent > effectivePlanned)
+                    {
+                        throw new ArgumentException($"Sent quantity for part '{part.Name}' cannot exceed planned quantity.");
+                    }
+                    if (partModel.UsedQuantity > effectiveSent)
+                    {
+                        throw new ArgumentException($"Used quantity for part '{part.Name}' cannot exceed sent quantity.");
+                    }
 
                     if (effectiveSent > part.Quantity)
                     {
@@ -398,14 +424,14 @@ namespace GarageControl.Core.Services.Jobs
                         PartId = part.Id,
                         PlannedQuantity = effectivePlanned,
                         SentQuantity = effectiveSent,
-                        UsedQuantity = partModel.UsedQuantity,
-                        RequestedQuantity = partModel.RequestedQuantity,
+                        UsedQuantity = partModel.UsedQuantity.Value,
+                        RequestedQuantity = partModel.RequestedQuantity.Value,
                         Price = part.Price,
                         Part = part
                     });
 
                     part.Quantity -= effectiveSent;
-                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name, effectivePlanned, effectiveSent, partModel.UsedQuantity, partModel.RequestedQuantity));
+                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name, effectivePlanned, effectiveSent, partModel.UsedQuantity.Value, partModel.RequestedQuantity.Value));
                 }
 
                 affectedPartIds.Add(part.Id);
@@ -427,8 +453,8 @@ namespace GarageControl.Core.Services.Jobs
             if (job.Status != model.Status)
                 changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));
 
-            if (job.LaborCost != model.LaborCost)
-                changes.Add(new ActivityPropertyChange("labor cost", FormatPrice(job.LaborCost), FormatPrice(model.LaborCost)));
+            if (job.LaborCost != model.LaborCost.Value)
+                changes.Add(new ActivityPropertyChange("labor cost", FormatPrice(job.LaborCost), FormatPrice(model.LaborCost.Value)));
 
             if (job.StartTime != model.StartTime || job.EndTime != model.EndTime)
                 changes.Add(new ActivityPropertyChange("interval", $"{job.StartTime:HH:mm}-{job.EndTime:HH:mm}", $"{model.StartTime:HH:mm}-{model.EndTime:HH:mm}"));

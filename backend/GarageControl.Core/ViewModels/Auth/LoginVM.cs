@@ -4,10 +4,10 @@ namespace GarageControl.Core.ViewModels.Auth
 {
     public class LoginVM
     {
-        [Required]
+        [Required(ErrorMessage = "Username is required.")]
         public string Username { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "Password is required.")]
         public string Password { get; set; } = null!;
     }
 }

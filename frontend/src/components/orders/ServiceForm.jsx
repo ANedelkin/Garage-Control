@@ -35,7 +35,7 @@ const ServiceForm = ({
     const handleChange = (field, value) => {
         let finalValue = value;
         if (field === 'laborCost') {
-            finalValue = Math.max(0, value);
+            finalValue = value;
         }
 
         updateService(service.id, field, finalValue);
@@ -114,20 +114,8 @@ const ServiceForm = ({
 
     const updatePartRow = (partIndex, field, val) => {
         const newParts = [...service.parts];
-        let clampedVal = val;
-
         const p = newParts[partIndex];
-        if (field === 'plannedQuantity') {
-            clampedVal = Math.max(0, Math.max(val, p.sentQuantity || 0));
-        } else if (field === 'sentQuantity') {
-            clampedVal = Math.max(0, Math.max(Math.min(val, p.plannedQuantity || 0), p.usedQuantity || 0));
-        } else if (field === 'usedQuantity') {
-            clampedVal = Math.max(0, Math.min(val, p.sentQuantity || 0));
-        } else if (field === 'requestedQuantity') {
-            clampedVal = Math.max(0, val);
-        }
-
-        newParts[partIndex] = { ...p, [field]: clampedVal };
+        newParts[partIndex] = { ...p, [field]: val };
         updateService(service.id, 'parts', newParts);
     };
 
@@ -149,6 +137,18 @@ const ServiceForm = ({
             ...prev,
             [index]: !prev[index]
         }));
+    };
+
+    const getPartErrors = (index) => {
+        if (!errors) return null;
+        const prefix = `parts[${index}].`.toLowerCase();
+        const partErrors = Object.keys(errors)
+            .filter(key => key.toLowerCase().startsWith(prefix))
+            .map(key => errors[key]);
+
+        const flattened = partErrors.flat();
+        if (flattened.length === 0) return null;
+        return flattened.join(', ');
     };
 
     const openTransferPopup = (partIndex) => {
@@ -333,8 +333,9 @@ const ServiceForm = ({
                                             step="0.01"
                                             min="0"
                                             value={service.laborCost}
-                                            onChange={e => handleChange('laborCost', parseFloat(e.target.value))}
+                                            onChange={e => handleChange('laborCost', e.target.value)}
                                             disabled={service.status === 2}
+                                            required
                                         />
                                         <FieldError name="LaborCost" errors={errors} />
                                     </div>
@@ -404,136 +405,140 @@ const ServiceForm = ({
 
                                 const isExpanded = !!expandedParts[i];
 
+                                const partErrors = getPartErrors(i);
                                 return (
-                                    <tr key={i} className={isExpanded ? 'expanded-row' : ''} style={{ position: 'relative' }}>
-                                        <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
-                                            <div className="mobile-part-header">
-                                                <button 
-                                                    type="button" 
-                                                    className="btn icon-btn mobile-only expand-btn"
-                                                    onClick={() => togglePartExpand(i)}
-                                                >
-                                                    <i className={`fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
-                                                </button>
-                                                <div style={{flex: 1}}>
-                                                    <input
-                                                        type="text"
-                                                        value={p.name}
-                                                        onInput={e => handlePartSearch(e.target.value, i)}
-                                                        placeholder="Search Part..."
-                                                        onFocus={() => {
-                                                            setActivePartIndex(i);
-                                                            handlePartSearch(p.name, i);
-                                                        }}
-                                                        onBlur={() => {
-                                                            suggestionsRef.current?.selectHighlighted();
-                                                            setTimeout(() => setActivePartIndex(null), 200);
-                                                        }}
-                                                        onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                                                        disabled={service.status === 2}
-                                                    />
-                                                    <Suggestions
-                                                        ref={suggestionsRef}
-                                                        suggestions={activePartIndex === i ? suggestions : []}
-                                                        isOpen={activePartIndex === i && suggestions.length > 0}
-                                                        onSelect={addPart}
-                                                        onClose={() => setActivePartIndex(null)}
-                                                        renderItem={(part) => (
-                                                            <>
-                                                                <b>{part.name}</b> ({part.partNumber}) - {part.price}
-                                                            </>
-                                                        )}
-                                                        maxHeight="150px"
-                                                        style={{ width: '100%' }}
-                                                    />
+                                    <React.Fragment key={i}>
+                                        <tr className={`${isExpanded ? 'expanded-row' : ''} ${partErrors ? 'has-errors' : ''}`} style={{ position: 'relative' }}>
+                                            <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
+                                                <div className="mobile-part-header">
+                                                    <button
+                                                        type="button"
+                                                        className="btn icon-btn mobile-only expand-btn"
+                                                        onClick={() => togglePartExpand(i)}
+                                                    >
+                                                        <i className={`fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+                                                    </button>
+                                                    <div style={{ flex: 1 }}>
+                                                        <input
+                                                            type="text"
+                                                            value={p.name}
+                                                            onInput={e => handlePartSearch(e.target.value, i)}
+                                                            placeholder="Search Part..."
+                                                            onFocus={() => {
+                                                                setActivePartIndex(i);
+                                                                handlePartSearch(p.name, i);
+                                                            }}
+                                                            onBlur={() => {
+                                                                suggestionsRef.current?.selectHighlighted();
+                                                                setTimeout(() => setActivePartIndex(null), 200);
+                                                            }}
+                                                            onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
+                                                            disabled={service.status === 2}
+                                                        />
+                                                        <Suggestions
+                                                            ref={suggestionsRef}
+                                                            suggestions={activePartIndex === i ? suggestions : []}
+                                                            isOpen={activePartIndex === i && suggestions.length > 0}
+                                                            onSelect={addPart}
+                                                            onClose={() => setActivePartIndex(null)}
+                                                            renderItem={(part) => (
+                                                                <>
+                                                                    <b>{part.name}</b> ({part.partNumber}) - {part.price}
+                                                                </>
+                                                            )}
+                                                            maxHeight="150px"
+                                                            style={{ width: '100%' }}
+                                                        />
+                                                    </div>
+                                                    <div className="mobile-only mobile-price">
+                                                        {p.price.toFixed(2)}
+                                                    </div>
                                                 </div>
-                                                <div className="mobile-only mobile-price">
-                                                    {p.price.toFixed(2)}
-                                                </div>
-                                            </div>
-                                            <FieldError name={`Parts[${i}].Name`} errors={errors} />
-                                            <FieldError name={`Parts[${i}].PartId`} errors={errors} />
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Planned">
-                                            <input
-                                                type="number"
-                                                name={`Parts[${i}].PlannedQuantity`}
-                                                className={sentError ? 'input-error' : ''}
-                                                value={p.plannedQuantity}
-                                                min={p.sentQuantity || 0}
-                                                onChange={e => updatePartRow(i, 'plannedQuantity', parseFloat(e.target.value))}
-                                                disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
-                                                title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
-                                            />
-                                            <FieldError name={`Parts[${i}].PlannedQuantity`} errors={errors} />
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Sent">
-                                            <input
-                                                type="number"
-                                                name={`Parts[${i}].SentQuantity`}
-                                                className={usedError ? 'input-error' : ''}
-                                                value={p.sentQuantity}
-                                                min={p.usedQuantity || 0}
-                                                max={p.plannedQuantity || 0}
-                                                onChange={e => updatePartRow(i, 'sentQuantity', parseFloat(e.target.value))}
-                                                disabled={service.status === 2 || mechanicView || !hasStockAccess}
-                                                title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
-                                            />
-                                            <FieldError name={`Parts[${i}].SentQuantity`} errors={errors} />
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Used">
-                                            <input
-                                                type="number"
-                                                name={`Parts[${i}].UsedQuantity`}
-                                                value={p.usedQuantity}
-                                                min={0}
-                                                max={p.sentQuantity || 0}
-                                                onChange={e => updatePartRow(i, 'usedQuantity', parseFloat(e.target.value))}
-                                                disabled={service.status === 2 || !isAssignedWorker}
-                                                title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                            />
-                                            <FieldError name={`Parts[${i}].UsedQuantity`} errors={errors} />
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Requested">
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Planned">
                                                 <input
                                                     type="number"
-                                                    name={`Parts[${i}].RequestedQuantity`}
-                                                    value={p.requestedQuantity}
-                                                    min={0}
-                                                    onChange={e => updatePartRow(i, 'requestedQuantity', parseFloat(e.target.value))}
+                                                    name={`Parts[${i}].PlannedQuantity`}
+                                                    className={sentError ? 'input-error' : ''}
+                                                    value={p.plannedQuantity}
+                                                    min="0"
+                                                    onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
+                                                    disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                                    title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
+                                                />
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Sent">
+                                                <input
+                                                    type="number"
+                                                    name={`Parts[${i}].SentQuantity`}
+                                                    className={usedError ? 'input-error' : ''}
+                                                    value={p.sentQuantity}
+                                                    min="0"
+                                                    onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
+                                                    disabled={service.status === 2 || mechanicView || !hasStockAccess}
+                                                    title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
+                                                />
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Used">
+                                                <input
+                                                    type="number"
+                                                    name={`Parts[${i}].UsedQuantity`}
+                                                    value={p.usedQuantity}
+                                                    min="0"
+                                                    onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
                                                     disabled={service.status === 2 || !isAssignedWorker}
                                                     title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                                    style={{ flex: 1 }}
                                                 />
-                                                <button
-                                                    type="button"
-                                                    className="btn icon-btn"
-                                                    disabled={service.status === 2 || !p.requestedQuantity}
-                                                    onClick={() => openTransferPopup(i)}
-                                                    title="Transfer to Planned"
-                                                >
-                                                    <i className="fa-solid fa-plus"></i>
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Requested">
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                    <input
+                                                        type="number"
+                                                        name={`Parts[${i}].RequestedQuantity`}
+                                                        value={p.requestedQuantity}
+                                                        min="0"
+                                                        onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
+                                                        disabled={service.status === 2 || !isAssignedWorker}
+                                                        title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                        style={{ flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn icon-btn"
+                                                        disabled={service.status === 2 || !p.requestedQuantity}
+                                                        onClick={() => openTransferPopup(i)}
+                                                        title="Transfer to Planned"
+                                                    >
+                                                        <i className="fa-solid fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="mobile-collapsible hide-sm" data-label="Unit Price">
+                                                {p.price.toFixed(2)}
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Total Projected">
+                                                {((p.plannedQuantity || 0) * (p.price || 0)).toFixed(2)}
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Total Spent">
+                                                {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
+                                            </td>
+                                            <td className="mobile-collapsible" data-label="Actions">
+                                                <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={service.status === 2}>
+                                                    <i className="fa-solid fa-trash"></i>
                                                 </button>
-                                            </div>
-                                            <FieldError name={`Parts[${i}].RequestedQuantity`} errors={errors} />
-                                        </td>
-                                        <td className="mobile-collapsible hide-sm" data-label="Unit Price">
-                                            {p.price.toFixed(2)}
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Total Projected">
-                                            {((p.plannedQuantity || 0) * (p.price || 0)).toFixed(2)}
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Total Spent">
-                                            {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
-                                        </td>
-                                        <td className="mobile-collapsible" data-label="Actions">
-                                            <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={service.status === 2}>
-                                                <i className="fa-solid fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                )
+                                            </td>
+                                        </tr>
+                                        {partErrors && (
+                                            <tr className="error-row no-hover" style={{ borderTop: 'none', height: 'auto' }}>
+                                                <td colSpan="9" style={{ borderTop: 'none', padding: '0 0 10px 10px', overflow: 'visible', whiteSpace: 'normal' }}>
+                                                    <p className="field-error" style={{ margin: 0 }}>
+                                                        {partErrors}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                );
                             })}
                         </tbody>
                     </table>

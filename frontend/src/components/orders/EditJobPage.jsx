@@ -133,32 +133,23 @@ const EditJobPage = ({ mechanicView = false }) => {
                 return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`;
             };
 
-            const partErrors = {};
-            job.parts.forEach((p, i) => {
-                if (!p.name || !p.name.trim()) {
-                    partErrors[`parts[${i}].name`] = ["Part name required"];
-                }
-            });
-
-            if (Object.keys(partErrors).length > 0) {
-                setErrors(partErrors);
-                return;
-            }
+            const parseNum = (val) => (val === '' || val === null || val === undefined) ? null : Number(val);
 
             const payload = {
                 jobTypeId: job.jobTypeId,
                 workerId: job.workerId,
-                laborCost: job.laborCost,
+                laborCost: parseNum(job.laborCost),
                 startTime: job.startTime || null,
                 endTime: job.endTime || null,
                 description: job.description,
                 status: job.status,
                 parts: job.parts.map(p => ({
                     partId: p.partId,
-                    plannedQuantity: p.plannedQuantity,
-                    sentQuantity: p.sentQuantity,
-                    usedQuantity: p.usedQuantity,
-                    requestedQuantity: p.requestedQuantity,
+                    partName: p.name,
+                    plannedQuantity: parseNum(p.plannedQuantity),
+                    sentQuantity: parseNum(p.sentQuantity),
+                    usedQuantity: parseNum(p.usedQuantity),
+                    requestedQuantity: parseNum(p.requestedQuantity),
                     price: p.price
                 }))
             };
@@ -177,8 +168,9 @@ const EditJobPage = ({ mechanicView = false }) => {
             showStatus('Job saved successfully', 'success');
         } catch (error) {
             console.error(error);
-            showStatus(error.message || 'Failed to save job', 'error');
-            setErrors(parseValidationErrors(error));
+            const parsedErrors = parseValidationErrors(error);
+            setErrors(parsedErrors);
+            showStatus(parsedErrors.general || error.message || 'Failed to save job', 'error');
         }
     };
 

@@ -5,12 +5,12 @@ namespace GarageControl.Core.ViewModels.Auth
 {
     public class RegisterVM
     {
-        [Required]
+        [Required(ErrorMessage = "Username is required.")]
         [MinLength(AuthConstants.usernameMinLength, ErrorMessage = "Username too short.")]
         [MaxLength(AuthConstants.usernameMaxLength, ErrorMessage = "Username too long.")]
         public string Username { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "Password is required.")]
         [MinLength(AuthConstants.passwordMinLength, ErrorMessage = "Password too short.")]
         [MaxLength(AuthConstants.passwordMaxLength, ErrorMessage = "Password too long.")]
         public string Password { get; set; } = null!;

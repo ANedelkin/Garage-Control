@@ -33,7 +33,14 @@ const PartTransferPopup = ({ onClose, onConfirm, maxQuantity, partName }) => {
                 <input
                     type="number"
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => {
+                        let val = e.target.value;
+                        if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
+                            val = val.replace(/^0+/, '');
+                            if (val === '' || val.startsWith('.')) val = '0' + val;
+                        }
+                        setQuantity(val);
+                    }}
                     max={maxQuantity}
                     min={1}
                     step="any"

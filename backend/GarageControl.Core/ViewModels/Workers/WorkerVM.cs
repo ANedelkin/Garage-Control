@@ -8,17 +8,17 @@ namespace GarageControl.Core.ViewModels.Workers
     {
         public string? Id { get; set; }
 
-        [Required]
-        [StringLength(WorkerConstants.nameMaxLength)]
+        [Required(ErrorMessage = "Name is required.")]
+        [StringLength(WorkerConstants.nameMaxLength, ErrorMessage = "Name cannot exceed {1} characters.")]
         public string Name { get; set; } = null!;
 
-        [Required]
-        [MinLength(AuthConstants.usernameMinLength)]
-        [MaxLength(AuthConstants.usernameMaxLength)]
+        [Required(ErrorMessage = "Username is required.")]
+        [MinLength(AuthConstants.usernameMinLength, ErrorMessage = "Username must be at least {1} characters.")]
+        [MaxLength(AuthConstants.usernameMaxLength, ErrorMessage = "Username cannot exceed {1} characters.")]
         public string Username { get; set; } = null!;
 
-        [EmailAddress]
-        [StringLength(GenericConstants.emailMaxLength)]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [StringLength(GenericConstants.emailMaxLength, ErrorMessage = "Email cannot exceed {1} characters.")]
         public string? Email { get; set; }
 
         public string? Password { get; set; }

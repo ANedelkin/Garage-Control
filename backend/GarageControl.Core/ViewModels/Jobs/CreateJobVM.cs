@@ -8,12 +8,12 @@ namespace GarageControl.Core.ViewModels.Jobs
     {
         [Required(ErrorMessage = "Job type required")]
         public string JobTypeId { get; set; } = null!;
-        [StringLength(JobConstants.descriptionMaxLength)]
+        [StringLength(JobConstants.descriptionMaxLength, ErrorMessage = "Description cannot exceed {1} characters.")]
         public string? Description { get; set; }
         [Required(ErrorMessage = "Mechanic required")]
         public string WorkerId { get; set; } = null!;
         public JobStatus Status { get; set; } = JobStatus.Pending;
-        [Range(0, double.MaxValue)]
+        [Range(0, double.MaxValue, ErrorMessage = "Labor cost cannot be negative.")]
         public decimal LaborCost { get; set; }
         [Required(ErrorMessage = "Time slot required")]
         public DateTime StartTime { get; set; }

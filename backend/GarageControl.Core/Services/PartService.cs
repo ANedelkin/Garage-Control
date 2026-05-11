@@ -116,12 +116,12 @@ namespace GarageControl.Core.Services
             {
                 Name = model.Name,
                 PartNumber = model.PartNumber,
-                Price = model.Price,
-                Quantity = model.Quantity,
-                MinimumQuantity = model.MinimumQuantity,
+                Price = model.Price.Value,
+                Quantity = model.Quantity.Value,
+                MinimumQuantity = model.MinimumQuantity.Value,
                 ParentId = model.ParentId,
                 WorkshopId = workshopId,
-                AvailabilityBalance = model.Quantity
+                AvailabilityBalance = model.Quantity.Value
             };
 
             part.DeficitStatus = _deficitService.CalculatePartDeficitStatus(part);
@@ -199,15 +199,15 @@ namespace GarageControl.Core.Services
 
                 foreach (var jp in activeJobParts)
                 {
-                    jp.Price = model.Price;
+                    jp.Price = model.Price.Value;
                 }
             }
 
             part.Name = model.Name;
             part.PartNumber = model.PartNumber;
-            part.Price = model.Price;
-            part.Quantity = model.Quantity;
-            part.MinimumQuantity = model.MinimumQuantity;
+            part.Price = model.Price.Value;
+            part.Quantity = model.Quantity.Value;
+            part.MinimumQuantity = model.MinimumQuantity.Value;
 
             await _context.SaveChangesAsync();
 
@@ -261,14 +261,14 @@ namespace GarageControl.Core.Services
             if (part.PartNumber != model.PartNumber)
                 changes.Add(new ActivityPropertyChange("part number", part.PartNumber, model.PartNumber));
 
-            if (part.Price != model.Price)
-                changes.Add(new ActivityPropertyChange("price", FormatPrice(part.Price), FormatPrice(model.Price)));
+            if (part.Price != model.Price.Value)
+                changes.Add(new ActivityPropertyChange("price", FormatPrice(part.Price), FormatPrice(model.Price.Value)));
 
-            if (!NumbersEqual(part.Quantity, model.Quantity))
-                changes.Add(new ActivityPropertyChange("quantity", part.Quantity.ToString(), model.Quantity.ToString()));
+            if (!NumbersEqual(part.Quantity, model.Quantity.Value))
+                changes.Add(new ActivityPropertyChange("quantity", part.Quantity.ToString(), model.Quantity.Value.ToString()));
 
-            if (!NumbersEqual(part.MinimumQuantity, model.MinimumQuantity))
-                changes.Add(new ActivityPropertyChange("minimum quantity", part.MinimumQuantity.ToString(), model.MinimumQuantity.ToString()));
+            if (!NumbersEqual(part.MinimumQuantity, model.MinimumQuantity.Value))
+                changes.Add(new ActivityPropertyChange("minimum quantity", part.MinimumQuantity.ToString(), model.MinimumQuantity.Value.ToString()));
 
             return changes;
         }

@@ -56,12 +56,14 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
 
         // Auto-save after adjustment
         showStatus('Saving adjustment...', 'loading');
+
+        const parseNum = (val) => (val === '' || val === null || val === undefined) ? null : Number(val);
         try {
             await partApi.updatePart(part.id, {
                 ...updatedFormData,
-                price: parseFloat(updatedFormData.price),
-                quantity: parseInt(updatedFormData.quantity),
-                minimumQuantity: parseInt(updatedFormData.minimumQuantity)
+                price: parseNum(updatedFormData.price),
+                quantity: parseNum(updatedFormData.quantity),
+                minimumQuantity: parseNum(updatedFormData.minimumQuantity)
             });
             onUpdate();
             setIsDirty(false);
@@ -78,12 +80,14 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         showStatus('Saving changes...', 'loading');
+
+        const parseNum = (val) => (val === '' || val === null || val === undefined) ? null : Number(val);
         try {
             await partApi.updatePart(part.id, {
                 ...formData,
-                price: parseFloat(formData.price),
-                quantity: parseInt(formData.quantity),
-                minimumQuantity: parseInt(formData.minimumQuantity)
+                price: parseNum(formData.price),
+                quantity: parseNum(formData.quantity),
+                minimumQuantity: parseNum(formData.minimumQuantity)
             });
             onUpdate();
             setIsDirty(false);
