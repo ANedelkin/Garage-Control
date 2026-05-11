@@ -130,7 +130,7 @@ namespace GarageControl.Core.Services
             var worker = new Worker
             {
                 Name = model.Name,
-                HiredOn = model.HiredOn,
+                HiredOn = DateTime.SpecifyKind(model.HiredOn, DateTimeKind.Utc),
                 WorkshopId = workshopId,
                 UserId = newUser.Id
             };
@@ -367,7 +367,7 @@ namespace GarageControl.Core.Services
                     changes.Add(new ActivityPropertyChange("password", "", "[changed]"));
                 }
 
-                worker.HiredOn = model.HiredOn;
+                worker.HiredOn = DateTime.SpecifyKind(model.HiredOn, DateTimeKind.Utc);
                 await _repo.SaveChangesAsync();
 
                 var relationChanges = await UpdateWorkerRelations(worker.Id, model);

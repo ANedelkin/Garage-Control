@@ -83,7 +83,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                         onRefresh();
                         showStatus('Renamed successfully', 'success');
                     } catch (error) {
-                        showStatus('Failed to rename', 'error');
+                        showStatus(error.message || 'Failed to rename', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -111,7 +111,7 @@ const PartsTreeNode = ({ node, type, onSelectPart, fetchContent, onRefresh, refr
                         onRefresh();
                         showStatus('Deleted successfully', 'success');
                     } catch (error) {
-                        showStatus('Failed to delete', 'error');
+                        showStatus(error.message || 'Failed to delete', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

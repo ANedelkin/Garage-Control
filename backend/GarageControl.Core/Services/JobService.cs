@@ -66,8 +66,8 @@ namespace GarageControl.Core.Services.Jobs
                 Status = model.Status,
                 Description = model.Description,
                 LaborCost = model.LaborCost,
-                StartTime = model.StartTime,
-                EndTime = model.EndTime,
+                StartTime = DateTime.SpecifyKind(model.StartTime, DateTimeKind.Utc),
+                EndTime = DateTime.SpecifyKind(model.EndTime, DateTimeKind.Utc),
                 JobParts = new List<JobPart>()
             };
 
@@ -302,8 +302,8 @@ namespace GarageControl.Core.Services.Jobs
             }
 
             job.LaborCost = model.LaborCost;
-            job.StartTime = model.StartTime;
-            job.EndTime = model.EndTime;
+            job.StartTime = DateTime.SpecifyKind(model.StartTime, DateTimeKind.Utc);
+            job.EndTime = DateTime.SpecifyKind(model.EndTime, DateTimeKind.Utc);
 
             await _context.SaveChangesAsync();
 

@@ -71,7 +71,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
         } catch (error) {
             console.error("Error saving part after adjustment", error);
             setErrors(parseValidationErrors(error));
-            showStatus('Failed to save adjustment', 'error');
+            showStatus(error.message || 'Failed to save adjustment', 'error');
         }
     };
 
@@ -96,7 +96,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
         } catch (error) {
             console.error("Error saving part", error);
             setErrors(parseValidationErrors(error));
-            showStatus('Failed to save changes', 'error');
+            showStatus(error.message || 'Failed to save changes', 'error');
         }
     };
 
@@ -132,8 +132,8 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                                         removeLastPopup();
                                         onDelete();
                                         showStatus('Part deleted successfully', 'success');
-                                    } catch (e) {
-                                        showStatus('Failed to delete part', 'error');
+                                    } catch (error) {
+                                        showStatus(error.message || 'Failed to delete part', 'error');
                                     }
                                 }}
                                 onClose={removeLastPopup}

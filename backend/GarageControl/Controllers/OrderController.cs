@@ -1,4 +1,5 @@
 using GarageControl.Core.Contracts;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Jobs;
@@ -152,6 +153,10 @@ namespace GarageControl.Controllers
                     return BadRequest(new { message = resp.Message });
                 }
                 return Ok(result);
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This order is referenced by other records and cannot be deleted." });
             }
             catch (Exception ex)
             {

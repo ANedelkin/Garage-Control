@@ -175,7 +175,7 @@ const ActiveOrdersPage = () => {
                         showStatus('Job deleted successfully', 'success');
                     } catch (error) {
                         console.error('Failed to delete job:', error);
-                        showStatus('Failed to delete job', 'error');
+                        showStatus(error.message || 'Failed to delete job', 'error');
                     }
                 }}
                 onClose={removeLastPopup}
@@ -199,7 +199,7 @@ const ActiveOrdersPage = () => {
                         showStatus('Order deleted successfully', 'success');
                     } catch (error) {
                         console.error('Failed to delete order:', error);
-                        showStatus('Failed to delete order', 'error');
+                        showStatus(error.message || 'Failed to delete order', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

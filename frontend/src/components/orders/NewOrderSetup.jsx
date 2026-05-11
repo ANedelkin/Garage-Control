@@ -77,10 +77,10 @@ const NewOrderSetup = ({ onClose, onSuccess }) => {
             } else if (onClose) {
                 onClose();
             }
-        } catch (e) {
-            console.error(e);
-            showStatus('Failed to create order', 'error');
-            setErrors(parseValidationErrors(e));
+        } catch (error) {
+            console.error(error);
+            showStatus(error.message || 'Failed to create order', 'error');
+            setErrors(parseValidationErrors(error));
         }
     };
 

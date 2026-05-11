@@ -12,11 +12,13 @@ import usePageTitle from "../../hooks/usePageTitle";
 import ExcelExportButton from '../common/ExcelExportButton';
 import PdfExportButton from '../common/PdfExportButton';
 import WorkerExportPopup from './WorkerExportPopup';
+import { useStatus } from '../../context/StatusContext.jsx';
 
 const Workers = () => {
     usePageTitle('Workers');
     const { addPopup, removeLastPopup } = usePopup();
     const navigate = useNavigate();
+    const { showStatus } = useStatus();
     const { workerId } = useParams();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -189,9 +191,16 @@ const Workers = () => {
                                                             confirmText="Delete"
                                                             isDanger={true}
                                                             onConfirm={async () => {
-                                                                await workerApi.deleteWorker(w.id);
-                                                                setWorkers(workers.filter(worker => worker.id !== w.id));
-                                                                removeLastPopup();
+                                                                showStatus('Deleting worker...', 'loading');
+                                                                try {
+                                                                    await workerApi.deleteWorker(w.id);
+                                                                    setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                                    removeLastPopup();
+                                                                    showStatus('Worker deleted successfully', 'success');
+                                                                } catch (error) {
+                                                                    console.error("Failed to delete worker", error);
+                                                                    showStatus(error.message || 'Failed to delete worker', 'error');
+                                                                }
                                                             }}
                                                             onClose={removeLastPopup}
                                                         />
@@ -233,9 +242,16 @@ const Workers = () => {
                                                                         confirmText="Delete"
                                                                         isDanger={true}
                                                                         onConfirm={async () => {
-                                                                            await workerApi.deleteWorker(w.id);
-                                                                            setWorkers(workers.filter(worker => worker.id !== w.id));
-                                                                            removeLastPopup();
+                                                                            showStatus('Deleting worker...', 'loading');
+                                                                            try {
+                                                                                await workerApi.deleteWorker(w.id);
+                                                                                setWorkers(workers.filter(worker => worker.id !== w.id));
+                                                                                removeLastPopup();
+                                                                                showStatus('Worker deleted successfully', 'success');
+                                                                            } catch (error) {
+                                                                                console.error("Failed to delete worker", error);
+                                                                                showStatus(error.message || 'Failed to delete worker', 'error');
+                                                                            }
                                                                         }}
                                                                         onClose={removeLastPopup}
                                                                     />

@@ -1,4 +1,5 @@
 using GarageControl.Core.Contracts;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.ViewModels.Jobs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -149,6 +150,10 @@ namespace GarageControl.Controllers
                 }
                 return Ok();
             }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This job is referenced by other records and cannot be deleted." });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -160,7 +165,11 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var slots = await _jobService.GetBusySlotsAsync(workerId, start, end, excludeJobId);
+                // Ensure dates are UTC for PostgreSQL compatibility
+                var utcStart = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+                var utcEnd = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+                var slots = await _jobService.GetBusySlotsAsync(workerId, utcStart, utcEnd, excludeJobId);
                 return Ok(slots);
             }
             catch (Exception ex)

@@ -111,9 +111,9 @@ const EditJobPage = ({ mechanicView = false }) => {
                 // If order data was fetched (for new jobs), set it
                 if (orderData) setOrder(orderData);
 
-            } catch (e) {
-                console.error("Failed to load data", e);
-                showStatus("Error loading job details", 'error');
+            } catch (error) {
+                console.error("Failed to load data", error);
+                showStatus(error.message || "Error loading job details", 'error');
             } finally {
                 setLoading(false);
             }
@@ -175,10 +175,10 @@ const EditJobPage = ({ mechanicView = false }) => {
 
             navigate(-1);
             showStatus('Job saved successfully', 'success');
-        } catch (e) {
-            console.error(e);
-            showStatus('Failed to save job', 'error');
-            setErrors(parseValidationErrors(e));
+        } catch (error) {
+            console.error(error);
+            showStatus(error.message || 'Failed to save job', 'error');
+            setErrors(parseValidationErrors(error));
         }
     };
 
@@ -197,9 +197,9 @@ const EditJobPage = ({ mechanicView = false }) => {
                         removeLastPopup();
                         navigate(-1);
                         showStatus('Job deleted successfully', 'success');
-                    } catch (e) {
-                        console.error("Failed to delete job", e);
-                        showStatus('Failed to delete job', 'error');
+                    } catch (error) {
+                        console.error("Failed to delete job", error);
+                        showStatus(error.message || 'Failed to delete job', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

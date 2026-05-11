@@ -1,4 +1,5 @@
 using GarageControl.Core.Contracts;
+using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Parts;
 using GarageControl.Infrastructure.Data.Models;
@@ -127,6 +128,10 @@ namespace GarageControl.Controllers
                 await _partService.DeletePartAsync(GetUserId(), GetWorkshopId(), id);
                 return Ok();
             }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This part is linked to existing jobs and cannot be deleted." });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -168,6 +173,10 @@ namespace GarageControl.Controllers
             {
                 await _folderService.DeleteFolderAsync(GetUserId(), GetWorkshopId(), id);
                 return Ok();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "This folder or one of its contents is linked to existing jobs and cannot be deleted." });
             }
             catch (Exception ex)
             {

@@ -63,7 +63,7 @@ const Clients = () => {
                         showStatus('Client deleted successfully', 'success');
                     } catch (error) {
                         console.error("Failed to delete client", error);
-                        showStatus('Failed to delete client', 'error');
+                        showStatus(error.message || 'Failed to delete client', 'error');
                     }
                 }}
                 onClose={removeLastPopup}

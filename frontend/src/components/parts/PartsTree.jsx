@@ -77,7 +77,7 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                             onSuccess();
                             showStatus('Renamed successfully', 'success');
                         } catch (error) {
-                            showStatus('Failed to rename', 'error');
+                            showStatus(error.message || 'Failed to rename', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -110,7 +110,7 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                             }
                             showStatus('Deleted successfully', 'success');
                         } catch (error) {
-                            showStatus('Failed to delete', 'error');
+                            showStatus(error.message || 'Failed to delete', 'error');
                         }
                     }}
                     onClose={removeLastPopup}
@@ -138,7 +138,7 @@ const PartsTree = ({ folders, parts, onSelectPart, fetchContent, onRefresh, refr
                 onRefresh(); // Refreshes the whole tree
                 showStatus('Item moved successfully', 'success');
             } catch (error) {
-                showStatus('Failed to move item', 'error');
+                showStatus(error.message || 'Failed to move item', 'error');
                 console.error(error);
             }
         }
