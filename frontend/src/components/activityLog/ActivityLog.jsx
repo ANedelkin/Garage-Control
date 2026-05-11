@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import activityLogApi from '../../services/activityLogApi';
 import '../../assets/css/common/tile.css';
 import '../../assets/css/common/table.css';
@@ -10,26 +12,46 @@ import { parseMarkup, stripMarkup, renderAst } from '../../Utilities/markupHelpe
 const ActivityLog = () => {
     usePageTitle('Activity Log');
     const [logs, setLogs] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
+    const [page, setPage] = useState(1);
+    const take = 100;
+    const [dateFrom, setDateFrom] = useState(null);
+    const [dateTo, setDateTo] = useState(null);
     const [selectedLog, setSelectedLog] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchLogs = async () => {
+            setLoading(true);
             try {
-                const data = await activityLogApi.getLogs(500);
-                setLogs(data);
+                const formatDate = (date) => {
+                    if (!date) return null;
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                };
+                const fromStr = formatDate(dateFrom);
+                const toStr = formatDate(dateTo);
+                const skip = (page - 1) * take;
+                const data = await activityLogApi.getLogs(skip, take, fromStr, toStr, search);
+                setLogs(data.logs || []);
+                setTotalCount(data.totalCount || 0);
             } catch (error) {
                 console.error("Failed to fetch activity logs", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchLogs();
-    }, []);
+
+        const timeoutId = setTimeout(() => {
+            fetchLogs();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [dateFrom, dateTo, search, page]);
 
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp);
@@ -49,17 +71,32 @@ const ActivityLog = () => {
 
 
 
-    const filteredLogs = logs.filter(log => {
-        const plainText = stripMarkup(log.message || '').toLowerCase();
-        const searchLower = search.toLowerCase();
-        const matchesSearch = !search || plainText.includes(searchLower);
+    const filteredLogs = logs;
+    const totalPages = Math.ceil(totalCount / take) || 1;
 
-        const logDate = new Date(log.timestamp);
-        const matchesFrom = !dateFrom || logDate >= new Date(dateFrom);
-        const matchesTo = !dateTo || logDate <= new Date(dateTo + 'T23:59:59');
-
-        return matchesSearch && matchesFrom && matchesTo;
-    });
+    const Pagination = () => {
+        return (
+            <div className={`activity-pagination form-footer`}>
+                <button
+                    type="button"
+                    className="btn secondary"
+                    disabled={page === 1}
+                    onClick={() => setPage(p => p - 1)}
+                >
+                    <i className="fa-solid fa-chevron-left"></i> Previous
+                </button>
+                <span>Page {page} of {totalPages}</span>
+                <button
+                    type="button"
+                    className="btn secondary"
+                    disabled={page === totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                >
+                    Next <i className="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        );
+    };
 
     const openLogPopup = useCallback((log, e) => {
         const link = e.target.closest('a');
@@ -86,29 +123,19 @@ const ActivityLog = () => {
 
     const clearFilters = () => {
         setSearch('');
-        setDateFrom('');
-        setDateTo('');
+        setDateFrom(null);
+        setDateTo(null);
+        setPage(1);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
+        setPage(1);
     };
 
     const hasFilters = search || dateFrom || dateTo;
 
-    if (loading) {
-        return (
-            <div className="main activity-log-page">
-                <div className="header activity-log-header">
-                    <div className="activity-search-wrapper">
-                        <div className="activity-search-input disabled" style={{ height: '40px', background: 'var(--solid2)', borderRadius: '8px' }}></div>
-                    </div>
-                </div>
-                <div className="tile">
-                    <div className="activity-log-loading">
-                        <i className="fa-solid fa-circle-notch fa-spin"></i>
-                        <span>Loading activity log...</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="main activity-log-page">
@@ -121,26 +148,30 @@ const ActivityLog = () => {
                         className="activity-search-input"
                         placeholder="Search activity..."
                         value={search}
-                        onChange={e => setSearch(e.target.value)}
+                        onChange={handleSearchChange}
                     />
                 </div>
                 <div className="activity-date-filters">
                     <div className="activity-date-group">
                         <label className="activity-date-label">From</label>
-                        <input
-                            type="date"
+                        <DatePicker
+                            selected={dateFrom}
+                            onChange={date => { setDateFrom(date); setPage(1); }}
+                            maxDate={dateTo}
+                            dateFormat="dd.MM.yy"
                             className="activity-date-input"
-                            value={dateFrom}
-                            onChange={e => setDateFrom(e.target.value)}
+                            placeholderText="Start Date"
                         />
                     </div>
                     <div className="activity-date-group">
                         <label className="activity-date-label">To</label>
-                        <input
-                            type="date"
+                        <DatePicker
+                            selected={dateTo}
+                            onChange={date => { setDateTo(date); setPage(1); }}
+                            minDate={dateFrom}
+                            dateFormat="dd.MM.yy"
                             className="activity-date-input"
-                            value={dateTo}
-                            onChange={e => setDateTo(e.target.value)}
+                            placeholderText="End Date"
                         />
                     </div>
                     {hasFilters && (
@@ -156,28 +187,26 @@ const ActivityLog = () => {
             <div className="tile">
                 <div className="tile-header">
                     <h3>Activity Log</h3>
-                    <span className="activity-count-badge">
-                        {filteredLogs.length} {filteredLogs.length === 1 ? 'entry' : 'entries'}
-                    </span>
+                    <div className="horizontal">
+                        <span className="activity-count-badge">
+                            {totalCount} {totalCount === 1 ? 'entry' : 'entries'}
+                        </span>
+                        <Pagination />
+                    </div>
                 </div>
-                <div className="activity-table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th className="col-time">Time</th>
-                                <th className="col-action">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLogs.length === 0 ? (
+                <div className="activity-table-wrapper form-section">
+                    {filteredLogs.length === 0 ? (
+                        <div className="list-empty">No activity logs found.</div>
+                    ) : (
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td colSpan="2" className="activity-empty">
-                                        <i className="fa-solid fa-inbox"></i>
-                                        <span>No activity logs found.</span>
-                                    </td>
+                                    <th className="col-time">Time</th>
+                                    <th className="col-action">Action</th>
                                 </tr>
-                            ) : (
-                                filteredLogs.map(log => (
+                            </thead>
+                            <tbody>
+                                {filteredLogs.map(log => (
                                     <tr
                                         key={log.id}
                                         className="activity-row"
@@ -192,11 +221,12 @@ const ActivityLog = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
+                <Pagination />
             </div>
 
             {/* Log Detail Popup */}

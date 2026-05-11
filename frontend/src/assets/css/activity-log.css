@@ -93,6 +93,7 @@
     padding: 4px 12px;
     border-radius: 20px;
     white-space: nowrap;
+    margin: auto 0;
 }
 
 /* ── Table layout ─────────────────────────────────────────────── */
@@ -102,8 +103,8 @@
 
 /* Column widths */
 .col-time {
-    width: 180px;
-    min-width: 180px;
+    width: 220px;
+    min-width: 220px;
 }
 
 .col-action {
@@ -287,6 +288,19 @@ b {
     font-size: 11px;
     margin-top: 3px;
     flex-shrink: 0;
+}
+
+/* ── Pagination ───────────────────────────────────────────────── */
+.activity-pagination {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.activity-pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 16px;
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */

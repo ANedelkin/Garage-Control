@@ -25,12 +25,17 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLogs([FromQuery] int count = 100)
+        public async Task<IActionResult> GetLogs(
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 10,
+            [FromQuery] DateTime? startDate = null, 
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? search = null)
         {
             try
             {
-                var logs = await _activityLogService.GetLogsAsync(GetWorkshopId(), count);
-                return Ok(logs);
+                var (logs, totalCount) = await _activityLogService.GetLogsAsync(GetWorkshopId(), skip, take, startDate, endDate, search);
+                return Ok(new { logs, totalCount });
             }
             catch (Exception ex)
             {

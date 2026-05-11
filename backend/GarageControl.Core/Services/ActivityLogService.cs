@@ -99,12 +99,44 @@ namespace GarageControl.Core.Services
             await SaveLogAsync(workshopId, messageMarkup, logType, serialised);
         }
 
-        public async Task<IEnumerable<ActivityLogVM>> GetLogsAsync(string workshopId, int count = 100)
+        public async Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int skip = 0, int take = 10, DateTime? startDate = null, DateTime? endDate = null, string? search = null)
         {
-            var logs = await _repository.GetAllAsNoTracking<ActivityLog>()
-                .Where(l => l.WorkshopId == workshopId)
+            var query = _repository.GetAllAsNoTracking<ActivityLog>()
+                .Where(l => l.WorkshopId == workshopId);
+
+            if (startDate.HasValue && endDate.HasValue && startDate.Value.Date > endDate.Value.Date)
+            {
+                throw new ArgumentException("Start date cannot be after end date.");
+            }
+
+            if (startDate.HasValue)
+            {
+                // PostgreSQL 'timestamp with time zone' requires UTC offsets (00:00)
+                var utcStart = new DateTimeOffset(startDate.Value.Date, TimeSpan.Zero);
+                query = query.Where(l => l.Timestamp >= utcStart);
+            }
+
+            if (endDate.HasValue)
+            {
+                // Ensure we include the entire day for the end date, forced to UTC
+                var utcEnd = new DateTimeOffset(endDate.Value.Date, TimeSpan.Zero).AddDays(1).AddTicks(-1);
+                query = query.Where(l => l.Timestamp <= utcEnd);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowerSearch = search.ToLower();
+                // We fallback to searching in MessageMarkup or JSON Data
+                query = query.Where(l => l.MessageMarkup.ToLower().Contains(lowerSearch) || 
+                                        (l.LogData != null && l.LogData.ToLower().Contains(lowerSearch)));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var logs = await query
                 .OrderByDescending(l => l.Timestamp)
-                .Take(count)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
 
             // 1. Deserialize and collect all referenced entities to pre-fetch existence
@@ -188,7 +220,7 @@ namespace GarageControl.Core.Services
                 }
             }
 
-            return result;
+            return (result, totalCount);
         }
 
 
