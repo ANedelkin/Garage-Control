@@ -24,10 +24,10 @@ namespace GarageControl.Tests.Services
         public AdminServiceTests()
         {
             var userStore = new Mock<IUserStore<User>>();
-            _mockUserManager = new Mock<UserManager<User>>(userStore.Object, null, null, null, null, null, null, null, null);
+            _mockUserManager = new Mock<UserManager<User>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
             
             var roleStore = new Mock<IRoleStore<IdentityRole>>();
-            _mockRoleManager = new Mock<RoleManager<IdentityRole>>(roleStore.Object, null, null, null, null);
+            _mockRoleManager = new Mock<RoleManager<IdentityRole>>(roleStore.Object, null!, null!, null!, null!);
             
             _mockRepo = new Mock<IRepository>();
 

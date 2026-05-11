@@ -25,7 +25,7 @@ namespace GarageControl.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var makes = await _makeService.GetMakes(userId);
             return Ok(makes);
         }
@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
             {
                 var id = await _makeService.CreateMake(model, userId);
@@ -53,7 +53,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit(string id, [FromBody] MakeVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
              try 
               {
                  await _makeService.UpdateMake(id, model, userId!);
@@ -93,7 +93,7 @@ namespace GarageControl.Controllers
         [RequireAccess("Makes and Models", "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
             {
                 await _makeService.DeleteMake(id, userId);
@@ -121,13 +121,13 @@ namespace GarageControl.Controllers
         [RequireAccess("Makes and Models")]
         public async Task<IActionResult> MergeMakeWithGlobal([FromBody] MergeMakeRequest request)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
             {
                 await _makeService.MergeMakeWithGlobal(request.CustomMakeId, request.GlobalMakeId, userId);
                 return Ok();
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
                 return Forbid();
             }

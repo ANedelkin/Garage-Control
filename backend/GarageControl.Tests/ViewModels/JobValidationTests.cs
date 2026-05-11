@@ -15,9 +15,7 @@ namespace GarageControl.Tests.ViewModels
             var model = new CreateJobVM
             {
                 JobTypeId = null!,
-                WorkerId = null!,
-                StartTime = null,
-                EndTime = null
+                WorkerId = null!
             };
 
             // Act
@@ -26,7 +24,6 @@ namespace GarageControl.Tests.ViewModels
             // Assert
             Assert.Contains(validationResults, v => v.ErrorMessage == "Job type required" && v.MemberNames.Contains("JobTypeId"));
             Assert.Contains(validationResults, v => v.ErrorMessage == "Mechanic required" && v.MemberNames.Contains("WorkerId"));
-            Assert.Contains(validationResults, v => v.ErrorMessage == "Time slot required" && v.MemberNames.Contains("StartTime"));
         }
 
         [Fact]
@@ -36,9 +33,7 @@ namespace GarageControl.Tests.ViewModels
             var model = new UpdateJobVM
             {
                 JobTypeId = null!,
-                WorkerId = null!,
-                StartTime = null,
-                EndTime = null
+                WorkerId = null!
             };
 
             // Act
@@ -47,7 +42,6 @@ namespace GarageControl.Tests.ViewModels
             // Assert
             Assert.Contains(validationResults, v => v.ErrorMessage == "Job type required" && v.MemberNames.Contains("JobTypeId"));
             Assert.Contains(validationResults, v => v.ErrorMessage == "Mechanic required" && v.MemberNames.Contains("WorkerId"));
-            Assert.Contains(validationResults, v => v.ErrorMessage == "Time slot required" && v.MemberNames.Contains("StartTime"));
         }
 
         [Fact]

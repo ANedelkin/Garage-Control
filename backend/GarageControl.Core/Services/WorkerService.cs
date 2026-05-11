@@ -116,6 +116,9 @@ namespace GarageControl.Core.Services
                 Email = model.Email
             };
 
+            if (string.IsNullOrEmpty(model.Password))
+                return new MethodResponseVM(false, "Password is required to create a worker account.");
+
             var userCreationResult = await _userManager.CreateAsync(newUser, model.Password);
             if (!userCreationResult.Succeeded)
             {

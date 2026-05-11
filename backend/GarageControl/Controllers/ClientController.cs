@@ -25,7 +25,7 @@ namespace GarageControl.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var clients = await _clientService.All(userId);
             return Ok(clients);
         }
@@ -35,7 +35,7 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
             {
                 await _clientService.Create(model, userId);
@@ -59,7 +59,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit(string id, [FromBody] ClientVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
              await _clientService.Edit(id, model, userId!);
              return Ok();
         }
@@ -67,7 +67,7 @@ namespace GarageControl.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
             {
                 await _clientService.Delete(id, userId!);

@@ -93,6 +93,9 @@ namespace GarageControl.Core.Services
             var workshopId = await _workshopService.GetWorkshopId(userId);
             if (workshopId == null) throw new ArgumentException("User does not have a workshop");
  
+            if (string.IsNullOrEmpty(model.OwnerId))
+                throw new ArgumentException("Owner ID is required.");
+
             var client = await _repo.GetByIdAsync<Client>(model.OwnerId);
             if (client == null || client.WorkshopId != workshopId)
             {

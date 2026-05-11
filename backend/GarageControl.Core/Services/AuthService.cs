@@ -25,9 +25,9 @@ namespace GarageControl.Core.Services
         private readonly ILogger<AuthService> _logger;
 
         private readonly int _accessTokenExpiryMinutes;
-        private readonly string _jwtSecret;
-        private readonly string _jwtIssuer;
-        private readonly string _jwtAudience;
+        private readonly string _jwtSecret = null!;
+        private readonly string _jwtIssuer = null!;
+        private readonly string _jwtAudience = null!;
 
         public AuthService(
             UserManager<User> userManager,
@@ -40,9 +40,9 @@ namespace GarageControl.Core.Services
             _configuration = configuration;
             _logger = logger;
 
-            _jwtSecret = _configuration["Jwt:Key"];
-            _jwtIssuer = _configuration["Jwt:Issuer"];
-            _jwtAudience = _configuration["Jwt:Audience"];
+            _jwtSecret   = _configuration["Jwt:Key"]      ?? throw new InvalidOperationException("Jwt:Key is not configured");
+            _jwtIssuer   = _configuration["Jwt:Issuer"]   ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
+            _jwtAudience = _configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured");
             _accessTokenExpiryMinutes = 15;
         }
 
@@ -130,7 +130,7 @@ namespace GarageControl.Core.Services
 
         public async Task LogOut(HttpRequest request, HttpResponse response)
         {
-            string refreshToken = request.Cookies["RefreshToken"];
+            string? refreshToken = request.Cookies["RefreshToken"];
 
             if (!string.IsNullOrEmpty(refreshToken))
             {
@@ -149,7 +149,7 @@ namespace GarageControl.Core.Services
 
         public async Task<LoginResponseVM> RefreshToken(HttpRequest request, HttpResponse response)
         {
-            string refreshToken = request.Cookies["RefreshToken"];
+            string? refreshToken = request.Cookies["RefreshToken"];
 
             if (string.IsNullOrEmpty(refreshToken))
                 return new LoginResponseVM(false, "No refresh token");
@@ -256,7 +256,7 @@ namespace GarageControl.Core.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty)
             };
 
             foreach (var role in roles)
@@ -411,7 +411,7 @@ namespace GarageControl.Core.Services
             string token = GenerateAccessToken(user, roles, workshopId, workerId);
             bool hasWorkshop = await UserHasWorkshop(userId);
 
-            return new LoginResponseVM(true, "Token generated", token, user.RefreshToken, accesses, hasWorkshop, user.Id, workerId, user.UserName);
+            return new LoginResponseVM(true, "Token generated", token, user.RefreshToken ?? string.Empty, accesses, hasWorkshop, user.Id, workerId, user.UserName);
         }
 
         private Dictionary<string, List<string>> ProcessIdentityResult(IdentityResult result)

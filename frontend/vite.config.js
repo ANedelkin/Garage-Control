@@ -6,5 +6,14 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: '../backend/garagecontrol/wwwroot',
-  }
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-charts': ['chart.js'],
+          'vendor-datepicker': ['react-datepicker'],
+        },
+      },
+    },
+  },
 })

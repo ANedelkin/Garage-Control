@@ -127,7 +127,8 @@ namespace GarageControl.Tests.Services
 
             // Assert
             var carInDb = await _context.Cars.FindAsync("car1");
-            Assert.Equal(1000, carInDb.Kilometers);
+            Assert.NotNull(carInDb);
+            Assert.Equal(1000, carInDb!.Kilometers);
         }
 
         [Fact]

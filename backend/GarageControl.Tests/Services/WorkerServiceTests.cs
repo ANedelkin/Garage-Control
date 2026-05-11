@@ -36,7 +36,7 @@ namespace GarageControl.Tests.Services
             _repo = new Repository(_context);
             
             var userStore = new Mock<IUserStore<User>>();
-            _mockUserManager = new Mock<UserManager<User>>(userStore.Object, null, null, null, null, null, null, null, null);
+            _mockUserManager = new Mock<UserManager<User>>(userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
             
             _mockWorkshopService = new Mock<IWorkshopService>();
             _mockActivityLogService = new Mock<IActivityLogService>();
@@ -101,8 +101,8 @@ namespace GarageControl.Tests.Services
 
             _mockWorkshopService.Setup(x => x.GetWorkshopId(userId)).ReturnsAsync(workshopId);
             _mockUserManager.Setup(x => x.FindByIdAsync("iu1")).ReturnsAsync(identityUser);
-            _mockUserManager.Setup(x => x.FindByNameAsync("new_user")).ReturnsAsync((User)null);
-            _mockUserManager.Setup(x => x.FindByEmailAsync("new@test.com")).ReturnsAsync((User)null);
+            _mockUserManager.Setup(x => x.FindByNameAsync("new_user")).ReturnsAsync((User?)null);
+            _mockUserManager.Setup(x => x.FindByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
             _mockUserManager.Setup(x => x.UpdateAsync(identityUser)).ReturnsAsync(IdentityResult.Success);
 
             // Act

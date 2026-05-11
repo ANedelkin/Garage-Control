@@ -127,23 +127,31 @@ const routes = [
       { path: '/:clientId', element: Clients }
     ]
   },
-  { path: '/cars', element: Cars, label: 'Cars', icon: 'fa-car', accesses: ['Cars'], children: [
-    { path: '/new', element: Cars },
-    { path: '/:carId', element: Cars }
-  ]},
+  {
+    path: '/cars', element: Cars, label: 'Cars', icon: 'fa-car', accesses: ['Cars'], children: [
+      { path: '/new', element: Cars },
+      { path: '/:carId', element: Cars }
+    ]
+  },
   { path: '/activity-log', element: ActivityLog, label: 'Activity Log', icon: 'fa-clock-rotate-left', accesses: ['Activity Log'] },
   { divider: true, accesses: ['Archived Orders', 'Job Types', 'Makes and Models', 'Workshop Details'] },
-  { path: '/archived-orders', element: ArchivedOrdersPage, label: 'Archived Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], children: [
-    { path: '/:orderId', element: ArchivedOrdersPage }
-  ]},
-  { path: '/job-types', element: JobTypes, label: 'Job Types', icon: 'fa-gear', accesses: ['Job Types'], children: [
-    { path: '/new', element: EditJobType },
-    { path: '/:id', element: EditJobType }
-  ]},
-  { path: '/makes-and-models', element: MakesAndModels, label: 'Makes & models', icon: 'fa-industry', accesses: ['Makes and Models'], children: [
-    { path: '/:makeId', element: MakesAndModels },
-    { path: '/:makeId/model/:modelId', element: MakesAndModels }
-  ]},
+  {
+    path: '/archived-orders', element: ArchivedOrdersPage, label: 'Archived Orders', icon: 'fa-clipboard-check', accesses: ['Orders'], children: [
+      { path: '/:orderId', element: ArchivedOrdersPage }
+    ]
+  },
+  {
+    path: '/job-types', element: JobTypes, label: 'Job Types', icon: 'fa-gear', accesses: ['Job Types'], children: [
+      { path: '/new', element: EditJobType },
+      { path: '/:id', element: EditJobType }
+    ]
+  },
+  {
+    path: '/makes-and-models', element: MakesAndModels, label: 'Makes & models', icon: 'fa-industry', accesses: ['Makes and Models'], children: [
+      { path: '/:makeId', element: MakesAndModels },
+      { path: '/:makeId/model/:modelId', element: MakesAndModels }
+    ]
+  },
   {
     label: 'Workshop Details',
     icon: 'fa-circle-info',
@@ -224,42 +232,42 @@ function App() {
             <StatusOverlay />
             <PopupPortal />
             <GlobalErrorWatcher>
-            <Routes>
-              <Route path="/login" element={<LogInPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
+              <Routes>
+                <Route path="/login" element={<LogInPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
 
-              <Route path="/access-denied" element={
-                <PrivateRoute>
-                  <ErrorPage title="Access Denied" message="You do not have permission to view this page." />
-                </PrivateRoute>
-              } />
+                <Route path="/access-denied" element={
+                  <PrivateRoute>
+                    <ErrorPage title="Access Denied" message="You do not have permission to view this page." />
+                  </PrivateRoute>
+                } />
 
-              <Route path="/workshop-details-initial" element={
-                <PrivateRoute>
-                  <WorkshopDetailsInitial />
-                </PrivateRoute>
-              } />
-              
-              <Route path="/workshop-details" element={
-                <PrivateRoute>
-                  <LayoutWithHeader
-                    sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen}
-                    accesses={accesses}
-                    routes={routes}
-                  >
-                    <Dashboard />
-                  </LayoutWithHeader>
-                </PrivateRoute>
-              } />
+                <Route path="/workshop-details-initial" element={
+                  <PrivateRoute>
+                    <WorkshopDetailsInitial />
+                  </PrivateRoute>
+                } />
 
-              {renderRoutes(routes)}
+                <Route path="/workshop-details" element={
+                  <PrivateRoute>
+                    <LayoutWithHeader
+                      sidebarOpen={sidebarOpen}
+                      setSidebarOpen={setSidebarOpen}
+                      accesses={accesses}
+                      routes={routes}
+                    >
+                      <Dashboard />
+                    </LayoutWithHeader>
+                  </PrivateRoute>
+                } />
 
-              <Route path="*" element={<ErrorPage type="404" />} />
-            </Routes>
-          </GlobalErrorWatcher>
-        </ErrorBoundary>
-      </BrowserRouter>
+                {renderRoutes(routes)}
+
+                <Route path="*" element={<ErrorPage type="404" />} />
+              </Routes>
+            </GlobalErrorWatcher>
+          </ErrorBoundary>
+        </BrowserRouter>
       </StatusProvider>
     </div>
   );

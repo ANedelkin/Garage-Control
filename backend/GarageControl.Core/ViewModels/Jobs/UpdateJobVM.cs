@@ -17,8 +17,8 @@ namespace GarageControl.Core.ViewModels.Jobs
         [Range(0, double.MaxValue)]
         public decimal LaborCost { get; set; }
         [Required(ErrorMessage = "Time slot required")]
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public List<CreateJobPartVM> Parts { get; set; } = new List<CreateJobPartVM>();
     }
 }

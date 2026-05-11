@@ -108,12 +108,22 @@ namespace GarageControl.Controllers
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-                var frontendRedirectUri = "/";
-                return Redirect(frontendRedirectUri);
+                return Redirect(GetLandingPage(response));
             }
 
             return BadRequest(new { Message = response.Message });
         }
+
+        private string GetLandingPage(LoginResponseVM response)
+        {
+            if (!response.HasWorkshop)
+            {
+                return "/workshop-details-initial";
+            }
+
+            return "/";
+        }
+
         [HttpGet("google")]
         public async Task<IActionResult> Google()
         {
@@ -147,8 +157,7 @@ namespace GarageControl.Controllers
             if (response.Success)
             {
                 await _authService.SetAuthCookies(Response, response);
-                var frontendRedirectUri = "/";
-                return Redirect(frontendRedirectUri);
+                return Redirect(GetLandingPage(response));
             }
 
             return BadRequest(new { Message = response.Message });

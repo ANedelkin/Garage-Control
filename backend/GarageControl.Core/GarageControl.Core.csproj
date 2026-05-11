@@ -18,6 +18,8 @@
     <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="MigraDocCore.DocumentObjectModel" Version="1.3.67" />
     <PackageReference Include="MigraDocCore.Rendering" Version="1.3.67" />
+    <!-- Force safe version of ImageSharp; 1.0.4 (pulled by MigraDocCore) has 7 known CVEs -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
   </ItemGroup>
 

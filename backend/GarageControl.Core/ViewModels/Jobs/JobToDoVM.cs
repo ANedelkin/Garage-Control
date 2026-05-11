@@ -7,7 +7,7 @@ namespace GarageControl.Core.ViewModels.Jobs
         public string Id { get; set; } = null!;
         public string TypeName { get; set; } = null!;
         public string Description { get; set; } = "";
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         

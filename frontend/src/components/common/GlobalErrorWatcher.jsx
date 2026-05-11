@@ -33,7 +33,7 @@ const GlobalErrorWatcher = ({ children }) => {
         window.addEventListener('api-network-error', handleNetworkError);
         window.addEventListener('api-server-error', handleServerError);
         window.addEventListener('api-403', handle403);
-        
+
         return () => {
             window.removeEventListener('api-404', handle404);
             window.removeEventListener('api-network-error', handleNetworkError);

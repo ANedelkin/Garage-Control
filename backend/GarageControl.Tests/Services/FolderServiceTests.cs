@@ -162,7 +162,7 @@ namespace GarageControl.Tests.Services
 
             // Assert
             var movedFolder = await _context.PartsFolders.FindAsync("folder");
-            Assert.Equal("newParent", movedFolder.ParentId);
+            Assert.Equal("newParent", movedFolder!.ParentId);
 
              _mockActivityLogService.Verify(x => x.LogActionAsync(
                 userId, 
