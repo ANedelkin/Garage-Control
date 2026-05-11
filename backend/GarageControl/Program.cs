@@ -8,13 +8,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using GarageControl.Infrastructure.Data;
 using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Infrastructure.Data.Common;
-using GarageControl.Infrastructure.Interceptors;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
 using GarageControl.Core.Services.Jobs;
-using Microsoft.Identity.Web;
 using PdfSharpCore.Fonts;
 using GarageControl.Core.Utilities;
+using GarageControl.Infrastructure.Data.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +22,6 @@ GlobalFontSettings.FontResolver = new EmbeddedFontResolver();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-// Render provides connection strings as postgres:// URLs; Npgsql needs key=value format.
-// Detect and convert automatically so local dev and Render both work.
 var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? throw new InvalidOperationException("No database connection string configured.");
@@ -79,12 +76,10 @@ builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 builder.Services.AddScoped<IPdfExportService, PdfExportService>();
 
 builder.Services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
-// builder.Services.AddHostedService<GarageControl.BackgroundServices.AvailabilityRecalculationService>();
-
 
 builder.Services.AddIdentity<User, IdentityRole>(o => o.SignIn.RequireConfirmedAccount = false)
-               .AddEntityFrameworkStores<GarageControlDbContext>()
-               .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<GarageControlDbContext>()
+                .AddDefaultTokenProviders();
 
 var authBuilder = builder.Services.AddAuthentication(o =>
 {
@@ -197,8 +192,6 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
 });
 
 var app = builder.Build();
@@ -234,7 +227,7 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<GarageControlDbContext>();
         await context.Database.MigrateAsync();
-        await GarageControl.Infrastructure.Data.Seeding.DbSeeder.SeedAsync(services);
+        await DbSeeder.SeedAsync(services);
     }
     catch (Exception ex)
     {

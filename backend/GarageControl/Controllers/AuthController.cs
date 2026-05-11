@@ -77,7 +77,7 @@ namespace GarageControl.Controllers
         {
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("MicrosoftCallback")
+                RedirectUri = Url.Action(nameof(MicrosoftCallback))
             };
             return Challenge(props, "Microsoft");
         }
@@ -119,7 +119,7 @@ namespace GarageControl.Controllers
         {
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("GoogleCallback")
+                RedirectUri = Url.Action(nameof(GoogleCallback))
             };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }

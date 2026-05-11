@@ -16,18 +16,18 @@ namespace GarageControl.BackgroundServices
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Notification cleanup service started");
 
-            while (!stoppingToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var notificationService = scope.ServiceProvider
-                            .GetRequiredService<INotificationService>();
+                                                       .GetRequiredService<INotificationService>();
 
                         await notificationService.DeleteOldNotificationsAsync();
                         _logger.LogInformation("Old notifications cleaned up successfully");
@@ -38,7 +38,7 @@ namespace GarageControl.BackgroundServices
                     _logger.LogError(ex, "Error occurred while cleaning up old notifications");
                 }
 
-                await Task.Delay(_interval, stoppingToken);
+                await Task.Delay(_interval, cancellationToken);
             }
         }
     }

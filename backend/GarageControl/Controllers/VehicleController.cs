@@ -36,7 +36,7 @@ namespace GarageControl.Controllers
             var result = await _vehicleService.GetByClient(clientId);
             return Ok(result);
         }
-       [RequireAccess("Cars")]
+        [RequireAccess("Cars")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] VehicleVM model)
         {
@@ -65,10 +65,10 @@ namespace GarageControl.Controllers
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] VehicleVM model)
         {
-             if (!ModelState.IsValid) return BadRequest(ModelState);
-             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-             await _vehicleService.Edit(id, model, userId!);
-             return Ok();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _vehicleService.Edit(id, model, userId!);
+            return Ok();
         }
         [RequireAccess("Cars")]
         [HttpDelete("{id}")]

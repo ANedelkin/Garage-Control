@@ -184,7 +184,7 @@ namespace GarageControl.Core.Services.Jobs
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<JobDetailsVM?> GetCompletedJobByIdAsync(string jobId, string workshopId)
+        public async Task<JobDetailsVM?> GetArchivedJobByIdAsync(string jobId, string workshopId)
         {
             return await _context.JobSnapshots
                 .AsNoTracking()

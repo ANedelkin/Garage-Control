@@ -27,7 +27,7 @@ namespace GarageControl.Controllers
 
         private string GetUserId()
         {
-            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
         }
 
         [HttpGet("my-jobs")]
@@ -78,7 +78,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var job = await _jobService.GetCompletedJobByIdAsync(jobId, GetWorkshopId());
+                var job = await _jobService.GetArchivedJobByIdAsync(jobId, GetWorkshopId());
                 if (job == null) return NotFound();
                 return Ok(job);
             }
@@ -156,11 +156,11 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet("busy-slots")]
-        public async Task<IActionResult> GetBusySlots(string workerId, DateTime start, DateTime end, string? excludeId = null)
+        public async Task<IActionResult> GetBusySlots(string workerId, DateTime start, DateTime end, string? excludeJobId = null)
         {
             try
             {
-                var slots = await _jobService.GetBusySlotsAsync(workerId, start, end, excludeId);
+                var slots = await _jobService.GetBusySlotsAsync(workerId, start, end, excludeJobId);
                 return Ok(slots);
             }
             catch (Exception ex)

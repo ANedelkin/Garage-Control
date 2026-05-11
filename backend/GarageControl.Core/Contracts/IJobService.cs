@@ -20,7 +20,7 @@ public interface IJobService
         string jobId,
         string workshopId);
 
-    Task<JobDetailsVM?> GetCompletedJobByIdAsync(
+    Task<JobDetailsVM?> GetArchivedJobByIdAsync(
         string jobId,
         string workshopId);
 

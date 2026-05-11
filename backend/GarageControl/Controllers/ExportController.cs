@@ -2,6 +2,8 @@ using GarageControl.Core.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using GarageControl.Core.ViewModels.Orders;
+using GarageControl.Core.ViewModels.Jobs;
 
 namespace GarageControl.Controllers
 {
@@ -49,7 +51,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> ExportOrders([FromQuery] bool? isArchived, [FromQuery] string format = "excel")
         {
             var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived);
-            var ordersWithJobs = new List<(GarageControl.Core.ViewModels.Orders.OrderListVM Order, List<GarageControl.Core.ViewModels.Jobs.JobListVM> Jobs)>();
+            var ordersWithJobs = new List<(OrderListVM Order, List<JobListVM> Jobs)>();
 
             foreach (var order in orders)
             {
@@ -57,7 +59,7 @@ namespace GarageControl.Controllers
                 ordersWithJobs.Add((order, jobs));
             }
 
-            var bytes = format.ToLower() == "pdf" 
+            var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportOrdersAsync(ordersWithJobs)
                 : await _exportService.ExportOrdersAsync(ordersWithJobs);
 
@@ -127,7 +129,7 @@ namespace GarageControl.Controllers
         [HttpGet("job/{id}")]
         public async Task<IActionResult> ExportJob(string id, [FromQuery] string format = "excel")
         {
-            var job = await _jobService.GetCompletedJobByIdAsync(id, GetWorkshopId());
+            var job = await _jobService.GetArchivedJobByIdAsync(id, GetWorkshopId());
             if (job == null) job = await _jobService.GetJobByIdAsync(id, GetWorkshopId());
             if (job == null) return NotFound();
 

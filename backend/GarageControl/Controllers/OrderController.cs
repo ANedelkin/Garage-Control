@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Core.ViewModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GarageControl.Controllers
 {
@@ -29,7 +30,7 @@ namespace GarageControl.Controllers
 
         private string GetUserId()
         {
-            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
         }
 
         [HttpGet]

@@ -12,10 +12,6 @@ namespace GarageControl.Core.Services.Helpers
         public List<string> Details { get; set; } = new();
     }
 
-    /// <summary>
-    /// Converts a structured <see cref="ActivityLogData"/> payload into markup strings.
-    /// Supports dynamic link generation based on captured entity data.
-    /// </summary>
     public static class ActivityLogRenderer
     {
         public static ActivityLogRendererResult Render(string logType, ActivityLogData data, Func<string, string, bool>? existsChecker = null)
