@@ -1,19 +1,60 @@
-name: Deploy to Render
+name: CI/CD - Build, Test and Deploy
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Restore Backend Dependencies
+        working-directory: ./backend
+        run: dotnet restore
+
+      - name: Build Backend
+        working-directory: ./backend
+        run: dotnet build --no-restore
+
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: dotnet test --no-build --verbosity normal
+
   deploy:
     name: Trigger Render Deployment
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Deploy Hook
-        # Uses curl to send a POST request to your Render Deploy Hook URL.
-        # You must configure the RENDER_DEPLOY_HOOK_URL secret in your GitHub repository settings.
         run: |
           if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
             echo "Error: RENDER_DEPLOY_HOOK_URL secret is not set in GitHub."

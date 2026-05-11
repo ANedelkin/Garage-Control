@@ -7,14 +7,14 @@ COPY frontend/ ./
 RUN npm run build -- --outDir dist
 
 # Stage 2: Build the backend (.NET)
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /app
 COPY backend/ ./
 RUN dotnet restore GarageControl/GarageControl.csproj
 RUN dotnet publish GarageControl/GarageControl.csproj -c Release -o /app/publish
 
 # Stage 3: Setup the final image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 
 # Copy backend files
