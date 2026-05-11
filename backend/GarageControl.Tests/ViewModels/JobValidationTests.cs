@@ -57,7 +57,7 @@ namespace GarageControl.Tests.ViewModels
             var validationResults = ValidateModel(model);
 
             // Assert
-            Assert.Contains(validationResults, v => v.ErrorMessage == "Part doesn't exist" && v.MemberNames.Contains("PartId"));
+            Assert.Contains(validationResults, v => v.ErrorMessage == "Part name required" && v.MemberNames.Contains("PartId"));
         }
 
         private IList<ValidationResult> ValidateModel(object model)

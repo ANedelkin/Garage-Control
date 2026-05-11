@@ -2,8 +2,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GarageControl.Core.ViewModels.Jobs
 {
+    public class ValidJobPartAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            var model = (CreateJobPartVM)validationContext.ObjectInstance;
+            if (string.IsNullOrWhiteSpace(model.PartId))
+            {
+                if (string.IsNullOrWhiteSpace(model.PartName))
+                    return new ValidationResult("Part name required", new[] { nameof(model.PartId) });
+                return new ValidationResult("Part doesn't exist", new[] { nameof(model.PartId) });
+            }
+            return ValidationResult.Success;
+        }
+    }
+
     public class CreateJobPartVM : IValidatableObject
     {
+        [ValidJobPart]
         public string? PartId { get; set; }
         public string? PartName { get; set; }
         [Required(ErrorMessage = "Planned quantity is required")]
@@ -21,18 +37,6 @@ namespace GarageControl.Core.ViewModels.Jobs
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (string.IsNullOrWhiteSpace(PartId))
-            {
-                if (string.IsNullOrWhiteSpace(PartName))
-                {
-                    yield return new ValidationResult("Part name required", new[] { nameof(PartId) });
-                }
-                else
-                {
-                    yield return new ValidationResult("Part doesn't exist", new[] { nameof(PartId) });
-                }
-            }
-
             if (SentQuantity > PlannedQuantity)
             {
                 yield return new ValidationResult(
