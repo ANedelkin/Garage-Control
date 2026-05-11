@@ -178,6 +178,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                                     type="number"
                                     step="0.01"
                                     name="price"
+                                    min="0"
                                     value={formData.price}
                                     onChange={handleChange}
                                     required
@@ -195,6 +196,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                                 className={formData.quantity < formData.minimumQuantity ? 'low-stock' : ''}
                                 type="number"
                                 name="quantity"
+                                min="0"
                                 value={formData.quantity}
                                 onChange={handleChange}
                                 required
@@ -236,6 +238,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                             <input
                                 type="number"
                                 name="minimumQuantity"
+                                min="0"
                                 value={formData.minimumQuantity}
                                 onChange={handleChange}
                                 required
@@ -247,6 +250,7 @@ const PartDetails = ({ part, onUpdate, onDelete, onBack }) => {
                             <label>Add/Remove Quantity</label>
                             <input
                                 type="number"
+                                min="0"
                                 placeholder="Amount"
                                 value={stockAdj}
                                 onChange={(e) => setStockAdj(e.target.value)}

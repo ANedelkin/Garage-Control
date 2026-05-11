@@ -358,8 +358,13 @@ namespace GarageControl.Core.Services.Jobs
 
                     if (existingJobPart.SentQuantity != partModel.SentQuantity && hasStockAccess)
                     {
-                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
                         var diff = partModel.SentQuantity - existingJobPart.SentQuantity;
+                        if (diff > part.Quantity)
+                        {
+                            throw new ArgumentException($"Insufficient stock for part '{part.Name}'. Available: {part.Quantity}, requested additional: {diff}");
+                        }
+
+                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
                         part.Quantity -= diff;
                         existingJobPart.SentQuantity = partModel.SentQuantity;
                     }
@@ -382,6 +387,11 @@ namespace GarageControl.Core.Services.Jobs
                 {
                     int effectivePlanned = (hasStockAccess || isAssignedWorker) ? partModel.PlannedQuantity : 0;
                     int effectiveSent = hasStockAccess ? partModel.SentQuantity : 0;
+
+                    if (effectiveSent > part.Quantity)
+                    {
+                        throw new ArgumentException($"Insufficient stock for part '{part.Name}'. Available: {part.Quantity}, requested: {effectiveSent}");
+                    }
 
                     job.JobParts.Add(new JobPart
                     {

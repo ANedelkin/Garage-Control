@@ -33,9 +33,14 @@ const ServiceForm = ({
     const isAssignedWorker = user && service.workerId === user.workerId;
 
     const handleChange = (field, value) => {
-        updateService(service.id, field, value);
+        let finalValue = value;
+        if (field === 'laborCost') {
+            finalValue = Math.max(0, value);
+        }
 
-        if (field === 'status' && value === 3) {
+        updateService(service.id, field, finalValue);
+
+        if (field === 'status' && finalValue === 3) {
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
@@ -113,11 +118,13 @@ const ServiceForm = ({
 
         const p = newParts[partIndex];
         if (field === 'plannedQuantity') {
-            clampedVal = Math.max(val, p.sentQuantity || 0);
+            clampedVal = Math.max(0, Math.max(val, p.sentQuantity || 0));
         } else if (field === 'sentQuantity') {
-            clampedVal = Math.max(Math.min(val, p.plannedQuantity || 0), p.usedQuantity || 0);
+            clampedVal = Math.max(0, Math.max(Math.min(val, p.plannedQuantity || 0), p.usedQuantity || 0));
         } else if (field === 'usedQuantity') {
-            clampedVal = Math.min(val, p.sentQuantity || 0);
+            clampedVal = Math.max(0, Math.min(val, p.sentQuantity || 0));
+        } else if (field === 'requestedQuantity') {
+            clampedVal = Math.max(0, val);
         }
 
         newParts[partIndex] = { ...p, [field]: clampedVal };
@@ -324,6 +331,7 @@ const ServiceForm = ({
                                             type="number"
                                             name="LaborCost"
                                             step="0.01"
+                                            min="0"
                                             value={service.laborCost}
                                             onChange={e => handleChange('laborCost', parseFloat(e.target.value))}
                                             disabled={service.status === 2}
