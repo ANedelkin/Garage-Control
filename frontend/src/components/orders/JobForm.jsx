@@ -307,7 +307,7 @@ const JobForm = ({
                                             name="WorkerId"
                                             value={job.workerId}
                                             onChange={e => handleChange('workerId', e.target.value)}
-                                            disabled={job.status === 2}
+                                            disabled={job.status === 2 || !job.jobTypeId}
                                         >
                                             <option value="">Select Mechanic</option>
                                             {workers
@@ -347,7 +347,7 @@ const JobForm = ({
                                         worker={workers.find(w => w.id === job.workerId)}
                                         initialStart={job.startTime}
                                         initialEnd={job.endTime}
-                                        readonly={job.status === 2}
+                                        readonly={job.status === 2 || !job.workerId}
                                         excludeId={job.id}
                                         onTimeSelect={(start, end) => {
                                             handleChange('startTime', start);

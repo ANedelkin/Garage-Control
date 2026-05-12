@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { jobApi } from '../../services/jobApi';
 import { usePopup } from '../../context/PopupContext';
+import { useStatus } from '../../context/StatusContext';
 import '../../assets/css/orders.css'; // Ensure we can style it
 import '../../assets/css/job-time-picker.css';
 
@@ -312,8 +313,13 @@ const TimeSlotPickerContent = ({
 
 const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd, readonly = false, excludeId = null }) => {
     const { addPopup, removeLastPopup } = usePopup();
+    const { showStatus } = useStatus();
 
     const openPicker = () => {
+        if (!worker || !worker.schedules || worker.schedules.length === 0) {
+            showStatus('This worker has no schedule set.', 'error');
+            return;
+        }
         addPopup(
             'Select Time Slot',
             <TimeSlotPickerContent
