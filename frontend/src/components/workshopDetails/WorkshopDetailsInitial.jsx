@@ -6,6 +6,7 @@ import { workshopApi } from '../../services/workshopApi.js';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import React, { useState } from 'react';
 import usePageTitle from '../../hooks/usePageTitle.js';
+import ThemeToggle from '../common/ThemeToggle.jsx';
 
 const WorkshopDetailsInitial = () => {
     usePageTitle('Setup Workshop');
@@ -33,7 +34,8 @@ const WorkshopDetailsInitial = () => {
 
     return (
         <div className="vertical workshop-details-initial-page">
-            <Header />
+            <ThemeToggle className="theme-toggle" />
+            <Header type="initial" />
             <main className="main workshop-details-initial-main">
                 <div className="tile workshop-details-initial-tile">
                     <h3 className="tile-header">Workshop Information</h3>

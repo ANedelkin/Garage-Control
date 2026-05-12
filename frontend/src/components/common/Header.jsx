@@ -8,14 +8,16 @@ import UserProfilePopup from './UserProfilePopup';
 import '../../assets/css/common/controls.css';
 import '../../assets/css/header.css';
 
-const Header = ({ onToggleSidebar }) => {
+const Header = ({ onToggleSidebar, type = 'default' }) => {
   const [services] = useState(["Main Street Garage", "Downtown Service", "AutoPro - East"]);
   const [selectedService, setSelectedService] = useState(services[0]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const navigate = useNavigate();
-  const { logout, user } = useAuth();
+   const navigate = useNavigate();
+   const { logout, user } = useAuth();
+ 
+   const isInitial = type === 'initial';
 
   const fetchNotifications = async () => {
     try {
@@ -55,24 +57,28 @@ const Header = ({ onToggleSidebar }) => {
   return (
     <header>
       <div className="brand">
-        <button className="hamburger" onClick={onToggleSidebar}>
-          <i className="fa-solid fa-bars"></i>
-        </button>
+        {!isInitial && (
+          <button className="hamburger" onClick={onToggleSidebar}>
+            <i className="fa-solid fa-bars"></i>
+          </button>
+        )}
         <h1>GarageControl</h1>
       </div>
       <div className="profile">
         <div className="profile-name desktop-only">{user?.userName || 'User'}</div>
-        <button
-          className="icon-btn btn notification-btn"
-          title="Notifications"
-          onClick={() => {
-            setShowNotifications(!showNotifications);
-            setShowUserPopup(false);
-          }}
-        >
-          <i className="fa-solid fa-bell"></i>
-          {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-        </button>
+        {!isInitial && (
+          <button
+            className="icon-btn btn notification-btn"
+            title="Notifications"
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              setShowUserPopup(false);
+            }}
+          >
+            <i className="fa-solid fa-bell"></i>
+            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+          </button>
+        )}
         <button
           className="icon-btn btn user-btn mobile-only"
           title="User menu"

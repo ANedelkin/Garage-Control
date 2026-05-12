@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ThemeToggle = ({className = ''}) => {
+const ThemeToggle = ({ className = '' }) => {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
     useEffect(() => {

@@ -28,6 +28,11 @@ header {
 .profile-name {
   padding: 6px 10px;
   color: var(--text-clr2);
+  /* Truncate long usernames */
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* .desktop-only and .mobile-only handled globally in layout.css */
