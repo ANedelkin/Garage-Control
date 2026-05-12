@@ -1,6 +1,6 @@
 # GarageControl
 
-A full-stack workshop management system for automotive service shops. GarageControl lets you manage work orders, jobs, mechanics, clients, vehicles, parts inventory, and more — all from one place.
+A full-stack workshop management system for automotive service shops. GarageControl lets you manage work orders, jobs, mechanics, clients, vehicles, parts inventory, and more — all in one place.
 
 ---
 
@@ -23,19 +23,19 @@ A full-stack workshop management system for automotive service shops. GarageCont
 
 | Module | Description |
 |---|---|
-| **Dashboard** | Overview of active orders, jobs by status, and key metrics |
-| **Orders** | Create and manage work orders with multiple jobs per order |
-| **Jobs** | Track job progress, assign mechanics, log time slots and parts |
-| **Parts Stock** | Hierarchical parts inventory with folder organisation, deficit tracking, and transfers |
-| **Workers** | Manage mechanics and staff; assign roles and schedules |
-| **Clients** | Client directory with linked vehicles and order history |
-| **Cars** | Vehicle registry with makes, models, and service history |
-| **To Do** | Mechanic-facing task list for active assigned jobs |
-| **Activity Log** | Full audit trail of all system actions |
+| **Dashboard** | A dashboard with all key metrics and stats of the workshop |
+| **Orders** | Create and manage orders with multiple jobs per order |
+| **Jobs** | Track job progress, assign mechanics, time slots and parts |
+| **Parts Stock** | Hierarchical parts inventory with folder organisation and deficit tracking |
+| **Workers** | Manage mechanics and staff; manage access and schedules |
+| **Clients** | Clients list with their details and vehicles|
+| **Cars** | Vehicle registry showing cars and their details |
+| **To Do** | Task list of active assigned jobs for a mechanic |
+| **Activity Log** | Full audit trail of all workshop actions |
 | **Job Types** | Define and customise categories of work |
-| **Makes & Models** | Manage vehicle brands and model lookup tables |
+| **Makes & Models** | Manage vehicle makes and models |
 | **Workshop Details** | Configure your workshop profile |
-| **Notifications** | In-app notification system with unread badge |
+| **Notifications** | In-app notification system with read/unread tracking |
 | **Export** | Export data to Excel and PDF |
 | **Admin Panel** | Platform-level administration (users, workshops, makes/models) |
 | **Auth** | Username/password login, registration, Google and Microsoft OAuth |
@@ -45,8 +45,8 @@ A full-stack workshop management system for automotive service shops. GarageCont
 ## Tech Stack
 
 **Frontend**
-- React 18 (Vite)
-- React Router v6
+- React 19 (Vite)
+- React Router v7
 - Vanilla CSS with CSS custom properties
 
 **Backend**
@@ -58,7 +58,7 @@ A full-stack workshop management system for automotive service shops. GarageCont
 **Infrastructure**
 - Docker (multi-stage build)
 - PostgreSQL
-- Deployed on [Render](https://render.com)
+- Deployed on [Render](https://garage-control.onrender.com)
 
 ---
 
@@ -114,11 +114,23 @@ Create `backend/GarageControl/appsettings.Development.json`:
   },
   "Jwt": {
     "Key": "your-super-secret-jwt-key-at-least-32-chars",
-    "Issuer": "GarageControl",
-    "Audience": "GarageControlUsers"
+    "Issuer": "https://localhost:5173",
+    "Audience": "https://localhost:5173"
+  },
+  "Google": {
+    "ClientSecret": "your-google-oauth-client-secret"
+  },
+  "Microsoft": {
+    "ClientSecret": "your-microsoft-oauth-client-secret"
+  },
+  "Admin": {
+    "Password": "your-admin-password"
   }
 }
 ```
+
+> [!NOTE]
+> `appsettings.json` already contains the non-secret parts of the OAuth config (Client IDs, Tenant ID, etc.). Only the secrets above need to be added to `appsettings.Development.json`, which should **never** be committed to source control.
 
 Run database migrations and start the backend:
 
@@ -129,8 +141,6 @@ dotnet ef database update --project GarageControl.Infrastructure --startup-proje
 dotnet run --project GarageControl
 ```
 
-The API will be available at `https://localhost:5001`.
-
 #### 3. Start the frontend
 
 ```bash
@@ -139,7 +149,7 @@ npm install
 npm run dev
 ```
 
-The frontend dev server will be available at `http://localhost:5173` and will proxy API requests to the backend.
+The API and frontend will both be available at `https://localhost:5173`.
 
 ---
 
@@ -179,7 +189,6 @@ GarageControl uses a role/access system. Each user is granted a set of named acc
 |---|---|
 | `Dashboard` | Home dashboard |
 | `Orders` | Work orders and jobs |
-| `To Do` | Mechanic task list |
 | `Parts Stock` | Parts inventory |
 | `Workers` | Worker management |
 | `Clients` | Client directory |
@@ -188,7 +197,7 @@ GarageControl uses a role/access system. Each user is granted a set of named acc
 | `Job Types` | Job type configuration |
 | `Makes and Models` | Vehicle makes and models |
 | `Workshop Details` | Workshop settings |
-| `Admin` | Platform admin panel |
+| `Admin` | Admin pages |
 
 ---
 
@@ -198,7 +207,10 @@ GarageControl uses a role/access system. Each user is granted a set of named acc
 |---|---|
 | `ConnectionStrings__DefaultConnection` | PostgreSQL connection string |
 | `Jwt__Key` | Secret key for signing JWT tokens (min 32 chars) |
-| `Jwt__Issuer` | JWT issuer (e.g. `GarageControl`) |
-| `Jwt__Audience` | JWT audience (e.g. `GarageControlUsers`) |
+| `Jwt__Issuer` | JWT issuer — set to the app URL (e.g. `https://localhost:5173`) |
+| `Jwt__Audience` | JWT audience — set to the app URL (e.g. `https://localhost:5173`) |
+| `Google__ClientSecret` | Google OAuth client secret (get from Google Cloud Console) |
+| `Microsoft__ClientSecret` | Microsoft OAuth client secret (get from Azure App Registrations) |
+| `Admin__Password` | Password for the built-in admin account (`Admin__Username` is set in `appsettings.json`) |
 | `ASPNETCORE_ENVIRONMENT` | `Development` or `Production` |
-| `ASPNETCORE_HTTP_PORTS` | Port the server listens on (default `10000`) |
+| `ASPNETCORE_HTTP_PORTS` | Port the server listens on (default `10000` on Render) |
