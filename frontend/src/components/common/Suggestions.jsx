@@ -64,6 +64,20 @@ const Suggestions = forwardRef(({
         return false;
     };
 
+    const listRef = useRef(null);
+
+    useEffect(() => {
+        if (highlightedIndex >= 0 && listRef.current) {
+            const highlightedElement = listRef.current.children[highlightedIndex];
+            if (highlightedElement) {
+                highlightedElement.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'start'
+                });
+            }
+        }
+    }, [highlightedIndex]);
+
     useImperativeHandle(ref, () => ({
         handleKeyDown,
         selectHighlighted
@@ -86,6 +100,7 @@ const Suggestions = forwardRef(({
 
     return (
         <ul
+            ref={listRef}
             className="suggestions-list"
             style={defaultStyle}
         >
