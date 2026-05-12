@@ -72,7 +72,7 @@ const ArchivedJobPage = () => {
             </div>
 
             <div className="tile">
-                <div className="service-form">
+                <div className="job-form">
                     <div className="form-row-4">
                         <div className="form-section">
                             <label>Job Type</label>

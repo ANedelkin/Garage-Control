@@ -4,7 +4,7 @@ import { orderApi } from '../../services/orderApi';
 import { jobApi } from '../../services/jobApi';
 import { partApi } from '../../services/partApi';
 import { request } from '../../Utilities/request';
-import ServiceForm from './ServiceForm';
+import JobForm from './JobForm';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
 import { usePopup } from '../../context/PopupContext';
 import { useAuth } from '../../context/AuthContext';
@@ -226,11 +226,11 @@ const EditJobPage = ({ mechanicView = false }) => {
                 </div>
             </div>
 
-            <ServiceForm
+            <JobForm
                 index={0}
-                service={job}
-                updateService={updateJob}
-                removeService={null}
+                job={job}
+                updateJob={updateJob}
+                removeJob={null}
                 jobTypes={jobTypes}
                 workers={workers}
                 allParts={allParts}

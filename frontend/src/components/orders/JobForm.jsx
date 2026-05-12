@@ -9,11 +9,11 @@ import Suggestions from '../common/Suggestions';
 import '../../assets/css/common/status.css';
 import FieldError from '../common/FieldError.jsx';
 
-const ServiceForm = ({
-    service,
+const JobForm = ({
+    job,
     index,
-    updateService,
-    removeService,
+    updateJob,
+    removeJob,
     jobTypes,
     workers,
     allParts = [],
@@ -30,7 +30,7 @@ const ServiceForm = ({
 
     const { user, accesses } = useAuth();
     const hasStockAccess = accesses.includes('Parts Stock');
-    const isAssignedWorker = user && service.workerId === user.workerId;
+    const isAssignedWorker = user && job.workerId === user.workerId;
 
     const handleChange = (field, value) => {
         let finalValue = value;
@@ -38,13 +38,13 @@ const ServiceForm = ({
             finalValue = value;
         }
 
-        updateService(service.id, field, finalValue);
+        updateJob(job.id, field, finalValue);
 
         if (field === 'status' && finalValue === 3) {
             const now = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             const localISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
-            updateService(service.id, 'endTime', localISO);
+            updateJob(job.id, 'endTime', localISO);
         }
     };
 
@@ -60,17 +60,17 @@ const ServiceForm = ({
         };
 
         if (activePartIndex !== null) {
-            const newParts = [...service.parts];
+            const newParts = [...job.parts];
             newParts[activePartIndex] = {
                 ...newParts[activePartIndex],
                 partId: part.id,
                 name: part.name,
                 price: part.price
             };
-            updateService(service.id, 'parts', newParts);
+            updateJob(job.id, 'parts', newParts);
             setActivePartIndex(null);
         } else {
-            updateService(service.id, 'parts', [...service.parts, newPart]);
+            updateJob(job.id, 'parts', [...job.parts, newPart]);
         }
 
         setPartSearch('');
@@ -78,17 +78,17 @@ const ServiceForm = ({
     };
 
     const removePart = (partIndex) => {
-        const newParts = [...service.parts];
+        const newParts = [...job.parts];
         newParts.splice(partIndex, 1);
-        updateService(service.id, 'parts', newParts);
+        updateJob(job.id, 'parts', newParts);
     };
 
     const handlePartSearch = (val, rowIndex) => {
         setPartSearch(val);
 
-        const newParts = [...service.parts];
+        const newParts = [...job.parts];
         newParts[rowIndex] = { ...newParts[rowIndex], name: val, partId: '' }; // Clear Id when name is changed
-        updateService(service.id, 'parts', newParts);
+        updateJob(job.id, 'parts', newParts);
 
         setActivePartIndex(rowIndex);
 
@@ -106,21 +106,21 @@ const ServiceForm = ({
     };
 
     const addNewRow = () => {
-        updateService(service.id, 'parts', [
-            ...service.parts,
+        updateJob(job.id, 'parts', [
+            ...job.parts,
             { partId: '', name: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }
         ]);
     };
 
     const updatePartRow = (partIndex, field, val) => {
-        const newParts = [...service.parts];
+        const newParts = [...job.parts];
         const p = newParts[partIndex];
         newParts[partIndex] = { ...p, [field]: val };
-        updateService(service.id, 'parts', newParts);
+        updateJob(job.id, 'parts', newParts);
     };
 
     const handleTransfer = (partIndex, transferQty) => {
-        const newParts = [...service.parts];
+        const newParts = [...job.parts];
         const p = newParts[partIndex];
         const updatedPart = {
             ...p,
@@ -128,7 +128,7 @@ const ServiceForm = ({
             requestedQuantity: (p.requestedQuantity || 0) - transferQty
         };
         newParts[partIndex] = updatedPart;
-        updateService(service.id, 'parts', newParts);
+        updateJob(job.id, 'parts', newParts);
         removeLastPopup();
     };
 
@@ -152,7 +152,7 @@ const ServiceForm = ({
     };
 
     const openTransferPopup = (partIndex) => {
-        const part = service.parts[partIndex];
+        const part = job.parts[partIndex];
         console.log("e");
         addPopup(
             'Transfer to Planned',
@@ -176,9 +176,9 @@ const ServiceForm = ({
                                 <label>Job Type</label>
                                 <DropDown
                                     name="JobTypeId"
-                                    value={service.jobTypeId}
+                                    value={job.jobTypeId}
                                     onChange={e => handleChange('jobTypeId', e.target.value)}
-                                    disabled={mechanicView || service.status === 2}
+                                    disabled={mechanicView || job.status === 2}
                                 >
                                     <option value="">Select Type</option>
                                     {jobTypes.map(jt =>
@@ -190,11 +190,11 @@ const ServiceForm = ({
                         )}
                     </div>
 
-                    {removeService && !mechanicView && service.status !== 2 && (
+                    {removeJob && !mechanicView && job.status !== 2 && (
                         <button
                             type="button"
                             className="btn delete"
-                            onClick={() => removeService(service.id)}
+                            onClick={() => removeJob(job.id)}
                         >
                             <i className="fa-solid fa-trash"></i>
                         </button>
@@ -202,7 +202,7 @@ const ServiceForm = ({
                 </div>
 
 
-                <div className={`service-form ${mechanicView ? 'mechanic-layout' : ''}`}>
+                <div className={`job-form ${mechanicView ? 'mechanic-layout' : ''}`}>
 
                     {mechanicView ? (
 
@@ -214,7 +214,7 @@ const ServiceForm = ({
                                 <div className="form-section">
                                     <label>Job Type</label>
                                     <DropDown
-                                        value={service.jobTypeId}
+                                        value={job.jobTypeId}
                                         onChange={() => { }}
                                         disabled={true}   // fully readonly
                                     >
@@ -227,14 +227,14 @@ const ServiceForm = ({
                                 <div className="form-section">
                                     <label>Job Status</label>
                                     <DropDown
-                                        className={`glow job-status-${service.status === 0
+                                        className={`glow job-status-${job.status === 0
                                             ? 'pending'
-                                            : service.status === 1
+                                            : job.status === 1
                                                 ? 'inprogress'
                                                 : 'done'
                                             }`}
                                         name="Status"
-                                        value={service.status}
+                                        value={job.status}
                                         onChange={e => handleChange('status', parseInt(e.target.value))}
                                     >
                                         <option value={0}>Pending</option>
@@ -247,11 +247,11 @@ const ServiceForm = ({
                                 <div className="form-section">
                                     <label>Time Slot</label>
                                     <TimeSlotPicker
-                                        worker={workers.find(w => w.id === service.workerId)}
-                                        initialStart={service.startTime}
-                                        initialEnd={service.endTime}
+                                        worker={workers.find(w => w.id === job.workerId)}
+                                        initialStart={job.startTime}
+                                        initialEnd={job.endTime}
                                         readonly={true}      // prevents opening or changing
-                                        excludeId={service.id}
+                                        excludeId={job.id}
                                         onTimeSelect={null}   // ensure user cannot change
                                     />
                                     <FieldError name="StartTime" errors={errors} />
@@ -266,7 +266,7 @@ const ServiceForm = ({
                                     <textarea
                                         className="description"
                                         name="Description"
-                                        value={service.description}
+                                        value={job.description}
                                         readOnly
                                     />
                                     <FieldError name="Description" errors={errors} />
@@ -283,14 +283,14 @@ const ServiceForm = ({
                                 <div className="form-section">
                                     <label>Job Status</label>
                                     <DropDown
-                                        className={`glow job-status-${service.status === 0
+                                        className={`glow job-status-${job.status === 0
                                             ? 'pending'
-                                            : service.status === 1
+                                            : job.status === 1
                                                 ? 'inprogress'
                                                 : 'done'
                                             }`}
                                         name="Status"
-                                        value={service.status}
+                                        value={job.status}
                                         onChange={e => handleChange('status', parseInt(e.target.value))}
                                     >
                                         <option value={0}>Pending</option>
@@ -305,15 +305,15 @@ const ServiceForm = ({
                                         <label>Mechanic</label>
                                         <DropDown
                                             name="WorkerId"
-                                            value={service.workerId}
+                                            value={job.workerId}
                                             onChange={e => handleChange('workerId', e.target.value)}
-                                            disabled={service.status === 2}
+                                            disabled={job.status === 2}
                                         >
                                             <option value="">Select Mechanic</option>
                                             {workers
                                                 .filter(w =>
-                                                    !service.jobTypeId ||
-                                                    (w.jobTypeIds && w.jobTypeIds.includes(service.jobTypeId))
+                                                    !job.jobTypeId ||
+                                                    (w.jobTypeIds && w.jobTypeIds.includes(job.jobTypeId))
                                                 )
                                                 .map(w =>
                                                     <option key={w.id} value={w.id}>{w.name}</option>
@@ -332,9 +332,9 @@ const ServiceForm = ({
                                             name="LaborCost"
                                             step="0.01"
                                             min="0"
-                                            value={service.laborCost}
+                                            value={job.laborCost}
                                             onChange={e => handleChange('laborCost', e.target.value)}
-                                            disabled={service.status === 2}
+                                            disabled={job.status === 2}
                                             required
                                         />
                                         <FieldError name="LaborCost" errors={errors} />
@@ -344,11 +344,11 @@ const ServiceForm = ({
                                 <div className="form-section" style={{ display: 'flex', flexDirection: 'column' }}>
                                     <label>Time Slot</label>
                                     <TimeSlotPicker
-                                        worker={workers.find(w => w.id === service.workerId)}
-                                        initialStart={service.startTime}
-                                        initialEnd={service.endTime}
-                                        readonly={service.status === 2}
-                                        excludeId={service.id}
+                                        worker={workers.find(w => w.id === job.workerId)}
+                                        initialStart={job.startTime}
+                                        initialEnd={job.endTime}
+                                        readonly={job.status === 2}
+                                        excludeId={job.id}
                                         onTimeSelect={(start, end) => {
                                             handleChange('startTime', start);
                                             handleChange('endTime', end);
@@ -364,10 +364,10 @@ const ServiceForm = ({
                                 <textarea
                                     className="description"
                                     name="Description"
-                                    value={service.description}
+                                    value={job.description}
                                     onChange={e => handleChange('description', e.target.value)}
                                     placeholder="Describe..."
-                                    disabled={service.status === 2}
+                                    disabled={job.status === 2}
                                 />
                                 <FieldError name="Description" errors={errors} />
                             </div>
@@ -394,7 +394,7 @@ const ServiceForm = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {service.parts.map((p, i) => {
+                            {job.parts.map((p, i) => {
                                 // Validation/Error styling logic
                                 const planned = p.plannedQuantity || 0;
                                 const sent = p.sentQuantity || 0;
@@ -433,7 +433,7 @@ const ServiceForm = ({
                                                                 setTimeout(() => setActivePartIndex(null), 200);
                                                             }}
                                                             onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                                                            disabled={service.status === 2}
+                                                            disabled={job.status === 2}
                                                         />
                                                         <Suggestions
                                                             ref={suggestionsRef}
@@ -463,8 +463,8 @@ const ServiceForm = ({
                                                     value={p.plannedQuantity}
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
-                                                    disabled={service.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
-                                                    title={(service.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
+                                                    disabled={job.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                                    title={(job.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Sent">
@@ -475,8 +475,8 @@ const ServiceForm = ({
                                                     value={p.sentQuantity}
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
-                                                    disabled={service.status === 2 || mechanicView || !hasStockAccess}
-                                                    title={(service.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
+                                                    disabled={job.status === 2 || mechanicView || !hasStockAccess}
+                                                    title={(job.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Used">
@@ -486,8 +486,8 @@ const ServiceForm = ({
                                                     value={p.usedQuantity}
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
-                                                    disabled={service.status === 2 || !isAssignedWorker}
-                                                    title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                    disabled={job.status === 2 || !isAssignedWorker}
+                                                    title={(job.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Requested">
@@ -498,14 +498,14 @@ const ServiceForm = ({
                                                         value={p.requestedQuantity}
                                                         min="0"
                                                         onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
-                                                        disabled={service.status === 2 || !isAssignedWorker}
-                                                        title={(service.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                        disabled={job.status === 2 || !isAssignedWorker}
+                                                        title={(job.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                         style={{ flex: 1 }}
                                                     />
                                                     <button
                                                         type="button"
                                                         className="btn icon-btn"
-                                                        disabled={service.status === 2 || !p.requestedQuantity}
+                                                        disabled={job.status === 2 || !p.requestedQuantity}
                                                         onClick={() => openTransferPopup(i)}
                                                         title="Transfer to Planned"
                                                     >
@@ -523,7 +523,7 @@ const ServiceForm = ({
                                                 {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
                                             </td>
                                             <td className="mobile-collapsible" data-label="Actions">
-                                                <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={service.status === 2}>
+                                                <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={job.status === 2}>
                                                     <i className="fa-solid fa-trash"></i>
                                                 </button>
                                             </td>
@@ -544,7 +544,7 @@ const ServiceForm = ({
                     </table>
                     <div className="form-footer">
                         <FieldError name="Parts" errors={errors} />
-                        <button type="button" className="btn" onClick={addNewRow} disabled={service.status === 2}>+ Add Part</button>
+                        <button type="button" className="btn" onClick={addNewRow} disabled={job.status === 2}>+ Add Part</button>
                     </div>
                 </div>
 
@@ -554,4 +554,4 @@ const ServiceForm = ({
     );
 };
 
-export default ServiceForm;
+export default JobForm;
