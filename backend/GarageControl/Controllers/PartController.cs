@@ -79,7 +79,7 @@ namespace GarageControl.Controllers
         }
         [RequireAccess("Parts Stock")]
         [HttpPost("create")]
-        public async Task<IActionResult> CreatePart([FromBody] CreatePartVM model)
+        public async Task<IActionResult> CreatePart([FromBody] CreatePartVM? model = null)
         {
             try
             {

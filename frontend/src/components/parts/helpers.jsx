@@ -26,13 +26,7 @@ export const handleAddFolder = async (parentId, addPopup, removeLastPopup, onSuc
 export const handleAddPart = async (parentId, onSuccess, showStatus) => {
     showStatus?.('Creating part...', 'loading');
     try {
-        const newPart = await partApi.createPart({
-            name: "Unnamed Part",
-            partNumber: "000",
-            price: 0,
-            quantity: 0,
-            parentId
-        });
+        const newPart = await partApi.createPart({ parentId });
         onSuccess(newPart);
         showStatus?.('Part created successfully', 'success');
         return newPart;

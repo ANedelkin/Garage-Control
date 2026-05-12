@@ -51,7 +51,7 @@ const JobForm = ({
     const addPart = (part) => {
         const newPart = {
             partId: part.id,
-            name: part.name,
+            partName: part.name,
             plannedQuantity: 1,
             sentQuantity: 1,
             usedQuantity: 0,
@@ -64,7 +64,7 @@ const JobForm = ({
             newParts[activePartIndex] = {
                 ...newParts[activePartIndex],
                 partId: part.id,
-                name: part.name,
+                partName: part.name,
                 price: part.price
             };
             updateJob(job.id, 'parts', newParts);
@@ -87,7 +87,7 @@ const JobForm = ({
         setPartSearch(val);
 
         const newParts = [...job.parts];
-        newParts[rowIndex] = { ...newParts[rowIndex], name: val, partId: '' }; // Clear Id when name is changed
+        newParts[rowIndex] = { ...newParts[rowIndex], partName: val, partId: '' }; // Clear Id when name is changed
         updateJob(job.id, 'parts', newParts);
 
         setActivePartIndex(rowIndex);
@@ -108,7 +108,7 @@ const JobForm = ({
     const addNewRow = () => {
         updateJob(job.id, 'parts', [
             ...job.parts,
-            { partId: '', name: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }
+            { partId: '', partName: '', plannedQuantity: 1, sentQuantity: 1, usedQuantity: 0, requestedQuantity: 0, price: 0 }
         ]);
     };
 
@@ -424,9 +424,9 @@ const JobForm = ({
                                                             <div style={{ position: 'relative', flex: 1 }}>
                                                                 <input
                                                                     type="text"
-                                                                    name={`Parts[${i}].Name`}
+                                                                    name={`Parts[${i}].PartName`}
                                                                     placeholder="Search part..."
-                                                                    value={p.name}
+                                                                    value={p.partName}
                                                                     onChange={e => handlePartSearch(e.target.value, i)}
                                                                     onFocus={() => setActivePartIndex(i)}
                                                                     onBlur={() => {

@@ -110,18 +110,18 @@ namespace GarageControl.Core.Services
             }).ToList();
         }
 
-        public async Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM model)
+        public async Task<PartVM> CreatePartAsync(string userId, string workshopId, CreatePartVM? model = null)
         {
             var part = new Part
             {
-                Name = model.Name,
-                PartNumber = model.PartNumber,
-                Price = model.Price.Value,
-                Quantity = model.Quantity.Value,
-                MinimumQuantity = model.MinimumQuantity.Value,
-                ParentId = model.ParentId,
+                Name = model?.Name ?? "Unnamed Part",
+                PartNumber = model?.PartNumber ?? "000",
+                Price = model?.Price ?? 0,
+                Quantity = model?.Quantity ?? 0,
+                MinimumQuantity = model?.MinimumQuantity ?? 0,
+                ParentId = model?.ParentId,
                 WorkshopId = workshopId,
-                AvailabilityBalance = model.Quantity.Value
+                AvailabilityBalance = model?.Quantity ?? 0
             };
 
             part.DeficitStatus = _deficitService.CalculatePartDeficitStatus(part);

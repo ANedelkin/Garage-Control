@@ -54,7 +54,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                     if (jobData.parts) {
                         jobData.parts = jobData.parts.map(p => ({
                             ...p,
-                            name: p.partName
+                            partName: p.partName
                         }));
                     }
 
@@ -133,7 +133,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00:00`;
             };
 
-            const parseNum = (val) => (val === '' || val === null || val === undefined) ? null : Number(val);
+            const parseNum = (val) => (val === '' || val === null || val === undefined) ? 0 : Number(val);
 
             const payload = {
                 jobTypeId: job.jobTypeId,
@@ -145,7 +145,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                 status: job.status,
                 parts: job.parts.map(p => ({
                     partId: p.partId,
-                    partName: p.name,
+                    partName: p.partName,
                     plannedQuantity: parseNum(p.plannedQuantity),
                     sentQuantity: parseNum(p.sentQuantity),
                     usedQuantity: parseNum(p.usedQuantity),
