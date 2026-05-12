@@ -23,13 +23,19 @@ header {
 .profile {
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .profile-name {
   padding: 6px 10px;
   color: var(--text-clr2);
-  /* Truncate long usernames */
-  max-width: 150px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.profile-name span {
+  /* Truncate long usernames only when needed */
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

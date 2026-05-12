@@ -65,7 +65,9 @@ const Header = ({ onToggleSidebar, type = 'default' }) => {
         <h1>GarageControl</h1>
       </div>
       <div className="profile">
-        <div className="profile-name desktop-only">{user?.userName || 'User'}</div>
+        <div className="profile-name desktop-only">
+          <span>{user?.userName || 'User'}</span>
+        </div>
         {!isInitial && (
           <button
             className="icon-btn btn notification-btn"
