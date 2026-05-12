@@ -183,14 +183,30 @@ header {
 .user-popup .section-header {
   margin: 0;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .user-popup h3 {
   margin: 0;
   font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .user-popup .popup-actions {
   margin: 0;
   padding-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .user-popup {
+    width: auto;
+    left: 20px;
+    right: 20px;
+  }
 }
