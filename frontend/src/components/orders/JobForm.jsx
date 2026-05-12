@@ -377,171 +377,185 @@ const JobForm = ({
 
                 </div>
 
-                <div className="parts-table-wrapper">
+                <div className="form-section parts-table-section">
                     <label>Parts</label>
-                    <table className="table" style={{ overflow: 'visible', marginBottom: '18px' }}>
-                        <thead>
-                            <tr>
-                                <th>Part Name / Number</th>
-                                <th style={{ width: '90px' }}>Planned</th>
-                                <th style={{ width: '90px' }}>Sent</th>
-                                <th style={{ width: '90px' }}>Used</th>
-                                <th style={{ width: '140px' }}>Req</th>
-                                <th style={{ width: '100px' }}>Unit Price</th>
-                                <th style={{ width: '130px' }}>Total Projected</th>
-                                <th style={{ width: '130px' }}>Total Spent</th>
-                                <th style={{ width: '50px' }}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {job.parts.map((p, i) => {
-                                // Validation/Error styling logic
-                                const planned = p.plannedQuantity || 0;
-                                const sent = p.sentQuantity || 0;
-                                const used = p.usedQuantity || 0;
+                    <div className="parts-table-wrapper">
+                        <table className="table" style={{ overflow: 'visible', marginBottom: '18px' }}>
+                            <thead>
+                                <tr>
+                                    <th>Part Name / Number</th>
+                                    <th style={{ width: '120px' }}>Planned</th>
+                                    <th style={{ width: '120px' }}>Sent</th>
+                                    <th style={{ width: '120px' }}>Used</th>
+                                    <th style={{ width: '120px' }}>Req</th>
+                                    <th style={{ width: '100px' }}>Unit Price</th>
+                                    <th style={{ width: '130px' }}>Total Projected</th>
+                                    <th style={{ width: '130px' }}>Total Spent</th>
+                                    <th style={{ width: '50px' }}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {job.parts.map((p, i) => {
+                                    // Validation/Error styling logic
+                                    const planned = p.plannedQuantity || 0;
+                                    const sent = p.sentQuantity || 0;
+                                    const used = p.usedQuantity || 0;
 
-                                const sentError = sent > planned;
-                                const usedError = used > sent;
+                                    const sentError = sent > planned;
+                                    const usedError = used > sent;
 
-                                const isExpanded = !!expandedParts[i];
+                                    const isExpanded = !!expandedParts[i];
 
-                                const partErrors = getPartErrors(i);
-                                return (
-                                    <React.Fragment key={i}>
-                                        <tr className={`${isExpanded ? 'expanded-row' : ''} ${partErrors ? 'has-errors' : ''}`} style={{ position: 'relative' }}>
-                                            <td style={{ position: 'relative', overflow: 'visible', zIndex: activePartIndex === i ? 10000 : 1 }}>
-                                                <div className="mobile-part-header">
-                                                    <button
-                                                        type="button"
-                                                        className="btn icon-btn mobile-only expand-btn"
-                                                        onClick={() => togglePartExpand(i)}
-                                                    >
-                                                        <i className={`fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
-                                                    </button>
-                                                    <div style={{ flex: 1 }}>
+                                    const partErrors = getPartErrors(i);
+                                    return (
+                                        <React.Fragment key={p.id || i}>
+                                            <tr className={isExpanded ? 'expanded-row' : ''}>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                                                            <button
+                                                                type="button"
+                                                                className="btn icon-btn expand-btn mobile-only"
+                                                                onClick={() => togglePartExpand(i)}
+                                                                style={{ padding: '4px', minWidth: '24px' }}
+                                                            >
+                                                                <i className={`fa-solid fa-chevron-${isExpanded ? 'down' : 'right'}`}></i>
+                                                            </button>
+                                                            <div style={{ position: 'relative', flex: 1 }}>
+                                                                <input
+                                                                    type="text"
+                                                                    name={`Parts[${i}].Name`}
+                                                                    placeholder="Search part..."
+                                                                    value={p.name}
+                                                                    onChange={e => handlePartSearch(e.target.value, i)}
+                                                                    onFocus={() => setActivePartIndex(i)}
+                                                                    onBlur={() => {
+                                                                        suggestionsRef.current?.selectHighlighted();
+                                                                        setTimeout(() => setActivePartIndex(null), 200);
+                                                                    }}
+                                                                    onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
+                                                                    disabled={job.status === 2}
+                                                                    autoComplete="off"
+                                                                    style={{ width: '100%' }}
+                                                                />
+                                                                <Suggestions
+                                                                    ref={suggestionsRef}
+                                                                    isOpen={activePartIndex === i}
+                                                                    suggestions={activePartIndex === i ? suggestions : []}
+                                                                    onSelect={addPart}
+                                                                    onClose={() => setActivePartIndex(null)}
+                                                                    renderItem={(part) => (
+                                                                        <div className="part-suggestion">
+                                                                            <span className="part-name">{part.name}</span>
+                                                                            <span className="part-number">{part.partNumber}</span>
+                                                                            <span className="part-price">${part.price.toFixed(2)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="mobile-only mobile-price">
+                                                            {p.price.toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Planned">
+                                                    <div style={{ width: '120px' }}>
                                                         <input
-                                                            type="text"
-                                                            value={p.name}
-                                                            onInput={e => handlePartSearch(e.target.value, i)}
-                                                            placeholder="Search Part..."
-                                                            onFocus={() => {
-                                                                setActivePartIndex(i);
-                                                                handlePartSearch(p.name, i);
-                                                            }}
-                                                            onBlur={() => {
-                                                                suggestionsRef.current?.selectHighlighted();
-                                                                setTimeout(() => setActivePartIndex(null), 200);
-                                                            }}
-                                                            onKeyDown={(e) => suggestionsRef.current?.handleKeyDown(e)}
-                                                            disabled={job.status === 2}
-                                                        />
-                                                        <Suggestions
-                                                            ref={suggestionsRef}
-                                                            suggestions={activePartIndex === i ? suggestions : []}
-                                                            isOpen={activePartIndex === i && suggestions.length > 0}
-                                                            onSelect={addPart}
-                                                            onClose={() => setActivePartIndex(null)}
-                                                            renderItem={(part) => (
-                                                                <>
-                                                                    <b>{part.name}</b> ({part.partNumber}) - {part.price}
-                                                                </>
-                                                            )}
-                                                            maxHeight="150px"
+                                                            type="number"
+                                                            name={`Parts[${i}].PlannedQuantity`}
+                                                            className={sentError ? 'input-error' : ''}
+                                                            value={p.plannedQuantity}
+                                                            min="0"
+                                                            onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
+                                                            disabled={job.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
+                                                            title={(job.status === 2) ? "Job is done" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                                             style={{ width: '100%' }}
                                                         />
                                                     </div>
-                                                    <div className="mobile-only mobile-price">
-                                                        {p.price.toFixed(2)}
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Sent">
+                                                    <div style={{ width: '120px' }}>
+                                                        <input
+                                                            type="number"
+                                                            name={`Parts[${i}].SentQuantity`}
+                                                            className={usedError ? 'input-error' : ''}
+                                                            value={p.sentQuantity}
+                                                            min="0"
+                                                            onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
+                                                            disabled={job.status === 2 || mechanicView || !hasStockAccess}
+                                                            title={(job.status === 2) ? "Job is done" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
+                                                            style={{ width: '100%' }}
+                                                        />
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Planned">
-                                                <input
-                                                    type="number"
-                                                    name={`Parts[${i}].PlannedQuantity`}
-                                                    className={sentError ? 'input-error' : ''}
-                                                    value={p.plannedQuantity}
-                                                    min="0"
-                                                    onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
-                                                    disabled={job.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
-                                                    title={(job.status === 2) ? "Job is done" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
-                                                />
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Sent">
-                                                <input
-                                                    type="number"
-                                                    name={`Parts[${i}].SentQuantity`}
-                                                    className={usedError ? 'input-error' : ''}
-                                                    value={p.sentQuantity}
-                                                    min="0"
-                                                    onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
-                                                    disabled={job.status === 2 || mechanicView || !hasStockAccess}
-                                                    title={(job.status === 2) ? "Job is done" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
-                                                />
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Used">
-                                                <input
-                                                    type="number"
-                                                    name={`Parts[${i}].UsedQuantity`}
-                                                    value={p.usedQuantity}
-                                                    min="0"
-                                                    onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
-                                                    disabled={job.status === 2 || !isAssignedWorker}
-                                                    title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                                />
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Requested">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                    <input
-                                                        type="number"
-                                                        name={`Parts[${i}].RequestedQuantity`}
-                                                        value={p.requestedQuantity}
-                                                        min="0"
-                                                        onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
-                                                        disabled={job.status === 2 || !isAssignedWorker}
-                                                        title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                                        style={{ flex: 1 }}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        className="btn icon-btn"
-                                                        disabled={job.status === 2 || !p.requestedQuantity}
-                                                        onClick={() => openTransferPopup(i)}
-                                                        title="Transfer to Planned"
-                                                    >
-                                                        <i className="fa-solid fa-plus"></i>
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Used">
+                                                    <div style={{ width: '120px' }}>
+                                                        <input
+                                                            type="number"
+                                                            name={`Parts[${i}].UsedQuantity`}
+                                                            value={p.usedQuantity}
+                                                            min="0"
+                                                            onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
+                                                            disabled={job.status === 2 || !isAssignedWorker}
+                                                            title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                            style={{ width: '100%' }}
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Requested">
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', width: '120px' }}>
+                                                        <input
+                                                            type="number"
+                                                            name={`Parts[${i}].RequestedQuantity`}
+                                                            value={p.requestedQuantity}
+                                                            min="0"
+                                                            onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
+                                                            disabled={job.status === 2 || !isAssignedWorker}
+                                                            title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                            style={{ width: '80px' }}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="btn icon-btn"
+                                                            disabled={job.status === 2 || !p.requestedQuantity}
+                                                            onClick={() => openTransferPopup(i)}
+                                                            title="Transfer to Planned"
+                                                        >
+                                                            <i className="fa-solid fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="mobile-collapsible hide-sm" data-label="Unit Price">
+                                                    {p.price.toFixed(2)}
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Total Projected">
+                                                    {((p.plannedQuantity || 0) * (p.price || 0)).toFixed(2)}
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Total Spent">
+                                                    {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
+                                                </td>
+                                                <td className="mobile-collapsible" data-label="Actions">
+                                                    <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={job.status === 2}>
+                                                        <i className="fa-solid fa-trash"></i>
                                                     </button>
-                                                </div>
-                                            </td>
-                                            <td className="mobile-collapsible hide-sm" data-label="Unit Price">
-                                                {p.price.toFixed(2)}
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Total Projected">
-                                                {((p.plannedQuantity || 0) * (p.price || 0)).toFixed(2)}
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Total Spent">
-                                                {((p.usedQuantity || 0) * (p.price || 0)).toFixed(2)}
-                                            </td>
-                                            <td className="mobile-collapsible" data-label="Actions">
-                                                <button type="button" className="btn icon-btn delete" onClick={() => removePart(i)} disabled={job.status === 2}>
-                                                    <i className="fa-solid fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {partErrors && (
-                                            <tr className="error-row no-hover" style={{ borderTop: 'none', height: 'auto' }}>
-                                                <td colSpan="9" style={{ borderTop: 'none', padding: '0 0 10px 10px', overflow: 'visible', whiteSpace: 'normal' }}>
-                                                    <p className="field-error" style={{ margin: 0 }}>
-                                                        {partErrors}
-                                                    </p>
                                                 </td>
                                             </tr>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                            {partErrors && (
+                                                <tr className="error-row no-hover" style={{ borderTop: 'none', height: 'auto' }}>
+                                                    <td colSpan="9" style={{ borderTop: 'none', padding: '0 0 10px 10px', overflow: 'visible', whiteSpace: 'normal' }}>
+                                                        <p className="field-error" style={{ margin: 0 }}>
+                                                            {partErrors}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                     <div className="form-footer">
                         <FieldError name="Parts" errors={errors} />
                         <button type="button" className="btn" onClick={addNewRow} disabled={job.status === 2}>+ Add Part</button>
