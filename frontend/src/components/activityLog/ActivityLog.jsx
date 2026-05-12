@@ -196,7 +196,7 @@ const ActivityLog = () => {
                 </div>
                 <div className="activity-table-wrapper form-section">
                     {filteredLogs.length === 0 ? (
-                        <div className="list-empty">No activity logs found.</div>
+                        <div className="list-empty">{loading ? 'Loading...' : 'No activity logs found.'}</div>
                     ) : (
                         <table>
                             <thead>

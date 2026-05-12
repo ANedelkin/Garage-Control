@@ -28,6 +28,12 @@ namespace GarageControl.Core.Services
                 new ActivityLogData("updated", orderId, carInfo, Changes: changes));
         }
 
+        public async Task LogOrderArchivedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)
+        {
+            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
+                new ActivityLogData("archived", orderId, carInfo, Changes: changes));
+        }
+
         public async Task LogOrderDeletedAsync(string userId, string workshopId, string carInfo)
         {
             await _activityLogService.LogActionAsync(userId, workshopId, "Order",

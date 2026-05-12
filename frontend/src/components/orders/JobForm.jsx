@@ -295,7 +295,7 @@ const JobForm = ({
                                     >
                                         <option value={0}>Pending</option>
                                         <option value={1}>In Progress</option>
-                                        <option value={2}>Finished</option>
+                                        <option value={2}>Done</option>
                                     </DropDown>
                                     <FieldError name="Status" errors={errors} />
                                 </div>
@@ -464,7 +464,7 @@ const JobForm = ({
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
                                                     disabled={job.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
-                                                    title={(job.status === 2) ? "Job is finished" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
+                                                    title={(job.status === 2) ? "Job is done" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Sent">
@@ -476,7 +476,7 @@ const JobForm = ({
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
                                                     disabled={job.status === 2 || mechanicView || !hasStockAccess}
-                                                    title={(job.status === 2) ? "Job is finished" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
+                                                    title={(job.status === 2) ? "Job is done" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Used">
@@ -487,7 +487,7 @@ const JobForm = ({
                                                     min="0"
                                                     onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
                                                     disabled={job.status === 2 || !isAssignedWorker}
-                                                    title={(job.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                    title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                 />
                                             </td>
                                             <td className="mobile-collapsible" data-label="Requested">
@@ -499,7 +499,7 @@ const JobForm = ({
                                                         min="0"
                                                         onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
                                                         disabled={job.status === 2 || !isAssignedWorker}
-                                                        title={(job.status === 2) ? "Job is finished" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
+                                                        title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
                                                         style={{ flex: 1 }}
                                                     />
                                                     <button

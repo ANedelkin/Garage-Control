@@ -165,41 +165,66 @@ namespace GarageControl.Core.Services
 
             // 2. Check existence in bulk to avoid N+1
             var existenceSet = new HashSet<(string Type, string Id)>();
+            var archivedSet = new HashSet<(string Type, string Id)>();
             var byType = referenced.GroupBy(r => r.Type);
 
             foreach (var group in byType)
             {
                 var ids = group.Select(r => r.Id).Distinct().ToList();
-                List<string> aliveIds = group.Key switch
-                {
-                    "Worker"   => await _repository.GetAllAsNoTracking<Worker>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Client"   => await _repository.GetAllAsNoTracking<Client>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Vehicle"  => await _repository.GetAllAsNoTracking<Car>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Make"     => await _repository.GetAllAsNoTracking<CarMake>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Model"    => await _repository.GetAllAsNoTracking<CarModel>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "JobType"  => await _repository.GetAllAsNoTracking<JobType>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Order"    => await _repository.GetAllAsNoTracking<Order>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Job"      => await _repository.GetAllAsNoTracking<Job>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Part"     => await _repository.GetAllAsNoTracking<Part>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    "Folder"   => await _repository.GetAllAsNoTracking<PartsFolder>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                    _          => new List<string>()
-                };
 
-                foreach (var id in aliveIds)
+                if (group.Key == "Order")
                 {
-                    existenceSet.Add((group.Key, id));
+                    var orders = await _repository.GetAllAsNoTracking<Order>()
+                        .Where(x => ids.Contains(x.Id))
+                        .Select(x => new { x.Id, x.IsArchived })
+                        .ToListAsync();
+                    foreach (var o in orders)
+                    {
+                        existenceSet.Add((group.Key, o.Id));
+                        if (o.IsArchived) archivedSet.Add((group.Key, o.Id));
+                    }
+                }
+                else if (group.Key == "Job")
+                {
+                    var jobs = await _repository.GetAllAsNoTracking<Job>()
+                        .Where(x => ids.Contains(x.Id))
+                        .Select(x => new { x.Id, IsArchived = x.Order.IsArchived })
+                        .ToListAsync();
+                    foreach (var j in jobs)
+                    {
+                        existenceSet.Add((group.Key, j.Id));
+                        if (j.IsArchived) archivedSet.Add((group.Key, j.Id));
+                    }
+                }
+                else
+                {
+                    List<string> aliveIds = group.Key switch
+                    {
+                        "Worker"   => await _repository.GetAllAsNoTracking<Worker>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Client"   => await _repository.GetAllAsNoTracking<Client>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Vehicle"  => await _repository.GetAllAsNoTracking<Car>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Make"     => await _repository.GetAllAsNoTracking<CarMake>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Model"    => await _repository.GetAllAsNoTracking<CarModel>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "JobType"  => await _repository.GetAllAsNoTracking<JobType>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Part"     => await _repository.GetAllAsNoTracking<Part>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        "Folder"   => await _repository.GetAllAsNoTracking<PartsFolder>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        _          => new List<string>()
+                    };
+                    foreach (var id in aliveIds)
+                        existenceSet.Add((group.Key, id));
                 }
             }
 
             // 3. Render final results
             var result = new List<ActivityLogVM>();
             bool ExistsChecker(string type, string id) => existenceSet.Contains((type, id));
+            bool ArchivedChecker(string type, string id) => archivedSet.Contains((type, id));
 
             foreach (var log in logs)
             {
                 if (logDataMap.TryGetValue(log, out var data))
                 {
-                    var rendered = ActivityLogRenderer.Render(log.LogType!, data, ExistsChecker);
+                    var rendered = ActivityLogRenderer.Render(log.LogType!, data, ExistsChecker, ArchivedChecker);
                     result.Add(new ActivityLogVM
                     {
                         Id = log.Id,

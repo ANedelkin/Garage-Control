@@ -14,7 +14,7 @@ namespace GarageControl.Core.Services.Helpers
 
     public static class ActivityLogRenderer
     {
-        public static ActivityLogRendererResult Render(string logType, ActivityLogData data, Func<string, string, bool>? existsChecker = null)
+        public static ActivityLogRendererResult Render(string logType, ActivityLogData data, Func<string, string, bool>? existsChecker = null, Func<string, string, bool>? archivedChecker = null)
         {
             string actorMarkup = BuildActorMarkup(data, existsChecker);
 
@@ -26,8 +26,8 @@ namespace GarageControl.Core.Services.Helpers
                 "Make"     => BuildMakeMarkup(actorMarkup, data, existsChecker),
                 "Model"    => BuildModelMarkup(actorMarkup, data, existsChecker),
                 "JobType"  => BuildJobTypeMarkup(actorMarkup, data, existsChecker),
-                "Order"    => BuildOrderMarkup(actorMarkup, data, existsChecker),
-                "Job"      => BuildJobMarkup(actorMarkup, data, existsChecker),
+                "Order"    => BuildOrderMarkup(actorMarkup, data, existsChecker, archivedChecker),
+                "Job"      => BuildJobMarkup(actorMarkup, data, existsChecker, archivedChecker),
                 "Part"     => BuildPartMarkup(actorMarkup, data, existsChecker),
                 "Folder"   => BuildFolderMarkup(actorMarkup, data, existsChecker),
                 "Workshop" => BuildWorkshopMarkup(actorMarkup, data),
@@ -346,9 +346,19 @@ namespace GarageControl.Core.Services.Helpers
             }
         }
 
-        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker, Func<string, string, bool>? archivedChecker)
         {
-            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", "/orders/{id}?highlight=true", "Order", existsChecker);
+            bool isArchived = d.Action == "archived" || (archivedChecker != null && !string.IsNullOrEmpty(d.EntityId) && archivedChecker("Order", d.EntityId));
+            string template = isArchived ? "/archived-orders/{id}?highlight=true" : "/orders/{id}?highlight=true";
+            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", template, "Order", existsChecker);
+            
+            if (d.Action == "archived")
+            {
+                var archivedRes = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
+                archivedRes.Header = $"{actorMarkup} archived {orderLink}";
+                return archivedRes;
+            }
+
             var res = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
             
             res.Header = $"{actorMarkup} {d.Action} {orderLink}";
@@ -358,10 +368,16 @@ namespace GarageControl.Core.Services.Helpers
             return res;
         }
 
-        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker, Func<string, string, bool>? archivedChecker)
         {
-            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", "/orders/{id}?highlight=true", "Order", existsChecker);
-            string jobLink = GetLink(d.EntityId, d.EntityName, "/orders/" + d.SecondaryEntityId + "?highlightJob={id}", "Job", existsChecker);
+            bool orderIsArchived = archivedChecker != null && !string.IsNullOrEmpty(d.SecondaryEntityId) && archivedChecker("Order", d.SecondaryEntityId);
+
+            string baseOrders = orderIsArchived ? "/archived-orders" : "/orders";
+            string orderTemplate = $"{baseOrders}/{{id}}?highlight=true";
+            string jobTemplate = $"{baseOrders}/{d.SecondaryEntityId}?highlightJob={{id}}";
+
+            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", orderTemplate, "Order", existsChecker);
+            string jobLink = GetLink(d.EntityId, d.EntityName, jobTemplate, "Job", existsChecker);
             
             var res = BuildUpdatedMarkup(actorMarkup, "job", jobLink, d.Changes, existsChecker);
             res.Header = $"{actorMarkup} {d.Action} job {jobLink} for {orderLink}";
