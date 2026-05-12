@@ -379,7 +379,7 @@ const JobForm = ({
 
                 <div className="parts-table-wrapper">
                     <label>Parts</label>
-                    <table className="table" style={{ overflow: 'visible' }}>
+                    <table className="table" style={{ overflow: 'visible', marginBottom: '18px' }}>
                         <thead>
                             <tr>
                                 <th>Part Name / Number</th>
