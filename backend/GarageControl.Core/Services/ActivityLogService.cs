@@ -89,7 +89,7 @@ namespace GarageControl.Core.Services
                 ? $"[{actorName ?? "[Unknown]"}](/workers/{actorId}?highlight=true)"
                 : $"**{actorName}**";
 
-            string messageMarkup = ActivityLogRenderer.BuildMessageMarkup(logType.ToString(), logData);
+            string messageMarkup = ActivityLogRenderer.BuildMessageMarkup(logType, logData);
             if (string.IsNullOrEmpty(messageMarkup)) return;
 
             string serialised = JsonSerializer.Serialize(logData, new JsonSerializerOptions
@@ -144,7 +144,7 @@ namespace GarageControl.Core.Services
 
             // 1. Deserialize and collect all referenced entities to pre-fetch existence
             var logDataMap = new Dictionary<ActivityLog, ActivityLogData>();
-            var referenced = new HashSet<(string Type, string Id)>();
+            var referenced = new HashSet<(LogEntityType Type, string Id)>();
 
             foreach (var log in logs)
             {
@@ -160,9 +160,12 @@ namespace GarageControl.Core.Services
                         if (data != null)
                         {
                             logDataMap[log] = data;
-                            foreach (var r in ActivityLogRenderer.GetReferencedEntities(log.LogType, data))
+                            if (Enum.TryParse<LogEntityType>(log.LogType, true, out var entityType))
                             {
-                                referenced.Add(r);
+                                foreach (var r in ActivityLogRenderer.GetReferencedEntities(entityType, data))
+                                {
+                                    referenced.Add(r);
+                                }
                             }
                         }
                     }
@@ -171,15 +174,15 @@ namespace GarageControl.Core.Services
             }
 
             // 2. Check existence in bulk to avoid N+1
-            var existenceSet = new HashSet<(string Type, string Id)>();
-            var archivedSet = new HashSet<(string Type, string Id)>();
+            var existenceSet = new HashSet<(LogEntityType Type, string Id)>();
+            var archivedSet = new HashSet<(LogEntityType Type, string Id)>();
             var byType = referenced.GroupBy(r => r.Type);
 
             foreach (var group in byType)
             {
                 var ids = group.Select(r => r.Id).Distinct().ToList();
 
-                if (group.Key == "Order")
+                if (group.Key == LogEntityType.Order)
                 {
                     var orders = await _repository.GetAllAsNoTracking<Order>()
                         .Where(x => ids.Contains(x.Id))
@@ -191,7 +194,7 @@ namespace GarageControl.Core.Services
                         if (o.IsArchived) archivedSet.Add((group.Key, o.Id));
                     }
                 }
-                else if (group.Key == "Job")
+                else if (group.Key == LogEntityType.Job)
                 {
                     var jobs = await _repository.GetAllAsNoTracking<Job>()
                         .Where(x => ids.Contains(x.Id))
@@ -207,14 +210,14 @@ namespace GarageControl.Core.Services
                 {
                     List<string> aliveIds = group.Key switch
                     {
-                        "Worker"   => await _repository.GetAllAsNoTracking<Worker>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Client"   => await _repository.GetAllAsNoTracking<Client>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Vehicle"  => await _repository.GetAllAsNoTracking<Car>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Make"     => await _repository.GetAllAsNoTracking<CarMake>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Model"    => await _repository.GetAllAsNoTracking<CarModel>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "JobType"  => await _repository.GetAllAsNoTracking<JobType>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Part"     => await _repository.GetAllAsNoTracking<Part>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
-                        "Folder"   => await _repository.GetAllAsNoTracking<PartsFolder>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Worker   => await _repository.GetAllAsNoTracking<Worker>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Client   => await _repository.GetAllAsNoTracking<Client>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Vehicle  => await _repository.GetAllAsNoTracking<Car>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Make     => await _repository.GetAllAsNoTracking<CarMake>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Model    => await _repository.GetAllAsNoTracking<CarModel>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.JobType  => await _repository.GetAllAsNoTracking<JobType>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Part     => await _repository.GetAllAsNoTracking<Part>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
+                        LogEntityType.Folder   => await _repository.GetAllAsNoTracking<PartsFolder>().Where(x => ids.Contains(x.Id)).Select(x => x.Id).ToListAsync(),
                         _          => new List<string>()
                     };
                     foreach (var id in aliveIds)
@@ -224,21 +227,33 @@ namespace GarageControl.Core.Services
 
             // 3. Render final results
             var result = new List<ActivityLogVM>();
-            bool ExistsChecker(string type, string id) => existenceSet.Contains((type, id));
-            bool ArchivedChecker(string type, string id) => archivedSet.Contains((type, id));
+            bool ExistsChecker(LogEntityType type, string id) => existenceSet.Contains((type, id));
+            bool ArchivedChecker(LogEntityType type, string id) => archivedSet.Contains((type, id));
 
             foreach (var log in logs)
             {
                 if (logDataMap.TryGetValue(log, out var data))
                 {
-                    var rendered = ActivityLogRenderer.Render(log.LogType!, data, ExistsChecker, ArchivedChecker);
-                    result.Add(new ActivityLogVM
+                    if (Enum.TryParse<LogEntityType>(log.LogType, true, out var entityType))
                     {
-                        Id = log.Id,
-                        Timestamp = log.Timestamp,
-                        Message = rendered.Header,
-                        Details = rendered.Details
-                    });
+                        var rendered = ActivityLogRenderer.Render(entityType, data, ExistsChecker, ArchivedChecker);
+                        result.Add(new ActivityLogVM
+                        {
+                            Id = log.Id,
+                            Timestamp = log.Timestamp,
+                            Message = rendered.Header,
+                            Details = rendered.Details
+                        });
+                    }
+                    else
+                    {
+                        result.Add(new ActivityLogVM
+                        {
+                            Id = log.Id,
+                            Timestamp = log.Timestamp,
+                            Message = log.MessageMarkup
+                        });
+                    }
                 }
                 else
                 {

@@ -1,3 +1,4 @@
+using GarageControl.Core.Enums;
 using GarageControl.Core.Models;
 using Xunit;
 using Moq;
@@ -100,7 +101,7 @@ namespace GarageControl.Tests.Services
             var orderInDb = _context.Orders.First();
             Assert.Equal(1000, orderInDb.Kilometers);
 
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Order", It.IsAny<ActivityLogData>()), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, LogEntityType.Order, It.IsAny<ActivityLogData>()), Times.Once);
         }
         [Fact]
         public async Task CreateOrderAsync_ShouldSyncCarKilometers()
@@ -180,3 +181,4 @@ namespace GarageControl.Tests.Services
         }
     }
 }
+

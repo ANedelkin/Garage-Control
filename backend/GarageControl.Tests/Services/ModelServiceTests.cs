@@ -1,3 +1,4 @@
+using GarageControl.Core.Enums;
 using GarageControl.Core.Models;
 using Xunit;
 using Moq;
@@ -49,7 +50,8 @@ namespace GarageControl.Tests.Services
             // Assert
             _mockRepo.Verify(x => x.AddAsync(It.Is<CarModel>(m => m.Name == "Corolla" && m.CarMakeId == "m1" && m.CreatorId == bossId)), Times.Once);
             _mockRepo.Verify(x => x.SaveChangesAsync(), Times.Once);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Model", It.Is<ActivityLogData>(d => d.Action == "added" && d.EntityName == "Corolla")), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, LogEntityType.Model, It.Is<ActivityLogData>(d => d.Action == LogAction.Added && d.EntityName == "Corolla")), Times.Once);
         }
     }
 }
+

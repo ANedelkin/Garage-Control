@@ -1,3 +1,4 @@
+using GarageControl.Core.Enums;
 using GarageControl.Core.Models;
 using Xunit;
 using Moq;
@@ -79,7 +80,8 @@ namespace GarageControl.Tests.Services
             var client = await _context.Clients.FirstOrDefaultAsync(c => c.Name == "New Client");
             Assert.NotNull(client);
             Assert.Equal(workshopId, client.WorkshopId);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Client", It.Is<ActivityLogData>(d => d.Action == "created" && d.EntityName == "New Client")), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, LogEntityType.Client, It.Is<ActivityLogData>(d => d.Action == LogAction.Created && d.EntityName == "New Client")), Times.Once);
         }
     }
 }
+
