@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using GarageControl.Core.Enums;
+
 namespace GarageControl.Core.Models
 {
     /// <summary>
@@ -9,7 +12,7 @@ namespace GarageControl.Core.Models
         /// Verb describing what happened, e.g. "created", "updated", "deleted",
         /// "renamed", "merged", "fired", "added", "moved".
         /// </summary>
-        string Action,
+        LogAction Action,
 
         /// <summary>Primary entity's database ID (nullable for deletions where the entity is gone).</summary>
         string? EntityId,

@@ -2,6 +2,8 @@ using System.Text.Json;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Models;
 using GarageControl.Core.ViewModels;
+using GarageControl.Core.Enums;
+using System.Text.Json.Serialization;
 using GarageControl.Core.Services.Helpers;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
@@ -74,7 +76,7 @@ namespace GarageControl.Core.Services
         public async Task LogActionAsync(
             string userId,
             string workshopId,
-            string logType,
+            LogEntityType logType,
             ActivityLogData logData)
         {
             var (actorId, actorName) = await ResolveActorInfoAsync(userId, workshopId);
@@ -87,16 +89,17 @@ namespace GarageControl.Core.Services
                 ? $"[{actorName ?? "[Unknown]"}](/workers/{actorId}?highlight=true)"
                 : $"**{actorName}**";
 
-            string messageMarkup = ActivityLogRenderer.BuildMessageMarkup(logType, logData);
+            string messageMarkup = ActivityLogRenderer.BuildMessageMarkup(logType.ToString(), logData);
             if (string.IsNullOrEmpty(messageMarkup)) return;
 
             string serialised = JsonSerializer.Serialize(logData, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             });
 
-            await SaveLogAsync(workshopId, messageMarkup, logType, serialised);
+            await SaveLogAsync(workshopId, messageMarkup, logType.ToString(), serialised);
         }
 
         public async Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int skip = 0, int take = 10, DateTime? startDate = null, DateTime? endDate = null, string? search = null)
@@ -149,7 +152,11 @@ namespace GarageControl.Core.Services
                 {
                     try
                     {
-                        var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                        var data = JsonSerializer.Deserialize<ActivityLogData>(log.LogData!, new JsonSerializerOptions 
+                        { 
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+                        });
                         if (data != null)
                         {
                             logDataMap[log] = data;

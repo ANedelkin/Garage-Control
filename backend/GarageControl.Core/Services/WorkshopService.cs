@@ -6,6 +6,7 @@ using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -114,8 +115,8 @@ namespace GarageControl.Core.Services
 
             if (changes.Any())
             {
-                await _activityLogService.LogActionAsync(ownerId, workshopId, "Workshop",
-                    new ActivityLogData("updated", workshopId, workshop.Name, Changes: changes));
+                await _activityLogService.LogActionAsync(ownerId, workshopId, LogEntityType.Workshop,
+                    new ActivityLogData(LogAction.Updated, workshopId, workshop.Name, Changes: changes));
             }
         }
         public async Task<string?> GetWorkshopId(string userId)

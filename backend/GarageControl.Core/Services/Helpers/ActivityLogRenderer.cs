@@ -1,4 +1,5 @@
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -234,20 +235,20 @@ namespace GarageControl.Core.Services.Helpers
             ActivityLogRendererResult res;
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res = BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
                     res.Header = $"{actorMarkup} created worker {link}";
                     return res;
                 
-                case "fired":
+                case LogAction.Fired:
                     res = new ActivityLogRendererResult { Header = $"{actorMarkup} fired {Bold(d.EntityName)}" };
                     break;
 
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
 
                 default:
-                    res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} worker {link}" };
+                    res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} worker {link}" };
                     break;
             }
 
@@ -260,14 +261,14 @@ namespace GarageControl.Core.Services.Helpers
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created client {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted client {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "client", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} client {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} client {link}" };
             }
         }
 
@@ -277,14 +278,14 @@ namespace GarageControl.Core.Services.Helpers
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created vehicle {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted vehicle {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "vehicle", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} vehicle {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} vehicle {link}" };
             }
         }
 
@@ -294,17 +295,17 @@ namespace GarageControl.Core.Services.Helpers
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created make {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted make {Bold(d.EntityName)}" };
-                case "merged":
+                case LogAction.Merged:
                     {
                         string globalLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
                         return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom make {Bold(d.EntityName)} into {globalLink}" };
                     }
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} make {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} make {link}" };
             }
         }
 
@@ -316,16 +317,16 @@ namespace GarageControl.Core.Services.Helpers
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created model {modelLink} for make {secMakeLink}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted model {Bold(d.EntityName)} from make {Bold(d.SecondaryEntityName)}" };
-                case "renamed":
+                case LogAction.Renamed:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} renamed model {Bold(d.EntityName)} to {modelLink} (Make: {secMakeLink})" };
-                case "merged":
+                case LogAction.Merged:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom model {Bold(d.SecondaryEntityName)} into {modelLink}" };
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} model {Bold(d.EntityName)}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} model {Bold(d.EntityName)}" };
             }
         }
 
@@ -335,24 +336,24 @@ namespace GarageControl.Core.Services.Helpers
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created Job Type {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted Job Type {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "Job Type", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} Job Type {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} Job Type {link}" };
             }
         }
 
         private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker, Func<string, string, bool>? archivedChecker)
         {
-            bool isArchived = d.Action == "archived" || (archivedChecker != null && !string.IsNullOrEmpty(d.EntityId) && archivedChecker("Order", d.EntityId));
+            bool isArchived = d.Action == LogAction.Archived || (archivedChecker != null && !string.IsNullOrEmpty(d.EntityId) && archivedChecker("Order", d.EntityId));
             string template = isArchived ? "/archived-orders/{id}?highlight=true" : "/orders/{id}?highlight=true";
             string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", template, "Order", existsChecker);
             
-            if (d.Action == "archived")
+            if (d.Action == LogAction.Archived)
             {
                 var archivedRes = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
                 archivedRes.Header = $"{actorMarkup} archived {orderLink}";
@@ -361,8 +362,8 @@ namespace GarageControl.Core.Services.Helpers
 
             var res = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
             
-            res.Header = $"{actorMarkup} {d.Action} {orderLink}";
-            if (d.Action == "deleted")
+            res.Header = $"{actorMarkup} {d.Action.ToString().ToLower()} {orderLink}";
+            if (d.Action == LogAction.Deleted)
                 res.Header = $"{actorMarkup} deleted {Bold($"order for {d.EntityName}")}";
 
             return res;
@@ -380,9 +381,9 @@ namespace GarageControl.Core.Services.Helpers
             string jobLink = GetLink(d.EntityId, d.EntityName, jobTemplate, "Job", existsChecker);
             
             var res = BuildUpdatedMarkup(actorMarkup, "job", jobLink, d.Changes, existsChecker);
-            res.Header = $"{actorMarkup} {d.Action} job {jobLink} for {orderLink}";
+            res.Header = $"{actorMarkup} {d.Action.ToString().ToLower()} job {jobLink} for {orderLink}";
 
-            if (d.Action == "deleted")
+            if (d.Action == LogAction.Deleted)
             {
                 res.Header = $"{actorMarkup} deleted job '{Bold(d.EntityName)}' for {orderLink}";
             }
@@ -393,20 +394,20 @@ namespace GarageControl.Core.Services.Helpers
         private static ActivityLogRendererResult BuildPartMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}", "Part", existsChecker);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} part {link}" };
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} part {link}" };
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res.Header = $"{actorMarkup} created part {link}";
                     break;
-                case "deleted":
+                case LogAction.Deleted:
                     res.Header = $"{actorMarkup} deleted part {Bold(d.EntityName)}";
                     break;
-                case "moved":
+                case LogAction.Moved:
                     res.Header = $"{actorMarkup} moved part {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     break;
-                case "updated":
+                case LogAction.Updated:
                     var upd = BuildUpdatedMarkup(actorMarkup, "part", link, d.Changes, existsChecker);
                     upd.Details = upd.Details.Select(l => l.Replace("Quantity", "Stockpile")).ToList();
                     return upd;
@@ -417,20 +418,20 @@ namespace GarageControl.Core.Services.Helpers
         private static ActivityLogRendererResult BuildFolderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
         {
             string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}", "Folder", existsChecker);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} group of parts {link}" };
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} group of parts {link}" };
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res.Header = $"{actorMarkup} created group of parts {link}";
                     break;
-                case "deleted":
+                case LogAction.Deleted:
                     res.Header = $"{actorMarkup} deleted group of parts {Bold(d.EntityName)}";
                     break;
-                case "renamed":
+                case LogAction.Renamed:
                     res.Header = $"{actorMarkup} renamed group of parts {Bold(d.EntityName)} to {Bold(d.SecondaryEntityName)}";
                     break;
-                case "moved":
+                case LogAction.Moved:
                     res.Header = $"{actorMarkup} moved group of parts {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     break;
             }
@@ -440,9 +441,9 @@ namespace GarageControl.Core.Services.Helpers
         private static ActivityLogRendererResult BuildWorkshopMarkup(string actorMarkup, ActivityLogData d)
         {
             string name = Bold(d.EntityName);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} workshop {name}" };
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} workshop {name}" };
 
-            if (d.Action == "updated" && d.Changes != null && d.Changes.Any())
+            if (d.Action == LogAction.Updated && d.Changes != null && d.Changes.Any())
             {
                 res.Header = $"{actorMarkup} updated workshop details";
                 res.Details = d.Changes.Select(c => $"{Capitalize(Humanize(c.FieldName))} from {Bold(c.OldValue)} to {Bold(c.NewValue)}").ToList();
@@ -451,3 +452,4 @@ namespace GarageControl.Core.Services.Helpers
         }
     }
 }
+

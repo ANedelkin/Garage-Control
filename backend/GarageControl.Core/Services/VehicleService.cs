@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -123,8 +124,8 @@ namespace GarageControl.Core.Services
                 ? $"{carWithNames.Model.CarMake.Name} {carWithNames.Model.Name} ({carWithNames.RegistrationNumber})"
                 : "New Car";
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
-                new ActivityLogData("added", car.Id, carDisplayName,
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Vehicle,
+                new ActivityLogData(LogAction.Added, car.Id, carDisplayName,
                     SecondaryEntityId: client.Id, SecondaryEntityName: client.Name));
         }
 
@@ -173,8 +174,8 @@ namespace GarageControl.Core.Services
                 if (changes.Count > 0)
                 {
                     string carDisplayName = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
-                    await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
-                        new ActivityLogData("updated", car.Id, carDisplayName, Changes: changes));
+                    await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Vehicle,
+                        new ActivityLogData(LogAction.Updated, car.Id, carDisplayName, Changes: changes));
                 }
             }
         }
@@ -195,8 +196,8 @@ namespace GarageControl.Core.Services
                 await _repo.DeleteAsync<Car>(id);
                 await _repo.SaveChangesAsync();
 
-                await _activityLogService.LogActionAsync(userId, workshopId, "Vehicle",
-                    new ActivityLogData("deleted", null, carDisplayName));
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Vehicle,
+                    new ActivityLogData(LogAction.Deleted, null, carDisplayName));
             }
         }
 

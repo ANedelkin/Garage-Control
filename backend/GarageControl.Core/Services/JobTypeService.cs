@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Jobs;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -66,8 +67,8 @@ namespace GarageControl.Core.Services
             await _repo.AddAsync(jobType);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "JobType",
-                new ActivityLogData("created", jobType.Id, jobType.Name));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.JobType,
+                new ActivityLogData(LogAction.Created, jobType.Id, jobType.Name));
         }
 
 
@@ -84,8 +85,8 @@ namespace GarageControl.Core.Services
             await _repo.DeleteAsync<JobType>(id);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "JobType",
-                new ActivityLogData("deleted", null, name));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.JobType,
+                new ActivityLogData(LogAction.Deleted, null, name));
         }
 
         public async Task<JobTypeVM?> Details(string id)
@@ -161,8 +162,8 @@ namespace GarageControl.Core.Services
 
                 if (changes.Count > 0)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, "JobType",
-                        new ActivityLogData("updated", id, jobType.Name, Changes: changes));
+                    await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.JobType,
+                        new ActivityLogData(LogAction.Updated, id, jobType.Name, Changes: changes));
                 }
             }
         }

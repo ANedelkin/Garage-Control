@@ -4,6 +4,7 @@ using GarageControl.Infrastructure.Data.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services.Jobs
 {
@@ -27,8 +28,8 @@ namespace GarageControl.Core.Services.Jobs
         {
             var changes = partChanges?.Select(p => new ActivityPropertyChange(p, "", "")).ToList();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Job",
-                new ActivityLogData("created", jobId, jobTypeName,
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                new ActivityLogData(LogAction.Created, jobId, jobTypeName,
                     SecondaryEntityId: orderId, SecondaryEntityName: carInfo,
                     Changes: changes));
         }
@@ -50,8 +51,8 @@ namespace GarageControl.Core.Services.Jobs
 
             if (!allChanges.Any()) return;
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Job",
-                new ActivityLogData("updated", jobId, jobTypeName,
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                new ActivityLogData(LogAction.Updated, jobId, jobTypeName,
                     SecondaryEntityId: orderId, SecondaryEntityName: carInfo,
                     Changes: allChanges));
         }
@@ -63,8 +64,8 @@ namespace GarageControl.Core.Services.Jobs
             string jobTypeName,
             string carInfo)
         {
-            await _activityLogService.LogActionAsync(userId, workshopId, "Job",
-                new ActivityLogData("deleted", null, jobTypeName,
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                new ActivityLogData(LogAction.Deleted, null, jobTypeName,
                     SecondaryEntityId: orderId, SecondaryEntityName: carInfo));
         }
 
