@@ -1,3 +1,4 @@
+using GarageControl.Core.Enums;
 using GarageControl.Core.Models;
 using Xunit;
 using Moq;
@@ -73,7 +74,7 @@ namespace GarageControl.Tests.Services
             var worker = await _context.Workers.FirstOrDefaultAsync(w => w.Name == "John");
             Assert.NotNull(worker);
             Assert.Equal(workshopId, worker.WorkshopId);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Worker", It.Is<ActivityLogData>(d => d.Action == "hired" && d.EntityName == "John")), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, LogEntityType.Worker, It.Is<ActivityLogData>(d => d.Action == LogAction.Hired && d.EntityName == "John")), Times.Once);
         }
 
         [Fact]
@@ -113,7 +114,8 @@ namespace GarageControl.Tests.Services
             Assert.Equal("new_user", identityUser.UserName);
             Assert.Equal("new@test.com", identityUser.Email);
             _mockUserManager.Verify(x => x.UpdateAsync(identityUser), Times.Once);
-            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, "Worker", It.IsAny<ActivityLogData>()), Times.Once);
+            _mockActivityLogService.Verify(x => x.LogActionAsync(userId, workshopId, LogEntityType.Worker, It.IsAny<ActivityLogData>()), Times.Once);
         }
     }
 }
+

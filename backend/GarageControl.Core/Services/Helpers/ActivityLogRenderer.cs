@@ -1,4 +1,5 @@
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,83 +15,69 @@ namespace GarageControl.Core.Services.Helpers
 
     public static class ActivityLogRenderer
     {
-        public static ActivityLogRendererResult Render(string logType, ActivityLogData data, Func<string, string, bool>? existsChecker = null, Func<string, string, bool>? archivedChecker = null)
+        public static ActivityLogRendererResult Render(LogEntityType logType, ActivityLogData data, Func<LogEntityType, string, bool>? existsChecker = null, Func<LogEntityType, string, bool>? archivedChecker = null)
         {
             string actorMarkup = BuildActorMarkup(data, existsChecker);
 
             return logType switch
             {
-                "Worker"   => BuildWorkerMarkup(actorMarkup, data, existsChecker),
-                "Client"   => BuildClientMarkup(actorMarkup, data, existsChecker),
-                "Vehicle"  => BuildVehicleMarkup(actorMarkup, data, existsChecker),
-                "Make"     => BuildMakeMarkup(actorMarkup, data, existsChecker),
-                "Model"    => BuildModelMarkup(actorMarkup, data, existsChecker),
-                "JobType"  => BuildJobTypeMarkup(actorMarkup, data, existsChecker),
-                "Order"    => BuildOrderMarkup(actorMarkup, data, existsChecker, archivedChecker),
-                "Job"      => BuildJobMarkup(actorMarkup, data, existsChecker, archivedChecker),
-                "Part"     => BuildPartMarkup(actorMarkup, data, existsChecker),
-                "Folder"   => BuildFolderMarkup(actorMarkup, data, existsChecker),
-                "Workshop" => BuildWorkshopMarkup(actorMarkup, data),
+                LogEntityType.Worker   => BuildWorkerMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Client   => BuildClientMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Vehicle  => BuildVehicleMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Make     => BuildMakeMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Model    => BuildModelMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.JobType  => BuildJobTypeMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Order    => BuildOrderMarkup(actorMarkup, data, existsChecker, archivedChecker),
+                LogEntityType.Job      => BuildJobMarkup(actorMarkup, data, existsChecker, archivedChecker),
+                LogEntityType.Part     => BuildPartMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Folder   => BuildFolderMarkup(actorMarkup, data, existsChecker),
+                LogEntityType.Workshop => BuildWorkshopMarkup(actorMarkup, data),
                 _          => new ActivityLogRendererResult { Header = $"{actorMarkup} performed action on {logType}" }
             };
         }
 
-        public static string BuildMessageMarkup(string logType, ActivityLogData data)
+        public static string BuildMessageMarkup(LogEntityType logType, ActivityLogData data)
         {
             return Render(logType, data).Header;
         }
 
-        public static IEnumerable<(string Type, string Id)> GetReferencedEntities(string logType, ActivityLogData data)
+        public static IEnumerable<(LogEntityType Type, string Id)> GetReferencedEntities(LogEntityType logType, ActivityLogData data)
         {
-            var result = new List<(string Type, string Id)>();
+            var result = new List<(LogEntityType Type, string Id)>();
 
             if (!string.IsNullOrEmpty(data.ActorId))
-                result.Add(("Worker", data.ActorId));
+                result.Add((LogEntityType.Worker, data.ActorId));
 
-            if (!string.IsNullOrEmpty(data.EntityId))
+            if (!string.IsNullOrEmpty(data.EntityId) && logType != LogEntityType.Workshop)
             {
-                string? type = logType switch
-                {
-                    "Worker"  => "Worker",
-                    "Client"  => "Client",
-                    "Vehicle" => "Vehicle",
-                    "Make"    => "Make",
-                    "Model"   => "Model",
-                    "JobType" => "JobType",
-                    "Order"   => "Order",
-                    "Job"     => "Job",
-                    "Part"    => "Part",
-                    "Folder"  => "Folder",
-                    _         => null
-                };
-                if (type != null) result.Add((type, data.EntityId));
+                result.Add((logType, data.EntityId));
             }
 
             if (!string.IsNullOrEmpty(data.SecondaryEntityId))
             {
-                string? type = logType switch
+                LogEntityType? type = logType switch
                 {
-                    "Model" => "Make",
-                    "Job"   => "Order",
-                    "Make"  => "Make",
+                    LogEntityType.Model => LogEntityType.Make,
+                    LogEntityType.Job   => LogEntityType.Order,
+                    LogEntityType.Make  => LogEntityType.Make,
                     _       => null
                 };
-                if (type != null) result.Add((type, data.SecondaryEntityId));
+                if (type != null) result.Add((type.Value, data.SecondaryEntityId));
             }
 
             if (data.Changes != null)
             {
                 foreach (var c in data.Changes)
                 {
-                    string? type = null;
+                    LogEntityType? type = null;
                     string fName = c.FieldName.ToLower();
-                    if (fName.Contains("worker") || fName.Contains("mechanic")) type = "Worker";
-                    else if (fName.Contains("job type") || fName.Contains("type")) type = "JobType";
+                    if (fName.Contains("worker") || fName.Contains("mechanic")) type = LogEntityType.Worker;
+                    else if (fName.Contains("job type") || fName.Contains("type")) type = LogEntityType.JobType;
 
                     if (type != null)
                     {
-                        if (!string.IsNullOrEmpty(c.OldId)) result.Add((type, c.OldId));
-                        if (!string.IsNullOrEmpty(c.NewId)) result.Add((type, c.NewId));
+                        if (!string.IsNullOrEmpty(c.OldId)) result.Add((type.Value, c.OldId));
+                        if (!string.IsNullOrEmpty(c.NewId)) result.Add((type.Value, c.NewId));
                     }
                 }
             }
@@ -130,7 +117,7 @@ namespace GarageControl.Core.Services.Helpers
             return char.ToUpper(value[0]) + value.Substring(1);
         }
 
-        private static string GetLink(string? id, string? label, string urlTemplate, string entityType, Func<string, string, bool>? existsChecker)
+        private static string GetLink(string? id, string? label, string urlTemplate, LogEntityType entityType, Func<LogEntityType, string, bool>? existsChecker)
         {
             if (string.IsNullOrEmpty(id)) return Bold(label);
 
@@ -142,9 +129,9 @@ namespace GarageControl.Core.Services.Helpers
             return Link(label, url);
         }
 
-        private static string BuildActorMarkup(ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static string BuildActorMarkup(ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            return GetLink(d.ActorId, d.ActorName, "/workers/{id}?highlight=true", "Worker", existsChecker);
+            return GetLink(d.ActorId, d.ActorName, "/workers/{id}?highlight=true", LogEntityType.Worker, existsChecker);
         }
 
         private static ActivityLogRendererResult BuildUpdatedMarkup(
@@ -152,7 +139,7 @@ namespace GarageControl.Core.Services.Helpers
             string entityLabel,
             string link,
             List<ActivityPropertyChange>? changes,
-            Func<string, string, bool>? existsChecker)
+            Func<LogEntityType, string, bool>? existsChecker)
         {
             var res = new ActivityLogRendererResult { Header = $"{actorMarkup} updated {entityLabel} {link}" };
             if (changes == null || changes.Count == 0)
@@ -174,21 +161,21 @@ namespace GarageControl.Core.Services.Helpers
                     if (!string.IsNullOrEmpty(id))
                     {
                         string template = "/";
-                        string type = "";
+                        LogEntityType? type = null;
                         if (fName.ToLower().Contains("worker") || fName.ToLower().Contains("mechanic"))
                         {
                             template = "/workers/{id}?highlight=true";
-                            type = "Worker";
+                            type = LogEntityType.Worker;
                         }
                         else if (fName.ToLower().Contains("job type") || fName.ToLower().Contains("type"))
                         {
                             template = "/job-types?highlightId={id}";
-                            type = "JobType";
+                            type = LogEntityType.JobType;
                         }
                         
-                        if (!string.IsNullOrEmpty(type))
+                        if (type != null)
                         {
-                            return GetLink(id, val, template, type, existsChecker);
+                            return GetLink(id, val, template, type.Value, existsChecker);
                         }
                     }
                     if (fName.ToLower().Contains("status")) return Bold(Humanize(val));
@@ -228,131 +215,131 @@ namespace GarageControl.Core.Services.Helpers
 
         // ── Per-entity builders ────────────────────────────────────────────────
 
-        private static ActivityLogRendererResult BuildWorkerMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildWorkerMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/workers/{id}?highlight=true", "Worker", existsChecker);
+            string link = GetLink(d.EntityId, d.EntityName, "/workers/{id}?highlight=true", LogEntityType.Worker, existsChecker);
             ActivityLogRendererResult res;
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res = BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
                     res.Header = $"{actorMarkup} created worker {link}";
                     return res;
                 
-                case "fired":
+                case LogAction.Fired:
                     res = new ActivityLogRendererResult { Header = $"{actorMarkup} fired {Bold(d.EntityName)}" };
                     break;
 
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "worker", link, d.Changes, existsChecker);
 
                 default:
-                    res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} worker {link}" };
+                    res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} worker {link}" };
                     break;
             }
 
             return res;
         }
 
-        private static ActivityLogRendererResult BuildClientMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildClientMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/clients/{id}?highlight=true", "Client", existsChecker);
+            string link = GetLink(d.EntityId, d.EntityName, "/clients/{id}?highlight=true", LogEntityType.Client, existsChecker);
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created client {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted client {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "client", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} client {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} client {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildVehicleMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildVehicleMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/cars/{id}?highlight=true", "Vehicle", existsChecker);
+            string link = GetLink(d.EntityId, d.EntityName, "/cars/{id}?highlight=true", LogEntityType.Vehicle, existsChecker);
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created vehicle {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted vehicle {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "vehicle", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} vehicle {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} vehicle {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildMakeMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildMakeMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
+            string link = GetLink(d.EntityId, d.EntityName, "/makes-and-models/{id}?highlight=true", LogEntityType.Make, existsChecker);
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created make {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted make {Bold(d.EntityName)}" };
-                case "merged":
+                case LogAction.Merged:
                     {
-                        string globalLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
+                        string globalLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", LogEntityType.Make, existsChecker);
                         return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom make {Bold(d.EntityName)} into {globalLink}" };
                     }
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} make {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} make {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildModelMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildModelMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
             string modelTemplate = $"/makes-and-models/{d.SecondaryEntityId ?? "unknown"}/model/{{id}}?highlight=true";
-            string modelLink = GetLink(d.EntityId, d.EntityName, modelTemplate, "Model", existsChecker);
-            string secMakeLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", "Make", existsChecker);
+            string modelLink = GetLink(d.EntityId, d.EntityName, modelTemplate, LogEntityType.Model, existsChecker);
+            string secMakeLink = GetLink(d.SecondaryEntityId, d.SecondaryEntityName, "/makes-and-models/{id}?highlight=true", LogEntityType.Make, existsChecker);
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created model {modelLink} for make {secMakeLink}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted model {Bold(d.EntityName)} from make {Bold(d.SecondaryEntityName)}" };
-                case "renamed":
+                case LogAction.Renamed:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} renamed model {Bold(d.EntityName)} to {modelLink} (Make: {secMakeLink})" };
-                case "merged":
+                case LogAction.Merged:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} merged custom model {Bold(d.SecondaryEntityName)} into {modelLink}" };
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} model {Bold(d.EntityName)}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} model {Bold(d.EntityName)}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildJobTypeMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildJobTypeMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/job-types?highlightId={id}", "JobType", existsChecker);
+            string link = GetLink(d.EntityId, d.EntityName, "/job-types?highlightId={id}", LogEntityType.JobType, existsChecker);
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} created Job Type {link}" };
-                case "deleted":
+                case LogAction.Deleted:
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} deleted Job Type {Bold(d.EntityName)}" };
-                case "updated":
+                case LogAction.Updated:
                     return BuildUpdatedMarkup(actorMarkup, "Job Type", link, d.Changes, existsChecker);
                 default:
-                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} Job Type {link}" };
+                    return new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} Job Type {link}" };
             }
         }
 
-        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker, Func<string, string, bool>? archivedChecker)
+        private static ActivityLogRendererResult BuildOrderMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker, Func<LogEntityType, string, bool>? archivedChecker)
         {
-            bool isArchived = d.Action == "archived" || (archivedChecker != null && !string.IsNullOrEmpty(d.EntityId) && archivedChecker("Order", d.EntityId));
+            bool isArchived = d.Action == LogAction.Archived || (archivedChecker != null && !string.IsNullOrEmpty(d.EntityId) && archivedChecker(LogEntityType.Order, d.EntityId));
             string template = isArchived ? "/archived-orders/{id}?highlight=true" : "/orders/{id}?highlight=true";
-            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", template, "Order", existsChecker);
+            string orderLink = GetLink(d.EntityId, $"order for {d.EntityName}", template, LogEntityType.Order, existsChecker);
             
-            if (d.Action == "archived")
+            if (d.Action == LogAction.Archived)
             {
                 var archivedRes = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
                 archivedRes.Header = $"{actorMarkup} archived {orderLink}";
@@ -361,28 +348,28 @@ namespace GarageControl.Core.Services.Helpers
 
             var res = BuildUpdatedMarkup(actorMarkup, "order", orderLink, d.Changes, existsChecker);
             
-            res.Header = $"{actorMarkup} {d.Action} {orderLink}";
-            if (d.Action == "deleted")
+            res.Header = $"{actorMarkup} {d.Action.ToString().ToLower()} {orderLink}";
+            if (d.Action == LogAction.Deleted)
                 res.Header = $"{actorMarkup} deleted {Bold($"order for {d.EntityName}")}";
 
             return res;
         }
 
-        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker, Func<string, string, bool>? archivedChecker)
+        private static ActivityLogRendererResult BuildJobMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker, Func<LogEntityType, string, bool>? archivedChecker)
         {
-            bool orderIsArchived = archivedChecker != null && !string.IsNullOrEmpty(d.SecondaryEntityId) && archivedChecker("Order", d.SecondaryEntityId);
+            bool orderIsArchived = archivedChecker != null && !string.IsNullOrEmpty(d.SecondaryEntityId) && archivedChecker(LogEntityType.Order, d.SecondaryEntityId);
 
             string baseOrders = orderIsArchived ? "/archived-orders" : "/orders";
             string orderTemplate = $"{baseOrders}/{{id}}?highlight=true";
             string jobTemplate = $"{baseOrders}/{d.SecondaryEntityId}?highlightJob={{id}}";
 
-            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", orderTemplate, "Order", existsChecker);
-            string jobLink = GetLink(d.EntityId, d.EntityName, jobTemplate, "Job", existsChecker);
+            string orderLink = GetLink(d.SecondaryEntityId, $"order for {d.SecondaryEntityName}", orderTemplate, LogEntityType.Order, existsChecker);
+            string jobLink = GetLink(d.EntityId, d.EntityName, jobTemplate, LogEntityType.Job, existsChecker);
             
             var res = BuildUpdatedMarkup(actorMarkup, "job", jobLink, d.Changes, existsChecker);
-            res.Header = $"{actorMarkup} {d.Action} job {jobLink} for {orderLink}";
+            res.Header = $"{actorMarkup} {d.Action.ToString().ToLower()} job {jobLink} for {orderLink}";
 
-            if (d.Action == "deleted")
+            if (d.Action == LogAction.Deleted)
             {
                 res.Header = $"{actorMarkup} deleted job '{Bold(d.EntityName)}' for {orderLink}";
             }
@@ -390,23 +377,23 @@ namespace GarageControl.Core.Services.Helpers
             return res;
         }
 
-        private static ActivityLogRendererResult BuildPartMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildPartMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}", "Part", existsChecker);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} part {link}" };
+            string link = GetLink(d.EntityId, d.EntityName, "/parts?partId={id}", LogEntityType.Part, existsChecker);
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} part {link}" };
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res.Header = $"{actorMarkup} created part {link}";
                     break;
-                case "deleted":
+                case LogAction.Deleted:
                     res.Header = $"{actorMarkup} deleted part {Bold(d.EntityName)}";
                     break;
-                case "moved":
+                case LogAction.Moved:
                     res.Header = $"{actorMarkup} moved part {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     break;
-                case "updated":
+                case LogAction.Updated:
                     var upd = BuildUpdatedMarkup(actorMarkup, "part", link, d.Changes, existsChecker);
                     upd.Details = upd.Details.Select(l => l.Replace("Quantity", "Stockpile")).ToList();
                     return upd;
@@ -414,23 +401,23 @@ namespace GarageControl.Core.Services.Helpers
             return res;
         }
 
-        private static ActivityLogRendererResult BuildFolderMarkup(string actorMarkup, ActivityLogData d, Func<string, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildFolderMarkup(string actorMarkup, ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
         {
-            string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}", "Folder", existsChecker);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} group of parts {link}" };
+            string link = GetLink(d.EntityId, d.EntityName, "/parts?folderId={id}", LogEntityType.Folder, existsChecker);
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} group of parts {link}" };
 
             switch (d.Action)
             {
-                case "created":
+                case LogAction.Created:
                     res.Header = $"{actorMarkup} created group of parts {link}";
                     break;
-                case "deleted":
+                case LogAction.Deleted:
                     res.Header = $"{actorMarkup} deleted group of parts {Bold(d.EntityName)}";
                     break;
-                case "renamed":
+                case LogAction.Renamed:
                     res.Header = $"{actorMarkup} renamed group of parts {Bold(d.EntityName)} to {Bold(d.SecondaryEntityName)}";
                     break;
-                case "moved":
+                case LogAction.Moved:
                     res.Header = $"{actorMarkup} moved group of parts {link} from {Bold(d.SecondaryEntityName)} to {Bold(d.SecondaryEntityId)}";
                     break;
             }
@@ -440,9 +427,9 @@ namespace GarageControl.Core.Services.Helpers
         private static ActivityLogRendererResult BuildWorkshopMarkup(string actorMarkup, ActivityLogData d)
         {
             string name = Bold(d.EntityName);
-            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action} workshop {name}" };
+            var res = new ActivityLogRendererResult { Header = $"{actorMarkup} {d.Action.ToString().ToLower()} workshop {name}" };
 
-            if (d.Action == "updated" && d.Changes != null && d.Changes.Any())
+            if (d.Action == LogAction.Updated && d.Changes != null && d.Changes.Any())
             {
                 res.Header = $"{actorMarkup} updated workshop details";
                 res.Details = d.Changes.Select(c => $"{Capitalize(Humanize(c.FieldName))} from {Bold(c.OldValue)} to {Bold(c.NewValue)}").ToList();
@@ -451,3 +438,4 @@ namespace GarageControl.Core.Services.Helpers
         }
     }
 }
+

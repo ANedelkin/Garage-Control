@@ -1,3 +1,5 @@
+using GarageControl.Core.Enums;
+
 namespace GarageControl.Core.Models
 {
     public record ActivityPropertyChange(
@@ -5,5 +7,6 @@ namespace GarageControl.Core.Models
         string? OldValue, 
         string? NewValue, 
         string? OldId = null, 
-        string? NewId = null);
+        string? NewId = null,
+        LogEntityType? TargetEntityType = null);
 }

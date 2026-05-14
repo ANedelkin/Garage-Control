@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -18,26 +19,26 @@ namespace GarageControl.Core.Services
 
         public async Task LogOrderCreatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange>? changes = null)
         {
-            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
-                new ActivityLogData("created", orderId, carInfo, Changes: changes));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                new ActivityLogData(LogAction.Created, orderId, carInfo, Changes: changes));
         }
 
         public async Task LogOrderUpdatedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)
         {
-            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
-                new ActivityLogData("updated", orderId, carInfo, Changes: changes));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                new ActivityLogData(LogAction.Updated, orderId, carInfo, Changes: changes));
         }
 
         public async Task LogOrderArchivedAsync(string userId, string workshopId, string orderId, string carInfo, List<ActivityPropertyChange> changes)
         {
-            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
-                new ActivityLogData("archived", orderId, carInfo, Changes: changes));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                new ActivityLogData(LogAction.Archived, orderId, carInfo, Changes: changes));
         }
 
         public async Task LogOrderDeletedAsync(string userId, string workshopId, string carInfo)
         {
-            await _activityLogService.LogActionAsync(userId, workshopId, "Order",
-                new ActivityLogData("deleted", null, carInfo));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                new ActivityLogData(LogAction.Deleted, null, carInfo));
         }
     }
 }

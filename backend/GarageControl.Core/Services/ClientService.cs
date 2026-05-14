@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Clients;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -89,8 +90,8 @@ namespace GarageControl.Core.Services
 
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Client",
-                new ActivityLogData("created", client.Id, client.Name));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Client,
+                new ActivityLogData(LogAction.Created, client.Id, client.Name));
         }
 
         public async Task Delete(string id, string userId)
@@ -102,8 +103,8 @@ namespace GarageControl.Core.Services
             await _repo.DeleteAsync<Client>(id);
             await _repo.SaveChangesAsync();
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Client",
-                new ActivityLogData("deleted", null, client?.Name));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Client,
+                new ActivityLogData(LogAction.Deleted, null, client?.Name));
         }
 
         public async Task<ClientVM?> Details(string id)
@@ -132,8 +133,8 @@ namespace GarageControl.Core.Services
 
             if (changes.Count > 0)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Client",
-                    new ActivityLogData("updated", client.Id, client.Name, Changes: changes));
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Client,
+                    new ActivityLogData(LogAction.Updated, client.Id, client.Name, Changes: changes));
             }
         }
 

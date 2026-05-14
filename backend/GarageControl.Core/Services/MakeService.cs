@@ -6,6 +6,7 @@ using GarageControl.Core.ViewModels.Vehicles;
 using GarageControl.Core.ViewModels.Shared;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -40,8 +41,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
-                    new ActivityLogData("created", make.Id, make.Name));
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
+                    new ActivityLogData(LogAction.Created, make.Id, make.Name));
             }
 
             return make.Id;
@@ -68,8 +69,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
-                    new ActivityLogData("deleted", null, makeName));
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
+                    new ActivityLogData(LogAction.Deleted, null, makeName));
             }
         }
 
@@ -223,8 +224,8 @@ namespace GarageControl.Core.Services
 
                 if (workshopId != null && oldName != model.Name)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, "Make",
-                        new ActivityLogData("renamed", make.Id, oldName,
+                    await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
+                        new ActivityLogData(LogAction.Renamed, make.Id, oldName,
                             SecondaryEntityName: model.Name));
                 }
             }
@@ -395,8 +396,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Make",
-                    new ActivityLogData("merged", null, customMakeName,
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
+                    new ActivityLogData(LogAction.Merged, null, customMakeName,
                         SecondaryEntityId: globalMakeId, SecondaryEntityName: globalMakeName));
             }
         }

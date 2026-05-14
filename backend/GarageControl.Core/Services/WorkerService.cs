@@ -10,6 +10,7 @@ using GarageControl.Infrastructure.Data.Models;
 using System.Globalization;
 using GarageControl.Core.Helpers;
 using GarageControl.Core.ViewModels.Shared;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -141,8 +142,8 @@ namespace GarageControl.Core.Services
             // Store relations (accesses, job types, schedules, leaves)
             var changes = await UpdateWorkerRelations(worker.Id, model);
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
-                new ActivityLogData("hired", worker.Id, worker.Name, Changes: changes.Any() ? changes : null));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Worker,
+                new ActivityLogData(LogAction.Hired, worker.Id, worker.Name, Changes: changes.Any() ? changes : null));
 
             return new MethodResponseVM(true, "Worker created successfully");
         }
@@ -203,8 +204,8 @@ namespace GarageControl.Core.Services
                 }
             }
 
-            await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
-                new ActivityLogData("fired", null, workerName));
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Worker,
+                new ActivityLogData(LogAction.Fired, null, workerName));
         }
 
         public async Task<WorkerVM?> Details(string id)
@@ -375,8 +376,8 @@ namespace GarageControl.Core.Services
 
                 if (changes.Count > 0)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, "Worker",
-                        new ActivityLogData("updated", worker.Id, worker.Name, Changes: changes));
+                    await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Worker,
+                        new ActivityLogData(LogAction.Updated, worker.Id, worker.Name, Changes: changes));
                 }
 
                 return new MethodResponseVM(true, "Worker updated successfully");

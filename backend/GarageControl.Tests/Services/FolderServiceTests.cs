@@ -1,3 +1,4 @@
+using GarageControl.Core.Enums;
 using GarageControl.Core.Models;
 using Xunit;
 using Moq;
@@ -58,10 +59,8 @@ namespace GarageControl.Tests.Services
 
             // Verify logging
             _mockActivityLogService.Verify(x => x.LogActionAsync(
-                userId, 
-                workshopId, 
-                "Folder",
-                It.Is<ActivityLogData>(d => d.Action == "created" && d.EntityName == "NewFolder")), Times.Once);
+                userId, workshopId, LogEntityType.Folder,
+                It.Is<ActivityLogData>(d => d.Action == LogAction.Created && d.EntityName == "NewFolder")), Times.Once);
         }
 
         [Fact]
@@ -138,10 +137,8 @@ namespace GarageControl.Tests.Services
             Assert.Null(await _context.Parts.FindAsync("part1"));
 
             _mockActivityLogService.Verify(x => x.LogActionAsync(
-                userId,
-                workshopId,
-                "Folder",
-                It.Is<ActivityLogData>(d => d.Action == "deleted")), Times.AtLeastOnce);
+                userId, workshopId, LogEntityType.Folder,
+                It.Is<ActivityLogData>(d => d.Action == LogAction.Deleted)), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -165,14 +162,14 @@ namespace GarageControl.Tests.Services
             Assert.Equal("newParent", movedFolder!.ParentId);
 
              _mockActivityLogService.Verify(x => x.LogActionAsync(
-                userId, 
-                workshopId,
-                "Folder",
+                userId, workshopId, LogEntityType.Folder,
                 It.Is<ActivityLogData>(d => 
-                    d.Action == "moved" && 
+                    d.Action == LogAction.Moved && 
                     d.EntityName == "Folder" && 
                     d.SecondaryEntityName == "OldParent" && 
                     d.SecondaryEntityId == "NewParent")), Times.Once);
         }
     }
 }
+
+

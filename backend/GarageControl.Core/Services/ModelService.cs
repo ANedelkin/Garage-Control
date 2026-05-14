@@ -5,6 +5,7 @@ using GarageControl.Core.ViewModels;
 using GarageControl.Core.ViewModels.Vehicles;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -40,8 +41,8 @@ namespace GarageControl.Core.Services
             if (workshopId != null)
             {
                 var make = await _repo.GetByIdAsync<CarMake>(model.MakeId);
-                await _activityLogService.LogActionAsync(userId, workshopId, "Model",
-                    new ActivityLogData("added", carModel.Id, carModel.Name,
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
+                    new ActivityLogData(LogAction.Added, carModel.Id, carModel.Name,
                         SecondaryEntityId: model.MakeId, SecondaryEntityName: make?.Name ?? "Unknown"));
             }
         }
@@ -66,8 +67,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Model",
-                    new ActivityLogData("deleted", null, modelName,
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
+                    new ActivityLogData(LogAction.Deleted, null, modelName,
                         SecondaryEntityName: makeName));
             }
         }
@@ -199,8 +200,8 @@ namespace GarageControl.Core.Services
 
                 if (workshopId != null && oldName != model.Name)
                 {
-                    await _activityLogService.LogActionAsync(userId, workshopId, "Model",
-                        new ActivityLogData("renamed", carModel.Id, oldName,
+                    await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
+                        new ActivityLogData(LogAction.Renamed, carModel.Id, oldName,
                             SecondaryEntityId: carModel.CarMakeId, SecondaryEntityName: carModel.CarMake.Name));
                 }
             }
@@ -258,8 +259,8 @@ namespace GarageControl.Core.Services
 
             if (workshopId != null)
             {
-                await _activityLogService.LogActionAsync(userId, workshopId, "Model",
-                    new ActivityLogData("merged", globalModelId, globalModelName,
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
+                    new ActivityLogData(LogAction.Merged, globalModelId, globalModelName,
                         SecondaryEntityId: globalModel.CarMakeId,
                         SecondaryEntityName: customModelName));
             }
