@@ -1,5 +1,6 @@
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services;
+using GarageControl.Shared.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GarageControl.Core.Attributes;
@@ -21,21 +22,20 @@ namespace GarageControl.Controllers
 
         private string GetWorkshopId()
         {
-            return User.FindFirst("WorkshopId")?.Value!;
+            return User.FindFirst("WorkshopId")?.Value ?? throw new Exception("WorkshopId claim missing");
         }
 
         [HttpGet]
         public async Task<IActionResult> GetLogs(
-            [FromQuery] int skip = 0,
-            [FromQuery] int take = 10,
-            [FromQuery] DateTime? startDate = null, 
+            [FromQuery] int page = 0,
+            [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null,
             [FromQuery] string? search = null)
         {
             try
             {
-                var (logs, totalCount) = await _activityLogService.GetLogsAsync(GetWorkshopId(), skip, take, startDate, endDate, search);
-                return Ok(new { logs, totalCount });
+                var (logs, totalCount) = await _activityLogService.GetLogsAsync(GetWorkshopId(), page, startDate, endDate, search);
+                return Ok(new { logs, totalCount, pageSize = ActivityLogConstants.DefaultPageSize });
             }
             catch (Exception ex)
             {

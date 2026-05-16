@@ -8,6 +8,7 @@ using GarageControl.Core.Services.Helpers;
 using GarageControl.Infrastructure.Data.Common;
 using GarageControl.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using GarageControl.Shared.Constants;
 
 namespace GarageControl.Core.Services
 {
@@ -102,7 +103,7 @@ namespace GarageControl.Core.Services
             await SaveLogAsync(workshopId, messageMarkup, logType.ToString(), serialised);
         }
 
-        public async Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int skip = 0, int take = 10, DateTime? startDate = null, DateTime? endDate = null, string? search = null)
+        public async Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int page = 0, DateTime? startDate = null, DateTime? endDate = null, string? search = null)
         {
             var query = _repository.GetAllAsNoTracking<ActivityLog>()
                 .Where(l => l.WorkshopId == workshopId);
@@ -135,6 +136,9 @@ namespace GarageControl.Core.Services
             }
 
             var totalCount = await query.CountAsync();
+
+            var skip = page * ActivityLogConstants.DefaultPageSize;
+            var take = ActivityLogConstants.DefaultPageSize;
 
             var logs = await query
                 .OrderByDescending(l => l.Timestamp)

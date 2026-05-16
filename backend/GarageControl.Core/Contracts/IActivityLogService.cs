@@ -16,6 +16,6 @@ namespace GarageControl.Core.Contracts
         /// </summary>
         Task LogActionAsync(string userId, string workshopId, LogEntityType logType, ActivityLogData logData);
 
-        Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int skip = 0, int take = 10, DateTime? startDate = null, DateTime? endDate = null, string? search = null);
+        Task<(IEnumerable<ActivityLogVM> Logs, int TotalCount)> GetLogsAsync(string workshopId, int page = 0, DateTime? startDate = null, DateTime? endDate = null, string? search = null);
     }
 }

@@ -1,8 +1,8 @@
 import { request } from "../Utilities/request";
 
 const activityLogApi = {
-    getLogs: async (skip = 0, take = 10, startDate = null, endDate = null, search = null) => {
-        let url = `activitylog?skip=${skip}&take=${take}`;
+    getLogs: async (page = 0, startDate = null, endDate = null, search = null) => {
+        let url = `activitylog?page=${page}`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;

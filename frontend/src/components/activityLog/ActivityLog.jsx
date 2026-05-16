@@ -15,8 +15,8 @@ const ActivityLog = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [page, setPage] = useState(1);
-    const take = 100;
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
     const [dateFrom, setDateFrom] = useState(null);
     const [dateTo, setDateTo] = useState(null);
     const [selectedLog, setSelectedLog] = useState(null);
@@ -35,10 +35,10 @@ const ActivityLog = () => {
                 };
                 const fromStr = formatDate(dateFrom);
                 const toStr = formatDate(dateTo);
-                const skip = (page - 1) * take;
-                const data = await activityLogApi.getLogs(skip, take, fromStr, toStr, search);
+                const data = await activityLogApi.getLogs(page, fromStr, toStr, search);
                 setLogs(data.logs || []);
                 setTotalCount(data.totalCount || 0);
+                if (data.pageSize) setPageSize(data.pageSize);
             } catch (error) {
                 console.error("Failed to fetch activity logs", error);
             } finally {
@@ -72,7 +72,7 @@ const ActivityLog = () => {
 
 
     const filteredLogs = logs;
-    const totalPages = Math.ceil(totalCount / take) || 1;
+    const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
     const Pagination = () => {
         return (
@@ -80,16 +80,16 @@ const ActivityLog = () => {
                 <button
                     type="button"
                     className="btn secondary"
-                    disabled={page === 1}
+                    disabled={page === 0}
                     onClick={() => setPage(p => p - 1)}
                 >
                     <i className="fa-solid fa-chevron-left"></i> Previous
                 </button>
-                <span>Page {page} of {totalPages}</span>
+                <span>Page {page + 1} of {totalPages}</span>
                 <button
                     type="button"
                     className="btn secondary"
-                    disabled={page === totalPages}
+                    disabled={page >= totalPages - 1}
                     onClick={() => setPage(p => p + 1)}
                 >
                     Next <i className="fa-solid fa-chevron-right"></i>
@@ -125,12 +125,12 @@ const ActivityLog = () => {
         setSearch('');
         setDateFrom(null);
         setDateTo(null);
-        setPage(1);
+        setPage(0);
     };
 
     const handleSearchChange = (e) => {
         setSearch(e.target.value);
-        setPage(1);
+        setPage(0);
     };
 
     const hasFilters = search || dateFrom || dateTo;
@@ -156,7 +156,7 @@ const ActivityLog = () => {
                         <label className="activity-date-label">From</label>
                         <DatePicker
                             selected={dateFrom}
-                            onChange={date => { setDateFrom(date); setPage(1); }}
+                            onChange={date => { setDateFrom(date); setPage(0); }}
                             maxDate={dateTo}
                             dateFormat="dd.MM.yy"
                             className="activity-date-input"
@@ -167,7 +167,7 @@ const ActivityLog = () => {
                         <label className="activity-date-label">To</label>
                         <DatePicker
                             selected={dateTo}
-                            onChange={date => { setDateTo(date); setPage(1); }}
+                            onChange={date => { setDateTo(date); setPage(0); }}
                             minDate={dateFrom}
                             dateFormat="dd.MM.yy"
                             className="activity-date-input"
