@@ -93,7 +93,7 @@ namespace GarageControl.Controllers
         }
         [RequireAccess("Makes and Models")]
         [HttpPost("merge-with-global")]
-        public async Task<IActionResult> MergeModelWithGlobal([FromBody] MergeModelRequest request)
+        public async Task<IActionResult> MergeModelWithGlobal([FromBody] MergeModelVM request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             try
@@ -110,11 +110,5 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-    }
-
-    public class MergeModelRequest
-    {
-        public string CustomModelId { get; set; } = null!;
-        public string GlobalModelId { get; set; } = null!;
     }
 }
