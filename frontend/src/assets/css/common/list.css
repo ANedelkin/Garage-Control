@@ -29,6 +29,19 @@
     flex-shrink: 0;
     max-width: 100%;
     box-sizing: border-box;
+    border-left: 0px solid var(--accent3);
+    transition: border-left-width 0.05s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.list-item.active {
+    background: var(--accent1);
+    border-left-width: 3px;
+    color: var(--text-clr1);
+    transition: border-left-width 0.05s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.list-item.active:hover {
+    background: var(--accent1) !important;
 }
 
 .list-item>div:first-child:not(.icon-btn),
