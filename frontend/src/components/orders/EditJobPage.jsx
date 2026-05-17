@@ -221,8 +221,8 @@ const EditJobPage = ({ mechanicView = false }) => {
                     <button className="btn primary" onClick={handleSave}>
                         Save Job
                     </button>
-                    {isEdit && <ExcelExportButton endpoint={`export/job/${jobId}`} />}
-                    {isEdit && <PdfExportButton endpoint={`export/job/${jobId}`} />}
+                    {isEdit && <ExcelExportButton endpoint={`export/job/${jobId}?getArchived=false`} />}
+                    {isEdit && <PdfExportButton endpoint={`export/job/${jobId}?getArchived=false`} />}
                 </div>
             </div>
 

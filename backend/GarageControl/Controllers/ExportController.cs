@@ -100,10 +100,12 @@ namespace GarageControl.Controllers
 
 
         [HttpGet("job/{id}")]
-        public async Task<IActionResult> ExportJob(string id, [FromQuery] string format = "excel")
+        public async Task<IActionResult> ExportJob(string id, [FromQuery] bool? getArchived, [FromQuery] string format = "excel")
         {
-            var job = await _jobService.GetArchivedJobByIdAsync(id, User.GetWorkshopId());
-            if (job == null) job = await _jobService.GetJobByIdAsync(id, User.GetWorkshopId());
+            var job = getArchived == true
+                ? await _jobService.GetArchivedJobByIdAsync(id, User.GetWorkshopId())
+                : await _jobService.GetJobByIdAsync(id, User.GetWorkshopId());
+
             if (job == null) return NotFound();
 
             var bytes = format.ToLower() == "pdf"

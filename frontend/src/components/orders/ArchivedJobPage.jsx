@@ -66,8 +66,8 @@ const ArchivedJobPage = () => {
                     <button className="btn" onClick={() => navigate(-1)}>
                         Back
                     </button>
-                    <ExcelExportButton endpoint={`export/job/${jobId}`} />
-                    <PdfExportButton endpoint={`export/job/${jobId}`} />
+                    <ExcelExportButton endpoint={`export/job/${jobId}?getArchived=true`} />
+                    <PdfExportButton endpoint={`export/job/${jobId}?getArchived=true`} />
                 </div>
             </div>
 
