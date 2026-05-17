@@ -502,3 +502,43 @@ tr.has-errors td {
         padding: 6px 2px !important;
     }
 }
+
+/* Part quantity input styling for JobForm */
+.part-qty-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.part-qty-container input {
+    width: 80px !important;
+    box-sizing: border-box;
+}
+
+.part-qty-requested {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.part-qty-requested input {
+    width: 80px !important;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1300px) {
+    .part-qty-container {
+        width: 120px !important;
+    }
+    .part-qty-container input {
+        width: 100% !important;
+    }
+    .part-qty-requested {
+        width: 120px !important;
+    }
+    .part-qty-requested input {
+        width: 80px !important;
+        flex: none !important;
+    }
+}

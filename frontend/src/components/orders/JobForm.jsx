@@ -384,10 +384,10 @@ const JobForm = ({
                             <thead>
                                 <tr>
                                     <th>Part Name / Number</th>
-                                    <th style={{ width: '120px' }}>Planned</th>
-                                    <th style={{ width: '120px' }}>Sent</th>
-                                    <th style={{ width: '120px' }}>Used</th>
-                                    <th style={{ width: '120px' }}>Req</th>
+                                    <th style={{ width: '104px' }}>Planned</th>
+                                    <th style={{ width: '104px' }}>Sent</th>
+                                    <th style={{ width: '104px' }}>Used</th>
+                                    <th style={{ width: '133px' }}>Req</th>
                                     <th style={{ width: '100px' }}>Unit Price</th>
                                     <th style={{ width: '130px' }}>Total Projected</th>
                                     <th style={{ width: '130px' }}>Total Spent</th>
@@ -460,7 +460,7 @@ const JobForm = ({
                                                     </div>
                                                 </td>
                                                 <td className="mobile-collapsible" data-label="Planned">
-                                                    <div style={{ width: '120px' }}>
+                                                    <div className="part-qty-container">
                                                         <input
                                                             type="number"
                                                             name={`Parts[${i}].PlannedQuantity`}
@@ -470,12 +470,11 @@ const JobForm = ({
                                                             onChange={e => updatePartRow(i, 'plannedQuantity', e.target.value)}
                                                             disabled={job.status === 2 || mechanicView || (!hasStockAccess && !isAssignedWorker)}
                                                             title={(job.status === 2) ? "Job is done" : (mechanicView || (!hasStockAccess && !isAssignedWorker)) ? "Only Parts Stock access or assigned worker can edit this" : ""}
-                                                            style={{ width: '100%' }}
                                                         />
                                                     </div>
                                                 </td>
                                                 <td className="mobile-collapsible" data-label="Sent">
-                                                    <div style={{ width: '120px' }}>
+                                                    <div className="part-qty-container">
                                                         <input
                                                             type="number"
                                                             name={`Parts[${i}].SentQuantity`}
@@ -485,12 +484,11 @@ const JobForm = ({
                                                             onChange={e => updatePartRow(i, 'sentQuantity', e.target.value)}
                                                             disabled={job.status === 2 || mechanicView || !hasStockAccess}
                                                             title={(job.status === 2) ? "Job is done" : (mechanicView || !hasStockAccess) ? "Only Parts Stock access can edit this" : ""}
-                                                            style={{ width: '100%' }}
                                                         />
                                                     </div>
                                                 </td>
                                                 <td className="mobile-collapsible" data-label="Used">
-                                                    <div style={{ width: '120px' }}>
+                                                    <div className="part-qty-container">
                                                         <input
                                                             type="number"
                                                             name={`Parts[${i}].UsedQuantity`}
@@ -499,12 +497,11 @@ const JobForm = ({
                                                             onChange={e => updatePartRow(i, 'usedQuantity', e.target.value)}
                                                             disabled={job.status === 2 || !isAssignedWorker}
                                                             title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                                            style={{ width: '100%' }}
                                                         />
                                                     </div>
                                                 </td>
                                                 <td className="mobile-collapsible" data-label="Requested">
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', width: '120px' }}>
+                                                    <div className="part-qty-requested">
                                                         <input
                                                             type="number"
                                                             name={`Parts[${i}].RequestedQuantity`}
@@ -513,7 +510,6 @@ const JobForm = ({
                                                             onChange={e => updatePartRow(i, 'requestedQuantity', e.target.value)}
                                                             disabled={job.status === 2 || !isAssignedWorker}
                                                             title={(job.status === 2) ? "Job is done" : !isAssignedWorker ? "Only assigned worker can edit this" : ""}
-                                                            style={{ width: '80px' }}
                                                         />
                                                         <button
                                                             type="button"
