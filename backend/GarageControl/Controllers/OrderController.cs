@@ -24,22 +24,12 @@ namespace GarageControl.Controllers
             _pdfExportService = pdfExportService;
         }
 
-        private string GetWorkshopId()
-        {
-            return User.FindFirst("WorkshopId")?.Value!;
-        }
-
-        private string GetUserId()
-        {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetWorkshopId());
+                var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId());
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -53,7 +43,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived: false);
+                var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId(), isArchived: false);
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -67,7 +57,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived: true);
+                var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId(), isArchived: true);
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -81,7 +71,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.CreateOrderAsync(GetUserId(), GetWorkshopId(), model);
+                var result = await _orderService.CreateOrderAsync(User.GetUserId(), User.GetWorkshopId(), model);
                 if (result is MethodResponseVM resp && !resp.Success)
                 {
                     return BadRequest(new { message = resp.Message });
@@ -101,7 +91,7 @@ namespace GarageControl.Controllers
             if (order == null)
                 return NotFound("Order not found.");
 
-            var workshopId = GetWorkshopId();
+            var workshopId = User.GetWorkshopId();
             order.InvoiceNumber = await _orderService.GenerateInvoiceAsync(orderId, workshopId);
 
             var pdfBytes = await _pdfExportService.GenerateInvoicePdfAsync(order);
@@ -114,7 +104,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var order = await _orderService.GetOrderByIdAsync(id, GetWorkshopId());
+                var order = await _orderService.GetOrderByIdAsync(id, User.GetWorkshopId());
                 if (order == null) return NotFound();
                 return Ok(order);
             }
@@ -129,7 +119,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.UpdateOrderAsync(GetUserId(), id, GetWorkshopId(), model);
+                var result = await _orderService.UpdateOrderAsync(User.GetUserId(), id, User.GetWorkshopId(), model);
                 if (result is MethodResponseVM resp && !resp.Success)
                 {
                     return BadRequest(new { message = resp.Message });
@@ -147,7 +137,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _orderService.DeleteOrderAsync(GetUserId(), id, GetWorkshopId());
+                var result = await _orderService.DeleteOrderAsync(User.GetUserId(), id, User.GetWorkshopId());
                 if (result is MethodResponseVM resp && !resp.Success)
                 {
                     return BadRequest(new { message = resp.Message });

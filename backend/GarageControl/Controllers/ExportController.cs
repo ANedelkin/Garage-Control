@@ -44,18 +44,15 @@ namespace GarageControl.Controllers
             _vehicleService = vehicleService;
         }
 
-        private string GetWorkshopId() => User.FindFirst("WorkshopId")?.Value!;
-        private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-
         [HttpGet("orders")]
         public async Task<IActionResult> ExportOrders([FromQuery] bool? isArchived, [FromQuery] string format = "excel")
         {
-            var orders = await _orderService.GetOrdersAsync(GetWorkshopId(), isArchived);
+            var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId(), isArchived);
             var ordersWithJobs = new List<(OrderListVM Order, List<JobListVM> Jobs)>();
 
             foreach (var order in orders)
             {
-                var jobs = await _jobService.GetJobsByOrderIdAsync(order.Id, GetWorkshopId());
+                var jobs = await _jobService.GetJobsByOrderIdAsync(order.Id, User.GetWorkshopId());
                 ordersWithJobs.Add((order, jobs));
             }
 
@@ -70,7 +67,7 @@ namespace GarageControl.Controllers
         [HttpGet("clients")]
         public async Task<IActionResult> ExportClients([FromQuery] string format = "excel")
         {
-            var clients = await _clientService.All(GetUserId());
+            var clients = await _clientService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportClientsAsync(clients)
                 : await _exportService.ExportClientsAsync(clients);
@@ -80,7 +77,7 @@ namespace GarageControl.Controllers
         [HttpGet("workers")]
         public async Task<IActionResult> ExportWorkers([FromQuery] string types = "details", [FromQuery] string format = "excel")
         {
-            var workers = await _workerService.All(GetUserId());
+            var workers = await _workerService.All(User.GetUserId());
             var exportTypes = types.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
             
             var bytes = format.ToLower() == "pdf"
@@ -93,7 +90,7 @@ namespace GarageControl.Controllers
         [HttpGet("parts")]
         public async Task<IActionResult> ExportParts([FromQuery] string format = "excel")
         {
-            var parts = await _partService.GetAllPartsAsync(GetWorkshopId());
+            var parts = await _partService.GetAllPartsAsync(User.GetWorkshopId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportPartsAsync(parts)
                 : await _exportService.ExportPartsAsync(parts);
@@ -129,8 +126,8 @@ namespace GarageControl.Controllers
         [HttpGet("job/{id}")]
         public async Task<IActionResult> ExportJob(string id, [FromQuery] string format = "excel")
         {
-            var job = await _jobService.GetArchivedJobByIdAsync(id, GetWorkshopId());
-            if (job == null) job = await _jobService.GetJobByIdAsync(id, GetWorkshopId());
+            var job = await _jobService.GetArchivedJobByIdAsync(id, User.GetWorkshopId());
+            if (job == null) job = await _jobService.GetJobByIdAsync(id, User.GetWorkshopId());
             if (job == null) return NotFound();
 
             var bytes = format.ToLower() == "pdf"
@@ -143,7 +140,7 @@ namespace GarageControl.Controllers
         [HttpGet("job-types")]
         public async Task<IActionResult> ExportJobTypes([FromQuery] string format = "excel")
         {
-            var jobTypes = await _jobTypeService.All(GetUserId());
+            var jobTypes = await _jobTypeService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportJobTypesAsync(jobTypes)
                 : await _exportService.ExportJobTypesAsync(jobTypes);
@@ -153,7 +150,7 @@ namespace GarageControl.Controllers
         [HttpGet("cars")]
         public async Task<IActionResult> ExportCars([FromQuery] string format = "excel")
         {
-            var cars = await _vehicleService.All(GetUserId());
+            var cars = await _vehicleService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportCarsAsync(cars)
                 : await _exportService.ExportCarsAsync(cars);
@@ -166,7 +163,7 @@ namespace GarageControl.Controllers
             var targetWorkerId = workerId ?? User.FindFirst("WorkerId")?.Value;
             if (string.IsNullOrEmpty(targetWorkerId)) return BadRequest("WorkerId not found");
 
-            var jobs = await _jobService.GetJobsByWorkerIdAsync(targetWorkerId, GetWorkshopId());
+            var jobs = await _jobService.GetJobsByWorkerIdAsync(targetWorkerId, User.GetWorkshopId());
             var worker = await _workerService.Details(targetWorkerId);
             
             var bytes = format.ToLower() == "pdf"

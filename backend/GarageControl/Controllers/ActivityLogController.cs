@@ -20,11 +20,6 @@ namespace GarageControl.Controllers
             _activityLogService = activityLogService;
         }
 
-        private string GetWorkshopId()
-        {
-            return User.FindFirst("WorkshopId")?.Value ?? throw new Exception("WorkshopId claim missing");
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetLogs(
             [FromQuery] int page = 0,
@@ -34,7 +29,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var (logs, totalCount) = await _activityLogService.GetLogsAsync(GetWorkshopId(), page, startDate, endDate, search);
+                var (logs, totalCount) = await _activityLogService.GetLogsAsync(User.GetWorkshopId(), page, startDate, endDate, search);
                 return Ok(new { logs, totalCount, pageSize = ActivityLogConstants.DefaultPageSize });
             }
             catch (Exception ex)

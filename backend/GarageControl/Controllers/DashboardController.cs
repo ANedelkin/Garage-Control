@@ -20,17 +20,12 @@ namespace GarageControl.Controllers
             _dashboardService = dashboardService;
         }
 
-        private string GetWorkshopId()
-        {
-            return User.FindFirst("WorkshopId")?.Value!;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetDashboardData()
         {
             try
             {
-                var data = await _dashboardService.GetDashboardDataAsync(GetWorkshopId());
+                var data = await _dashboardService.GetDashboardDataAsync(User.GetWorkshopId());
                 return Ok(data);
             }
             catch (Exception ex)

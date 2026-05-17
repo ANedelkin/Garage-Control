@@ -24,7 +24,7 @@ namespace GarageControl.Controllers
         [HttpGet("has-workshop")]
         public async Task<IActionResult> HasWorkshop()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             var workshop = await _workshopService.GetWorkshopDetailsByUser(userId);
             if (workshop == null)
             {
@@ -44,7 +44,7 @@ namespace GarageControl.Controllers
                 return BadRequest(new { message = "Invalid model", errors });
             }
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "User not authenticated or token is invalid." });
@@ -65,7 +65,7 @@ namespace GarageControl.Controllers
         [HttpGet("details")]
         public async Task<IActionResult> Details()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             var workshop = await _workshopService.GetWorkshopDetailsByUser(userId);
             if (workshop == null)
             {
@@ -84,7 +84,7 @@ namespace GarageControl.Controllers
                                               .ToList();
                 return BadRequest(new { message = "Invalid model", errors });
             }
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             await _workshopService.UpdateWorkshopDetails(userId, workshop);
             return Ok(new { message = "Workshop edited successfully." });
         }

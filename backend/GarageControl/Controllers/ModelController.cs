@@ -25,7 +25,7 @@ namespace GarageControl.Controllers
         [HttpGet("all/{makeId}")]
         public async Task<IActionResult> All(string makeId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             var models = await _modelService.GetModels(makeId, userId);
             return Ok(models);
         }
@@ -34,7 +34,7 @@ namespace GarageControl.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             var model = await _modelService.GetModel(id, userId);
             return Ok(model);
         }
@@ -45,7 +45,7 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             try
             {
                 await _modelService.CreateModel(model, userId);
@@ -61,7 +61,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Edit(string id, [FromBody] ModelVM model)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
-             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+             var userId = User.GetUserId();
              try
              {
                  await _modelService.UpdateModel(id, model, userId!);
@@ -76,7 +76,7 @@ namespace GarageControl.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             try
             {
                 await _modelService.DeleteModel(id, userId);
@@ -95,7 +95,7 @@ namespace GarageControl.Controllers
         [HttpPost("merge-with-global")]
         public async Task<IActionResult> MergeModelWithGlobal([FromBody] MergeModelVM request)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             try
             {
                 await _modelService.MergeModelWithGlobal(request.CustomModelId, request.GlobalModelId, userId);

@@ -21,22 +21,12 @@ namespace GarageControl.Controllers
             _jobService = jobService;
         }
 
-        private string GetWorkshopId()
-        {
-            return User.FindFirst("WorkshopId")?.Value!;
-        }
-
-        private string GetUserId()
-        {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-        }
-
         [HttpGet("my-jobs")]
         public async Task<IActionResult> GetMyJobs()
         {
             try
             {
-                var jobs = await _jobService.GetMyJobsAsync(GetUserId(), GetWorkshopId());
+                var jobs = await _jobService.GetMyJobsAsync(User.GetUserId(), User.GetWorkshopId());
                 return Ok(jobs);
             }
             catch (Exception ex)
@@ -50,7 +40,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var jobs = await _jobService.GetJobsByWorkerIdAsync(workerId, GetWorkshopId());
+                var jobs = await _jobService.GetJobsByWorkerIdAsync(workerId, User.GetWorkshopId());
                 return Ok(jobs);
             }
             catch (Exception ex)
@@ -64,7 +54,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var job = await _jobService.GetJobByIdAsync(jobId, GetWorkshopId());
+                var job = await _jobService.GetJobByIdAsync(jobId, User.GetWorkshopId());
                 if (job == null) return NotFound();
                 return Ok(job);
             }
@@ -79,7 +69,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var job = await _jobService.GetArchivedJobByIdAsync(jobId, GetWorkshopId());
+                var job = await _jobService.GetArchivedJobByIdAsync(jobId, User.GetWorkshopId());
                 if (job == null) return NotFound();
                 return Ok(job);
             }
@@ -94,7 +84,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var jobs = await _jobService.GetJobsByOrderIdAsync(orderId, GetWorkshopId());
+                var jobs = await _jobService.GetJobsByOrderIdAsync(orderId, User.GetWorkshopId());
                 return Ok(jobs);
             }
             catch (Exception ex)
@@ -108,7 +98,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _jobService.CreateJobAsync(GetUserId(), orderId, GetWorkshopId(), model);
+                var result = await _jobService.CreateJobAsync(User.GetUserId(), orderId, User.GetWorkshopId(), model);
                 if (!result.Success)
                 {
                     return BadRequest(new { message = result.Message });
@@ -126,7 +116,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _jobService.UpdateJobAsync(GetUserId(), jobId, GetWorkshopId(), model);
+                var result = await _jobService.UpdateJobAsync(User.GetUserId(), jobId, User.GetWorkshopId(), model);
                 if (!result.Success)
                 {
                     return BadRequest(new { message = result.Message });
@@ -143,7 +133,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                var result = await _jobService.DeleteJobAsync(GetUserId(), jobId, GetWorkshopId());
+                var result = await _jobService.DeleteJobAsync(User.GetUserId(), jobId, User.GetWorkshopId());
                 if (!result.Success)
                 {
                     return BadRequest(new { message = result.Message });

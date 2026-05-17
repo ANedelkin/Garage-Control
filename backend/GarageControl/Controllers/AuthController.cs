@@ -91,7 +91,6 @@ namespace GarageControl.Controllers
 
             var externalUserId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Use preferred_username or upn as fallback for email
             var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value ??
                         result.Principal.FindFirst("preferred_username")?.Value ??
                         result.Principal.FindFirst("upn")?.Value;

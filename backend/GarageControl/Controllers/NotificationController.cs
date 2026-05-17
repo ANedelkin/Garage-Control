@@ -18,17 +18,12 @@ namespace GarageControl.Controllers
             _notificationService = notificationService;
         }
 
-        private string GetUserId()
-        {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetNotifications()
         {
             try
             {
-                var notifications = await _notificationService.GetUserNotificationsAsync(GetUserId());
+                var notifications = await _notificationService.GetUserNotificationsAsync(User.GetUserId());
                 return Ok(notifications);
             }
             catch (Exception ex)
@@ -42,7 +37,7 @@ namespace GarageControl.Controllers
         {
             try
             {
-                await _notificationService.MarkAsReadAsync(id, GetUserId());
+                await _notificationService.MarkAsReadAsync(id, User.GetUserId());
                 return Ok();
             }
             catch (Exception ex)

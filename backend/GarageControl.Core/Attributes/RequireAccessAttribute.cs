@@ -40,7 +40,7 @@ namespace GarageControl.Core.Attributes
             if (_accessNames == null || _accessNames.Length == 0)
                 return;
 
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = user.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 context.Result = new UnauthorizedResult();

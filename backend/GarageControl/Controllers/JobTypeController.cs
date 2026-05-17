@@ -25,7 +25,7 @@ namespace GarageControl.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> All()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             var jobTypes = await _jobTypeService.All(userId);
             return Ok(jobTypes);
         }
@@ -42,7 +42,7 @@ namespace GarageControl.Controllers
         public async Task<IActionResult> Create([FromBody] JobTypeVM model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             await _jobTypeService.Create(model, userId);
             return Ok(new { message = "Job type created successfully" });
         }
@@ -52,7 +52,7 @@ namespace GarageControl.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
 
             await _jobTypeService.Edit(id, model, userId);
             return Ok(new { message = "Job type updated successfully" });
@@ -61,7 +61,7 @@ namespace GarageControl.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = User.GetUserId();
             try
             {
                 await _jobTypeService.Delete(id, userId);
