@@ -192,7 +192,7 @@ tr.has-errors td {
 /* .desktop-only and .mobile-only handled globally */
 
 /* Middle media: 500px to 800px */
-@media (max-width: 1300px) {
+@media (max-width: 1060px) {
     .hide-md {
         display: none !important;
     }
@@ -527,7 +527,7 @@ tr.has-errors td {
     box-sizing: border-box;
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1060px) {
     .part-qty-container {
         width: 120px !important;
     }

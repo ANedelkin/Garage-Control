@@ -176,7 +176,7 @@ function App() {
 
   useEffect(() => {
     const handleResize = () => {
-      const isDesktop = window.innerWidth > 1000;
+      const isDesktop = window.innerWidth > 1300;
       if (isDesktop) {
         setSidebarOpen(false);
       }
