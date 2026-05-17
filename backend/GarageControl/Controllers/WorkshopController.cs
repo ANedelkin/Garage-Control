@@ -45,10 +45,6 @@ namespace GarageControl.Controllers
             }
             
             var userId = User.GetUserId();
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated or token is invalid." });
-            }
             
             var result = await _workshopService.CreateWorkshop(userId, workshop);
 

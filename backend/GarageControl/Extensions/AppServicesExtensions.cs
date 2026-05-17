@@ -32,7 +32,7 @@ namespace GarageControl.Extensions
             services.AddScoped<IExcelExportService, ExcelExportService>();
             services.AddScoped<IPdfExportService, PdfExportService>();
 
-            services.AddHostedService<GarageControl.BackgroundServices.NotificationCleanupService>();
+            services.AddHostedService<BackgroundServices.NotificationCleanupService>();
 
             return services;
         }
