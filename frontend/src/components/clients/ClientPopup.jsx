@@ -10,7 +10,7 @@ import CarPopup from '../cars/CarPopup';
 import ConfirmationPopup from '../common/ConfirmationPopup';
 import FieldError from '../common/FieldError.jsx';
 import { parseValidationErrors } from '../../Utilities/formErrors.js';
-import ExcelExportButton from '../common/ExcelExportButton';
+
 import { useStatus } from '../../context/StatusContext.jsx';
 
 const ClientPopup = ({ onClose, onSave, clientId }) => {

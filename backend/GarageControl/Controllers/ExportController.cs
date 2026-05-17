@@ -12,7 +12,7 @@ namespace GarageControl.Controllers
     [Route("api/[controller]")]
     public class ExportController : ControllerBase
     {
-        private readonly IExcelExportService _exportService;
+        private readonly IExcelExportService _excelService;
         private readonly IPdfExportService _pdfService;
         private readonly IOrderService _orderService;
         private readonly IJobService _jobService;
@@ -23,7 +23,7 @@ namespace GarageControl.Controllers
         private readonly IVehicleService _vehicleService;
 
         public ExportController(
-            IExcelExportService exportService,
+            IExcelExportService excelService,
             IPdfExportService pdfService,
             IOrderService orderService,
             IJobService jobService,
@@ -33,7 +33,7 @@ namespace GarageControl.Controllers
             IJobTypeService jobTypeService,
             IVehicleService vehicleService)
         {
-            _exportService = exportService;
+            _excelService = excelService;
             _pdfService = pdfService;
             _orderService = orderService;
             _jobService = jobService;
@@ -45,9 +45,9 @@ namespace GarageControl.Controllers
         }
 
         [HttpGet("orders")]
-        public async Task<IActionResult> ExportOrders([FromQuery] bool? isArchived, [FromQuery] string format = "excel")
+        public async Task<IActionResult> ExportOrders([FromQuery] bool? getArchived, [FromQuery] string format = "excel")
         {
-            var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId(), isArchived);
+            var orders = await _orderService.GetOrdersAsync(User.GetWorkshopId(), getArchived);
             var ordersWithJobs = new List<(OrderListVM Order, List<JobListVM> Jobs)>();
 
             foreach (var order in orders)
@@ -58,9 +58,9 @@ namespace GarageControl.Controllers
 
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportOrdersAsync(ordersWithJobs)
-                : await _exportService.ExportOrdersAsync(ordersWithJobs);
+                : await _excelService.ExportOrdersAsync(ordersWithJobs);
 
-            string filename = isArchived == true ? "Archived_Orders" : "Active_Orders";
+            string filename = getArchived == true ? "Archived_Orders" : "Active_Orders";
             return ExportFile(bytes, filename, format);
         }
 
@@ -70,7 +70,7 @@ namespace GarageControl.Controllers
             var clients = await _clientService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportClientsAsync(clients)
-                : await _exportService.ExportClientsAsync(clients);
+                : await _excelService.ExportClientsAsync(clients);
             return ExportFile(bytes, "Clients", format);
         }
 
@@ -82,7 +82,7 @@ namespace GarageControl.Controllers
             
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportWorkersAsync(workers, exportTypes)
-                : await _exportService.ExportWorkersAsync(workers, exportTypes);
+                : await _excelService.ExportWorkersAsync(workers, exportTypes);
             
             return ExportFile(bytes, "Workers", format);
         }
@@ -93,35 +93,11 @@ namespace GarageControl.Controllers
             var parts = await _partService.GetAllPartsAsync(User.GetWorkshopId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportPartsAsync(parts)
-                : await _exportService.ExportPartsAsync(parts);
+                : await _excelService.ExportPartsAsync(parts);
             return ExportFile(bytes, "Parts_Stock", format);
         }
 
-        [HttpGet("client/{id}")]
-        public async Task<IActionResult> ExportClientDetails(string id, [FromQuery] string format = "excel")
-        {
-            var client = await _clientService.Details(id);
-            if (client == null) return NotFound();
 
-            var bytes = format.ToLower() == "pdf"
-                ? await _pdfService.ExportClientDetailsAsync(client)
-                : await _exportService.ExportClientDetailsAsync(client);
-
-            return ExportFile(bytes, $"Client_{client.Name}", format);
-        }
-
-        [HttpGet("worker/{id}/schedule")]
-        public async Task<IActionResult> ExportWorkerSchedule(string id, [FromQuery] string format = "excel")
-        {
-            var worker = await _workerService.Details(id);
-            if (worker == null) return NotFound();
-
-            var bytes = format.ToLower() == "pdf"
-                ? await _pdfService.ExportWorkerScheduleAsync(worker)
-                : await _exportService.ExportWorkerScheduleAsync(worker);
-
-            return ExportFile(bytes, $"Schedule_{worker.Name}", format);
-        }
 
         [HttpGet("job/{id}")]
         public async Task<IActionResult> ExportJob(string id, [FromQuery] string format = "excel")
@@ -132,7 +108,7 @@ namespace GarageControl.Controllers
 
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportJobAsync(job)
-                : await _exportService.ExportJobAsync(job);
+                : await _excelService.ExportJobAsync(job);
 
             return ExportFile(bytes, $"Job_{job.JobTypeName}", format);
         }
@@ -143,7 +119,7 @@ namespace GarageControl.Controllers
             var jobTypes = await _jobTypeService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportJobTypesAsync(jobTypes)
-                : await _exportService.ExportJobTypesAsync(jobTypes);
+                : await _excelService.ExportJobTypesAsync(jobTypes);
             return ExportFile(bytes, "Job_Types", format);
         }
 
@@ -153,7 +129,7 @@ namespace GarageControl.Controllers
             var cars = await _vehicleService.All(User.GetUserId());
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportCarsAsync(cars)
-                : await _exportService.ExportCarsAsync(cars);
+                : await _excelService.ExportCarsAsync(cars);
             return ExportFile(bytes, "Cars", format);
         }
 
@@ -168,7 +144,7 @@ namespace GarageControl.Controllers
             
             var bytes = format.ToLower() == "pdf"
                 ? await _pdfService.ExportToDoAsync(jobs, worker?.Name ?? "Worker")
-                : await _exportService.ExportToDoAsync(jobs, worker?.Name ?? "Worker");
+                : await _excelService.ExportToDoAsync(jobs, worker?.Name ?? "Worker");
 
             string filename = worker != null ? $"ToDo_{worker.Name}" : "ToDo_List";
             return ExportFile(bytes, filename, format);

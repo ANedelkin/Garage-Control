@@ -235,58 +235,7 @@ namespace GarageControl.Core.Services
             return Task.FromResult(ToBytes(wb));
         }
 
-        public Task<byte[]> ExportClientDetailsAsync(ClientVM client)
-        {
-            using var wb = new XLWorkbook();
 
-            var wsInfo = wb.Worksheets.Add("Client Info");
-            WriteTable(wsInfo,
-                new[] { "Name", "Phone", "Email", "Address", "Registration #" },
-                new[]
-                {
-                    (IReadOnlyList<object?>)new object?[]
-                    {
-                        client.Name, client.PhoneNumber, client.Email ?? "", client.Address ?? "", client.RegistrationNumber ?? ""
-                    }
-                });
-
-            var wsCars = wb.Worksheets.Add("Cars");
-            WriteTable(wsCars,
-                new[] { "Make", "Model", "Registration #", "Kilometers" },
-                (client.Cars ?? new()).Select(c => (IReadOnlyList<object?>)new object?[]
-                {
-                    c.MakeName ?? "", c.ModelName ?? "", c.RegistrationNumber ?? "", c.Kilometers
-                }));
-
-            return Task.FromResult(ToBytes(wb));
-        }
-
-        public Task<byte[]> ExportWorkerScheduleAsync(WorkerVM worker)
-        {
-            using var wb = new XLWorkbook();
-            string[] dayNames = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-
-            var wsSchedule = wb.Worksheets.Add("Schedule");
-            WriteTable(wsSchedule,
-                new[] { "Day", "Start Time", "End Time" },
-                worker.Schedules.Select(s => (IReadOnlyList<object?>)new object?[]
-                {
-                    s.DayOfWeek >= 0 && s.DayOfWeek < dayNames.Length ? dayNames[s.DayOfWeek] : s.DayOfWeek.ToString(),
-                    s.StartTime,
-                    s.EndTime
-                }));
-
-            var wsLeaves = wb.Worksheets.Add("Leaves");
-            WriteTable(wsLeaves,
-                new[] { "Start Date", "End Date" },
-                worker.Leaves.Select(l => (IReadOnlyList<object?>)new object?[]
-                {
-                    l.StartDate.ToString("dd.MM.yyyy"),
-                    l.EndDate.ToString("dd.MM.yyyy")
-                }));
-
-            return Task.FromResult(ToBytes(wb));
-        }
 
         public Task<byte[]> ExportJobAsync(JobDetailsVM job)
         {
