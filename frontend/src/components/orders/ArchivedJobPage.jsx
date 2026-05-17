@@ -63,7 +63,7 @@ const ArchivedJobPage = () => {
                     <p>{job.clientName} • {job.carName} ({job.carRegistrationNumber})</p>
                 </div>
                 <div className="order-actions">
-                    <button className="btn secondary" onClick={() => navigate(-1)}>
+                    <button className="btn" onClick={() => navigate(-1)}>
                         Back
                     </button>
                     <ExcelExportButton endpoint={`export/job/${jobId}`} />

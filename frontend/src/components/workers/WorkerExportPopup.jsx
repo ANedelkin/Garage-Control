@@ -49,7 +49,7 @@ const WorkerExportPopup = ({ onClose, format }) => {
             </div>
 
             <div className="form-footer">
-                <button className="btn secondary" onClick={onClose}>Cancel</button>
+                <button className="btn" onClick={onClose}>Cancel</button>
                 <button className="btn primary" onClick={handleExport}>
                     <i className={`fa-solid fa-file-${format === 'excel' ? 'excel' : 'pdf'}`} style={{ color: format === 'excel' ? '#22a15bff' : '#e74c3c' }}></i>
                     Export

@@ -210,7 +210,7 @@ const EditJobPage = ({ mechanicView = false }) => {
                     <p>{order?.clientName} • {order?.carName} ({order?.carRegistrationNumber})</p>
                 </div>
                 <div className="order-actions">
-                    <button className="btn secondary" onClick={() => navigate(-1)}>
+                    <button className="btn" onClick={() => navigate(-1)}>
                         Cancel
                     </button>
                     {isEdit && !mechanicView && job?.status !== 2 && (

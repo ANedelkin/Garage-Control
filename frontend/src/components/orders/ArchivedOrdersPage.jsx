@@ -170,7 +170,7 @@ const ArchivedOrdersPage = () => {
                                     </button>
                                 </div>
                                 <div className="order-actions mobile-only">
-                                    <button className="btn secondary" onClick={() => openOrderDetailsPopup(order)}>
+                                    <button className="btn" onClick={() => openOrderDetailsPopup(order)}>
                                         <i className="fa-solid fa-circle-info"></i>
                                         Info
                                     </button>

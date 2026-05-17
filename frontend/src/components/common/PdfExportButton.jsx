@@ -23,7 +23,7 @@ const PdfExportButton = ({ endpoint, onClick, className = '', text = 'Export to 
 
     return (
         <button
-            className={`btn secondary ${className}`}
+            className={`btn ${className}`}
             onClick={handleClick}
             disabled={disabled}
             title={text}

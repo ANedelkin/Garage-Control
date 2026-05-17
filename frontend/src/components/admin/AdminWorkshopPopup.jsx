@@ -1,35 +1,34 @@
 import React from 'react';
-import '../../assets/css/common/popup.css';
 
 const AdminWorkshopPopup = ({ workshop, onClose }) => {
     if (!workshop) return null;
 
     return (
-        <div className="popup-sm">
-            <div className="form-section">
-                <div>
-                    <label className="popup-label">Name</label>
-                    <div className="popup-val bold">{workshop.name}</div>
+        <div className="admin-popup">
+            <div className="popup-info-grid">
+                <div className="popup-info-row">
+                    <label className="popup-label">Workshop Name</label>
+                    <div className="popup-val">{workshop.name || 'N/A'}</div>
                 </div>
                 
-                <div className="mt-15">
+                <div className="popup-info-row">
                     <label className="popup-label">Contact Email</label>
-                    <div className="popup-val">{workshop.contactEmail}</div>
+                    <div className="popup-val">{workshop.contactEmail || 'N/A'}</div>
                 </div>
 
-                <div className="mt-15">
+                <div className="popup-info-row">
                     <label className="popup-label">Address</label>
-                    <div className="popup-val">{workshop.address}</div>
+                    <div className="popup-val">{workshop.address || 'N/A'}</div>
                 </div>
 
-                <div className="mt-15">
-                    <label className="popup-label">Total Workers</label>
-                    <div className="popup-val">{workshop.workersCount}</div>
+                <div className="popup-info-row">
+                    <label className="popup-label">Team Size</label>
+                    <div className="popup-val">{workshop.workersCount || 0} workers</div>
                 </div>
 
-                <div className="mt-15">
+                <div className="popup-info-row">
                     <label className="popup-label">Status</label>
-                    <div className={`popup-val status ${workshop.isBlocked ? 'status-blocked' : 'status-active'}`}>
+                    <div className={`popup-val bold ${workshop.isBlocked ? 'status-blocked' : 'status-active'}`}>
                         {workshop.isBlocked ? 'Blocked' : 'Active'}
                     </div>
                 </div>

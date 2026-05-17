@@ -23,7 +23,7 @@ const ExcelExportButton = ({ endpoint, onClick, className = '', text = 'Export t
 
     return (
         <button
-            className={`btn secondary ${className}`}
+            className={`btn ${className}`}
             onClick={handleClick}
             disabled={disabled}
             title={text}

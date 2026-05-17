@@ -34,6 +34,9 @@ body.dark {
 
     --done-jobs: linear-gradient(180deg, rgba(20, 80, 55), rgba(20, 80, 55, 0.03));
     --done-jobs-hover: linear-gradient(180deg, rgba(25, 100, 70), rgba(25, 100, 70, 0.06));
+
+    --status-active: #28a745;
+    --status-blocked: #dc3545;
 }
 
 body.light {
@@ -72,6 +75,9 @@ body.light {
 
     --done-jobs: linear-gradient(180deg, rgba(140, 220, 180), rgba(200, 245, 220, 0.4));
     --done-jobs-hover: linear-gradient(180deg, rgba(110, 200, 150), rgba(180, 230, 200, 0.5));
+    
+    --status-active: #218838;
+    --status-blocked: #c82333;
 }
 
 .highlight-outline {

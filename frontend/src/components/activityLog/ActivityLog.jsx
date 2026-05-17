@@ -79,7 +79,7 @@ const ActivityLog = () => {
             <div className={`activity-pagination form-footer`}>
                 <button
                     type="button"
-                    className="btn secondary"
+                    className="btn"
                     disabled={page === 0}
                     onClick={() => setPage(p => p - 1)}
                 >
@@ -88,7 +88,7 @@ const ActivityLog = () => {
                 <span>Page {page + 1} of {totalPages}</span>
                 <button
                     type="button"
-                    className="btn secondary"
+                    className="btn"
                     disabled={page >= totalPages - 1}
                     onClick={() => setPage(p => p + 1)}
                 >

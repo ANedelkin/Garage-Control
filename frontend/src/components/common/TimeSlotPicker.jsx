@@ -263,7 +263,7 @@ const TimeSlotPickerContent = ({
             <div className="tp-header">
                 <button 
                     type="button" 
-                    className="btn secondary icon-btn" 
+                    className="btn icon-btn" 
                     onClick={() => handleDayChange(-1)}
                     disabled={isFirstDayToday()}
                 >
@@ -272,7 +272,7 @@ const TimeSlotPickerContent = ({
                 <span style={{ fontWeight: 600 }}>
                     {viewDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {dayColumns[dayColumns.length - 1].toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
-                <button type="button" className="btn secondary icon-btn" onClick={() => handleDayChange(1)}>
+                <button type="button" className="btn icon-btn" onClick={() => handleDayChange(1)}>
                     <i className="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -348,7 +348,7 @@ const TimeSlotPicker = ({ worker, onTimeSelect, initialStart, initialEnd, readon
 
     return (
         <div className="time-picker-container">
-            <button type="button" className="btn secondary time-display-btn" onClick={openPicker} disabled={readonly}>
+            <button type="button" className="btn time-display-btn" onClick={openPicker} disabled={readonly}>
                 <i className="fa-regular fa-clock"></i> {formatTimeRange()}
             </button>
         </div>

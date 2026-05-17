@@ -35,13 +35,13 @@ const ErrorPage = ({ title, message, type = 'error', details }) => {
 
                 <div className="error-actions">
                     <button
-                        className="btn secondary"
+                        className="btn"
                         onClick={() => navigate(-1)}
                     >
                         <i className="fa-solid fa-arrow-left"></i> Go Back
                     </button>
                     <button
-                        className="btn secondary"
+                        className="btn"
                         onClick={() => window.location.reload()}
                     >
                         <i className="fa-solid fa-rotate"></i> Refresh
