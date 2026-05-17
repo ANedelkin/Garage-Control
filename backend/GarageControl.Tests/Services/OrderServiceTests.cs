@@ -94,10 +94,11 @@ namespace GarageControl.Tests.Services
             };
 
             // Act
-            var result = (dynamic)await _service.CreateOrderAsync(userId, workshopId, createModel);
+            var result = await _service.CreateOrderAsync(userId, workshopId, createModel);
 
             // Assert
             Assert.NotNull(result);
+            Assert.True(result.Success);
             var orderInDb = _context.Orders.First();
             Assert.Equal(1000, orderInDb.Kilometers);
 
@@ -167,7 +168,7 @@ namespace GarageControl.Tests.Services
             };
 
             // Act
-            var response = await _service.UpdateOrderAsync(userId, orderId, workshopId, updateModel) as MethodResponseVM;
+            var response = await _service.UpdateOrderAsync(userId, orderId, workshopId, updateModel);
             Assert.NotNull(response);
             Assert.True(response.Success, response.Message);
 

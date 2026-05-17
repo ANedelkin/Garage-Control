@@ -140,7 +140,7 @@ namespace GarageControl.Core.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<object> CreateOrderAsync(string userId, string workshopId, CreateOrderVM model)
+        public async Task<MethodResponseVM> CreateOrderAsync(string userId, string workshopId, CreateOrderVM model)
         {
             var car = await _context.Cars
                 .Include(c => c.Owner)
@@ -182,7 +182,7 @@ namespace GarageControl.Core.Services
             return new MethodResponseVM(true, "Order created successfully", new { orderId = order.Id });
         }
 
-        public async Task<object> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model)
+        public async Task<MethodResponseVM> UpdateOrderAsync(string userId, string id, string workshopId, UpdateOrderVM model)
         {
             var order = await _context.Orders
                 .Include(o => o.Jobs)

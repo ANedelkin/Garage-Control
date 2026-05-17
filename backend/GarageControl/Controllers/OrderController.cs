@@ -72,9 +72,9 @@ namespace GarageControl.Controllers
             try
             {
                 var result = await _orderService.CreateOrderAsync(User.GetUserId(), User.GetWorkshopId(), model);
-                if (result is MethodResponseVM resp && !resp.Success)
+                if (!result.Success)
                 {
-                    return BadRequest(new { message = resp.Message });
+                    return BadRequest(new { message = result.Message });
                 }
                 return Ok(result);
             }
@@ -120,9 +120,9 @@ namespace GarageControl.Controllers
             try
             {
                 var result = await _orderService.UpdateOrderAsync(User.GetUserId(), id, User.GetWorkshopId(), model);
-                if (result is MethodResponseVM resp && !resp.Success)
+                if (!result.Success)
                 {
-                    return BadRequest(new { message = resp.Message });
+                    return BadRequest(new { message = result.Message });
                 }
                 return Ok(result);
             }
