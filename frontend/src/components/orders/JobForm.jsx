@@ -410,7 +410,7 @@ const JobForm = ({
                                     return (
                                         <React.Fragment key={p.id || i}>
                                             <tr className={isExpanded ? 'expanded-row' : ''}>
-                                                <td>
+                                                <td style={{ overflow: 'visible' }}>
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                                                             <button
