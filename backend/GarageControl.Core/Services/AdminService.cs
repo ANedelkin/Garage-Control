@@ -7,6 +7,7 @@ using GarageControl.Infrastructure.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Infrastructure.Data.Common;
+using GarageControl.Infrastructure.Data;
 
 namespace GarageControl.Core.Services
 {
@@ -67,7 +68,7 @@ namespace GarageControl.Core.Services
                         userVM.WorkshopName = workshops.FirstOrDefault(w => w.BossId == user.Id)?.Name ?? "Unknown";
                     }
                 }
-                
+
                 userVM.LastLogin = user.LastLogin;
 
                 result.Add(userVM);
@@ -138,18 +139,19 @@ namespace GarageControl.Core.Services
             var totalWorkshops = await _repo.GetAllAsNoTracking<Workshop>().CountAsync();
             var totalOrders = await _repo.GetAllAsNoTracking<Order>().CountAsync();
 
-            var recentUsersListFiltered = new List<User>();
             var allUsers = await _userManager.Users.OrderByDescending(u => u.LastLogin).ToListAsync();
 
-            foreach (var user in allUsers)
-            {
-                if (recentUsersListFiltered.Count >= 10) break;
-                var roles = await _userManager.GetRolesAsync(user);
-                if (!roles.Contains("Admin"))
-                {
-                    recentUsersListFiltered.Add(user);
-                }
-            }
+            var adminRoleId = await _repo.GetAll<IdentityRole>()
+                                         .Where(r => r.Name == "Admin")
+                                         .Select(r => r.Id)
+                                         .FirstOrDefaultAsync();
+
+            var recentUsersListFiltered = await _repo.GetAll<User>()
+                                                     .Where(u => !_repo.GetAll<IdentityUserRole<string>>()
+                                                                       .Any(ur => ur.UserId == u.Id && ur.RoleId == adminRoleId))
+                                                     .OrderByDescending(u => u.LastLogin)
+                                                     .Take(10)
+                                                     .ToListAsync();
 
             var recentUsersVM = new List<UserAdminVM>();
             var workshops = await _repo.GetAllAsNoTracking<Workshop>().ToListAsync();
