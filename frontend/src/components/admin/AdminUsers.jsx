@@ -69,7 +69,6 @@ const AdminUsers = () => {
         }
     };
 
-    const roles = ['All', 'Admin', 'Owner', 'Worker'];
     const statuses = ['All', 'Active', 'Blocked'];
 
     const filteredUsers = users.filter(user => {
@@ -142,14 +141,12 @@ const AdminUsers = () => {
                                     <td className="hide-md">{user.workshopName || '-'}</td>
                                     <td>{new Date(user.lastLogin).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) === 'Invalid Date' || user.lastLogin === '0001-01-01T00:00:00' ? 'Never' : new Date(user.lastLogin).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                                     <td style={{ textAlign: 'center', height: '61px' }} onClick={e => e.stopPropagation()}>
-                                        {user.role !== 'Admin' && (
-                                            <button
-                                                className={`status-btn btn ${user.isBlocked ? 'admin-blocked' : 'admin-active'}`}
-                                                onClick={() => handleToggleBlock(user)}
-                                            >
-                                                {user.isBlocked ? 'Blocked' : 'Active'}
-                                            </button>
-                                        )}
+                                        <button
+                                            className={`status-btn btn ${user.isBlocked ? 'admin-blocked' : 'admin-active'}`}
+                                            onClick={() => handleToggleBlock(user)}
+                                        >
+                                            {user.isBlocked ? 'Blocked' : 'Active'}
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

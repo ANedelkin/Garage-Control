@@ -53,19 +53,17 @@ namespace GarageControl.Core.Services
 
                 if (user.Id == adminId)
                 {
-                    continue; // Do not show the admin in both users tables
+                    continue;
                 }
                 else
                 {
                     var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
                     if (worker != null)
                     {
-                        userVM.Role = "User";
                         userVM.WorkshopName = worker.WorkshopName;
                     }
                     else
                     {
-                        userVM.Role = "User";
                         userVM.WorkshopName = workshops.FirstOrDefault(w => w.BossId == user.Id)?.Name ?? "Unknown";
                     }
                 }
@@ -159,7 +157,6 @@ namespace GarageControl.Core.Services
 
             foreach (var user in recentUsersListFiltered)
             {
-                string role = "User";
                 string? workshopName = null;
 
                 var worker = workers.FirstOrDefault(w => w.UserId == user.Id);
@@ -179,7 +176,6 @@ namespace GarageControl.Core.Services
                     UserName = user.UserName ?? "",
                     Email = user.Email ?? "",
                     IsBlocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
-                    Role = role,
                     WorkshopName = workshopName ?? "-",
                     LastLogin = user.LastLogin
                 });

@@ -24,7 +24,7 @@ namespace GarageControl.Core.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
-        private readonly int _accessTokenExpiryMinutes;
+        private readonly int _accessTokenExpiryMinutes = 15;
         private readonly string _jwtSecret = null!;
         private readonly string _jwtIssuer = null!;
         private readonly string _jwtAudience = null!;
@@ -43,7 +43,6 @@ namespace GarageControl.Core.Services
             _jwtSecret   = _configuration["Jwt:Key"]      ?? throw new InvalidOperationException("Jwt:Key is not configured");
             _jwtIssuer   = _configuration["Jwt:Issuer"]   ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
             _jwtAudience = _configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured");
-            _accessTokenExpiryMinutes = 15;
         }
 
         public async Task<LoginResponseVM> SignUp(RegisterVM model)
@@ -54,7 +53,7 @@ namespace GarageControl.Core.Services
             var user = new User
             {
                 UserName = model.Username,
-                Email = null // Users can set their email later, but initially it's null
+                Email = null
             };
 
             IdentityResult result;
