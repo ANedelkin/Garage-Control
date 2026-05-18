@@ -166,8 +166,8 @@ namespace GarageControl.Tests.Services
                 It.Is<ActivityLogData>(d => 
                     d.Action == LogAction.Moved && 
                     d.EntityName == "Folder" && 
-                    d.SecondaryEntityName == "OldParent" && 
-                    d.SecondaryEntityId == "NewParent")), Times.Once);
+                    d.Changes != null && 
+                    d.Changes.Any(c => c.FieldName == "folder" && c.OldValue == "OldParent" && c.NewValue == "NewParent"))), Times.Once);
         }
     }
 }

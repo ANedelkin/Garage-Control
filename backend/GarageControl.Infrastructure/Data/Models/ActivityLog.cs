@@ -18,7 +18,6 @@ namespace GarageControl.Infrastructure.Data.Models
         /// <summary>Entity category, e.g. "Worker", "Client", "Job"…</summary>
         public string? LogType { get; set; }
 
-        /// <summary>JSON-serialised <see cref="GarageControl.Core.Models.ActivityLogData"/> payload.</summary>
         public string? LogData { get; set; }
     }
 }

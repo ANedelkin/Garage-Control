@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using GarageControl.Core.Contracts;
 using GarageControl.Core.Services.Helpers;
+using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -16,14 +18,14 @@ namespace GarageControl.Core.Services
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
         private readonly IDeficitService _deficitService;
-        private readonly PartActivityLogger _activityLogger;
+        private readonly IActivityLogService _activityLogService;
 
         public FolderService(GarageControlDbContext context, IActivityLogService activityLogService, IInventoryService inventoryService, IDeficitService deficitService)
         {
             _context = context;
             _inventoryService = inventoryService;
             _deficitService = deficitService;
-            _activityLogger = new PartActivityLogger(activityLogService);
+            _activityLogService = activityLogService;
         }
 
         public async Task<FolderContentVM> GetFolderContentAsync(string workshopId, string? folderId)
@@ -100,7 +102,8 @@ namespace GarageControl.Core.Services
             _context.PartsFolders.Add(folder);
             await _context.SaveChangesAsync();
 
-            await _activityLogger.LogFolderCreatedAsync(userId, workshopId, folder.Name);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Folder,
+                new ActivityLogData(LogAction.Created, null, folder.Name));
 
             return new PartsFolderVM { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
         }
@@ -116,7 +119,9 @@ namespace GarageControl.Core.Services
             folder.Name = newName;
             await _context.SaveChangesAsync();
 
-            await _activityLogger.LogFolderRenamedAsync(userId, workshopId, oldName, newName);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Folder,
+                new ActivityLogData(LogAction.Renamed, null, newName, 
+                    Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, newName) }));
         }
 
         public async Task DeleteFolderAsync(string userId, string workshopId, string folderId)
@@ -140,7 +145,8 @@ namespace GarageControl.Core.Services
                 await _deficitService.RecalculateFolderDeficitCountsAsync(parentId);
             }
 
-            await _activityLogger.LogFolderDeletedAsync(userId, workshopId, folderName);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Folder,
+                new ActivityLogData(LogAction.Deleted, null, folderName));
         }
 
         private async Task DeleteFolderRecursive(PartsFolder folder)
@@ -187,7 +193,9 @@ namespace GarageControl.Core.Services
                 await _deficitService.RecalculateFolderDeficitCountsAsync(newParentId);
             }
 
-            await _activityLogger.LogFolderMovedAsync(userId, workshopId, folder.Name, oldParentName, newParentName);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Folder,
+                new ActivityLogData(LogAction.Moved, null, folder.Name, 
+                    Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("folder", oldParentName, newParentName) }));
         }
 
         private async Task<string> GetFolderNameOrBaseAsync(string? folderId)

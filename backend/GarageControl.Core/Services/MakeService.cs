@@ -225,8 +225,8 @@ namespace GarageControl.Core.Services
                 if (workshopId != null && oldName != model.Name)
                 {
                     await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
-                        new ActivityLogData(LogAction.Renamed, make.Id, oldName,
-                            SecondaryEntityName: model.Name));
+                        new ActivityLogData(LogAction.Renamed, make.Id, model.Name,
+                            Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, model.Name) }));
                 }
             }
         }
@@ -397,8 +397,8 @@ namespace GarageControl.Core.Services
             if (workshopId != null)
             {
                 await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Make,
-                    new ActivityLogData(LogAction.Merged, null, customMakeName,
-                        SecondaryEntityId: globalMakeId, SecondaryEntityName: globalMakeName));
+                    new ActivityLogData(LogAction.Merged, globalMakeId, globalMakeName,
+                        Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("merged from", null, customMakeName) }));
             }
         }
 

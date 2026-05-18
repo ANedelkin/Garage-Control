@@ -9,7 +9,9 @@ namespace GarageControl.Core.Enums
         Model,
         JobType,
         Order,
+        ArchivedOrder,
         Job,
+        ArchivedJob,
         Part,
         Folder,
         Workshop

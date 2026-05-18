@@ -8,11 +8,7 @@ namespace GarageControl.Core.Models
 
         string? EntityId,
 
-        string? EntityName,
-
-        string? SecondaryEntityId = null,
-
-        string? SecondaryEntityName = null,
+        string? EntityName = null,
 
         List<ActivityPropertyChange>? Changes = null,
         

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GarageControl.Core.Models;
 using GarageControl.Shared.Enums;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -18,7 +19,7 @@ namespace GarageControl.Core.Services
     {
         private readonly GarageControlDbContext _context;
         private readonly INotificationService _notificationService;
-        private readonly OrderActivityLogger _activityLogger;
+        private readonly IActivityLogService _activityLogService;
         private readonly IWorkshopService _workshopService;
         private readonly IInventoryService _inventoryService;
         private readonly IJobService _jobService;
@@ -33,7 +34,7 @@ namespace GarageControl.Core.Services
         {
             _context = context;
             _notificationService = notificationService;
-            _activityLogger = new OrderActivityLogger(activityLogService);
+            _activityLogService = activityLogService;
             _workshopService = workshopService;
             _inventoryService = inventoryService;
             _jobService = jobService;
@@ -177,7 +178,8 @@ namespace GarageControl.Core.Services
                 createChanges.Add(new ActivityPropertyChange("odometer", oldKm.ToString(), model.Kilometers.ToString()));
 
             string carInfo = $"{car.Model.CarMake.Name} {car.Model.Name} ({car.RegistrationNumber})";
-            await _activityLogger.LogOrderCreatedAsync(userId, workshopId, order.Id, carInfo, createChanges);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                new ActivityLogData(LogAction.Created, order.Id, carInfo, Changes: createChanges));
 
             return new MethodResponseVM(true, "Order created successfully", new { orderId = order.Id });
         }
@@ -221,7 +223,8 @@ namespace GarageControl.Core.Services
                 {
                     changes.Add(new ActivityPropertyChange("car",
                         $"{order.Car.Model.CarMake.Name} {order.Car.Model.Name} ({order.Car.RegistrationNumber})",
-                        $"{newCar.Model.CarMake.Name} {newCar.Model.Name} ({newCar.RegistrationNumber})"));
+                        $"{newCar.Model.CarMake.Name} {newCar.Model.Name} ({newCar.RegistrationNumber})",
+                        order.Car.Id, newCar.Id, LogEntityType.Vehicle));
 
                     order.CarId = model.CarId;
                     // When changing car, we should also update the new car's kilometers if order's kilometers are higher
@@ -312,11 +315,13 @@ namespace GarageControl.Core.Services
             
             if (changes.Any(c => c.FieldName == "status" && c.NewValue == "archived"))
             {
-                await _activityLogger.LogOrderArchivedAsync(userId, workshopId, order.Id, carInfo, changes);
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                    new ActivityLogData(LogAction.Archived, order.Id, carInfo, Changes: changes));
             }
             else
             {
-                await _activityLogger.LogOrderUpdatedAsync(userId, workshopId, order.Id, carInfo, changes);
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                    new ActivityLogData(LogAction.Updated, order.Id, carInfo, Changes: changes));
             }
 
             return new MethodResponseVM(true, "Order updated successfully", new { orderId = order.Id });
@@ -423,7 +428,8 @@ namespace GarageControl.Core.Services
                 _context.Orders.Remove(activeOrder);
                 await _context.SaveChangesAsync();
 
-                await _activityLogger.LogOrderDeletedAsync(userId, workshopId, carInfo);
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                    new ActivityLogData(LogAction.Deleted, null, carInfo));
 
                 return new MethodResponseVM(true, "Order deleted successfully.");
             }
@@ -438,7 +444,8 @@ namespace GarageControl.Core.Services
                 _context.OrderSnapshots.Remove(snapshot);
                 await _context.SaveChangesAsync();
 
-                await _activityLogger.LogOrderDeletedAsync(userId, workshopId, $"{snapshot.CarName} ({snapshot.CarRegistrationNumber})");
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Order,
+                    new ActivityLogData(LogAction.Deleted, null, $"{snapshot.CarName} ({snapshot.CarRegistrationNumber})"));
 
                 return new MethodResponseVM(true, "Archived order snapshot deleted successfully.");
             }

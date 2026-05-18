@@ -125,8 +125,7 @@ namespace GarageControl.Core.Services
                 : "New Car";
 
             await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Vehicle,
-                new ActivityLogData(LogAction.Added, car.Id, carDisplayName,
-                    SecondaryEntityId: client.Id, SecondaryEntityName: client.Name));
+                new ActivityLogData(LogAction.Added, car.Id, carDisplayName));
         }
 
         public async Task Edit(string id, VehicleVM model, string userId)

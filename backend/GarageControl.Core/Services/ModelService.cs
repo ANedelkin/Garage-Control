@@ -42,8 +42,7 @@ namespace GarageControl.Core.Services
             {
                 var make = await _repo.GetByIdAsync<CarMake>(model.MakeId);
                 await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
-                    new ActivityLogData(LogAction.Added, carModel.Id, carModel.Name,
-                        SecondaryEntityId: model.MakeId, SecondaryEntityName: make?.Name ?? "Unknown"));
+                    new ActivityLogData(LogAction.Added, carModel.Id, $"{make?.Name ?? "Unknown"} {carModel.Name}"));
             }
         }
 
@@ -68,8 +67,7 @@ namespace GarageControl.Core.Services
             if (workshopId != null)
             {
                 await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
-                    new ActivityLogData(LogAction.Deleted, null, modelName,
-                        SecondaryEntityName: makeName));
+                    new ActivityLogData(LogAction.Deleted, null, $"{makeName} {modelName}"));
             }
         }
 
@@ -201,8 +199,8 @@ namespace GarageControl.Core.Services
                 if (workshopId != null && oldName != model.Name)
                 {
                     await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
-                        new ActivityLogData(LogAction.Renamed, carModel.Id, oldName,
-                            SecondaryEntityId: carModel.CarMakeId, SecondaryEntityName: carModel.CarMake.Name));
+                        new ActivityLogData(LogAction.Renamed, carModel.Id, $"{carModel.CarMake.Name} {model.Name}",
+                            Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, model.Name) }));
                 }
             }
         }
@@ -260,9 +258,8 @@ namespace GarageControl.Core.Services
             if (workshopId != null)
             {
                 await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Model,
-                    new ActivityLogData(LogAction.Merged, globalModelId, globalModelName,
-                        SecondaryEntityId: globalModel.CarMakeId,
-                        SecondaryEntityName: customModelName));
+                    new ActivityLogData(LogAction.Merged, globalModelId, $"{globalModelName}",
+                        Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("merged from", null, customModelName) }));
             }
         }
 

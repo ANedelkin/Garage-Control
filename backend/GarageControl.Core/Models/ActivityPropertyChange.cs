@@ -6,7 +6,7 @@ namespace GarageControl.Core.Models
         string FieldName, 
         string? OldValue, 
         string? NewValue, 
-        string? OldId = null, 
-        string? NewId = null,
+        string? IdOld = null, 
+        string? IdNew = null,
         LogEntityType? TargetEntityType = null);
 }

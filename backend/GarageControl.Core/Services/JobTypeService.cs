@@ -140,12 +140,12 @@ namespace GarageControl.Core.Services
                 foreach (var name in addedWorkersNames)
                 {
                     var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
-                    changes.Add(new ActivityPropertyChange("added worker", null, w?.Name ?? name, null, w?.Id));
+                    changes.Add(new ActivityPropertyChange("added worker", null, w?.Name ?? name, null, w?.Id, LogEntityType.Worker));
                 }
                 foreach (var name in removedWorkersNames)
                 {
                     var w = allWorkshopWorkers.FirstOrDefault(x => x.Name == name);
-                    changes.Add(new ActivityPropertyChange("removed worker", w?.Name ?? name, null, w?.Id, null));
+                    changes.Add(new ActivityPropertyChange("removed worker", w?.Name ?? name, null, w?.Id, null, LogEntityType.Worker));
                 }
 
                 jobType.Workers.Clear();

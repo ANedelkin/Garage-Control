@@ -423,8 +423,8 @@ namespace GarageControl.Core.Services
                 .ToListAsync();
             var removedJobTypes = worker.Activities.Where(j => !newJobTypeIds.Contains(j.Id)).Select(j => new { j.Id, j.Name }).ToList();
             
-            foreach (var j in addedJobTypes) changes.Add(new ActivityPropertyChange($"added job type", null, j.Name, null, j.Id));
-            foreach (var j in removedJobTypes) changes.Add(new ActivityPropertyChange($"removed job type", j.Name, null, j.Id, null));
+            foreach (var j in addedJobTypes) changes.Add(new ActivityPropertyChange($"added job type", null, j.Name, null, j.Id, LogEntityType.JobType));
+            foreach (var j in removedJobTypes) changes.Add(new ActivityPropertyChange($"removed job type", j.Name, null, j.Id, null, LogEntityType.JobType));
 
             worker.Activities.Clear();
             var jobTypesToAdd = await _repo.GetAllAttached<JobType>().Where(j => newJobTypeIds.Contains(j.Id)).ToListAsync();

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
@@ -19,7 +20,7 @@ namespace GarageControl.Core.Services
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
         private readonly IDeficitService _deficitService;
-        private readonly PartActivityLogger _activityLogger;
+        private readonly IActivityLogService _activityLogService;
 
         public PartService(
             GarageControlDbContext context,
@@ -28,7 +29,7 @@ namespace GarageControl.Core.Services
             IDeficitService deficitService)
         {
             _context = context;
-            _activityLogger = new PartActivityLogger(activityLogService);
+            _activityLogService = activityLogService;
             _inventoryService = inventoryService;
             _deficitService = deficitService;
         }
@@ -129,11 +130,8 @@ namespace GarageControl.Core.Services
             _context.Parts.Add(part);
             await _context.SaveChangesAsync();
 
-            await _activityLogger.LogPartCreatedAsync(
-                userId,
-                workshopId,
-                part.Id,
-                part.Name);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Part,
+                new ActivityLogData(LogAction.Created, part.Id, part.Name));
 
             if (!string.IsNullOrEmpty(part.ParentId))
                 await _deficitService.RecalculateFolderDeficitCountsAsync(part.ParentId);
@@ -213,12 +211,11 @@ namespace GarageControl.Core.Services
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, new List<string> { part.Id }, oldMin);
 
-            await _activityLogger.LogPartUpdatedAsync(
-                userId,
-                workshopId,
-                part.Id,
-                part.Name,
-                changes);
+            if (changes.Any())
+            {
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Part,
+                    new ActivityLogData(LogAction.Updated, part.Id, part.Name, Changes: changes));
+            }
 
             return await GetPartByIdAsync(part.Id, workshopId)
                 ?? throw new Exception("Part not found after update");
@@ -237,12 +234,9 @@ namespace GarageControl.Core.Services
 
             await _context.SaveChangesAsync();
 
-            await _activityLogger.LogPartUpdatedAsync(
-                userId,
-                workshopId,
-                part.Id,
-                part.Name,
-                new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, newName) });
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Part,
+                new ActivityLogData(LogAction.Updated, part.Id, part.Name, 
+                    Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("name", oldName, newName) }));
         }
 
         private List<ActivityPropertyChange> TrackPartChanges(Part part, UpdatePartVM model)
@@ -290,7 +284,8 @@ namespace GarageControl.Core.Services
             if (!string.IsNullOrEmpty(parentId))
                 await _deficitService.RecalculateFolderDeficitCountsAsync(parentId);
 
-            await _activityLogger.LogPartDeletedAsync(userId, workshopId, partName);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Part,
+                new ActivityLogData(LogAction.Deleted, null, partName));
         }
 
         public async Task MovePartAsync(string userId, string workshopId, string partId, string? newParentId)
@@ -328,13 +323,9 @@ namespace GarageControl.Core.Services
             if (!string.IsNullOrEmpty(newParentId))
                 await _deficitService.RecalculateFolderDeficitCountsAsync(newParentId);
 
-            await _activityLogger.LogPartMovedAsync(
-                userId,
-                workshopId,
-                part.Id,
-                part.Name,
-                oldParentName,
-                newParentName);
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Part,
+                new ActivityLogData(LogAction.Moved, part.Id, part.Name, 
+                    Changes: new List<ActivityPropertyChange> { new ActivityPropertyChange("folder", oldParentName, newParentName) }));
         }
 
         private async Task<string> GetFolderNameOrBaseAsync(string? folderId)

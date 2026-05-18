@@ -6,6 +6,8 @@ using GarageControl.Infrastructure.Data.Models;
 using GarageControl.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using GarageControl.Core.Models;
+using GarageControl.Core.Enums;
+using GarageControl.Core.Services.Helpers;
 
 namespace GarageControl.Core.Services.Jobs
 {
@@ -14,7 +16,7 @@ namespace GarageControl.Core.Services.Jobs
         private readonly GarageControlDbContext _context;
         private readonly IInventoryService _inventoryService;
         private readonly IAuthService _authService;
-        private readonly JobActivityLogger _activityLogger;
+        private readonly IActivityLogService _activityLogService;
 
         public JobService(
             GarageControlDbContext context,
@@ -25,7 +27,7 @@ namespace GarageControl.Core.Services.Jobs
             _context = context;
             _inventoryService = inventoryService;
             _authService = authService;
-            _activityLogger = new JobActivityLogger(activityLogService);
+            _activityLogService = activityLogService;
         }
 
         public async Task<MethodResponseVM> CreateJobAsync(
@@ -74,7 +76,7 @@ namespace GarageControl.Core.Services.Jobs
             var userAccesses = await _authService.GetUserAccess(userId);
 
             var (changes, affectedPartIds) =
-                await ApplyPartsChangesAsync(job, model.Parts, userId, userAccesses);
+                await UpdateJobPartsAsync(job, model.Parts, userId, userAccesses);
 
             _context.Jobs.Add(job);
 
@@ -82,14 +84,9 @@ namespace GarageControl.Core.Services.Jobs
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
-            await _activityLogger.LogJobCreatedAsync(
-                userId,
-                workshopId,
-                order.Id,
-                job.Id,
-                jobType.Name,
-                carInfo,
-                new List<string>()); // Don't show added parts in the log during creation
+            await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                new ActivityLogData(LogAction.Created, job.Id, $"{jobType.Name} for {carInfo}",
+                    Changes: new List<ActivityPropertyChange>())); // Don't show added parts in the log during creation
 
             return new MethodResponseVM(true, "Job created successfully", job.Id);
         }
@@ -285,8 +282,7 @@ namespace GarageControl.Core.Services.Jobs
 
             var userAccesses = await _authService.GetUserAccess(userId);
 
-            var (partsChanges, affectedPartIds) =
-                await ApplyPartsChangesAsync(job, model.Parts, userId, userAccesses);
+            var (partsChanges, affectedPartIds) = await UpdateJobPartsAsync(job, model.Parts, userId, userAccesses);
 
             job.JobTypeId = model.JobTypeId;
             job.WorkerId = model.WorkerId;
@@ -309,18 +305,27 @@ namespace GarageControl.Core.Services.Jobs
 
             await _inventoryService.RecalculateAvailabilityBalanceAsync(workshopId, affectedPartIds);
 
-            await _activityLogger.LogJobUpdatedAsync(userId, workshopId, job.OrderId, job.Id, job.JobType.Name, carInfo, propertyChanges, partsChanges);
+            var allChanges = new List<ActivityPropertyChange>();
+            if (propertyChanges != null) allChanges.AddRange(propertyChanges);
+            if (partsChanges != null) allChanges.AddRange(partsChanges);
+
+            if (allChanges.Any())
+            {
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                    new ActivityLogData(LogAction.Updated, job.Id, $"{job.JobType.Name} for {carInfo}",
+                        Changes: allChanges));
+            }
 
             return new MethodResponseVM(true, "Job updated successfully");
         }
 
-        private async Task<(List<string> changes, HashSet<string> affectedPartIds)> ApplyPartsChangesAsync(
+        private async Task<(List<ActivityPropertyChange> changes, HashSet<string> affectedPartIds)> UpdateJobPartsAsync(
             Job job,
             List<CreateJobPartVM> updatedParts,
             string userId,
             List<string> userAccesses)
         {
-            var changes = new List<string>();
+            var changes = new List<ActivityPropertyChange>();
             var affectedPartIds = new HashSet<string>();
 
             var partIdsInModel = updatedParts.Select(p => p.PartId).ToList();
@@ -331,7 +336,7 @@ namespace GarageControl.Core.Services.Jobs
                 if (jp.Part != null)
                 {
                     jp.Part.Quantity += jp.SentQuantity - jp.UsedQuantity;
-                    changes.Add(_activityLogger.FormatPartRemoved(jp.Part.Id, jp.Part.Name, jp.PlannedQuantity));
+                    changes.Add(FormatPartRemoved(jp.Part.Id, jp.Part.Name, jp.PlannedQuantity));
                     affectedPartIds.Add(jp.PartId);
                 }
                 job.JobParts.Remove(jp);
@@ -356,7 +361,7 @@ namespace GarageControl.Core.Services.Jobs
                         {
                             throw new ArgumentException($"Planned quantity for part '{part.Name}' cannot be less than sent quantity ({existingJobPart.SentQuantity}).");
                         }
-                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
+                        changes.Add(FormatPartQuantityChanged(part.Id, part.Name, "planned", existingJobPart.PlannedQuantity.ToString(), partModel.PlannedQuantity.ToString()));
                         existingJobPart.PlannedQuantity = partModel.PlannedQuantity.Value;
                     }
 
@@ -377,7 +382,7 @@ namespace GarageControl.Core.Services.Jobs
                             throw new ArgumentException($"Insufficient stock for part '{part.Name}'. Available: {part.Quantity}, requested additional: {diff}");
                         }
 
-                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
+                        changes.Add(FormatPartQuantityChanged(part.Id, part.Name, "sent", existingJobPart.SentQuantity.ToString(), partModel.SentQuantity.ToString()));
                         part.Quantity -= diff;
                         existingJobPart.SentQuantity = partModel.SentQuantity.Value;
                     }
@@ -389,14 +394,14 @@ namespace GarageControl.Core.Services.Jobs
                         {
                             throw new ArgumentException($"Used quantity for part '{part.Name}' cannot exceed sent quantity ({existingJobPart.SentQuantity}).");
                         }
-                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "used", existingJobPart.UsedQuantity.ToString(), partModel.UsedQuantity.ToString()));
+                        changes.Add(FormatPartQuantityChanged(part.Id, part.Name, "used", existingJobPart.UsedQuantity.ToString(), partModel.UsedQuantity.ToString()));
                         existingJobPart.UsedQuantity = partModel.UsedQuantity.Value;
                     }
 
                     if (existingJobPart.RequestedQuantity != partModel.RequestedQuantity &&
                         (hasStockAccess || isAssignedWorker))
                     {
-                        changes.Add(_activityLogger.FormatPartQuantityChanged(part.Id, part.Name, "requested", existingJobPart.RequestedQuantity.ToString(), partModel.RequestedQuantity.ToString()));
+                        changes.Add(FormatPartQuantityChanged(part.Id, part.Name, "requested", existingJobPart.RequestedQuantity.ToString(), partModel.RequestedQuantity.ToString()));
                         existingJobPart.RequestedQuantity = partModel.RequestedQuantity.Value;
                     }
                 }
@@ -431,7 +436,7 @@ namespace GarageControl.Core.Services.Jobs
                     });
 
                     part.Quantity -= effectiveSent;
-                    changes.Add(_activityLogger.FormatPartAdded(part.Id, part.Name, effectivePlanned, effectiveSent, partModel.UsedQuantity.Value, partModel.RequestedQuantity.Value));
+                    changes.Add(FormatPartAdded(part.Id, part.Name, effectivePlanned, effectiveSent, partModel.UsedQuantity.Value, partModel.RequestedQuantity.Value));
                 }
 
                 affectedPartIds.Add(part.Id);
@@ -445,10 +450,10 @@ namespace GarageControl.Core.Services.Jobs
             string FormatPrice(decimal p) => p.ToString("0.00");
 
             if (job.JobTypeId != model.JobTypeId)
-                changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName, job.JobTypeId, model.JobTypeId));
+                changes.Add(new ActivityPropertyChange("type", job.JobType.Name, newJobTypeName, job.JobTypeId, model.JobTypeId, LogEntityType.JobType));
 
             if (job.WorkerId != model.WorkerId)
-                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, newWorkerName, job.WorkerId, model.WorkerId));
+                changes.Add(new ActivityPropertyChange("mechanic", job.Worker.Name, newWorkerName, job.WorkerId, model.WorkerId, LogEntityType.Worker));
 
             if (job.Status != model.Status)
                 changes.Add(new ActivityPropertyChange("status", job.Status.ToString(), model.Status.ToString()));
@@ -507,10 +512,35 @@ namespace GarageControl.Core.Services.Jobs
             // Log the deletion
             if (!skipLogging)
             {
-                await _activityLogger.LogJobDeletedAsync(userId, workshopId, job.OrderId, job.JobType.Name, carInfo);
+                await _activityLogService.LogActionAsync(userId, workshopId, LogEntityType.Job,
+                    new ActivityLogData(LogAction.Deleted, null, $"{job.JobType.Name} for {carInfo}"));
             }
 
             return new MethodResponseVM(true, "Job deleted successfully");
+        }
+        private ActivityPropertyChange FormatPartAdded(string partId, string partName, int planned, int sent, int used, int requested)
+        {
+            string link = ActivityLogRenderer.GetEntityLink(LogEntityType.Part, partId, partName);
+            var q = new List<string>();
+            if (planned > 0) q.Add($"planned: {planned}");
+            if (sent > 0) q.Add($"sent: {sent}");
+            if (used > 0) q.Add($"used: {used}");
+            if (requested > 0) q.Add($"req: {requested}");
+            string qs = q.Any() ? " (" + string.Join(", ", q) + ")" : "";
+            
+            return new ActivityPropertyChange($"Added part {link}{qs}", "", "");
+        }
+
+        private ActivityPropertyChange FormatPartRemoved(string partId, string partName, int quantity)
+        {
+            string link = ActivityLogRenderer.GetEntityLink(LogEntityType.Part, partId, partName);
+            return new ActivityPropertyChange($"Removed part {link} (quantity: {quantity})", "", "");
+        }
+
+        private ActivityPropertyChange FormatPartQuantityChanged(string partId, string partName, string qtyType, string oldVal, string newVal)
+        {
+            string link = ActivityLogRenderer.GetEntityLink(LogEntityType.Part, partId, partName);
+            return new ActivityPropertyChange($"Changed {qtyType} quantity of {link} from **{oldVal}** to **{newVal}**", "", "");
         }
     }
 }
