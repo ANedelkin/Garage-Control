@@ -75,9 +75,6 @@ namespace GarageControl.Core.Services
 
         public async Task<LoginResponseVM> LogIn(LoginVM model)
         {
-            if (string.IsNullOrEmpty(model.Password))
-                return new LoginResponseVM(false, "Password required");
-
             var user = await _userManager.FindByNameAsync(model.Username);
 
             if (user == null)

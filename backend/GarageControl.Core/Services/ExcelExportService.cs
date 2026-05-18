@@ -6,12 +6,35 @@ using GarageControl.Core.ViewModels.Orders;
 using GarageControl.Core.ViewModels.Parts;
 using GarageControl.Core.ViewModels.Workers;
 using GarageControl.Core.ViewModels.Vehicles;
+using GarageControl.Core.Enums;
 
 namespace GarageControl.Core.Services
 {
+    public static class ExcelStyles
+    {
+        public static readonly XLColor BorderColor = XLColor.FromArgb(255, 100, 0); // Orange Border
+        public static readonly XLColor HeaderBgColor = XLColor.FromArgb(255, 204, 153); // Light Orange Header
+        public static readonly XLColor AlternateRowBgColor = XLColor.FromArgb(255, 245, 235); // Soft Alternate BG
+    }
+
+    public static class ExcelFormats
+    {
+        public const string Date = "dd.MM.yyyy";
+        public const string DateTime = "dd.MM.yyyy HH:mm";
+        public const string Currency = "#,##0.00"; 
+        public const string Integer = "#,##0";
+        public const string Decimal = "#,##0.00";
+    }
+
+    public record ExcelColumn<T>(
+        string Header,
+        Func<T, object?> ValueSelector,
+        string? NumberFormat = null
+    );
+
     public class ExcelExportService : IExcelExportService
     {
-        // ── helpers ────────────────────────────────────────────────────────────
+        // ── core helpers ───────────────────────────────────────────────────────
 
         private static byte[] ToBytes(XLWorkbook workbook)
         {
@@ -20,287 +43,407 @@ namespace GarageControl.Core.Services
             return ms.ToArray();
         }
 
-        /// <summary>
-        /// Writes a bold/styled header row followed by data rows, then auto-fits columns.
-        /// </summary>
-        private static void WriteTable(
+        private static void WriteSheet<T>(
             IXLWorksheet ws,
-            IReadOnlyList<string> headers,
-            IEnumerable<IReadOnlyList<object?>> rows)
+            IEnumerable<T> items,
+            IReadOnlyList<ExcelColumn<T>> columns)
         {
-            var borderColor = XLColor.FromArgb(255, 100, 0);
+            var totalColumns = columns.Count;
 
-            for (int col = 0; col < headers.Count; col++)
+            // Apply column-wide configurations and write headers
+            for (int col = 0; col < totalColumns; col++)
             {
+                var xlCol = ws.Column(col + 1);
+                
+                // Set native Excel number formatting for the entire column at once
+                if (columns[col].NumberFormat != null)
+                {
+                    xlCol.Style.NumberFormat.Format = columns[col].NumberFormat;
+                }
+
+                // Write header text
                 var cell = ws.Cell(1, col + 1);
-                cell.Value = headers[col];
-                cell.Style.Font.Bold = true;
-                cell.Style.Font.FontColor = XLColor.Black;
-                cell.Style.Fill.BackgroundColor = XLColor.FromArgb(255, 204, 153);
+                cell.Value = columns[col].Header;
             }
 
+            // Batch style the header row at once
+            var headerRange = ws.Range(1, 1, 1, totalColumns);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ExcelStyles.HeaderBgColor;
+
+            // Write rows
             int rowIndex = 2;
-            foreach (var row in rows)
+            foreach (var item in items)
             {
-                bool isAlternate = rowIndex % 2 != 0;
-
-                for (int col = 0; col < row.Count; col++)
+                for (int col = 0; col < totalColumns; col++)
                 {
-                    var value = row[col];
                     var cell = ws.Cell(rowIndex, col + 1);
-                    switch (value)
-                    {
-                        case decimal d:  cell.Value = (double)d;  break;
-                        case double db:  cell.Value = db;          break;
-                        case DateTime dt: cell.Value = dt;         break;
-                        case int i:      cell.Value = i;           break;
-                        default:         cell.Value = value?.ToString() ?? ""; break;
-                    }
+                    var value = columns[col].ValueSelector(item);
+                    cell.Value = value != null ? XLCellValue.FromObject(value) : Blank.Value;
+                }
 
-                    if (isAlternate)
-                    {
-                        cell.Style.Fill.BackgroundColor = XLColor.FromArgb(255, 245, 235);
-                    }
+                // Batch style alternating rows in a single range call instead of cell-by-cell
+                if (rowIndex % 2 != 0)
+                {
+                    ws.Range(rowIndex, 1, rowIndex, totalColumns).Style.Fill.BackgroundColor = ExcelStyles.AlternateRowBgColor;
                 }
                 rowIndex++;
             }
-            
-            var dataRange = ws.Range(1, 1, rowIndex - 1, headers.Count);
-            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            dataRange.Style.Border.InsideBorderColor = borderColor;
-            dataRange.Style.Border.OutsideBorderColor = borderColor;
+
+            // Batch style borders for the entire sheet data area in a single block range
+            if (rowIndex > 2)
+            {
+                var dataRange = ws.Range(1, 1, rowIndex - 1, totalColumns);
+                dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                dataRange.Style.Border.InsideBorderColor = ExcelStyles.BorderColor;
+                dataRange.Style.Border.OutsideBorderColor = ExcelStyles.BorderColor;
+            }
 
             ws.Columns().AdjustToContents();
         }
 
-        // ── exports ────────────────────────────────────────────────────────────
-
-        public Task<byte[]> ExportOrdersAsync(List<(OrderListVM Order, List<JobListVM> Jobs)> ordersWithJobs)
+        private static byte[] ExportSingleSheet<T>(
+            string sheetName,
+            IEnumerable<T> items,
+            IReadOnlyList<ExcelColumn<T>> columns)
         {
             using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Orders");
+            var ws = wb.Worksheets.Add(sheetName);
+            WriteSheet(ws, items, columns);
+            return ToBytes(wb);
+        }
 
-            var headers = new[]
+        // ── exports implementations ────────────────────────────────────────────
+
+        private record OrderExportRow(
+            string Client,
+            string Car,
+            string RegNumber,
+            int Kilometers,
+            string JobType,
+            string Mechanic,
+            string Status,
+            DateTime? StartTime,
+            decimal? LaborCost,
+            decimal? PartsCost
+        )
+        {
+            public decimal? TotalCost => (LaborCost ?? 0) + (PartsCost ?? 0);
+        }
+
+        public byte[] ExportOrders(List<(OrderListVM Order, List<JobListVM> Jobs)> ordersWithJobs)
+        {
+            // Yield-based enumeration avoids intermediate .ToList() allocation entirely
+            IEnumerable<OrderExportRow> MapRows()
             {
-                "Client", "Car", "Reg #", "Km",
-                "Job Type", "Mechanic", "Status",
-                "Start Time", "Labor Cost", "Parts Cost", "Total Cost"
-            };
-
-            var rows = new List<IReadOnlyList<object?>>();
-
-            foreach (var (order, jobs) in ordersWithJobs)
-            {
-                if (jobs.Count == 0)
+                foreach (var (order, jobs) in ordersWithJobs)
                 {
-                    rows.Add(new object?[] { order.ClientName, order.CarName, order.CarRegistrationNumber, order.Kilometers, "", "", "", "", "", "", "" });
-                }
-                else
-                {
-                    foreach (var job in jobs)
+                    if (jobs.Count == 0)
                     {
-                        var statusLabel = job.Status switch
+                        yield return new OrderExportRow(
+                            order.ClientName,
+                            order.CarName,
+                            order.CarRegistrationNumber,
+                            order.Kilometers,
+                            "",
+                            "",
+                            "",
+                            null,
+                            null,
+                            null
+                        );
+                    }
+                    else
+                    {
+                        foreach (var job in jobs)
                         {
-                            "pending"    => "Pending",
-                            "inprogress" => "In Progress",
-                            _            => "Done"
-                        };
-                        rows.Add(new object?[]
-                        {
-                            order.ClientName, order.CarName, order.CarRegistrationNumber, order.Kilometers,
-                            job.Type, job.MechanicName, statusLabel,
-                            job.StartTime == default ? "" : job.StartTime.ToString("dd/MM/yyyy HH:mm"),
-                            job.LaborCost, job.PartsCost, job.LaborCost + job.PartsCost
-                        });
+                            var statusLabel = job.Status switch
+                            {
+                                "pending"    => "Pending",
+                                "inprogress" => "In Progress",
+                                _            => "Done"
+                            };
+                            yield return new OrderExportRow(
+                                order.ClientName,
+                                order.CarName,
+                                order.CarRegistrationNumber,
+                                order.Kilometers,
+                                job.Type,
+                                job.MechanicName,
+                                statusLabel,
+                                job.StartTime == default ? null : job.StartTime,
+                                job.LaborCost,
+                                job.PartsCost
+                            );
+                        }
                     }
                 }
             }
 
-            WriteTable(ws, headers, rows);
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("Orders", MapRows(), new ExcelColumn<OrderExportRow>[]
+            {
+                new("Client", r => r.Client),
+                new("Car", r => r.Car),
+                new("Reg #", r => r.RegNumber),
+                new("Km", r => r.Kilometers, ExcelFormats.Integer),
+                new("Job Type", r => r.JobType),
+                new("Mechanic", r => r.Mechanic),
+                new("Status", r => r.Status),
+                new("Start Time", r => r.StartTime, ExcelFormats.DateTime),
+                new("Labor Cost", r => r.LaborCost, ExcelFormats.Currency),
+                new("Parts Cost", r => r.PartsCost, ExcelFormats.Currency),
+                new("Total Cost", r => r.TotalCost, ExcelFormats.Currency)
+            });
         }
 
-        public Task<byte[]> ExportClientsAsync(IEnumerable<ClientVM> clients)
+        public byte[] ExportClients(IEnumerable<ClientVM> clients)
         {
-            using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Clients");
-
-            WriteTable(ws,
-                new[] { "Name", "Phone", "Email", "Address", "Registration #" },
-                clients.Select(c => (IReadOnlyList<object?>)new object?[]
-                {
-                    c.Name, c.PhoneNumber, c.Email ?? "", c.Address ?? "", c.RegistrationNumber ?? ""
-                }));
-
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("Clients", clients, new ExcelColumn<ClientVM>[]
+            {
+                new("Name", c => c.Name),
+                new("Phone", c => c.PhoneNumber),
+                new("Email", c => c.Email ?? ""),
+                new("Address", c => c.Address ?? ""),
+                new("Registration #", c => c.RegistrationNumber ?? "")
+            });
         }
 
-        public Task<byte[]> ExportWorkersAsync(IEnumerable<WorkerVM> workers, List<string> exportTypes)
+        private record WorkerDetailsRow(
+            string Name,
+            string Username,
+            string Email,
+            string Access,
+            string JobTypes,
+            DateTime HiredOn
+        );
+
+        private record WorkerScheduleRow(
+            string Worker,
+            string Day,
+            string StartTime,
+            string EndTime
+        );
+
+        private record WorkerLeaveRow(
+            string Worker,
+            DateTime StartDate,
+            DateTime EndDate
+        );
+
+        public byte[] ExportWorkers(IEnumerable<WorkerVM> workers, WorkerExportFlags exportFlags)
         {
             using var wb = new XLWorkbook();
 
-            if (exportTypes.Contains("details"))
+            if (exportFlags.HasFlag(WorkerExportFlags.Details))
             {
                 var ws = wb.Worksheets.Add("Workers Details");
-                WriteTable(ws,
-                    new[] { "Name", "Username", "Email", "Access", "Job Types", "Hired On" },
-                    workers.Select(w =>
-                    {
-                        var selected = w.Accesses.Where(a => a.IsSelected).ToList();
-                        var accessLabel = selected.Count == 0 ? "-"
-                                        : selected.Count == w.Accesses.Count ? "Full"
-                                        : string.Join(", ", selected.Select(a => a.Name));
+                
+                // Lazy select projection passed directly without .ToList() allocation
+                var details = workers.Select(w =>
+                {
+                    var selected = w.Accesses.Where(a => a.IsSelected).ToList();
+                    var accessLabel = selected.Count == 0 ? "-"
+                                    : selected.Count == w.Accesses.Count ? "Full"
+                                    : string.Join(", ", selected.Select(a => a.Name));
+                    return new WorkerDetailsRow(
+                        w.Name,
+                        w.Username,
+                        w.Email,
+                        accessLabel,
+                        string.Join(", ", w.JobTypeNames),
+                        w.HiredOn
+                    );
+                });
 
-                        return (IReadOnlyList<object?>)new object?[]
-                        {
-                            w.Name, w.Username, w.Email, accessLabel,
-                            string.Join(", ", w.JobTypeNames),
-                            w.HiredOn.ToString("dd.MM.yyyy")
-                        };
-                    }));
+                WriteSheet(ws, details, new ExcelColumn<WorkerDetailsRow>[]
+                {
+                    new("Name", x => x.Name),
+                    new("Username", x => x.Username),
+                    new("Email", x => x.Email),
+                    new("Access", x => x.Access),
+                    new("Job Types", x => x.JobTypes),
+                    new("Hired On", x => x.HiredOn, ExcelFormats.Date)
+                });
             }
 
-            if (exportTypes.Contains("schedules"))
+            if (exportFlags.HasFlag(WorkerExportFlags.Schedules))
             {
                 var ws = wb.Worksheets.Add("Workers Schedules");
-                var rows = new List<IReadOnlyList<object?>>();
                 var days = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+                
+                // Lazy mapping to avoid intermediate list buffers
+                var schedules = workers.SelectMany(w => w.Schedules
+                    .OrderBy(s => s.DayOfWeek)
+                    .ThenBy(s => s.StartTime)
+                    .Select(s => new WorkerScheduleRow(
+                        w.Name,
+                        days[s.DayOfWeek],
+                        s.StartTime,
+                        s.EndTime
+                    )));
 
-                foreach (var worker in workers)
+                WriteSheet(ws, schedules, new ExcelColumn<WorkerScheduleRow>[]
                 {
-                    foreach (var s in worker.Schedules.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime))
-                    {
-                        rows.Add(new object?[]
-                        {
-                            worker.Name, days[s.DayOfWeek], s.StartTime, s.EndTime
-                        });
-                    }
-                }
-
-                WriteTable(ws, new[] { "Worker", "Day", "Start Time", "End Time" }, rows);
+                    new("Worker", x => x.Worker),
+                    new("Day", x => x.Day),
+                    new("Start Time", x => x.StartTime),
+                    new("End Time", x => x.EndTime)
+                });
             }
 
-            if (exportTypes.Contains("leaves"))
+            if (exportFlags.HasFlag(WorkerExportFlags.Leaves))
             {
                 var ws = wb.Worksheets.Add("Workers Leaves");
-                var rows = new List<IReadOnlyList<object?>>();
+                
+                var leaves = workers.SelectMany(w => w.Leaves
+                    .OrderBy(l => l.StartDate)
+                    .Select(l => new WorkerLeaveRow(
+                        w.Name,
+                        l.StartDate,
+                        l.EndDate
+                    )));
 
-                foreach (var worker in workers)
+                WriteSheet(ws, leaves, new ExcelColumn<WorkerLeaveRow>[]
                 {
-                    foreach (var l in worker.Leaves.OrderBy(l => l.StartDate))
-                    {
-                        rows.Add(new object?[]
-                        {
-                            worker.Name, l.StartDate.ToString("dd.MM.yyyy"), l.EndDate.ToString("dd.MM.yyyy")
-                        });
-                    }
-                }
-
-                WriteTable(ws, new[] { "Worker", "Start Date", "End Date" }, rows);
+                    new("Worker", x => x.Worker),
+                    new("Start Date", x => x.StartDate, ExcelFormats.Date),
+                    new("End Date", x => x.EndDate, ExcelFormats.Date)
+                });
             }
 
-            return Task.FromResult(ToBytes(wb));
+            return ToBytes(wb);
         }
 
-        public Task<byte[]> ExportToDoAsync(IEnumerable<JobToDoVM> jobs, string workerName)
+        public byte[] ExportToDo(IEnumerable<JobToDoVM> jobs, string workerName)
         {
-            using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("To-Do List");
-
-            WriteTable(ws,
-                new[] { "Client", "Car", "Plate", "Job Type", "Status", "Start", "End", "Description" },
-                jobs.Select(j => (IReadOnlyList<object?>)new object?[]
-                {
-                    j.ClientName, j.CarName, j.CarRegistrationNumber, j.TypeName,
-                    j.Status, j.StartTime.ToString("dd.MM.yyyy HH:mm"), j.EndTime.ToString("dd.MM.yyyy HH:mm"),
-                    j.Description
-                }));
-
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("To-Do List", jobs, new ExcelColumn<JobToDoVM>[]
+            {
+                new("Client", j => j.ClientName),
+                new("Car", j => j.CarName),
+                new("Plate", j => j.CarRegistrationNumber),
+                new("Job Type", j => j.TypeName),
+                new("Status", j => j.Status),
+                new("Start", j => j.StartTime, ExcelFormats.DateTime),
+                new("End", j => j.EndTime, ExcelFormats.DateTime),
+                new("Description", j => j.Description)
+            });
         }
 
-        public Task<byte[]> ExportPartsAsync(List<PartVM> parts)
+        public byte[] ExportParts(List<PartVM> parts)
         {
-            using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Parts Stock");
-
-            WriteTable(ws,
-                new[] { "Name", "Part Number", "Current Qty", "Availability Balance", "Parts to Client", "Min Qty", "Unit Price" },
-                parts.Select(p => (IReadOnlyList<object?>)new object?[]
-                {
-                    p.Name, p.PartNumber, p.Quantity, p.AvailabilityBalance, p.PartsToSend, p.MinimumQuantity, p.Price
-                }));
-
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("Parts Stock", parts, new ExcelColumn<PartVM>[]
+            {
+                new("Name", p => p.Name),
+                new("Part Number", p => p.PartNumber),
+                new("Current Qty", p => p.Quantity, ExcelFormats.Integer),
+                new("Availability Balance", p => p.AvailabilityBalance, ExcelFormats.Integer),
+                new("Parts to Client", p => p.PartsToSend, ExcelFormats.Integer),
+                new("Min Qty", p => p.MinimumQuantity, ExcelFormats.Integer),
+                new("Unit Price", p => p.Price, ExcelFormats.Currency)
+            });
         }
 
+        private record JobDetailsRow(
+            string Client,
+            string Car,
+            string RegNumber,
+            string JobType,
+            string Mechanic,
+            decimal LaborCost,
+            DateTime? StartTime,
+            DateTime? EndTime,
+            string Description
+        );
 
+        private record PartUsedRow(
+            string PartName,
+            int PlannedQty,
+            int SentQty,
+            int UsedQty,
+            int RequestedQty,
+            decimal UnitPrice
+        )
+        {
+            public decimal Total => UsedQty * UnitPrice;
+        }
 
-        public Task<byte[]> ExportJobAsync(JobDetailsVM job)
+        public byte[] ExportJob(JobDetailsVM job)
         {
             using var wb = new XLWorkbook();
 
             var wsInfo = wb.Worksheets.Add("Job Details");
-            WriteTable(wsInfo,
-                new[] { "Client", "Car", "Reg #", "Job Type", "Mechanic", "Labor Cost", "Start Time", "End Time", "Description" },
-                new[]
-                {
-                    (IReadOnlyList<object?>)new object?[]
-                    {
-                        job.ClientName, job.CarName, job.CarRegistrationNumber,
-                        job.JobTypeName ?? "", job.MechanicName ?? "", job.LaborCost,
-                        job.StartTime == default ? "" : job.StartTime.ToString("dd/MM/yyyy HH:mm"),
-                        job.EndTime   == default ? "" : job.EndTime.ToString("dd/MM/yyyy HH:mm"),
-                        job.Description
-                    }
-                });
+            var details = new[]
+            {
+                new JobDetailsRow(
+                    job.ClientName,
+                    job.CarName,
+                    job.CarRegistrationNumber,
+                    job.JobTypeName ?? "",
+                    job.MechanicName ?? "",
+                    job.LaborCost,
+                    job.StartTime == default ? null : job.StartTime,
+                    job.EndTime == default ? null : job.EndTime,
+                    job.Description ?? ""
+                )
+            };
+
+            WriteSheet(wsInfo, details, new ExcelColumn<JobDetailsRow>[]
+            {
+                new("Client", x => x.Client),
+                new("Car", x => x.Car),
+                new("Reg #", x => x.RegNumber),
+                new("Job Type", x => x.JobType),
+                new("Mechanic", x => x.Mechanic),
+                new("Labor Cost", x => x.LaborCost, ExcelFormats.Currency),
+                new("Start Time", x => x.StartTime, ExcelFormats.DateTime),
+                new("End Time", x => x.EndTime, ExcelFormats.DateTime),
+                new("Description", x => x.Description)
+            });
 
             var wsParts = wb.Worksheets.Add("Parts Used");
-            WriteTable(wsParts,
-                new[] { "Part Name", "Planned Qty", "Sent Qty", "Used Qty", "Requested Qty", "Unit Price", "Total" },
-                job.Parts.Select(p => (IReadOnlyList<object?>)new object?[]
-                {
-                    p.PartName,
-                    p.PlannedQuantity,
-                    p.SentQuantity,
-                    p.UsedQuantity,
-                    p.RequestedQuantity,
-                    p.Price,
-                    (decimal)p.UsedQuantity * p.Price
-                }));
+            var parts = job.Parts.Select(p => new PartUsedRow(
+                p.PartName,
+                p.PlannedQuantity,
+                p.SentQuantity,
+                p.UsedQuantity,
+                p.RequestedQuantity,
+                p.Price
+            ));
 
-            return Task.FromResult(ToBytes(wb));
+            WriteSheet(wsParts, parts, new ExcelColumn<PartUsedRow>[]
+            {
+                new("Part Name", x => x.PartName),
+                new("Planned Qty", x => x.PlannedQty, ExcelFormats.Integer),
+                new("Sent Qty", x => x.SentQty, ExcelFormats.Integer),
+                new("Used Qty", x => x.UsedQty, ExcelFormats.Integer),
+                new("Requested Qty", x => x.RequestedQty, ExcelFormats.Integer),
+                new("Unit Price", x => x.UnitPrice, ExcelFormats.Currency),
+                new("Total", x => x.Total, ExcelFormats.Currency)
+            });
+
+            return ToBytes(wb);
         }
 
-        public Task<byte[]> ExportJobTypesAsync(IEnumerable<JobTypeVM> jobTypes)
+        public byte[] ExportJobTypes(IEnumerable<JobTypeVM> jobTypes)
         {
-            using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Job Types");
-
-            WriteTable(ws,
-                new[] { "Name", "Description" },
-                jobTypes.Select(jt => (IReadOnlyList<object?>)new object?[]
-                {
-                    jt.Name, jt.Description ?? ""
-                }));
-
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("Job Types", jobTypes, new ExcelColumn<JobTypeVM>[]
+            {
+                new("Name", jt => jt.Name),
+                new("Description", jt => jt.Description ?? "")
+            });
         }
 
-        public Task<byte[]> ExportCarsAsync(IEnumerable<VehicleVM> cars)
+        public byte[] ExportCars(IEnumerable<VehicleVM> cars)
         {
-            using var wb = new XLWorkbook();
-            var ws = wb.Worksheets.Add("Cars");
-
-            WriteTable(ws,
-                new[] { "Make", "Model", "Registration #", "Kilometers", "Owner" },
-                cars.Select(c => (IReadOnlyList<object?>)new object?[]
-                {
-                    c.MakeName ?? "", c.ModelName ?? "", c.RegistrationNumber, c.Kilometers, c.OwnerName ?? ""
-                }));
-
-            return Task.FromResult(ToBytes(wb));
+            return ExportSingleSheet("Cars", cars, new ExcelColumn<VehicleVM>[]
+            {
+                new("Make", c => c.MakeName ?? ""),
+                new("Model", c => c.ModelName ?? ""),
+                new("Registration #", c => c.RegistrationNumber),
+                new("Kilometers", c => c.Kilometers, ExcelFormats.Integer),
+                new("Owner", c => c.OwnerName ?? "")
+            });
         }
     }
 }

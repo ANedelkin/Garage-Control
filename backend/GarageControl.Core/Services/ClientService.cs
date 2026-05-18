@@ -47,8 +47,6 @@ namespace GarageControl.Core.Services
         public async Task<IEnumerable<ClientVM>> All(string userId)
         {
             var workshopId = await _workshopService.GetWorkshopId(userId);
-            if (workshopId == null)
-                return Enumerable.Empty<ClientVM>();
 
             return await _repo.GetAllAsNoTracking<Client>()
                 .Where(c => c.WorkshopId == workshopId)
@@ -82,7 +80,7 @@ namespace GarageControl.Core.Services
                         RegistrationNumber = carVM.RegistrationNumber,
                         Kilometers = carVM.Kilometers,
                         VIN = carVM.VIN,
-                        OwnerId = client.Id // client.Id is already generated at line 12 of Client entity
+                        OwnerId = client.Id
                     };
                     await _repo.AddAsync(car);
                 }

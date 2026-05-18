@@ -448,7 +448,7 @@ const JobForm = ({
                                                                         <div className="part-suggestion">
                                                                             <span className="part-name">{part.name}</span>
                                                                             <span className="part-number">{part.partNumber}</span>
-                                                                            <span className="part-price">${part.price.toFixed(2)}</span>
+                                                                            <span className="part-price">{part.price.toFixed(2)}</span>
                                                                         </div>
                                                                     )}
                                                                 />
