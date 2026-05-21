@@ -29,46 +29,25 @@ namespace GarageControl.Core.Services
             return DeficitStatus.NoDeficit;
         }
 
-        public async Task UpdatePartDeficitStatusAsync(string workshopId, Part part)
+        public async Task UpdatePartDeficitStatusAsync(Part part)
         {
             var newStatus = CalculatePartDeficitStatus(part);
             var oldStatus = part.DeficitStatus;
 
             if (newStatus == oldStatus)
-                return; 
+                return;
 
             part.DeficitStatus = newStatus;
-            await _context.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(part.ParentId))
             {
                 await PropagateDeficitChangeToAncestorsAsync(part.ParentId, oldStatus, newStatus);
             }
-        }
-
-        public async Task RecalculateAllDeficitStatusesAsync(string workshopId)
-        {
-            var parts = await _context.Parts
-                .Where(p => p.WorkshopId == workshopId)
-                .ToListAsync();
-
-            foreach (var part in parts)
+            else
             {
-                part.DeficitStatus = CalculatePartDeficitStatus(part);
-            }
-
-            await _context.SaveChangesAsync();
-
-            var folders = await _context.PartsFolders
-                .Where(f => f.WorkshopId == workshopId)
-                .ToListAsync();
-
-            foreach (var folder in folders)
-            {
-                await RecalculateFolderDeficitCountsAsync(folder.Id);
+                await _context.SaveChangesAsync();
             }
         }
-
         public async Task RecalculateFolderDeficitCountsAsync(string folderId)
         {
             var folder = await _context.PartsFolders
@@ -82,7 +61,7 @@ namespace GarageControl.Core.Services
             int lowerCount = 0;
             int higherCount = 0;
 
-            foreach (var part in folder.PartsChildren ?? new HashSet<Part>())
+            foreach (var part in folder.PartsChildren)
             {
                 if (part.DeficitStatus == DeficitStatus.LowerSeverity)
                     lowerCount++;
@@ -90,7 +69,7 @@ namespace GarageControl.Core.Services
                     higherCount++;
             }
 
-            foreach (var childFolder in folder.FolderChildren ?? new HashSet<PartsFolder>())
+            foreach (var childFolder in folder.FolderChildren)
             {
                 lowerCount += childFolder.LowerDeficitSeverityCount;
                 higherCount += childFolder.HigherDeficitSeverityCount;
@@ -102,11 +81,13 @@ namespace GarageControl.Core.Services
             folder.LowerDeficitSeverityCount = lowerCount;
             folder.HigherDeficitSeverityCount = higherCount;
 
-            await _context.SaveChangesAsync();
-
             if ((oldLowerCount != lowerCount || oldHigherCount != higherCount) && !string.IsNullOrEmpty(folder.ParentId))
             {
                 await RecalculateFolderDeficitCountsAsync(folder.ParentId);
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -126,11 +107,13 @@ namespace GarageControl.Core.Services
             else if (newStatus == DeficitStatus.HigherSeverity)
                 folder.HigherDeficitSeverityCount++;
 
-            await _context.SaveChangesAsync();
-
             if (!string.IsNullOrEmpty(folder.ParentId))
             {
                 await PropagateDeficitChangeToAncestorsAsync(folder.ParentId, oldStatus, newStatus);
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
             }
         }
     }

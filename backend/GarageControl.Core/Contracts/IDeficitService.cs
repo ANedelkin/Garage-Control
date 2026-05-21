@@ -13,12 +13,7 @@ namespace GarageControl.Core.Contracts
         /// <summary>
         /// Updates the deficit status of a part and propagates the change to all ancestors.
         /// </summary>
-        Task UpdatePartDeficitStatusAsync(string workshopId, Part part);
-
-        /// <summary>
-        /// Recalculates deficit status for all parts in the workshop.
-        /// </summary>
-        Task RecalculateAllDeficitStatusesAsync(string workshopId);
+        Task UpdatePartDeficitStatusAsync(Part part);
 
         /// <summary>
         /// Recalculates deficit counts for a specific folder and propagates upward.

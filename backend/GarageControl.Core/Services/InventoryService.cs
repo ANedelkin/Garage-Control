@@ -102,7 +102,7 @@ namespace GarageControl.Core.Services
                     await _notification.RemoveStockNotificationAsync(workshopId, part.Id);
                 }
 
-                await _deficitService.UpdatePartDeficitStatusAsync(workshopId, part);
+                await _deficitService.UpdatePartDeficitStatusAsync(part);
             }
 
             await _context.SaveChangesAsync();
