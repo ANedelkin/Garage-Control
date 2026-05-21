@@ -212,6 +212,16 @@ namespace GarageControl.Core.Services
             // 3. Render final results
             var result = new List<ActivityLogVM>();
             bool ExistsChecker(LogEntityType type, string id) => existenceSet.Contains((type, id));
+            bool ArchivedChecker(LogEntityType type, string id)
+            {
+                var checkType = type switch
+                {
+                    LogEntityType.ArchivedOrder => LogEntityType.Order,
+                    LogEntityType.ArchivedJob   => LogEntityType.Job,
+                    _                           => type
+                };
+                return archivedSet.Contains((checkType, id));
+            }
 
             foreach (var log in logs)
             {
@@ -220,7 +230,7 @@ namespace GarageControl.Core.Services
                     if (Enum.TryParse<LogEntityType>(log.LogType, true, out var entityType))
                     {
                         // Dynamically generate the message markup
-                        var rendered = ActivityLogRenderer.Render(entityType, data, ExistsChecker);
+                        var rendered = ActivityLogRenderer.Render(entityType, data, ExistsChecker, ArchivedChecker);
                         result.Add(new ActivityLogVM
                         {
                             Id = log.Id,

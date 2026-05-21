@@ -15,11 +15,15 @@ namespace GarageControl.Core.Services.Helpers
 
     public static class ActivityLogRenderer
     {
-        public static ActivityLogRendererResult Render(LogEntityType logType, ActivityLogData data, Func<LogEntityType, string, bool>? existsChecker = null)
+        public static ActivityLogRendererResult Render(
+            LogEntityType logType, 
+            ActivityLogData data, 
+            Func<LogEntityType, string, bool>? existsChecker = null,
+            Func<LogEntityType, string, bool>? archivedChecker = null)
         {
-            string actorMarkup = BuildActorMarkup(data, existsChecker);
+            string actorMarkup = BuildActorMarkup(data, existsChecker, archivedChecker);
 
-            return BuildGenericMarkup(actorMarkup, data, logType, existsChecker);
+            return BuildGenericMarkup(actorMarkup, data, logType, existsChecker, archivedChecker);
         }
 
         public static string BuildMessageMarkup(LogEntityType logType, ActivityLogData data)
@@ -95,14 +99,26 @@ namespace GarageControl.Core.Services.Helpers
             LogEntityType entityType,
             string? id,
             string? label,
-            Func<LogEntityType, string, bool>? existsChecker = null)
+            Func<LogEntityType, string, bool>? existsChecker = null,
+            Func<LogEntityType, string, bool>? archivedChecker = null)
         {
             if (string.IsNullOrEmpty(id)) return Bold(label);
 
             if (existsChecker != null && !existsChecker(entityType, id))
                 return Bold(label);
 
-            string url = GetUrlTemplate(entityType, id);
+            var checkType = entityType;
+            if (archivedChecker != null && archivedChecker(entityType, id))
+            {
+                checkType = entityType switch
+                {
+                    LogEntityType.Order => LogEntityType.ArchivedOrder,
+                    LogEntityType.Job   => LogEntityType.ArchivedJob,
+                    _                   => entityType
+                };
+            }
+
+            string url = GetUrlTemplate(checkType, id);
             if (string.IsNullOrEmpty(url)) return Bold(label);
 
             return Link(label, url);
@@ -133,9 +149,9 @@ namespace GarageControl.Core.Services.Helpers
             };
         }
 
-        private static string BuildActorMarkup(ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker)
+        private static string BuildActorMarkup(ActivityLogData d, Func<LogEntityType, string, bool>? existsChecker, Func<LogEntityType, string, bool>? archivedChecker)
         {
-            return GetEntityLink(LogEntityType.Worker, d.ActorId, d.ActorName, existsChecker);
+            return GetEntityLink(LogEntityType.Worker, d.ActorId, d.ActorName, existsChecker, archivedChecker);
         }
 
         private static ActivityLogRendererResult BuildUpdatedMarkup(
@@ -143,7 +159,8 @@ namespace GarageControl.Core.Services.Helpers
             string entityLabel,
             string link,
             List<ActivityPropertyChange>? changes,
-            Func<LogEntityType, string, bool>? existsChecker)
+            Func<LogEntityType, string, bool>? existsChecker,
+            Func<LogEntityType, string, bool>? archivedChecker)
         {
             var res = new ActivityLogRendererResult { Header = $"{actorMarkup} updated {entityLabel} {link}" };
             if (changes == null || changes.Count == 0)
@@ -167,7 +184,7 @@ namespace GarageControl.Core.Services.Helpers
                     string displayVal = val != null && val.Length > 50 ? val.Substring(0, 47) + "..." : val;
                     if (!string.IsNullOrEmpty(id) && targetType != null)
                     {
-                        return GetEntityLink(targetType.Value, id, displayVal, existsChecker);
+                        return GetEntityLink(targetType.Value, id, displayVal, existsChecker, archivedChecker);
                     }
                     if (fName.ToLower().Contains("status")) return Bold(Humanize(displayVal));
                     return Bold(displayVal);
@@ -203,7 +220,12 @@ namespace GarageControl.Core.Services.Helpers
             };
         }
 
-        private static ActivityLogRendererResult BuildGenericMarkup(string actorMarkup, ActivityLogData d, LogEntityType type, Func<LogEntityType, string, bool>? existsChecker)
+        private static ActivityLogRendererResult BuildGenericMarkup(
+            string actorMarkup, 
+            ActivityLogData d, 
+            LogEntityType type, 
+            Func<LogEntityType, string, bool>? existsChecker,
+            Func<LogEntityType, string, bool>? archivedChecker)
         {
             string typeName = GetEntityTypeName(type);
             
@@ -219,7 +241,7 @@ namespace GarageControl.Core.Services.Helpers
             }
 
             string linkLabel = (type == LogEntityType.Order || type == LogEntityType.ArchivedOrder) ? $"order for {d.EntityName}" : d.EntityName;
-            string link = GetEntityLink(type, d.EntityId, linkLabel, existsChecker);
+            string link = GetEntityLink(type, d.EntityId, linkLabel, existsChecker, archivedChecker);
 
             switch (d.Action)
             {
@@ -235,13 +257,13 @@ namespace GarageControl.Core.Services.Helpers
                     return new ActivityLogRendererResult { Header = $"{actorMarkup} fired {Bold(d.EntityName)}" };
                     
                 case LogAction.Archived:
-                    var arch = BuildUpdatedMarkup(actorMarkup, typeName, link, d.Changes, existsChecker);
+                    var arch = BuildUpdatedMarkup(actorMarkup, typeName, link, d.Changes, existsChecker, archivedChecker);
                     arch.Header = $"{actorMarkup} archived {link}";
                     return arch;
                     
                 case LogAction.Updated:
                 case LogAction.Renamed:
-                    var upd = BuildUpdatedMarkup(actorMarkup, typeName, link, d.Changes, existsChecker);
+                    var upd = BuildUpdatedMarkup(actorMarkup, typeName, link, d.Changes, existsChecker, archivedChecker);
                     if (type == LogEntityType.Part && upd.Details != null)
                         upd.Details = upd.Details.Select(l => l.Replace("Quantity", "Stockpile")).ToList();
                     return upd;
