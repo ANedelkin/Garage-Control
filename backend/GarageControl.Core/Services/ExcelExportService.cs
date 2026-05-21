@@ -134,7 +134,6 @@ namespace GarageControl.Core.Services
 
         public byte[] ExportOrders(List<(OrderListVM Order, List<JobListVM> Jobs)> ordersWithJobs)
         {
-            // Yield-based enumeration avoids intermediate .ToList() allocation entirely
             IEnumerable<OrderExportRow> MapRows()
             {
                 foreach (var (order, jobs) in ordersWithJobs)

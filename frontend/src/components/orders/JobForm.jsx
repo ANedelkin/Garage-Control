@@ -409,7 +409,7 @@ const JobForm = ({
                                     const partErrors = getPartErrors(i);
                                     return (
                                         <React.Fragment key={p.id || i}>
-                                            <tr className={isExpanded ? 'expanded-row' : ''}>
+                                            <tr className={`${isExpanded ? 'expanded-row' : ''} ${partErrors ? 'has-errors' : ''}`}>
                                                 <td style={{ overflow: 'visible' }}>
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
@@ -445,18 +445,27 @@ const JobForm = ({
                                                                     onSelect={addPart}
                                                                     onClose={() => setActivePartIndex(null)}
                                                                     renderItem={(part) => (
-                                                                        <div className="part-suggestion">
-                                                                            <span className="part-name">{part.name}</span>
-                                                                            <span className="part-number">{part.partNumber}</span>
-                                                                            <span className="part-price">{part.price.toFixed(2)}</span>
+                                                                        <div className="part-suggestion" style={{ display: 'flex', gap: '12px', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                                <span className="part-name" style={{ fontWeight: '500' }}>{part.name}</span>
+                                                                                <span className="part-number" style={{ color: 'var(--text-clr2, #888)' }}>({part.partNumber})</span>
+                                                                            </div>
+                                                                            <span className="part-price" style={{ color: 'var(--text-clr2, #888)', fontSize: '0.9em' }}>Price: {part.price.toFixed(2)}</span>
                                                                         </div>
                                                                     )}
                                                                 />
                                                             </div>
                                                         </div>
                                                         <div className="mobile-only mobile-price">
-                                                            {p.price.toFixed(2)}
+                                                            Price: {p.price.toFixed(2)}
                                                         </div>
+                                                        {partErrors && (
+                                                            <div className="part-mobile-error">
+                                                                <p className="field-error" style={{ margin: 0, fontSize: '13px' }}>
+                                                                    {partErrors}
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="mobile-collapsible" data-label="Planned">
@@ -538,7 +547,7 @@ const JobForm = ({
                                                 </td>
                                             </tr>
                                             {partErrors && (
-                                                <tr className="error-row no-hover" style={{ borderTop: 'none', height: 'auto' }}>
+                                                <tr className="error-row no-hover desktop-error-row" style={{ borderTop: 'none', height: 'auto' }}>
                                                     <td colSpan="9" style={{ borderTop: 'none', padding: '0 0 10px 10px', overflow: 'visible', whiteSpace: 'normal' }}>
                                                         <p className="field-error" style={{ margin: 0 }}>
                                                             {partErrors}

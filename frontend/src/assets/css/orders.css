@@ -189,10 +189,22 @@ tr.has-errors td {
     display: none !important;
 }
 
+.part-mobile-error {
+    display: none;
+}
+
 /* .desktop-only and .mobile-only handled globally */
 
 /* Middle media: 500px to 800px */
 @media (max-width: 1060px) {
+    .part-mobile-error {
+        display: block;
+    }
+
+    .desktop-error-row {
+        display: none !important;
+    }
+
     .hide-md {
         display: none !important;
     }
