@@ -27,8 +27,6 @@ namespace GarageControl.Core.Utilities
 
         public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
         {
-            // We only have Noto Sans, so we map everything to it to avoid crashes
-            // This ensures that even if MigraDoc asks for Arial or something else, we provide a valid font.
             if (isBold && isItalic)
             {
                 return new FontResolverInfo("NotoSans-BoldItalic");

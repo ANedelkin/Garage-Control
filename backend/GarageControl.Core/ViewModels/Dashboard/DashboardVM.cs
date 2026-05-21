@@ -7,7 +7,7 @@ namespace GarageControl.Core.ViewModels.Dashboard
 {
     public class DashboardVM
     {
-        public OrderStatsVM OrderStats { get; set; } = null!;
+        public JobStatsVM JobStats { get; set; } = null!;
         public List<JobsCompletedByDayVM> JobsCompletedByDay { get; set; } = new();
         public List<LowStockPartVM> LowStockParts { get; set; } = new();
         public List<JobTypeDistributionVM> JobTypeDistribution { get; set; } = new();

@@ -17,19 +17,6 @@ namespace GarageControl.Core.ViewModels.Auth
             UserName = userName;
             Errors = errors;
         }
-        public object ToResponse()
-        {
-            return new
-            {
-                Message,
-                Accesses,
-                HasWorkshop,
-                UserId,
-                WorkerId,
-                UserName,
-                Errors
-            };
-        }
     
         [JsonIgnore]
         public bool Success { get; set; }

@@ -133,7 +133,7 @@ namespace GarageControl.Core.Services
             return new MethodResponseVM(true, workshop.IsBlocked ? "Workshop blocked successfully" : "Workshop unblocked successfully");
         }
 
-        public async Task<DashboardStatsVM> GetDashboardStatsAsync()
+        public async Task<AdminDashboardVM> GetDashboardStatsAsync()
         {
             var totalUsers = await _userManager.Users.CountAsync();
             var totalWorkshops = await _repo.GetAllAsNoTracking<Workshop>().CountAsync();
@@ -183,7 +183,7 @@ namespace GarageControl.Core.Services
                 });
             }
 
-            return new DashboardStatsVM
+            return new AdminDashboardVM
             {
                 TotalUsers = totalUsers,
                 TotalWorkshops = totalWorkshops,

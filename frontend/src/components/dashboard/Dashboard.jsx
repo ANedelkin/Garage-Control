@@ -195,16 +195,16 @@ const Dashboard = () => {
         <main className="main dashboard">
             <section className="grid">
                 <div className="tile count-tile glow job-status-active" onClick={() => navigate('/orders')}>
-                    <h3>Active orders</h3>
-                    <p className="count">{dashboardData.orderStats.allOrders}</p>
+                    <h3>Active jobs</h3>
+                    <p className="count">{dashboardData.jobStats.activeJobs}</p>
                 </div>
                 <div className="tile count-tile glow job-status-pending" onClick={() => navigate('/orders?status=pending')}>
                     <h3>Pending jobs</h3>
-                    <p className="count">{dashboardData.orderStats.pendingJobs}</p>
+                    <p className="count">{dashboardData.jobStats.pendingJobs}</p>
                 </div>
                 <div className="tile count-tile glow job-status-inprogress" onClick={() => navigate('/orders?status=inprogress')}>
                     <h3>Jobs in progress</h3>
-                    <p className="count">{dashboardData.orderStats.inProgressJobs}</p>
+                    <p className="count">{dashboardData.jobStats.inProgressJobs}</p>
                 </div>
 
                 <div className="tile chart-card">

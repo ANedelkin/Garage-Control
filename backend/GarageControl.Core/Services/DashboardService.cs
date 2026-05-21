@@ -27,7 +27,7 @@ namespace GarageControl.Core.Services
 
             var dashboard = new DashboardVM
             {
-                OrderStats = await GetOrderStatsAsync(workshopId),
+                JobStats = await GetJobStatsAsync(workshopId),
                 JobsCompletedByDay = await GetJobsCompletedByDayAsync(workshopId, now),
                 LowStockParts = await GetLowStockPartsAsync(workshopId),
                 JobTypeDistribution = await GetJobTypeDistributionAsync(workshopId, now),
@@ -44,7 +44,7 @@ namespace GarageControl.Core.Services
                 .Where(j => j.Order.Car.Owner.WorkshopId == workshopId && !j.Order.IsArchived);
         }
 
-        private async Task<OrderStatsVM> GetOrderStatsAsync(string workshopId)
+        private async Task<JobStatsVM> GetJobStatsAsync(string workshopId)
         {
             var activeStats = await JobsForWorkshop(workshopId)
                 .GroupBy(_ => 1)
@@ -55,11 +55,11 @@ namespace GarageControl.Core.Services
                 })
                 .FirstOrDefaultAsync();
 
-            return new OrderStatsVM
+            return new JobStatsVM
             {
                 PendingJobs = activeStats?.PendingJobs ?? 0,
                 InProgressJobs = activeStats?.InProgressJobs ?? 0,
-                AllOrders = (activeStats?.PendingJobs ?? 0) + (activeStats?.InProgressJobs ?? 0)
+                ActiveJobs = (activeStats?.PendingJobs ?? 0) + (activeStats?.InProgressJobs ?? 0)
             };
         }
 

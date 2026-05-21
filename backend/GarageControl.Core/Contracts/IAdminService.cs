@@ -13,7 +13,7 @@ namespace GarageControl.Core.Contracts
         Task<MethodResponseVM> ToggleUserBlockAsync(string userId, string? reason = null);
         Task<List<WorkshopAdminVM>> GetWorkshopsAsync();
         Task<MethodResponseVM> ToggleWorkshopBlockAsync(string workshopId, string? reason = null);
-        Task<DashboardStatsVM> GetDashboardStatsAsync();
+        Task<AdminDashboardVM> GetDashboardStatsAsync();
     }
 }
 

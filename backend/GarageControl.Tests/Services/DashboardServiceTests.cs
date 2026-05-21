@@ -104,9 +104,9 @@ namespace GarageControl.Tests.Services
 
             var dashboard = await service.GetDashboardDataAsync(workshopId);
 
-            Assert.Equal(1, dashboard.OrderStats.PendingJobs);
-            Assert.Equal(1, dashboard.OrderStats.InProgressJobs);
-            Assert.Equal(2, dashboard.OrderStats.AllOrders);
+            Assert.Equal(1, dashboard.JobStats.PendingJobs);
+            Assert.Equal(1, dashboard.JobStats.InProgressJobs);
+            Assert.Equal(2, dashboard.JobStats.ActiveJobs);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace GarageControl.Tests.Services
 
             var dashboard = await service.GetDashboardDataAsync(workshopId);
 
-            Assert.NotNull(dashboard.OrderStats);
+            Assert.NotNull(dashboard.JobStats);
             Assert.Single(dashboard.LowStockParts);
             Assert.Equal(30, dashboard.JobsCompletedByDay.Count);
             Assert.NotEmpty(dashboard.JobTypeDistribution);
